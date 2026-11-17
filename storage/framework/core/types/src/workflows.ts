@@ -9,6 +9,8 @@ export interface WorkflowConfig {
   bun?: string
   pantry?: string
   runners: { checks: string[], deploy?: string[], ios?: string[] }
+  /** Queue order only: integers from -1000 to 1000, default 0; higher starts first. */
+  priorities?: { checks?: number, deploy?: number, ios?: number }
   secrets?: { checks?: string[], deploy?: string[], ios?: string[] }
   /** Native credentials enter only the steps that need them, never the build. */
   stepSecrets?: Partial<Record<Extract<WorkflowStep, `native-${string}`>, string[]>>

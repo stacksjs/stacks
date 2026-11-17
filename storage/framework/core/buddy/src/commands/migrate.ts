@@ -386,6 +386,35 @@ export function generatesMigrations(flag: boolean | undefined, interactive: bool
   return flag ?? interactive
 }
 
+/**
+ * Every ledger row a reconcile changed, by name.
+ *
+ * Counts alone hid what happened: a run reported "Repointed 1" and "Pruned 1"
+ * while the ledger lost four rows and gained six (stacksjs/stacks#3163). A
+ * change to the ledger decides what the next migrate runs, so each one is
+ * named, never summarised.
+ */
+function logLedgerChanges(fixed: {
+  retired: readonly string[]
+  remapped: ReadonlyArray<{ from: string, to: string }>
+  recorded: readonly string[]
+  pruned: readonly string[]
+  requeued: readonly string[]
+}, level: 'success' | 'info'): void {
+  const changes: Array<[string, string[]]> = [
+    [`Retired ${fixed.retired.length} ledger row(s) for migrations a regeneration replaced:`, [...fixed.retired]],
+    [`Repointed ${fixed.remapped.length} ledger row(s) at their renumbered file:`, fixed.remapped.map(r => `${r.from} -> ${r.to}`)],
+    [`Recorded ${fixed.recorded.length} migration(s) the schema already reflects, so they will not run:`, [...fixed.recorded]],
+    [`Pruned ${fixed.pruned.length} duplicate ledger row(s); each stays recorded under its current name:`, [...fixed.pruned]],
+    [`Un-recorded ${fixed.requeued.length} migration(s) so the next \`./buddy migrate\` rebuilds the missing table(s):`, [...fixed.requeued]],
+  ]
+  for (const [heading, rows] of changes) {
+    if (rows.length === 0) continue
+    log[level](heading)
+    for (const row of rows) log.info(`      ${row}`)
+  }
+}
+
 function strictMode(options: { strict?: boolean }): boolean {
   return options.strict === true || process.env.STACKS_MIGRATE_STRICT === '1'
 }
@@ -1752,14 +1781,7 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
         const fixed = await reconcileMigrationLedger({
           regenerated: { removed: result.value.removed, written: result.value.files.map(file => file.name) },
         })
-        if (fixed.remapped.length > 0)
-          log.info(`Repointed ${fixed.remapped.length} ledger row(s) at their renumbered file.`)
-        if (fixed.recorded.length > 0)
-          log.info(`Recorded ${fixed.recorded.length} regenerated migration(s) whose every table, index and type the schema already has - they will not run.`)
-        if (fixed.retired.length > 0)
-          log.info(`Retired ${fixed.retired.length} ledger row(s) for migrations the regenerated corpus replaced.`)
-        if (fixed.pruned.length > 0)
-          log.info(`Pruned ${fixed.pruned.length} duplicate ledger row(s).`)
+        logLedgerChanges(fixed, 'info')
         if (fixed.skipped.length > 0) {
           log.warn(`${fixed.skipped.length} ledger entr(ies) need a look:`)
           for (const entry of fixed.skipped.slice(0, 10))
@@ -1971,9 +1993,20 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
             // looking for a file that was never missing.
             if (audit.remapPlan.superseded.includes(o.migration))
               return `${o.migration}  (duplicate; already recorded under its current name)`
+            if (audit.remapPlan.ambiguous.includes(o.migration))
+              return `${o.migration}  (its name matches more than one file; which one is unknowable)`
             return `${o.migration}  (no counterpart; migration deleted?)`
           }),
         )
+      }
+
+      // History, not drift: the files are still there, in the corpus this
+      // database ran before it had one of its own (stacksjs/stacks#3163).
+      if (audit.foreign.length > 0) {
+        const corpora = [...new Set(audit.foreign.map(row => relativeMigrationDirectory(row.corpus)))]
+        report.push(`  ${audit.foreign.length} ledger row(s) from ${corpora.join(', ')} - history, not drift.`)
+        report.push(`  This database ran them before it moved to ${relativeMigrationDirectory(audit.dir)}. They are kept,`)
+        report.push('  so those files never run here twice, and nothing matches them to this corpus by name.', '')
       }
 
       if (handWritten.length > 0) {
@@ -2011,21 +2044,7 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
       }
 
       const fixed = await reconcileMigrationLedger({ includePartial: options.includePartial, requeueReverted: options.requeueReverted })
-      if (fixed.retired.length > 0)
-        log.success(`Retired ${fixed.retired.length} ledger row(s) for migrations a regeneration replaced.`)
-      if (fixed.remapped.length > 0)
-        log.success(`Repointed ${fixed.remapped.length} ledger row(s) at their renumbered file.`)
-      if (fixed.requeued.length > 0) {
-        log.success(`Un-recorded ${fixed.requeued.length} migration(s) so the next \`./buddy migrate\` rebuilds the missing table(s):`)
-        for (const file of fixed.requeued.slice(0, 8))
-          log.info(`      ${file}`)
-        if (fixed.requeued.length > 8)
-          log.info(`      … +${fixed.requeued.length - 8} more`)
-      }
-      if (fixed.recorded.length > 0)
-        log.success(`Recorded ${fixed.recorded.length} migration(s) the schema already reflects.`)
-        if (fixed.pruned.length)
-          log.success(`Pruned ${fixed.pruned.length} duplicate ledger row(s) left by a renumbering.`)
+      logLedgerChanges(fixed, 'success')
       if (fixed.skipped.length > 0) {
         // Through the logger, like the header: `log.*` is async and
         // `console.log` is not, so mixing them printed this list above the
@@ -2039,7 +2058,7 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
       // Pruning counts as a repair. Without it here, a run that deleted four
       // duplicate rows reported "Pruned 4 duplicate ledger row(s)" and then
       // "Nothing could be repaired automatically" two lines later.
-      if (fixed.remapped.length === 0 && fixed.recorded.length === 0 && fixed.pruned.length === 0 && fixed.requeued.length === 0)
+      if (fixed.retired.length === 0 && fixed.remapped.length === 0 && fixed.recorded.length === 0 && fixed.pruned.length === 0 && fixed.requeued.length === 0)
         log.info('Nothing could be repaired automatically.')
 
       // A ledger row whose file is gone is left alone on purpose - pruning it

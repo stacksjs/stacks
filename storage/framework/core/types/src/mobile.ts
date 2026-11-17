@@ -394,6 +394,8 @@ export interface IosMobileConfig {
   capabilities?: MobileCapabilities
   /** Crash reporting for iOS, over `MobileConfig.crashReporting`. */
   crashReporting?: MobileCrashReportingConfig
+  /** The signed-out launch gate for iOS; replaces `MobileConfig.nativeGate` whole. */
+  nativeGate?: MobileNativeGateConfig
 }
 
 export interface AndroidMobileConfig {
@@ -490,6 +492,8 @@ export interface AndroidMobileConfig {
   capabilities?: MobileCapabilities
   /** Crash reporting for Android, over `MobileConfig.crashReporting`. */
   crashReporting?: MobileCrashReportingConfig
+  /** The signed-out launch gate for Android; replaces `MobileConfig.nativeGate` whole. */
+  nativeGate?: MobileNativeGateConfig
 }
 
 /** Health data types, by the names the iOS build's HealthKit uses. */
@@ -557,6 +561,32 @@ export interface SpotlightConfig {
  * to both platforms; `ios.crashReporting` and `android.crashReporting`
  * override it field by field (a project, and so a key, per platform).
  */
+/**
+ * Where a signed-out launch may start (Craft's `nativeGate`, craft-native
+ * >= 0.0.488).
+ *
+ * The shell checks the start path against it before the first frame is
+ * drawn, so a signed-out cold launch opens on `redirect` instead of showing
+ * the signed-in home and its tab bar until the app script pushes sign-in on
+ * top. The app script runs after that first frame, so only the shell can.
+ *
+ * The gate checks the start path (the path of `url`), never a deep link.
+ * Craft validates it when it generates the project: every path absolute with
+ * no query, hash or trailing slash, `redirect` covered by `publicPaths`, and
+ * on a native renderer `redirect` must be a native screen.
+ *
+ * @example
+ * nativeGate: { token: 'auth.token', redirect: '/m/login', publicPaths: ['/m/login'] }
+ */
+export interface MobileNativeGateConfig {
+  /** Paths a signed-out launch may start on, each admitting what sits under it. */
+  publicPaths?: string[]
+  /** Where a signed-out launch starts instead. Must itself be public. */
+  redirect: string
+  /** The secure-storage key holding the sign-in. Craft defaults it to `sessionTokenKey`. */
+  token?: string
+}
+
 export interface MobileCrashReportingConfig {
   /** The bughq project's public ingest key. It ships in the app, which is safe. Unset turns reporting off. */
   key?: string
@@ -605,6 +635,8 @@ export interface MobileConfig {
   android?: AndroidMobileConfig
   /** Crash reporting for both platforms (see MobileCrashReportingConfig). */
   crashReporting?: MobileCrashReportingConfig
+  /** The signed-out launch gate for both platforms (see MobileNativeGateConfig). */
+  nativeGate?: MobileNativeGateConfig
   /** Release notes for testers (see MobileReleaseConfig). */
   release?: MobileReleaseConfig
   /**

@@ -156,17 +156,27 @@ export function modelHintColumn(Model: any): string | null {
  * Field errors for a write the database refused because a record it points
  * at is not there: the team was deleted while the form was open.
  *
- * The driver names the constraint, not the field. The model knows which of
- * the fields being written are relations, and the one in the request is the
- * one that is gone. With several, each is named, because any of them may be.
+ * Postgres and MySQL say which key it was: the constraint
+ * (`team_members_team_id_fkey`) and Postgres's detail (`Key (team_id)=(7) is
+ * not present`) name the column. When they do, only that field is named; a
+ * team member whose team was deleted used to be told its user was gone too.
+ * SQLite names nothing, so there every relation being written is named,
+ * because any of them may be the one.
  */
 export function missingRelationErrors(Model: any, error: unknown, columns: string[], label: (name: string) => string): Record<string, string[]> {
   if (!isForeignKeyViolation(error))
     return {}
+  const written = belongsToRelations(Model).filter(relation => columns.includes(relation.column) || columns.includes(relation.field))
+  const said = foreignKeyErrorText(error)
+  const named = written.filter(relation => new RegExp(`(^|[^a-z0-9])${relation.column}([^a-z0-9]|$)`, 'i').test(said))
   const errors: Record<string, string[]> = {}
-  for (const relation of belongsToRelations(Model)) {
-    if (columns.includes(relation.column) || columns.includes(relation.field))
-      errors[relation.field] = [`That ${label(relation.model).toLowerCase()} no longer exists. Choose another.`]
-  }
+  for (const relation of named.length > 0 ? named : written)
+    errors[relation.field] = [`That ${label(relation.model).toLowerCase()} no longer exists. Choose another.`]
   return errors
+}
+
+/** Everything a driver says about a refused key, where it might name the column. */
+function foreignKeyErrorText(error: unknown): string {
+  const e = error as { message?: unknown, detail?: unknown, constraint?: unknown, constraint_name?: unknown }
+  return [e?.message, e?.detail, e?.constraint, e?.constraint_name].filter(part => typeof part === 'string').join(' ')
 }

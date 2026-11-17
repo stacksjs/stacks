@@ -244,6 +244,19 @@ describe('a record that is gone', () => {
     })
   })
 
+  test('names only the key the database says is gone', () => {
+    // Measured on Postgres: a team member whose team was deleted mid-form was
+    // also told "That user no longer exists" (stacksjs/stacks#3315).
+    const postgres = Object.assign(new Error('insert or update on table "team_members" violates foreign key constraint "team_members_team_id_fkey"'), {
+      code: 'ERR_POSTGRES_SERVER_ERROR',
+      errno: '23503',
+      detail: 'Key (team_id)=(7) is not present in table "teams".',
+    })
+    expect(missingRelationErrors(Member, postgres, ['team_id', 'user_id'], humanizeIdentifier)).toEqual({ teamId: ['That team no longer exists. Choose another.'] })
+    const mysql = Object.assign(new Error('Cannot add or update a child row: a foreign key constraint fails (`app`.`members`, CONSTRAINT `members_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`))'), { errno: 1452 })
+    expect(missingRelationErrors(Member, mysql, ['team_id', 'user_id'], humanizeIdentifier)).toEqual({ userId: ['That user no longer exists. Choose another.'] })
+  })
+
   test('only for that refusal, and only when a relation was being written', () => {
     expect(missingRelationErrors(Member, new Error('database is locked'), ['team_id'], humanizeIdentifier)).toEqual({})
     expect(missingRelationErrors(Member, referenced, ['role'], humanizeIdentifier)).toEqual({})

@@ -2,7 +2,7 @@
   "name": "@stacksjs/api",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.618",
+  "version": "0.75.621",
   "description": "The Stacks API utilities.",
   "author": "Chris Breuer",
   "contributors": [

@@ -2,7 +2,7 @@
   "name": "@stacksjs/docs",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.618",
+  "version": "0.75.621",
   "description": "The Stacks way to document.",
   "author": "Chris Breuer",
   "contributors": [
@@ -62,7 +62,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/orm": "workspace:*",
-    "@stacksjs/stx": "^0.2.889"
+    "@stacksjs/stx": "^0.2.907"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",

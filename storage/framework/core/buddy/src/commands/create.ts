@@ -20,6 +20,7 @@ import { commitScaffold } from '../scaffold-git'
 import { bunExecutable, failureReason, installScaffoldDependencies } from '../scaffold-dependencies'
 
 interface NewOptions extends CreateOptions {
+  ref?: string
   provision?: boolean
   native?: boolean
   desktop?: boolean
@@ -49,6 +50,7 @@ export function create(buddy: CLI): void {
     .option('--with-core', descriptions.withCore, { default: false })
     .option('--vendor-defaults', descriptions.vendorDefaults, { default: false })
     .option('--no-provision', 'Install JavaScript dependencies without provisioning system packages')
+    .option('--ref <ref>', 'Scaffold from an explicit Stacks tag, branch or commit')
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (name, options: NewOptions) => {
       log.debug('Running `buddy new <name>` ...', options)
@@ -263,7 +265,12 @@ export async function offlineReason(fetcher: typeof fetch = fetch): Promise<stri
  */
 export async function templateRef(
   fetchVersions: typeof fetchPublishedVersions = fetchPublishedVersions,
+  requested?: string,
 ): Promise<string | null> {
+  if (requested !== undefined) {
+    if (typeof requested !== 'string' || !/^[a-zA-Z0-9][\w./-]{0,199}$/.test(requested) || requested.includes('..') || requested.endsWith('/')) throw new Error('Choose a valid Stacks template ref')
+    return requested
+  }
   try {
     const { latest } = await fetchVersions('stacks')
     // A package with no release has no tag to scaffold from either.
@@ -281,10 +288,10 @@ export function templateSpec(ref: string | null): string {
   return ref ? `gh:stacksjs/stacks#${ref}` : 'gh:stacksjs/stacks'
 }
 
-async function download(name: string, path: string, _options: CreateOptions) {
+async function download(name: string, path: string, options: NewOptions) {
   log.info('Setting up your stack.')
 
-  const ref = await templateRef()
+  const ref = await templateRef(fetchPublishedVersions, options.ref)
 
   try {
     const { downloadTemplate } = await import('@stacksjs/gitit')
@@ -297,7 +304,7 @@ async function download(name: string, path: string, _options: CreateOptions) {
       // Scaffolding from the default branch is the old behaviour and still
       // produces a working app far more often than not, so say what happened
       // and carry on rather than failing here.
-      if (!ref) throw error
+      if (!ref || options.ref !== undefined) throw error
       log.warn(`No ${ref} tag to scaffold from (${error instanceof Error ? error.message : String(error)}).`)
       log.info('Falling back to the default branch. If this app does not typecheck, that gap is why.')
       await downloadTemplate(templateSpec(null), { dir: name, force: true })

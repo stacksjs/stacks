@@ -65,8 +65,13 @@ if (!existsSync(configPath)) throw new Error('Missing config/mobile.ts. Add an a
 const configModule = await import(`${pathToFileURL(configPath).href}?t=${Date.now()}`) as { default: MobileConfig }
 const androidSection = configModule.default.android as AndroidMobileConfig | undefined
 if (!androidSection) throw new Error('config/mobile.ts must define an android section')
-// The shared `crashReporting` under Android's own.
-const config: AndroidMobileConfig = { ...androidSection, crashReporting: resolveCrashReporting(configModule.default.crashReporting, androidSection.crashReporting) }
+// The shared `crashReporting` under Android's own; the shared gate unless
+// Android declares its own, which replaces it whole.
+const config: AndroidMobileConfig = {
+  ...androidSection,
+  crashReporting: resolveCrashReporting(configModule.default.crashReporting, androidSection.crashReporting),
+  nativeGate: androidSection.nativeGate ?? configModule.default.nativeGate,
+}
 validateAndroidMobileConfig(config)
 
 const output = resolveMobilePath(projectPath(), config.output) ?? storagePath('framework/mobile/android')

@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/browser",
   "type": "module",
-  "version": "0.75.618",
+  "version": "0.75.621",
   "description": "Stacks core frontend/browser functionalities.",
   "author": "Chris Breuer",
   "contributors": [
@@ -77,7 +77,7 @@
     "@stacksjs/composables": "workspace:*",
     "@stacksjs/datetime": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/stx": "^0.2.889",
+    "@stacksjs/stx": "^0.2.907",
     "bun-query-builder": "^0.6.2"
   },
   "peerDependencies": {

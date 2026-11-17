@@ -342,13 +342,62 @@ export function isErasureSubject(Model: any): boolean {
  * named, because any of them may be. Keyed by attribute name, like every
  * other field error these endpoints return.
  */
-export function duplicateFieldErrors(Model: any, columns: string[]): Record<string, string[]> {
+export function duplicateFieldErrors(Model: any, columns: string[], error?: unknown): Record<string, string[]> {
   const errors: Record<string, string[]> = {}
   for (const [name, definition] of Object.entries((Model?.attributes ?? {}) as Record<string, any>)) {
     if (definition?.unique === true && columns.includes(snakeCase(name)))
       errors[name] = [`${modelColumnLabel(Model, name)} is already in use.`]
   }
-  return errors
+  if (Object.keys(errors).length > 0)
+    return errors
+  return duplicateIndexErrors(Model, columns, error)
+}
+
+/**
+ * The refusal of a unique index over several columns: a team member's
+ * (team, user). No one field is in use; the pair is. Found by the dashboard's
+ * end-to-end tests (stacksjs/stacks#3319): adding a team a user already
+ * belonged to said only "The model record could not be created."
+ *
+ * Which index refused it is read off the driver's error: Postgres and MySQL
+ * name the index, and Postgres's detail and SQLite's message name the
+ * columns. Without a match nothing is claimed, and the save reports a failure
+ * as before.
+ */
+function duplicateIndexErrors(Model: any, columns: string[], error: unknown): Record<string, string[]> {
+  const said = sqlErrorText(error)
+  if (!said)
+    return {}
+  const relations = belongsToRelations(Model)
+  for (const index of (Model?.indexes ?? []) as Array<{ name?: unknown, columns?: unknown, unique?: unknown }>) {
+    if (index?.unique !== true || !Array.isArray(index.columns) || index.columns.length < 2)
+      continue
+    const indexColumns = index.columns.map(column => snakeCase(String(column)))
+    if (!indexColumns.every(column => columns.includes(column)))
+      continue
+    const named = (typeof index.name === 'string' && said.includes(index.name))
+      || indexColumns.every(column => new RegExp(`(^|[^a-z0-9])${column}([^a-z0-9]|$)`, 'i').test(said))
+    if (!named)
+      continue
+    const attributes = Object.keys((Model?.attributes ?? {}) as Record<string, unknown>)
+    const fields = indexColumns.map(column => relations.find(relation => relation.column === column)?.field
+      ?? attributes.find(name => snakeCase(name) === column) ?? column)
+    const labels = indexColumns.map((column, at) => {
+      const relation = relations.find(candidate => candidate.column === column)
+      return (relation ? humanizeIdentifier(relation.model) : modelColumnLabel(Model, fields[at]!)).toLowerCase()
+    })
+    // On the first field only: the form shows one message per row, and
+    // repeating it on each column of the pair would say it twice.
+    return { [fields[0]!]: [`That ${labels.join(' and ')} combination is already in use.`] }
+  }
+  return {}
+}
+
+/** Everything a driver says about a refused write, where it may name an index or its columns. */
+function sqlErrorText(error: unknown): string {
+  const e = error as { message?: unknown, detail?: unknown, constraint?: unknown, constraint_name?: unknown, cause?: unknown }
+  const own = [e?.message, e?.detail, e?.constraint, e?.constraint_name].filter(part => typeof part === 'string').join(' ')
+  return e?.cause && e.cause !== error ? `${own} ${sqlErrorText(e.cause)}` : own
 }
 
 /** Rule names the migrations store as a moment: a `timestamp` or `datetime` column. */

@@ -1457,6 +1457,12 @@ export interface PageAuditReport {
   errors: string[]
   /** The page went quiet before the timeout. */
   settled: boolean
+  /**
+   * The requests still loading when the audit stopped waiting, as
+   * `METHOD url`: what a page that never settled was waiting on. Empty when
+   * it settled.
+   */
+  stalled: string[]
   durationMs: number
 }
 
@@ -1563,6 +1569,7 @@ export async function auditPage(url: string, options: PageAuditOptions = {}): Pr
       failed,
       errors: [...(cdp?.errors.slice(errorsBefore) ?? []), ...extraErrors],
       settled,
+      stalled: settled || !cdp ? [] : [...(options.includeSpeculative === false ? cdp.foregroundInFlight : cdp.inFlight).values()],
       durationMs: Date.now() - started,
     }
   }
@@ -1627,6 +1634,12 @@ function shortUrl(url: string): string {
   }
 }
 
+/** `GET http://x/api/me?a=1` as `GET /api/me?a=1`. */
+function shortRequest(request: string): string {
+  const space = request.indexOf(' ')
+  return space < 0 ? shortUrl(request) : `${request.slice(0, space)} ${shortUrl(request.slice(space + 1))}`
+}
+
 /** One line per page: `/today -> /home: 12 api | dup 2x GET /api/me | failed 404 /api/x | errors ...`. */
 export function formatPageAudit(report: PageAuditReport): string {
   const path = shortUrl(report.url)
@@ -1636,7 +1649,7 @@ export function formatPageAudit(report: PageAuditReport): string {
     + `${dup.length ? ` | dup ${dup.join(', ')}` : ''}`
     + `${report.failed.length ? ` | failed ${report.failed.join(', ')}` : ''}`
     + `${report.errors.length ? ` | errors ${report.errors.slice(0, 3).join(' ; ')}` : ''}`
-    + `${report.settled ? '' : ' | never settled'}`
+    + `${report.settled ? '' : ` | never settled${report.stalled.length ? `, waiting on ${report.stalled.map(shortRequest).join(', ')}` : ''}`}`
 }
 
 /** True when the report found nothing: no duplicates, failures or errors, and the page settled. */

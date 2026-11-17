@@ -237,6 +237,14 @@ adds missing indexes, foreign keys after an orphan check, missing columns, and
 lossless widenings; reports everything destructive), then
 `migrate:status --reconcile` and `migrate`.
 
+A database that moved onto a corpus of its own (Postgres beside a SQLite
+`database/migrations`) keeps a row for every file it ran from the old corpus.
+`migrate:status` lists those as history, not drift, and reconcile never
+repoints, prunes or deletes them: the files are still in the other corpus, and
+the rows stop them running twice. Reconcile names every ledger row it changes.
+A row whose name several files share (`auto-misc`) is ambiguous, never a
+duplicate.
+
 ## Gotchas
 - `migrate:fresh` drops ALL tables — only use in development
 - Migrations run in filename order; two files with one number run alphabetically, which `--strict` refuses

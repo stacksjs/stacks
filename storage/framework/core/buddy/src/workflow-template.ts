@@ -12,6 +12,8 @@ export function validateWorkflowConfig(config: WorkflowConfig): void {
     const labels = config.runners[group as keyof WorkflowConfig['runners']]
     if (!Array.isArray(labels) || !labels.includes('self-hosted') || labels.some(label => !/^[\w.-]+$/.test(label))) throw new Error(`Declare the owned ${group} runner labels`)
   }
+  if (config.priorities !== undefined && (!config.priorities || typeof config.priorities !== 'object' || Array.isArray(config.priorities)
+    || Object.entries(config.priorities).some(([stage, value]) => !['checks', 'deploy', 'ios'].includes(stage) || !Number.isInteger(value) || value < -1000 || value > 1000))) throw new Error('Workflow priorities must name checks, deploy or ios with integer values from -1000 to 1000')
   for (const values of Object.values(config.env ?? {})) {
     if (!values || typeof values !== 'object' || Array.isArray(values) || Object.entries(values).some(([name, value]) => !/^[A-Z_][A-Z0-9_]*$/.test(name) || typeof value !== 'string' || value.includes('\x00'))) throw new Error('Workflow environment settings must be named string values')
   }
@@ -50,23 +52,27 @@ export function renderReviewOsWorkflow(config: WorkflowConfig): string {
     { name: 'Install the frozen application dependencies', run: 'bun install --frozen-lockfile' },
     { name: 'Prepare declared application inputs', run: './buddy workflow:step prepare' },
   ]
+  const jobPriority = (stage: 'checks' | 'deploy' | 'ios') => {
+    const value = config.priorities?.[stage]
+    return value === undefined ? {} : { priority: value }
+  }
   const jobs: Record<string, any> = {}
   for (const name of ['lint', 'typecheck', 'test', 'build']) jobs[name] = {
     'runs-on': config.runners.checks,
     'timeout-minutes': name === 'test' ? 90 : 30,
-    reviewos: { secrets: config.secrets?.checks ?? [] }, env: { ...config.env?.checks, ...secretEnv('checks') },
+    reviewos: { ...jobPriority('checks'), secrets: config.secrets?.checks ?? [] }, env: { ...config.env?.checks, ...secretEnv('checks') },
     steps: [...bootstrap(), { name: `Run ${name}`, run: `./buddy workflow:step ${name}` }],
   }
   if (config.deploy) jobs.deploy = {
     needs: ['lint', 'typecheck', 'test', 'build'], if: main,
     'runs-on': config.runners.deploy, 'timeout-minutes': 60, environment: 'production',
-    reviewos: { secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.deploy ?? [])] }, env: { ...config.env?.checks, ...config.env?.deploy, ...secretEnv('checks'), ...secretEnv('deploy') },
+    reviewos: { ...jobPriority('deploy'), secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.deploy ?? [])] }, env: { ...config.env?.checks, ...config.env?.deploy, ...secretEnv('checks'), ...secretEnv('deploy') },
     steps: [...bootstrap(), { name: 'Deploy the qualified source', run: './buddy workflow:step deploy' }, { name: 'Verify the deployed application', run: './buddy workflow:step after-deploy' }],
   }
   if (config.native) jobs.native = {
     needs: config.deploy ? ['deploy'] : ['lint', 'typecheck', 'test', 'build'], if: main,
     'runs-on': config.runners.ios, 'timeout-minutes': 90, environment: 'ios-testflight',
-    reviewos: { secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.ios ?? [])] }, env: { ...config.env?.checks, ...config.env?.ios, ...secretEnv('checks') },
+    reviewos: { ...jobPriority('ios'), secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.ios ?? [])] }, env: { ...config.env?.checks, ...config.env?.ios, ...secretEnv('checks') },
     steps: [...bootstrap(),
       { name: 'Read the committed release identity', id: 'release', run: './buddy workflow:release-state', env: { WORKFLOW_UPLOAD_REQUESTED: "${{ inputs.upload && 'true' || 'false' }}" } },
       { name: 'Build the simulator application', run: './buddy workflow:step native-build', ...nativeSecrets('native-build') },

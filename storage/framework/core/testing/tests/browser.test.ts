@@ -475,6 +475,25 @@ describe('page loads', () => {
     expect(visit.loads).toHaveLength(1)
     expect(visit.duplicates).toEqual({ 'GET /api/me': 2, 'GET /api/feed': 2 })
   })
+
+  test('a page that never settles names the requests it was waiting on', async () => {
+    const { cdp } = scriptedPage(url => [
+      { method: 'Page.frameNavigated', params: { frame: { id: 'main', url } } },
+      ...api('1', 'http://x/api/me'),
+      // Started, never answered.
+      { method: 'Network.requestWillBeSent', params: { requestId: '2', request: { method: 'GET', url: 'http://x/api/mail?range=year' } } },
+    ])
+    const report = await auditPage('http://x/inbox', { cdp, quietMs: 0, timeoutMs: 300 })
+    expect(report.settled).toBe(false)
+    expect(report.stalled).toEqual(['GET http://x/api/mail?range=year'])
+    expect(pageAuditClean(report)).toBe(false)
+    expect(formatPageAudit(report)).toBe('/inbox: 2 api | never settled, waiting on GET /api/mail?range=year')
+
+    const quiet = scriptedPage(url => [{ method: 'Page.frameNavigated', params: { frame: { id: 'main', url } } }, ...api('3', 'http://x/api/me')])
+    const settled = await auditPage('http://x/today', { cdp: quiet.cdp, quietMs: 0, timeoutMs: 300 })
+    expect(settled.settled).toBe(true)
+    expect(settled.stalled).toEqual([])
+  })
 })
 
 describe('helpers', () => {

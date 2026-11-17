@@ -48,6 +48,9 @@ import { buildFramework } from './build-framework'
 
 async function main(): Promise<void> {
   const repoRoot = process.cwd()
+  const source = Bun.spawnSync(['git', 'rev-parse', 'HEAD'], { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe' })
+  const sourceRef = source.stdout.toString().trim()
+  if (source.exitCode !== 0 || !/^[a-f0-9]{40}$/.test(sourceRef)) throw new Error('The scaffold smoke requires an exact source commit')
   const keep = process.argv.includes('--keep')
   const desktop = process.argv.includes('--desktop')
   const workspace = await mkdtemp(join(tmpdir(), 'stacks-scaffold-smoke-'))
@@ -64,7 +67,7 @@ async function main(): Promise<void> {
 
   console.log(`Scaffolding into ${appDir}${desktop ? ' (--desktop --minimal, into a directory holding only .git)' : ''}`)
 
-  const scaffold = Bun.spawn(['./buddy', 'new', appDir, '--name', 'smoke-app', '--no-provision', ...(desktop ? ['--desktop', '--minimal'] : [])], {
+  const scaffold = Bun.spawn(['./buddy', 'new', appDir, '--name', 'smoke-app', '--no-provision', '--ref', sourceRef, ...(desktop ? ['--desktop', '--minimal'] : [])], {
     cwd: repoRoot,
     stdout: 'inherit',
     stderr: 'inherit',

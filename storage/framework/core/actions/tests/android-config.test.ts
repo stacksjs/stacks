@@ -235,3 +235,17 @@ it('refuses a Craft release that cannot verify HTTPS App Links', () => {
   expect(() => assertCraftSupportsAndroid(config, '0.0.200', 'fixture')).toThrow('appLinks')
   expect(() => assertCraftSupportsAndroid(config, '0.0.201', 'fixture')).not.toThrow()
 })
+
+describe('the signed-out launch gate (Craft nativeGate)', () => {
+  const base = { appName: 'Example', packageName: 'org.example.app', url: 'https://example.com/m/today' }
+  const gate = { token: 'auth.token', redirect: '/m/login', publicPaths: ['/m/login'] }
+
+  it('reaches the Craft config as declared', () => {
+    expect(toCraftAndroidConfig({ ...base, nativeGate: gate }).nativeGate).toEqual(gate)
+  })
+
+  it('leaves the Craft config unchanged when none is declared', () => {
+    expect('nativeGate' in toCraftAndroidConfig(base)).toBe(false)
+  })
+})
+

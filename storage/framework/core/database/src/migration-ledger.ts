@@ -31,7 +31,7 @@
  */
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { resolvedDatabaseDriver } from './dialect'
 import { comparableIndexKey, postgresIndexStatement } from './index-shape'
 import { resolveMigrationDirectory } from './migration-path'
@@ -96,6 +96,22 @@ export interface LedgerOrphan {
   renamedTo?: string
 }
 
+/**
+ * A ledger row recorded from another migration corpus of the same project.
+ *
+ * A project that moves a database onto a corpus of its own (Postgres beside a
+ * SQLite `database/migrations`, stacksjs/stacks#3228) keeps the rows of every
+ * file that database ran from the old one. They are history, not drift: the
+ * file is still there, just in the other corpus, and the row is what stops it
+ * running twice if that corpus is ever read again (stacksjs/stacks#3163).
+ */
+export interface LedgerForeignRow {
+  /** The ledger row. */
+  migration: string
+  /** The corpus directory holding its file (absolute). */
+  corpus: string
+}
+
 export interface MigrationLedgerAudit {
   /** False when the dialect has no introspection support here. */
   supported: boolean
@@ -103,6 +119,12 @@ export interface MigrationLedgerAudit {
   dir: string
   entries: MigrationLedgerEntry[]
   orphans: LedgerOrphan[]
+  /**
+   * Rows whose file belongs to another corpus beside this one. Neither
+   * orphans nor drift, and never remapped or pruned: matching one by logical
+   * name to this corpus's file would record a migration that never ran here.
+   */
+  foreign: LedgerForeignRow[]
   /** Files the runner skips because their feature is disabled; not classified. */
   gated: string[]
   counts: Record<MigrationStatus, number>
@@ -694,6 +716,39 @@ function listMigrationFiles(dir: string): string[] {
   }
 }
 
+/**
+ * The project's other corpora: the flat `database/migrations` and each
+ * dialect directory under it that holds SQL, minus `dir` itself.
+ *
+ * `resolveMigrationDirectory` puts a second dialect in a subdirectory of the
+ * flat corpus, so `dir` is either the flat one or one level below it.
+ */
+export function siblingMigrationCorpora(dir: string): string[] {
+  const parent = dirname(dir)
+  // A dialect corpus sits directly under a flat one that holds SQL of its own;
+  // anything else is the flat corpus, or a configured path standing alone.
+  const flat = listMigrationFiles(parent).length > 0 ? parent : dir
+  const corpora = [flat]
+  try {
+    for (const entry of readdirSync(flat, { withFileTypes: true })) {
+      if (entry.isDirectory() && listMigrationFiles(join(flat, entry.name)).length > 0)
+        corpora.push(join(flat, entry.name))
+    }
+  }
+  catch { /* no flat corpus to look under */ }
+  return corpora.filter(corpus => corpus !== dir)
+}
+
+/** Which of `rows` name a file that exists in a corpus beside `dir`. */
+function foreignLedgerRows(rows: string[], dir: string): LedgerForeignRow[] {
+  if (rows.length === 0) return []
+  const corpora = siblingMigrationCorpora(dir).map(corpus => ({ corpus, files: new Set(listMigrationFiles(corpus)) }))
+  return rows.flatMap((row) => {
+    const home = corpora.find(c => c.files.has(row))
+    return home ? [{ migration: row, corpus: home.corpus }] : []
+  })
+}
+
 function currentDialect(): LedgerDialect | 'other' {
   const driver = resolvedDatabaseDriver().toLowerCase()
   if (driver === 'sqlite' || driver === 'mysql' || driver === 'postgres') return driver
@@ -770,8 +825,13 @@ export function planLedgerRemap(ledger: string[], diskFiles: string[]): LedgerRe
        * Only when NO file carries the logical name is the migration really
        * missing from disk, which is a human's call, not a reconciler's.
        */
-      if (sameLogical.length > 0)
+      // A logical name several files share (`auto-misc`, the generator's
+      // catch-all) says nothing about which one this row was. Calling it a
+      // duplicate let the reconciler delete a record on a coincidence.
+      if (sameLogical.length === 1)
         superseded.push(row)
+      else if (sameLogical.length > 1)
+        ambiguous.push(row)
       else
         dropped.push(row)
       continue
@@ -835,7 +895,7 @@ export async function auditMigrationLedger(options: {
 
   const emptyPlan: LedgerRemapPlan = { remap: [], ambiguous: [], dropped: [], superseded: [] }
   if (dialect === 'other') {
-    return { supported: false, dialect, dir, entries: [], orphans: [], gated: [], counts, recordedCount: 0, remapPlan: emptyPlan, drift: false }
+    return { supported: false, dialect, dir, entries: [], orphans: [], foreign: [], gated: [], counts, recordedCount: 0, remapPlan: emptyPlan, drift: false }
   }
 
   const run = options.run ?? await defaultRunner()
@@ -933,15 +993,21 @@ export async function auditMigrationLedger(options: {
   // Gated files are still the corpus: a ledger row naming one is not an
   // orphan, and a renumbered one still has a counterpart.
   const readable = [...entries.map(entry => entry.file), ...gated].sort()
-  const remapPlan = planLedgerRemap(ledger, readable)
+  const readableSet = new Set(readable)
+  // Rows of another corpus come out before planning, so no logical-name match
+  // can repoint one onto a file of this corpus that never ran here.
+  const foreign = foreignLedgerRows(ledger.filter(row => !readableSet.has(row)), dir)
+  const foreignSet = new Set(foreign.map(row => row.migration))
+  const own = ledger.filter(row => !foreignSet.has(row))
+  const remapPlan = planLedgerRemap(own, readable)
   const renamedTo = new Map(remapPlan.remap.map(r => [r.from, r.to]))
-  const orphans: LedgerOrphan[] = ledger
-    .filter(row => !readable.includes(row))
+  const orphans: LedgerOrphan[] = own
+    .filter(row => !readableSet.has(row))
     .map(row => ({ migration: row, renamedTo: renamedTo.get(row) }))
 
   const drift = counts.stranded > 0 || counts.partial > 0 || counts.reverted > 0 || orphans.length > 0
 
-  return { supported: true, dialect, dir, entries, orphans, gated, counts, recordedCount: ledger.length, remapPlan, drift }
+  return { supported: true, dialect, dir, entries, orphans, foreign, gated, counts, recordedCount: ledger.length, remapPlan, drift }
 }
 
 /**
@@ -1412,9 +1478,28 @@ export async function reconcileMigrationLedger(options: {
 
   // Safe because the migration remains recorded under its current filename:
   // this deletes the stale spelling, never the last record of a migration.
-  const prunable = plan.superseded.filter(row => SAFE_MIGRATION_FILE.test(row) && !retiring.has(row))
-  for (const row of plan.superseded.filter(row => !SAFE_MIGRATION_FILE.test(row)))
-    result.skipped.push({ file: row, reason: 'ledger row is not safe to write to the ledger' })
+  //
+  // The current file is found among every file of the corpus, a disabled
+  // feature's included, and decided HERE, so the dry run reports exactly what
+  // the real run deletes. Looking only at the enabled files, the write loop
+  // found no survivor for a gated one and skipped the row without a word,
+  // while the dry run had promised to prune it (stacksjs/stacks#3163).
+  const recordedRows = new Set(await readLedger(run))
+  const survivorOf = new Map<string, string>()
+  const prunable: string[] = []
+  for (const row of plan.superseded.filter(row => !retiring.has(row))) {
+    if (!SAFE_MIGRATION_FILE.test(row)) {
+      result.skipped.push({ file: row, reason: 'ledger row is not safe to write to the ledger' })
+      continue
+    }
+    const survivor = byLogicalOnDisk(row, [...onDisk])
+    if (!survivor || !recordedRows.has(survivor)) {
+      result.skipped.push({ file: row, reason: survivor ? `would leave ${survivor} unrecorded` : 'no single file of this corpus carries its name' })
+      continue
+    }
+    survivorOf.set(row, survivor)
+    prunable.push(row)
+  }
 
   const toRecord: string[] = []
   const revertedEntries: MigrationLedgerEntry[] = []
@@ -1535,8 +1620,7 @@ export async function reconcileMigrationLedger(options: {
    * is the exact failure this whole command exists to prevent.
    */
   for (const row of prunable) {
-    const survivor = byLogicalOnDisk(row, audit.entries.map(e => e.file))
-    if (!survivor) continue
+    const survivor = survivorOf.get(row)!
     const kept = await run(`SELECT migration FROM migrations WHERE migration = '${survivor}'`)
     if (kept.length === 0) {
       result.skipped.push({ file: row, reason: `would leave ${survivor} unrecorded` })

@@ -272,11 +272,14 @@ describe('a component chosen by name while the page is drawn', () => {
     expect(html).toContain('data-region="recordTop"')
   })
 
-  it('is handed nothing in the self-closing form, which is why the wrapper does not use it', async () => {
+  it('is handed the same in the self-closing form', async () => {
+    // Before stx 0.2.903 the self-closing form drew the component with none
+    // of its props (`data-region=""`), which is why the wrapper uses the
+    // paired form. Both now carry them.
     const html = await render('<component :is="placed" :model="slug" region="recordTop" />', declared)
     expect(html).toContain('data-timeline')
-    expect(html).toContain('data-region=""')
-    expect(html).not.toContain('data-region="recordTop"')
+    expect(html).toContain('data-model="order"')
+    expect(html).toContain('data-region="recordTop"')
   })
 
   it('the dashboard\'s wrapper draws the model\'s component inside what it mounts', async () => {

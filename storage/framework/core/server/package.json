@@ -2,7 +2,7 @@
   "name": "@stacksjs/server",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.618",
+  "version": "0.75.621",
   "description": "Local development and production-ready.",
   "author": "Chris Breuer",
   "contributors": [
@@ -69,7 +69,7 @@
     "@stacksjs/payments": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "@stacksjs/stx": "^0.2.889",
+    "@stacksjs/stx": "^0.2.907",
     "bun-plugin-auto-imports": "^0.4.4"
   },
   "devDependencies": {

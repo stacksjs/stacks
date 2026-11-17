@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/ui",
   "type": "module",
-  "version": "0.75.618",
+  "version": "0.75.621",
   "description": "The Stacks UI engine.",
   "author": "Chris Breuer",
   "contributors": [
@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@stacksjs/ts-css": "^0.3.24",
-    "@stacksjs/components": "^0.2.889",
+    "@stacksjs/components": "^0.2.907",
     "@stacksjs/config": "workspace:*"
   },
   "devDependencies": {
