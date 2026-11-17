@@ -66,3 +66,18 @@ describe('templateSpec', () => {
       expect(spec.startsWith('gh:stacksjs/stacks')).toBe(true)
   })
 })
+
+describe('an explicit template ref', () => {
+  it('uses the requested source without consulting the published version', async () => {
+    let lookedUp = false
+    const registry = async () => { lookedUp = true; return { latest: '0.75.618', versions: new Set(['0.75.618']) } }
+    for (const requested of ['v0.75.619', 'main', 'codex/coaching', 'a'.repeat(40)])
+      expect(await templateRef(registry, requested)).toBe(requested)
+    expect(lookedUp).toBe(false)
+  })
+  it('rejects malformed source refs instead of silently choosing another template', async () => {
+    const registry = async () => ({ latest: '0.75.618', versions: new Set(['0.75.618']) })
+    for (const requested of ['', '../main', 'main..tag', '-bad', 'main\nother', 'main#other', 'https://other.invalid/source'])
+      await expect(templateRef(registry, requested)).rejects.toThrow('template ref')
+  })
+})
