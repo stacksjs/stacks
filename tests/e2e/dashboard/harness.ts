@@ -123,6 +123,16 @@ function dashboardEnv(database: CreatedDisposableDatabase): Record<string, strin
     STACKS_NO_NATIVE: '1',
     DB_MIGRATIONS_PATH: join(scratch, 'migrations'),
     DB_SNAPSHOT_PATH: join(scratch, 'snapshot'),
+    // No AWS account: the checkout's `.env` and `~/.aws` hold real
+    // credentials, and a test that reads a real bucket on one machine and
+    // none on another passes on the first and fails on the second. Empty
+    // keys and credential files that do not exist leave the SDK nothing.
+    AWS_ACCESS_KEY_ID: '',
+    AWS_SECRET_ACCESS_KEY: '',
+    AWS_SESSION_TOKEN: '',
+    AWS_PROFILE: '',
+    AWS_SHARED_CREDENTIALS_FILE: join(scratch, 'no-aws-credentials'),
+    AWS_CONFIG_FILE: join(scratch, 'no-aws-config'),
   }
 }
 

@@ -2,14 +2,15 @@
  * Every page the dashboard's sidebar links to loads cleanly, in a real
  * browser, against a real seeded database (stacksjs/stacks#3319).
  *
- * "Cleanly" is what `auditPage` measures: no same-origin request answered
- * with a status of 400 or more, and no error raised on the page while it
- * loaded. A page whose shell renders while its data request fails is exactly
+ * "Cleanly" is what `pageAuditClean` measures: the page went quiet, no
+ * same-origin request answered with a status of 400 or more, none was made
+ * twice, and no error was raised on the page while it loaded. A page whose
+ * shell renders while its data request fails or never answers is exactly
  * what a unit test cannot see and a person sees at once.
  */
 import type { DashboardE2E } from './harness'
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
-import { auditPage, navigate } from '@stacksjs/testing/browser'
+import { auditPage, formatPageAudit, navigate, pageAuditClean } from '@stacksjs/testing/browser'
 import { dashboardE2EAvailable, signIn, startDashboardE2E } from './harness'
 
 describe.skipIf(!dashboardE2EAvailable)('every dashboard page', () => {
@@ -33,8 +34,8 @@ describe.skipIf(!dashboardE2EAvailable)('every dashboard page', () => {
     const problems: string[] = []
     for (const path of await sidebarPages(e2e!)) {
       const report = await auditPage(`${e2e!.origin}${path}`, { cdp: e2e!.browser.cdp })
-      if (report.failed.length > 0 || report.errors.length > 0)
-        problems.push(`${path}\n${[...report.failed.map(line => `  failed: ${line}`), ...report.errors.map(line => `  error: ${line}`)].join('\n')}`)
+      if (!pageAuditClean(report))
+        problems.push(`${formatPageAudit(report)}${report.errors.length ? `\n  ${report.errors.join('\n  ')}` : ''}`)
     }
     expect(problems).toEqual([])
   }, 900_000)
