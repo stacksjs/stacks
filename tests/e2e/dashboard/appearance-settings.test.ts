@@ -28,9 +28,12 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
 
   test('the sidebar style and color mode apply at once and survive a reload', async () => {
     const { cdp } = e2e!.browser
-    await openAppearance(cdp, e2e!.origin)
-    // Headless Chrome reports a dark system theme, so System starts dark here
+    // The system theme is set here, not taken from the machine: headless Chrome
+    // reported dark on a Mac and light on the Linux CI runner, which failed this
+    // there before it checked anything. With the system dark, System starts dark
     // and choosing Light is an explicit choice over the system's.
+    await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] })
+    await openAppearance(cdp, e2e!.origin)
     expect(await root(cdp)).toEqual({ appearance: 'macos', colorMode: 'system', dark: true })
 
     await click(cdp, 'button[aria-pressed]:has([data-style="arc"])')
