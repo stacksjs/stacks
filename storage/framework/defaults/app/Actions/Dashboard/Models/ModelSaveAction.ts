@@ -238,7 +238,12 @@ export default new Action({
             saved.updated.push(row.id)
           }
           for (const row of plan.changes.create) {
-            const done = await storeModelRow(plan.target, panelFields(plan.panel, row.fields), { [plan.panel.foreignKey]: id })
+            // The link to this record is the server's to set, and it is
+            // validated with the row: a model that declares it required (a
+            // team member's userId) refused every row added here as missing
+            // it when it was only set after validation.
+            const fields = { ...panelFields(plan.panel, row.fields), [plan.panel.field]: id }
+            const done = await storeModelRow(plan.target, fields, { [plan.panel.foreignKey]: id })
             if (!done.ok)
               throw new SaveStopped(done, at('create', row.key))
             saved.created.push({ key: row.key, id: done.id })

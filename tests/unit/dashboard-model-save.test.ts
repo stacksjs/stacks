@@ -52,6 +52,9 @@ beforeAll(async () => {
     belongsTo: ['Ledger'],
     traits: { useApi: true },
     attributes: {
+      // Declared and required, like TeamMember's userId: the panel never shows
+      // it, and the server supplies it for every row it creates.
+      ledgerId: { fillable: true, required: true, validation: { rule: schema.number().required() } },
       memo: { fillable: true },
       amount: { fillable: true, validation: { rule: schema.number().min(1) } },
     },
