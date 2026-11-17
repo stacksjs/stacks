@@ -1,12 +1,12 @@
 ---
 title: "Commerce skill"
-description: "Use when building e-commerce features in Stacks - the commerce namespace with 15 sub-modules (products, carts, orders, customers, coupons, payments, gift cards, auctions, shipping, tax, waitlists, restaurant, devices, receipts, errors), 20+ commerce models, checkout and redemption logic, or the commerce configuration. Covers @stacksjs/commerce."
+description: "Use when building e-commerce features in Stacks - the commerce namespace (products, carts, orders, customers, coupons, discounts, post-purchase upsells, payments, gift cards, auctions, shipping, tax, waitlists, restaurant, devices, receipts, errors), the commerce models, checkout, discount and redemption logic, or the commerce configuration. Covers @stacksjs/commerce."
 ---
 # Commerce
 
 `stacks-commerce` · Native Stacks · model-invoked
 
-Use when building e-commerce features in Stacks - the commerce namespace with 15 sub-modules (products, carts, orders, customers, coupons, payments, gift cards, auctions, shipping, tax, waitlists, restaurant, devices, receipts, errors), 20+ commerce models, checkout and redemption logic, or the commerce configuration. Covers @stacksjs/commerce.
+Use when building e-commerce features in Stacks - the commerce namespace (products, carts, orders, customers, coupons, discounts, post-purchase upsells, payments, gift cards, auctions, shipping, tax, waitlists, restaurant, devices, receipts, errors), the commerce models, checkout, discount and redemption logic, or the commerce configuration. Covers @stacksjs/commerce.
 
 Read the skill for the implementation workflow and its current signatures. The
 [Native capabilities](/skills/platform/native) catalog maps the package to
@@ -19,6 +19,9 @@ source and retained evidence; driver limits are explicit.
 - Sub-Module Operations
 - Commerce Models (20+)
 - Money paths
+- Discounts
+- Post-purchase upsells
+- The default storefront
 - Carts
 - Live Delivery Tracking
 - Integration with Payments

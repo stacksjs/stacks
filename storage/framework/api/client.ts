@@ -3847,6 +3847,20 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * POST /api/orders/offers/accept
+   */
+  postOrdersOffersAccept(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/orders/offers/accept", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * POST /api/orders/offers/decline
+   */
+  postOrdersOffersDecline(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/orders/offers/decline", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * GET /api/queries/dashboard
    */
   getQueriesDashboard(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

@@ -1,6 +1,6 @@
 ---
 name: stacks-commerce
-description: Use when building e-commerce features in Stacks - the commerce namespace with 15 sub-modules (products, carts, orders, customers, coupons, payments, gift cards, auctions, shipping, tax, waitlists, restaurant, devices, receipts, errors), 20+ commerce models, checkout and redemption logic, or the commerce configuration. Covers @stacksjs/commerce.
+description: Use when building e-commerce features in Stacks - the commerce namespace (products, carts, orders, customers, coupons, discounts, post-purchase upsells, payments, gift cards, auctions, shipping, tax, waitlists, restaurant, devices, receipts, errors), the commerce models, checkout, discount and redemption logic, or the commerce configuration. Covers @stacksjs/commerce.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Commerce
 
-Comprehensive e-commerce module with 15 sub-modules and 39 models.
+Comprehensive e-commerce module with 21 sub-modules in the `commerce` namespace and 42 models.
 
 ## Key Paths
 - Core package: `storage/framework/core/commerce/src/`
@@ -20,12 +20,13 @@ Comprehensive e-commerce module with 15 sub-modules and 39 models.
 ```typescript
 import { commerce } from '@stacksjs/commerce'
 
-// 15 sub-modules
 commerce.products      // Products, variants, units, manufacturers, reviews, categories
 commerce.carts         // The pre-checkout basket
 commerce.orders        // Orders, order items, export, checkout guards
 commerce.customers     // Customer records
 commerce.coupons       // Coupons, including atomic redemption
+commerce.discounts     // Automatic + code discounts: buy X get Y, volume tiers, free shipping
+commerce.upsells       // Post-purchase offers: one-click, discounted additions to a placed order
 commerce.payments      // Payment records, refunds
 commerce.giftCards     // Gift cards, balance, redemption and reload
 commerce.auctions      // Benefit auctions: lots, bids, proxy bidding, pledges
@@ -87,6 +88,9 @@ Each sub-module typically provides:
 | Order | status, totalAmount, orderType, deliveryAddress | hasMany: OrderItem, Payment; belongsTo: Customer |
 | OrderItem | quantity, price | belongsTo: Order, Product |
 | Coupon | code(unique), discountType, discountValue, usageLimit | hasMany: Order |
+| Discount | title, code (null = automatic), type (percentage/fixed_amount/buy_x_get_y/volume/free_shipping), target JSON, buy/get quantities, tiers JSON, minimums, maxAmount, combinesWith*, usageLimit | |
+| PostPurchaseOffer | headline, message, productIds JSON, discountPercent, min/default/maxQuantity, triggerProductIds JSON, minOrderTotal, windowMinutes, priority | hasMany: PostPurchaseOfferResponse |
+| PostPurchaseOfferResponse | status (viewed/pending/accepted/declined/failed), product/variant, quantity, unitPrice, amount, paymentReference; unique (order, offer, product) | belongsTo: PostPurchaseOffer, Order |
 | GiftCard | code(unique), initialBalance, currentBalance, isReloadable | belongsTo: Customer |
 | Customer | name, email, totalSpent, status | hasMany: Order, GiftCard, Review, Payment |
 | Manufacturer | manufacturer info | hasMany: Product |
@@ -154,6 +158,62 @@ reports whether a row actually changed.
 enforces `refund_amount + amount <= amount` in the WHERE clause, so operators
 cannot over-refund a payment by racing each other. It flips the status to
 `refunded` or `partiallyRefunded` depending on where the total lands.
+
+## Discounts
+
+`commerce.discounts` prices a basket with a pure engine
+(`@stacksjs/commerce/discounts/engine`, browser-safe) against `Discount` rows and
+coupons. Full guide: `docs/guide/commerce/discounts.md`.
+
+```ts
+const priced = await commerce.discounts.price({ lines, codes, shipping })
+// priced.total, priced.discount, priced.applied, priced.rejectedCodes, priced.lines[i].allocations
+await commerce.discounts.redeemApplied(priced.applied)   // atomic, limit enforced in SQL
+```
+
+- No `code` means automatic. Classes are product / order / shipping; two apply
+  together only when each `combinesWith` the other's class (default: none).
+  A line takes its single best product discount; order discounts apply to the
+  remainder and are spread over lines by largest remainder.
+- Buy X get Y discounts the cheapest qualifying units. Minimums count the
+  targeted lines for product discounts, the basket otherwise.
+- Rule ids are `discount:<id>` / `coupon:<id>`; `ruleFromDiscount` /
+  `ruleFromCoupon` (pure, `discounts/rules`) map rows for pages that read their
+  own SQLite. `store()` validates the rule through the engine before inserting.
+
+## Post-purchase upsells
+
+`commerce.upsells`: a discounted, one-time offer on the confirmation page that
+adds to the order just placed. Full guide: `docs/guide/commerce/upsells.md`.
+
+```ts
+const offers = await commerce.upsells.presentOffers(order.id)  // records `viewed`
+const result = await commerce.upsells.acceptOffer({
+  orderId, offerId, productId, variantId, quantity,
+  charge: commerce.upsells.chargeDefaultMethod(paymentDriver(), payer), // or chargeWith, or 'collect-later'
+})
+```
+
+- Claim (response `pending` + stock reserved, one transaction; the unique
+  `(order, offer, product)` index is the one-time guard), then charge outside
+  the transaction with a per-claim idempotency key, then finish (order item,
+  payment row, totals) in one transaction.
+- `requires_action` (3-D Secure) stays pending; `handleCommercePaymentEvent`
+  finishes or releases it by payment reference and never cancels the paid
+  order. Schedule `releaseStalePending()` for abandoned prompts.
+- Prices come from the catalog and offer, never the request. `charge` is
+  required; `'collect-later'` is the explicit no-payment path.
+
+## The default storefront
+
+- Cart, checkout steps and `PlaceOrderAction` price through
+  `app/Storefront/StorefrontPricing.ts` (automatic discounts; shipping on the
+  discounted subtotal). `PlaceOrderAction` uses `orders.placeOrder` (atomic,
+  stock-guarded, idempotent per cart).
+- `/orders/{id}` opens only with `?key=<orders.tracking_token>`
+  (`app/Storefront/OrderKey.ts`); never link an order page by id alone. It renders
+  the offer, posting to `/api/orders/offers/accept|decline`. The charge for an
+  accepted offer is decided in `app/Storefront/UpsellCharge.ts` (override it).
 
 ## Carts
 
@@ -322,7 +382,8 @@ is the helper for when the count is genuinely what you want.
 - Order `observe: true` emits events on create/update/delete
 - Products have JSON fields for allergens and nutritionalInfo
 - Cart expiry is tracked via `expiresAt`; `cleanupAbandonedCarts` is the sweeper
-- Coupon types: `fixed_amount` or `percentage`
+- Coupon types: `fixed_amount` or `percentage`; anything richer (buy X get Y,
+  tiers, automatic, free shipping) is a `Discount`
 - Gift card codes are unique and auto-generated
 - License keys follow XXXX-XXXX-XXXX-XXXX-XXXX format
 - Software licensing (issue from a payment webhook, device activations, team
