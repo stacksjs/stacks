@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.620...v0.75.621)
+
+## 🐛 Bug Fixes
+
+- **dashboard**: load mail settings independently of inbound storage ([1cefbf5](https://github.com/stacksjs/stacks/commit/1cefbf5)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.907 ([0bf6034](https://github.com/stacksjs/stacks/commit/0bf6034)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.619...v0.75.620)
 
 ## 🐛 Bug Fixes
