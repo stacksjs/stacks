@@ -485,6 +485,24 @@ prompt with `ios.usageDescriptions.NSAppleMusicUsageDescription`. The
 simulator's Music app has nothing to play; launch a simulator build with
 `-CraftFakeMusicPlayer YES` for three made-up songs that play and skip.
 
+## Signed-out launch gate
+
+`nativeGate` in `config/mobile.ts` passes Craft's `nativeGate` (craft-native
+>= 0.0.488) to both shells: before the first frame, a signed-out launch whose
+start path is not public opens on `redirect` instead of drawing the signed-in
+home and its tabs until the app script pushes sign-in on top.
+
+```ts
+nativeGate: { token: 'auth.token', redirect: '/m/login', publicPaths: ['/m/login'] },
+ios: { /* ... */ },      // ios.nativeGate replaces the shared one whole
+android: { /* ... */ },  // so does android.nativeGate
+```
+
+`token` is the secure-storage key holding the sign-in (Craft defaults it to
+`sessionTokenKey`). Each public path admits what sits under it, and `redirect`
+must be one of them. The gate checks the start path from `url`, never a deep
+link. Craft validates every path when it generates the project.
+
 ## Crash reporting (bughq)
 
 `crashReporting` in `config/mobile.ts` turns on Craft's native reporter (craft-native >= 0.0.179; the build refuses an older one). It sends crashes, hangs (MetricKit), ANRs and native crashes (ApplicationExitInfo) and uncaught JavaScript errors in native screens and the app script to bughq from an on-disk outbox, with app version and build, OS, device model, session and breadcrumbs (screens shown, failed requests).

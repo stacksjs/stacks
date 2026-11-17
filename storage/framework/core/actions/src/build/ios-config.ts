@@ -52,6 +52,7 @@ export interface CraftIosConfig {
   usageDescriptions?: Record<string, string>
   orientations?: IosMobileConfig['orientations']
   deviceFamilies?: IosMobileConfig['deviceFamilies']
+  nativeGate?: IosMobileConfig['nativeGate']
 }
 
 /** The route stx's bundle runs the app script under (`compileNativeBundle`'s `app`). */
@@ -333,6 +334,7 @@ export function toCraftIosConfig(config: IosMobileConfig, nativeSensorCapabiliti
     orientations: config.orientations,
     deviceFamilies: config.deviceFamilies,
     crashReporting: toCraftCrashReporting(config.crashReporting),
+    nativeGate: config.nativeGate,
   }
 
   for (const [key, nativeKey] of Object.entries(iosCapabilityKeys(nativeSensorCapabilities))) {

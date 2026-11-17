@@ -93,7 +93,8 @@ const fallbackWebAssets = resolveMobilePath(projectPath(), config.fallbackWebAss
 const crashReporting = resolveCrashReporting(mobile.crashReporting, config.crashReporting)
 const builder = await loadCraftIosBuilder()
 assertCraftSupportsRouteConstraints(config.nativeScreenConstraints, builder.nativeRouteConstraints, 'ios')
-const craftConfig = toCraftIosConfig({ ...config, crashReporting }, builder.nativeSensorCapabilities)
+// The shared gate unless iOS declares its own, which replaces it whole.
+const craftConfig = toCraftIosConfig({ ...config, crashReporting, nativeGate: config.nativeGate ?? mobile.nativeGate }, builder.nativeSensorCapabilities)
 craftConfig.nativeFonts = resolveNativeFonts(config.nativeFonts, projectPath())
 craftConfig.appIconPath = resolveMobilePath(projectPath(), config.appIcon)
 

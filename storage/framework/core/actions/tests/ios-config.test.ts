@@ -743,3 +743,27 @@ it('refuses passkeys without a webcredentials associated domain', () => {
   expect(() => validateIosMobileConfig({ ...base, associatedDomains: ['applinks:example.com', 'webcredentials:example.com'] })).not.toThrow()
   expect(() => validateIosMobileConfig({ ...base, capabilities: { passkeys: false } })).not.toThrow()
 })
+
+describe('the signed-out launch gate (Craft nativeGate)', () => {
+  const base = { appName: 'Example', bundleId: 'org.example.app', url: 'https://example.com/m/today' }
+  const gate = { token: 'auth.token', redirect: '/m/login', publicPaths: ['/m/login'] }
+
+  it('reaches the Craft config as declared', () => {
+    expect(toCraftIosConfig({ ...base, nativeGate: gate }).nativeGate).toEqual(gate)
+  })
+
+  it('leaves the Craft config unchanged when none is declared', () => {
+    const config = toCraftIosConfig(base)
+    expect('nativeGate' in config).toBe(false)
+  })
+
+  it('is a gate Craft itself accepts, by the names Craft reads', async () => {
+    const { hybridConfigProblems } = await import('craft-native/ios') as { hybridConfigProblems: (config: Record<string, unknown>) => string[] }
+    const config = toCraftIosConfig({ ...base, nativeGate: gate })
+    expect(hybridConfigProblems(config).filter(problem => problem.includes('nativeGate'))).toEqual([])
+    // And Craft does read it: a redirect outside publicPaths is its error.
+    const wrong = toCraftIosConfig({ ...base, nativeGate: { redirect: '/m/login', publicPaths: ['/m/start'] } })
+    expect(hybridConfigProblems(wrong).some(problem => problem.includes('nativeGate.redirect'))).toBe(true)
+  })
+})
+

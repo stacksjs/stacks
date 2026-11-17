@@ -8,6 +8,7 @@ export interface CraftAndroidConfig {
   nativeFonts?: AndroidMobileConfig['nativeFonts']
   appName: string
   mapProvider?: AndroidMobileConfig['mapProvider']
+  nativeGate?: AndroidMobileConfig['nativeGate']
   packageName: string
   version?: string
   versionCode?: number
@@ -198,6 +199,7 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig, nativeSensorCa
     healthConnect: config.capabilities?.healthConnect ? config.healthConnect : undefined,
     privacyPolicyURL: config.privacyPolicyUrl,
     crashReporting: toCraftCrashReporting(config.crashReporting),
+    nativeGate: config.nativeGate,
   }
   for (const [key, nativeKey] of Object.entries(androidCapabilityKeys(nativeSensorCapabilities))) {
     const enabled = config.capabilities?.[key as keyof MobileCapabilities]
