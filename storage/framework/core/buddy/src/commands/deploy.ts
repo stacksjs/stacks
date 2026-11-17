@@ -3348,7 +3348,8 @@ async function runSshDeploy(args: {
       }
     }
 
-    const mailRes = mailIp ? await provisionMailTenant(mailIp, log) : null
+    const mailSlug = { projectSlug: tsCloudConfig.project?.slug }
+    const mailRes = mailIp ? await provisionMailTenant(mailIp, log, mailSlug) : null
     if (mailOwner && mailIp && mailIp !== ip)
       await cleanupDetachedMailHealth(ip, log)
     // Publish the domain's mail DNS (MX/SPF/DKIM/DMARC) so the mailboxes can
@@ -3362,7 +3363,7 @@ async function runSshDeploy(args: {
       // is left for it to do.
       if (mailRes.certificateFailed) {
         log.info(`Mail: mail.${mailRes.domain} is published now; asking for its certificate again`)
-        await provisionMailTenant(mailIp!, log)
+        await provisionMailTenant(mailIp!, log, mailSlug)
       }
     }
   }
@@ -3986,14 +3987,34 @@ export async function ensureMailboxPasswords(
 }
 
 /**
+ * A project slug as the mail reconcile writes it into a shell script and the
+ * server's domain-owner list: the same characters a gateway fragment's file
+ * name can hold, and nothing that could leave a single-quoted string. Empty
+ * when there is none, which skips the ownership check rather than recording a
+ * claim nobody can match later.
+ */
+export function mailProjectSlug(slug: unknown): string {
+  return typeof slug === 'string' ? slug.trim().replace(/[^\w.-]+/g, '-') : ''
+}
+
+/** The project that owns the domain, when the server refused this reconcile for it. */
+export function mailDomainOwner(out: string): string | undefined {
+  return (out.match(/^DOMAINOWNER:([^\n]+)/m) || [])[1]?.trim() || undefined
+}
+
+/**
  * Everything is MERGE-based so a shared mail server keeps every other tenant's
  * domains, keys, users, and forward rules untouched. Best-effort — a hiccup is
  * logged, never fails the release. Returns what the DNS step needs (mail host +
  * DKIM public key), or null when there is nothing to reconcile / it failed.
  */
-export async function provisionMailTenant(ip: string, logger: typeof log): Promise<MailTenantResult | null> {
+export async function provisionMailTenant(ip: string, logger: typeof log, options: { projectSlug?: string } = {}): Promise<MailTenantResult | null> {
   if (!hasExplicitEmailConfig())
     return null
+
+  // Which project this reconcile speaks for. The server compares it with the
+  // domain's owner and refuses another project's domain (step 0 below).
+  const projectSlug = mailProjectSlug(options.projectSlug ?? (await loadTsCloudConfig(process.env.APP_ENV || 'production').catch(() => undefined))?.project?.slug)
 
   const cfg: any = emailConfig || {}
   // Mail explicitly disabled for this app (config/email.ts `server.enabled:
@@ -4148,6 +4169,37 @@ ENV_CHANGED=0
 MAIL_DB_PATH="$(grep -E '^SMTP_DB_PATH=' "$ENVF" 2>/dev/null | head -1 | cut -d= -f2- || true)"
 [ -z "$MAIL_DB_PATH" ] && MAIL_DB_PATH=/opt/mail/smtp.db
 echo "MAILHOST:$(grep -E '^SMTP_HOSTNAME=' "$ENVF" 2>/dev/null | head -1 | cut -d= -f2- || true)"
+# 0) A mail domain belongs to one project on this server. Without this, any
+#    app that kept another project's config/email.ts (the stacks site's own
+#    'stacksjs.com' default with chris/blake/glenn) reconciled that project's
+#    mailboxes, forwards and DKIM entry from its own environment - and an older
+#    framework replaced three people's passwords that way, locking their mail
+#    clients out. The owner is whoever claimed the domain first in
+#    $OWNERS, or, before anyone has, the project whose gateway fragment serves
+#    it: the project that runs stacksjs.com owns stacksjs.com's mail.
+PROJECT_SLUG=${projectSlug ? `'${projectSlug}'` : "''"}
+OWNERS=/etc/mail/domain-owners
+if [ -n "$DOMAIN" ] && [ -n "$PROJECT_SLUG" ]; then
+  owner=$(awk -v d="$DOMAIN" '$1 == d { print $2; exit }' "$OWNERS" 2>/dev/null || true)
+  if [ -z "$owner" ]; then
+    d_re=$(printf '%s' "$DOMAIN" | sed 's/[.]/[.]/g')
+    for frag in /etc/rpx/sites.d/*.json; do
+      [ -f "$frag" ] || continue
+      fslug=$(basename "$frag" .json)
+      [ "$fslug" = "$PROJECT_SLUG" ] && continue
+      if grep -qE "\\"to\\": *\\"$d_re\\"" "$frag"; then owner="$fslug"; break; fi
+    done
+  fi
+  if [ -n "$owner" ] && [ "$owner" != "$PROJECT_SLUG" ]; then
+    echo "DOMAINOWNER:$owner"
+    exit 0
+  fi
+  if [ -z "$owner" ]; then
+    mkdir -p "$(dirname "$OWNERS")"
+    printf '%s %s\\n' "$DOMAIN" "$PROJECT_SLUG" >> "$OWNERS"
+    echo "DOMAINCLAIMED:$DOMAIN"
+  fi
+fi
 # 1) Register the local delivery domain (merge into SMTP_LOCAL_DOMAINS).
 if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
   cur=$(grep -E '^SMTP_LOCAL_DOMAINS=' "$ENVF" | head -1 | cut -d= -f2- || true)
@@ -4265,6 +4317,16 @@ if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
 fi
 # 3) Create the configured mailboxes as per-domain isolated users, and
 # preserve existing user passwords unless management was explicitly requested.
+#
+# The mail server refuses to replace a password without --force, so a managed
+# credential asks for it. A server from before the flag rejects the unknown
+# option, and the retry without it keeps that box working until it upgrades;
+# on a current server the retry is refused, which is the safe outcome.
+set_managed_password() {
+  printf '%s\\n' "$2" | SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local change-password "$1" --password-stdin --force >/dev/null 2>&1 \\
+    || printf '%s\\n' "$2" | SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local change-password "$1" --password-stdin >/dev/null 2>&1 \\
+    || true
+}
 if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
   echo "$BOXES_B64" | base64 -d | while IFS=$'\t' read -r addr pw password_policy; do
     [ -z "$addr" ] && continue
@@ -4300,7 +4362,7 @@ if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
         fi
         # A username migration does not rotate a person's password.
         if [ "$password_policy" = managed ]; then
-          printf '%s\\n' "$pw" | SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local change-password "$addr" --password-stdin >/dev/null 2>&1 || true
+          set_managed_password "$addr" "$pw"
         fi
       else
         # The CLI action historically returned zero even when an internal
@@ -4328,7 +4390,7 @@ if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
       # MAIL_PASSWORD_<LOCALPART> changed the env file and nothing else: the
       # mailbox kept the old (possibly leaked) password and the deploy called
       # it current. stdin, so the new password is not in the process list.
-      printf '%s\\n' "$pw" | SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local change-password "$addr" --password-stdin >/dev/null 2>&1 || true
+      set_managed_password "$addr" "$pw"
       if SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local verify "$addr" "$pw" 2>&1 | grep -q '^Credentials valid'; then
         echo "UPDATED:$addr"
       else
@@ -4572,6 +4634,16 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe'],
     })
+    // Another project owns this domain on the server, which changed nothing.
+    // No DNS either: those records are the owner's to publish.
+    const owner = mailDomainOwner(out)
+    if (owner) {
+      logger.warn(`Mail: ${domain} belongs to the '${owner}' project on this mail server, so this deploy changed nothing there for it - no mailboxes, passwords, forwards, DKIM or mail DNS. Set MAIL_DOMAIN (config/email.ts \`domain\`) to a domain this project owns, or set email.server.enabled: false.`)
+      return null
+    }
+    if (/^DOMAINCLAIMED:/m.test(out))
+      logger.info(`Mail: ${domain} is now recorded as '${projectSlug}' mail on this server; other projects cannot reconcile it`)
+
     const line = (out.match(/MAILTENANT:[^\n]*/) || [])[0] || 'MAILTENANT:done'
     const mailHostFromOut = (out.match(/MAILHOST:([^\n]*)/) || [])[1]?.trim()
     const mailHost = mailHostFromOut || `mail.${domain}`

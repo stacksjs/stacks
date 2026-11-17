@@ -20,7 +20,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
-import { canRevealSecrets, reportMailboxCredentials, reportRecoveryReconcile, resolveMailboxesWithSkipped, resolveMailboxRecoveries } from '../src/commands/deploy'
+import { canRevealSecrets, mailDomainOwner, mailProjectSlug, reportMailboxCredentials, reportRecoveryReconcile, resolveMailboxesWithSkipped, resolveMailboxRecoveries } from '../src/commands/deploy'
 
 const SOURCE = path.resolve(import.meta.dir, '../src/commands/deploy.ts')
 
@@ -84,11 +84,12 @@ describe('reportMailboxCredentials', () => {
 })
 
 /**
- * Pull the mailbox block (`# 3)` up to `# 3b)`) out of the mail script, with
- * escapes resolved the way the JS engine resolves them before the script
- * reaches the shell.
+ * Pull one block of the mail script out (from the line starting `startsWith`
+ * up to the one starting `endsWith`), with escapes resolved the way the JS
+ * engine resolves them before the script reaches the shell. The default is the
+ * mailbox block, `# 3)` up to `# 3b)`.
  */
-function mailboxBlock(): string {
+function mailboxBlock(startsWith = '# 3) ', endsWith = '# 3b)'): string {
   const src = fs.readFileSync(SOURCE, 'utf8')
   const marker = 'const script = `'
   const bodies: string[] = []
@@ -135,8 +136,8 @@ function mailboxBlock(): string {
 
   const body = bodies.sort((a, b) => b.length - a.length)[0] ?? ''
   const lines = body.split('\n')
-  const start = lines.findIndex(line => line.startsWith('# 3) '))
-  const end = lines.findIndex((line, index) => index > start && line.startsWith('# 3b)'))
+  const start = lines.findIndex(line => line.startsWith(startsWith))
+  const end = lines.findIndex((line, index) => index > start && line.startsWith(endsWith))
 
   expect(start, 'mailbox block not found in deploy.ts').toBeGreaterThan(-1)
   expect(end, 'end of mailbox block not found').toBeGreaterThan(start)
@@ -168,6 +169,10 @@ case "$cmd" in
     printf '%s\\ntrue\\n' "$4" > "$f" ;;
   change-password)
     [ "$4" = "--password-stdin" ] || exit 3
+    # A server from before --force rejects the option; a current one refuses
+    # to replace a password without it.
+    if [ "$5" = "--force" ] && [ -f "$DB/old-server" ]; then echo "Error: Unknown option '--force'" >&2; exit 1; fi
+    if [ "$5" != "--force" ] && [ ! -f "$DB/old-server" ]; then echo "Error: refusing to replace the password of '$user' without --force." >&2; exit 1; fi
     IFS= read -r pw
     enabled="$(sed -n 2p "$f")"
     printf '%s\\n%s\\n' "$pw" "$enabled" > "$f" ;;
@@ -186,10 +191,12 @@ exit 0
 
 interface Seed { password: string, enabled?: boolean }
 
-function runMailboxes(seed: Record<string, Seed>, declared: Record<string, string>, policy: 'initial' | 'managed' = 'initial') {
+function runMailboxes(seed: Record<string, Seed>, declared: Record<string, string>, policy: 'initial' | 'managed' = 'initial', options: { oldServer?: boolean } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stacks-mailboxes-'))
   try {
     fs.mkdirSync(path.join(dir, 'users'))
+    if (options.oldServer)
+      fs.writeFileSync(path.join(dir, 'old-server'), '')
     for (const [user, s] of Object.entries(seed))
       fs.writeFileSync(path.join(dir, 'users', user), `${s.password}\n${s.enabled === false ? 'false' : 'true'}\n`)
 
@@ -230,6 +237,18 @@ describe('the mailbox reconcile on the server', () => {
 
   it('sets a rotated password on an existing mailbox', () => {
     const run = runMailboxes({ 'hello@example.com': { password: 'leaked-old' } }, { 'hello@example.com': 'rotated-new' }, 'managed')
+    expect(run.stdout).toContain('UPDATED:hello@example.com')
+    expect(run.passwordOf('hello@example.com')).toBe('rotated-new')
+  })
+
+  it('asks a current server to replace a managed password with --force', () => {
+    const run = runMailboxes({ 'hello@example.com': { password: 'leaked-old' } }, { 'hello@example.com': 'rotated-new' }, 'managed')
+    const change = run.argv.split('\n').filter(line => line.includes('change-password'))
+    expect(change).toEqual(['user:local change-password hello@example.com --password-stdin --force'])
+  })
+
+  it('still rotates a managed password on a server from before --force', () => {
+    const run = runMailboxes({ 'hello@example.com': { password: 'leaked-old' } }, { 'hello@example.com': 'rotated-new' }, 'managed', { oldServer: true })
     expect(run.stdout).toContain('UPDATED:hello@example.com')
     expect(run.passwordOf('hello@example.com')).toBe('rotated-new')
   })
@@ -531,5 +550,114 @@ describe('a sending service and the account it relays through', () => {
     expect(relayAccountFromConfig({ from: { address: 'x@commshq.org,root@commshq.org' }, server: on }, 'commshq.org', declared).account).toBeUndefined()
     expect(relayAccountFromConfig({ from: { address: 'a|b\'$(id)@commshq.org' }, server: on }, 'commshq.org', declared).account).toBeUndefined()
     expect(relayAccountFromConfig({ from: {}, server: on }, 'commshq.org', declared).problem).toContain('unset')
+  })
+})
+
+/**
+ * Step 0 of the mail script: a mail domain belongs to one project.
+ *
+ * PredictHQ kept the stacks site's config/email.ts (`stacksjs.com`, with
+ * chris/blake/glenn and their MAIL_PASSWORD_* values). Its deploy, attached to
+ * the stacks box, reconciled stacksjs.com's mailboxes from its own environment
+ * and replaced two people's passwords. The step runs here against a scratch
+ * owner list and gateway directory in place of /etc.
+ */
+const OWNER_BLOCK = mailboxBlock('# 0) ', '# 1) ')
+
+function runOwnerCheck(options: { slug: string, domain: string, owners?: string, fragments?: Record<string, string[]> }) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stacks-mail-owner-'))
+  try {
+    const sites = path.join(dir, 'sites.d')
+    fs.mkdirSync(sites)
+    for (const [slug, hosts] of Object.entries(options.fragments ?? {})) {
+      const proxies = hosts.map(host => ({ to: host, from: 'localhost:3000', id: host }))
+      fs.writeFileSync(path.join(sites, `${slug}.json`), JSON.stringify({ slug, proxies, onDemandTls: { allowedSuffixes: hosts } }, null, 2))
+    }
+    const owners = path.join(dir, 'mail', 'domain-owners')
+    if (options.owners !== undefined) {
+      fs.mkdirSync(path.dirname(owners), { recursive: true })
+      fs.writeFileSync(owners, options.owners)
+    }
+
+    const block = OWNER_BLOCK
+      .replace('__INTERPOLATION__', `'${options.slug}'`)
+      .replaceAll('/etc/mail/domain-owners', owners)
+      .replaceAll('/etc/rpx/sites.d', sites)
+    const script = ['set -e', `DOMAIN='${options.domain}'`, block, 'echo REACHED_STEP_1'].join('\n')
+
+    const out = Bun.spawnSync(['bash', '-c', script])
+    expect(out.exitCode).toBe(0)
+    return {
+      stdout: out.stdout.toString(),
+      owners: fs.existsSync(owners) ? fs.readFileSync(owners, 'utf8') : '',
+    }
+  }
+  finally {
+    fs.rmSync(dir, { recursive: true, force: true })
+  }
+}
+
+describe('the mail domain owner check', () => {
+  it('refuses a domain another project serves on the box, before touching anything', () => {
+    const run = runOwnerCheck({ slug: 'predicthq', domain: 'stacksjs.com', fragments: { stacks: ['stacksjs.com', 'docs.stacksjs.com'], predicthq: ['predicthq.org'] } })
+    expect(run.stdout).toContain('DOMAINOWNER:stacks')
+    expect(run.stdout).not.toContain('REACHED_STEP_1')
+    expect(run.owners).toBe('')
+  })
+
+  it('lets the project that serves the domain reconcile it, and records the claim', () => {
+    const run = runOwnerCheck({ slug: 'stacks', domain: 'stacksjs.com', fragments: { stacks: ['stacksjs.com'], erbamarkets: ['erba.stacksjs.com'] } })
+    expect(run.stdout).toContain('REACHED_STEP_1')
+    expect(run.stdout).toContain('DOMAINCLAIMED:stacksjs.com')
+    expect(run.owners).toBe('stacksjs.com stacks\n')
+  })
+
+  it('does not take a subdomain route as ownership of the apex', () => {
+    // erbamarkets serves erba.stacksjs.com; that says nothing about stacksjs.com.
+    const run = runOwnerCheck({ slug: 'reportshq', domain: 'stacksjs.com', fragments: { erbamarkets: ['erba.stacksjs.com'] } })
+    expect(run.stdout).toContain('REACHED_STEP_1')
+  })
+
+  it('does not read a dot in the domain as any character', () => {
+    const run = runOwnerCheck({ slug: 'mine', domain: 'stacksjs.com', fragments: { other: ['stacksjsXcom'] } })
+    expect(run.stdout).toContain('REACHED_STEP_1')
+  })
+
+  it('honours an earlier claim over the gateway routes', () => {
+    const run = runOwnerCheck({ slug: 'newcomer', domain: 'mail-only.org', owners: 'mail-only.org commshq\n' })
+    expect(run.stdout).toContain('DOMAINOWNER:commshq')
+    expect(run.stdout).not.toContain('REACHED_STEP_1')
+  })
+
+  it('lets the claimant come back without claiming twice', () => {
+    const run = runOwnerCheck({ slug: 'commshq', domain: 'commshq.org', owners: 'commshq.org commshq\n' })
+    expect(run.stdout).toContain('REACHED_STEP_1')
+    expect(run.stdout).not.toContain('DOMAINCLAIMED')
+    expect(run.owners).toBe('commshq.org commshq\n')
+  })
+
+  it('first claim wins for a domain nobody serves', () => {
+    const run = runOwnerCheck({ slug: 'commshq', domain: 'commshq.org', fragments: { stacks: ['stacksjs.com'] } })
+    expect(run.stdout).toContain('DOMAINCLAIMED:commshq.org')
+    expect(run.owners).toBe('commshq.org commshq\n')
+  })
+
+  it('is skipped when the deploy names no project', () => {
+    const run = runOwnerCheck({ slug: '', domain: 'stacksjs.com', fragments: { stacks: ['stacksjs.com'] } })
+    expect(run.stdout).toContain('REACHED_STEP_1')
+    expect(run.owners).toBe('')
+  })
+})
+
+describe('mailDomainOwner / mailProjectSlug', () => {
+  it('reads the owner the server reported', () => {
+    expect(mailDomainOwner('MAILHOST:mail.stacksjs.com\nDOMAINOWNER:stacks\n')).toBe('stacks')
+    expect(mailDomainOwner('MAILHOST:mail.stacksjs.com\nMAILTENANT:current\n')).toBeUndefined()
+  })
+
+  it('keeps a slug inside a single-quoted shell string', () => {
+    expect(mailProjectSlug('predicthq')).toBe('predicthq')
+    expect(mailProjectSlug('a\'; rm -rf / #')).toMatch(/^[\w.-]+$/)
+    expect(mailProjectSlug(undefined)).toBe('')
   })
 })
