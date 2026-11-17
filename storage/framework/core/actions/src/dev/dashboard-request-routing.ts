@@ -1,5 +1,8 @@
 export function shouldDelegateDashboardRequest(pathname: string, method: string): boolean {
-  if (pathname.startsWith('/api/config/') || pathname.startsWith('/__deps/'))
+  // The dev server's own routes: the config editor, the browser bundles, and
+  // the project switcher (`dashboard-projects.ts`), whose writes are POSTs
+  // that must not fall through to the application's router below.
+  if (pathname.startsWith('/api/config/') || pathname.startsWith('/__deps/') || pathname.startsWith('/__buddy/'))
     return false
   if (pathname.startsWith('/api/'))
     return true

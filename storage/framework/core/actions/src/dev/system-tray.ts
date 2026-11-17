@@ -1,9 +1,9 @@
-import { homedir, networkInterfaces } from 'node:os'
+import { networkInterfaces } from 'node:os'
 import { basename, join } from 'node:path'
 import process from 'node:process'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { openDevWindow } from '@stacksjs/desktop-build'
-import { defaultsPath, projectPath } from '@stacksjs/path'
+import { defaultsPath, listProjects, projectPath, registerProject } from '@stacksjs/path'
 import { findStacksProjects } from '@stacksjs/utils'
 import { findAvailablePort, waitForServer } from './dashboard-utils'
 import { isTrustedTrayRequest, trayOrigins } from './tray-origin'
@@ -33,22 +33,32 @@ function forbidden(request: Request): Response | null {
     : Response.json({ ok: false, error: 'This request did not come from the system tray' }, { status: 403 })
 }
 
-let cachedProjects: string[] | undefined
+/**
+ * The projects the tray offers: the machine's project list, which every
+ * project joins the first time `buddy` runs in it. This used to walk `~/Code`
+ * when the tray opened and hold on to the result, so a project kept anywhere
+ * else was never offered and one created since was missing until a refresh.
+ *
+ * A refresh looks on disk as well, for projects that have never run `buddy`,
+ * and lists what it finds.
+ */
 async function discoverProjects(refresh = false): Promise<string[]> {
-  if (cachedProjects && !refresh)
-    return cachedProjects
+  if (refresh) {
+    const neverUsed = new Date(0)
+    for (const found of await findStacksProjects(undefined, { quiet: true }).catch(() => []))
+      registerProject(found, neverUsed)
+  }
 
-  const discovered = await findStacksProjects(join(homedir(), 'Code'), { quiet: true }).catch(() => [])
-  const candidates = [...new Set([projectPath(), ...discovered])]
+  const candidates = [...new Set([projectPath(), ...listProjects().map(project => project.path)])]
   const checks = await Promise.all(candidates.map(async project => ({
     project,
     valid: await Bun.file(join(project, 'buddy')).exists(),
   })))
-  cachedProjects = checks
+
+  return checks
     .filter(check => check.valid)
     .map(check => check.project)
     .sort((a, b) => basename(a).localeCompare(basename(b)))
-  return cachedProjects
 }
 
 async function runBuddy(project: string, args: string[]): Promise<{ output: string, exitCode: number }> {

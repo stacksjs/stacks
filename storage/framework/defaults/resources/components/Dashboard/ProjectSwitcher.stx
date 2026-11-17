@@ -1,0 +1,302 @@
+<script server>
+// The project switcher at the top of the dashboard sidebar.
+//
+// Its button is drawn on the server with the project's name, so the sidebar
+// does not shift when the page hydrates. The list is fetched in the browser,
+// when the menu opens: which projects have a dashboard up changes from one
+// minute to the next, and the layout this sits in is rendered once and kept.
+const { name = '' } = defineProps<{ name?: string }>()
+
+export const projectName = name
+export const projectInitial = (name.trim()[0] || 'S').toUpperCase()
+</script>
+
+<script client>
+import type { SwitcherProject } from '../../../functions/projects'
+import { addProject, fetchProjects, filterProjects, goToProject, keepAlive, openProject, projectLocation } from '../../../functions/projects'
+
+const isOpen = state(false)
+const projects = state<SwitcherProject[]>([])
+const query = state('')
+const selectedIndex = state(0)
+const isLoading = state(false)
+// The id of the project being opened, while its dashboard starts.
+const opening = state('')
+const error = state('')
+const isAdding = state(false)
+const addPath = state('')
+const isSaving = state(false)
+const root = useRef<HTMLElement>('projectSwitcher')
+const trigger = useRef<HTMLButtonElement>('projectSwitcherTrigger')
+const searchInput = useRef<HTMLInputElement>('projectSwitcherSearch')
+const addInput = useRef<HTMLInputElement>('projectSwitcherAddPath')
+let stopKeepAlive = () => {}
+
+function visibleProjects(): SwitcherProject[] {
+  return filterProjects(projects(), query())
+}
+
+async function load(): Promise<void> {
+  isLoading.set(true)
+  try {
+    const listing = await fetchProjects()
+    projects.set(listing.projects)
+    stopKeepAlive()
+    stopKeepAlive = keepAlive(listing.keepAliveMs)
+  }
+  catch (reason) {
+    error.set(reason instanceof Error ? reason.message : 'The project list could not be loaded.')
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+function open(): void {
+  isOpen.set(true)
+  query.set('')
+  error.set('')
+  selectedIndex.set(0)
+  isAdding.set(false)
+  void load()
+  void nextTick(() => searchInput.current?.focus())
+}
+
+function close(): void {
+  if (!isOpen()) return
+  isOpen.set(false)
+  // Opening a project that has to start can take a few seconds; closing the
+  // menu does not cancel it, it only stops showing it.
+}
+
+function toggle(): void {
+  isOpen() ? close() : open()
+}
+
+async function choose(project: SwitcherProject): Promise<void> {
+  if (opening()) return
+  if (project.current) {
+    close()
+    return
+  }
+
+  error.set('')
+  // Up already: go straight there. Otherwise ask for it to be started and
+  // wait until it answers.
+  if (project.running && project.url) {
+    goToProject(project.url)
+    return
+  }
+
+  opening.set(project.id)
+  try {
+    goToProject(await openProject(project.id))
+  }
+  catch (reason) {
+    opening.set('')
+    error.set(reason instanceof Error ? reason.message : `${project.name} could not be opened.`)
+  }
+}
+
+function startAdding(): void {
+  isAdding.set(true)
+  addPath.set('')
+  error.set('')
+  void nextTick(() => addInput.current?.focus())
+}
+
+async function submitAdd(): Promise<void> {
+  const path = addPath().trim()
+  if (!path || isSaving()) return
+
+  isSaving.set(true)
+  error.set('')
+  try {
+    const added = await addProject(path)
+    isAdding.set(false)
+    query.set('')
+    await load()
+    const index = visibleProjects().findIndex(project => project.id === added.id)
+    selectedIndex.set(index === -1 ? 0 : index)
+    void nextTick(() => searchInput.current?.focus())
+  }
+  catch (reason) {
+    error.set(reason instanceof Error ? reason.message : 'That project could not be added.')
+  }
+  finally {
+    isSaving.set(false)
+  }
+}
+
+function handleSearchKeydown(event: KeyboardEvent): void {
+  const items = visibleProjects()
+  if (event.key === 'ArrowDown') {
+    event.preventDefault()
+    if (items.length > 0)
+      selectedIndex.set(selectedIndex() >= items.length - 1 ? 0 : selectedIndex() + 1)
+  }
+  else if (event.key === 'ArrowUp') {
+    event.preventDefault()
+    if (items.length > 0)
+      selectedIndex.set(selectedIndex() <= 0 ? items.length - 1 : selectedIndex() - 1)
+  }
+  else if (event.key === 'Enter') {
+    event.preventDefault()
+    const project = items[selectedIndex()]
+    if (project) void choose(project)
+  }
+}
+
+function handleAddKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    void submitAdd()
+  }
+  else if (event.key === 'Escape') {
+    // Back to the list, not out of the menu.
+    event.preventDefault()
+    event.stopPropagation()
+    isAdding.set(false)
+    void nextTick(() => searchInput.current?.focus())
+  }
+}
+
+function handleEscape(): void {
+  if (!isOpen()) return
+  close()
+  trigger.current?.focus()
+}
+
+// Complete class strings, because a `class` attribute is not reactive.
+function rowClass(project: SwitcherProject, index: number): string {
+  const active = index === selectedIndex()
+  return `flex gap-2.5 items-center px-2 py-1.5 w-full text-left rounded-md ${active ? 'bg-black/8 dark:bg-white/12' : ''} ${opening() && opening() !== project.id ? 'opacity-50' : ''}`
+}
+
+useClickOutside(root, close)
+
+onMount(() => {
+  // Learns whether the server wants to hear from this page, and has the list
+  // ready before the menu is first opened.
+  void load()
+})
+
+onDestroy(() => {
+  stopKeepAlive()
+})
+</script>
+
+<div
+  ref="projectSwitcher"
+  data-project-switcher
+  :data-open="String(isOpen())"
+  class="relative pb-1.5 px-2 [-webkit-app-region:no-drag]"
+  @keydown.escape="handleEscape()"
+>
+  <button
+    ref="projectSwitcherTrigger"
+    type="button"
+    aria-haspopup="dialog"
+    :aria-expanded="String(isOpen())"
+    aria-label="Switch project"
+    title="Switch project"
+    class="flex gap-2 items-center px-1.5 py-1.5 w-full text-left hover:bg-black/5 dark:hover:bg-white/10 rounded-lg focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-[-2px] transition-colors"
+    @click="toggle()"
+  >
+    <span aria-hidden="true" class="flex items-center justify-center shrink-0 h-6 w-6 font-semibold text-[11px] text-white dark:text-neutral-900 bg-neutral-800 dark:bg-neutral-100 rounded-md">{{ projectInitial }}</span>
+    <span class="flex-1 min-w-0 font-semibold text-[13px] truncate">{{ projectName }}</span>
+    <span aria-hidden="true" class="shrink-0 h-4 w-4 opacity-50 i-hugeicons-unfold-more"></span>
+  </button>
+
+  <div
+    :if="isOpen()"
+    role="dialog"
+    aria-label="Projects"
+    class="absolute left-2 overflow-hidden right-2 top-full z-50 text-neutral-800 dark:text-neutral-100 bg-white/95 dark:bg-neutral-800/95 border border-black/10 rounded-xl dark:border-white/10 shadow-black/15 shadow-xl dark:shadow-black/40 backdrop-blur-xl backdrop-saturate-150"
+  >
+    <div class="flex gap-2 items-center px-2.5 border-b border-black/10 dark:border-white/10">
+      <span aria-hidden="true" class="shrink-0 h-4 w-4 opacity-50 i-hugeicons-search-01"></span>
+      <input
+        ref="projectSwitcherSearch"
+        x-model="query"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Find a project"
+        aria-label="Find a project"
+        class="py-2 w-full text-[13px] placeholder:text-neutral-400 bg-transparent border-none focus:outline-none focus:ring-0"
+        @input="selectedIndex.set(0)"
+        @keydown="handleSearchKeydown"
+      />
+      <span :if="isLoading()" aria-hidden="true" class="shrink-0 h-4 w-4 opacity-60 animate-spin i-hugeicons-loading-03"></span>
+    </div>
+
+    <div role="listbox" aria-label="Projects on this machine" class="overflow-y-auto p-1 max-h-72">
+      <button
+        :for="(project, index) in visibleProjects()"
+        type="button"
+        role="option"
+        :aria-selected="String(index === selectedIndex())"
+        :data-project-id="project.id"
+        :title="project.path"
+        :disabled="Boolean(opening())"
+        :class="rowClass(project, index)"
+        @mouseenter="selectedIndex.set(index)"
+        @click="choose(project)"
+      >
+        <span aria-hidden="true" class="flex items-center justify-center shrink-0 h-6 w-6 font-semibold text-[11px] text-neutral-700 dark:text-neutral-200 bg-black/8 dark:bg-white/12 rounded-md">{{ (project.name[0] || '?').toUpperCase() }}</span>
+        <span class="flex-1 min-w-0">
+          <span class="block font-medium text-[13px] truncate">{{ project.name }}</span>
+          <span class="block text-[11px] truncate opacity-60">{{ projectLocation(project.path) }}</span>
+        </span>
+        <span :if="opening() === project.id" role="status" aria-label="Starting" class="shrink-0 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+        <span :if="project.current && opening() !== project.id" aria-label="Current project" class="shrink-0 h-4 w-4 text-blue-500 i-hugeicons-tick-02"></span>
+        <span :if="project.running && !project.current && opening() !== project.id" title="Dashboard running" aria-label="Dashboard running" class="shrink-0 h-2 w-2 bg-green-500 rounded-full"></span>
+      </button>
+
+      <p :if="!isLoading() && projects().length > 0 && visibleProjects().length === 0" class="px-2 py-4 text-[12px] text-center opacity-60">
+        No project matches "{{ query() }}".
+      </p>
+    </div>
+
+    <p :if="opening()" role="status" class="px-3 py-2 text-[12px] border-black/10 border-t dark:border-white/10 opacity-70">
+      Starting its dashboard. This takes a few seconds the first time.
+    </p>
+    <p :if="error()" role="alert" class="px-3 py-2 break-words text-[12px] text-red-600 whitespace-pre-line dark:text-red-400 border-black/10 border-t dark:border-white/10">{{ error() }}</p>
+
+    <div class="p-1 border-black/10 border-t dark:border-white/10">
+      <button
+        :if="!isAdding()"
+        type="button"
+        data-project-add
+        class="flex gap-2.5 items-center px-2 py-1.5 w-full text-[13px] text-left hover:bg-black/5 dark:hover:bg-white/10 rounded-md"
+        @click="startAdding()"
+      >
+        <span aria-hidden="true" class="shrink-0 mx-1 h-4 w-4 opacity-70 i-hugeicons-folder-add"></span>
+        Add a project
+      </button>
+
+      <div :if="isAdding()" class="flex gap-1.5 items-center px-1 py-1">
+        <input
+          ref="projectSwitcherAddPath"
+          x-model="addPath"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="~/Code/my-app"
+          aria-label="Path of the project to add"
+          class="flex-1 px-2 py-1 min-w-0 text-[12px] placeholder:text-neutral-400 bg-black/5 dark:bg-white/10 border-none rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+          @keydown="handleAddKeydown"
+        />
+        <button
+          type="button"
+          class="shrink-0 px-2 py-1 font-medium text-[12px] text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"
+          :disabled="isSaving() || !addPath().trim()"
+          @click="submitAdd()"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

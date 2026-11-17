@@ -2,7 +2,7 @@ import type { FSWatcher } from 'node:fs'
 import { existsSync, readdirSync, watch } from 'node:fs'
 import process from 'node:process'
 import { join } from 'node:path'
-import { defaultsPath, projectPath, storagePath } from '@stacksjs/path'
+import { clearProjectService, defaultsPath, projectPath, storagePath } from '@stacksjs/path'
 
 const BACKEND_SOURCE_RE = /\.(?:[cm]?[jt]sx?|json)$/i
 const DECLARATION_RE = /\.d\.[cm]?ts$/i
@@ -50,6 +50,9 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
         clearTimeout(restartTimer)
       for (const watcher of watchers)
         watcher.close()
+      // The worker records the dashboard under this process's pid, so the
+      // record outlives a worker restart and ends here, with the supervisor.
+      clearProjectService(projectPath(), 'dashboard')
       process.off('SIGINT', stop)
       process.off('SIGTERM', stop)
       resolve(code)
@@ -59,7 +62,7 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
       const currentGeneration = ++generation
       child = Bun.spawn([process.execPath, entry, ...args], {
         cwd: process.cwd(),
-        env: { ...process.env, STACKS_DASHBOARD_WORKER: '1' },
+        env: { ...process.env, STACKS_DASHBOARD_WORKER: '1', STACKS_DASHBOARD_SUPERVISOR_PID: String(process.pid) },
         stdin: 'inherit',
         stdout: 'inherit',
         stderr: 'inherit',

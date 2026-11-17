@@ -2,9 +2,10 @@ import process from 'node:process'
 import { existsSync, mkdirSync } from 'node:fs'
 import { connect } from 'node:net'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
-import { defaultsPath, projectPath, publicPath, storagePath } from '@stacksjs/path'
+import { clearProjectService, defaultsPath, projectPath, publicPath, recordProjectService, storagePath } from '@stacksjs/path'
 import { seedCsrfPageResponse, validateDevCsrfRequest } from './csrf'
 import { resolveComponentsLibraryRoot } from './defaults-resources'
+import { createIdleExit, projectSwitcherRoutes } from './dashboard-projects'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { resolveDashboardCraftExecutable, type CraftBinaryResolver } from './dashboard-native'
 import { resolveDashboardDomain, resolveDashboardProxyStrategy } from './dashboard-proxy'
@@ -32,6 +33,10 @@ if (process.env.STACKS_DASHBOARD_WORKER !== '1') {
 // reloaded, rendered again and bumped it again, and the kept-page cache never
 // matched its own fingerprint, so nothing was served from it.
 process.env.STX_DIR = storagePath('framework/runtime/dashboard-stx')
+
+// The layout draws the project switcher only for this server. A deployed
+// dashboard serves the one project it was deployed with.
+process.env.STACKS_DASHBOARD_PROJECTS = '1'
 
 // buddyOptions serializes `verbose: false` as `--verbose false`, so
 // process.argv.includes('--verbose') would always match. Check the value too.
@@ -64,6 +69,19 @@ const userDashboardComponentsPath = projectPath('resources/components/Dashboard'
 const preferredPort = Number(process.env.PORT_ADMIN) || 3002
 // eslint-disable-next-line ts/no-top-level-await
 const dashboardPort = await findAvailablePort(preferredPort)
+const dashboardLocalUrl = `http://localhost:${dashboardPort}`
+
+// A dashboard the background daemon started stops itself once nobody has used
+// it for this long (see `createIdleExit`). One started in a terminal has no
+// such limit: it runs until that session ends it.
+const idleExitMs = Number(process.env.STACKS_DASHBOARD_IDLE_EXIT_MS) || 0
+// Under the supervisor the record carries the supervisor's pid, so it stays
+// true across the worker restarts a backend edit causes.
+const servicePid = Number(process.env.STACKS_DASHBOARD_SUPERVISOR_PID) || process.pid
+const idleExit = createIdleExit(idleExitMs, () => {
+  clearProjectService(projectPath(), 'dashboard', servicePid)
+  process.exit(0)
+})
 
 // Determine if we have a custom domain (like stacks.localhost)
 const appUrl = process.env.APP_URL || ''
@@ -276,6 +294,15 @@ async function startStxServer(): Promise<void> {
   }
 
   const configRoutes: Record<string, (req: Request) => Response | Promise<Response>> = {
+    ...projectSwitcherRoutes({
+      root: projectPath(),
+      url: dashboardLocalUrl,
+      idleExitMs,
+      validateWrite: validateDevCsrfRequest,
+      // Loaded on first use: most sessions never switch project, and the
+      // daemon is only started by the first one that does.
+      openDashboard: async root => (await import('../daemon/client')).openProjectDashboard(root),
+    }),
     '/__deps/charts.js': browserDependencyRoute(
       storagePath('framework/core/charts/src/index.ts'),
     ),
@@ -516,6 +543,7 @@ async function startStxServer(): Promise<void> {
     //      collide with a page — e.g. `route.health()` registering a
     //      `/health` LB-probe at root — would intercept the page.
     onRequest: async (req: Request) => {
+      idleExit.touch()
       const url = new URL(req.url)
       const pathname = url.pathname
 
@@ -699,6 +727,22 @@ const serverReady = await waitForServer(dashboardPort)
 // Restore console before our output
 restoreConsole()
 
+// Say where this dashboard is, in the project itself. `buddy dashboard`, the
+// background daemon and the project switcher of every other dashboard read
+// this to learn that the project already has one up, whoever started it.
+recordProjectService(projectPath(), {
+  name: 'dashboard',
+  pid: servicePid,
+  port: dashboardPort,
+  url: dashboardLocalUrl,
+  startedAt: new Date().toISOString(),
+  ...(idleExitMs > 0 ? { idleExitMs } : {}),
+})
+// A worker run on its own owns its record. Under the supervisor the record is
+// the supervisor's to take down, when it stops for good.
+if (servicePid === process.pid)
+  process.on('exit', () => clearProjectService(projectPath(), 'dashboard', servicePid))
+
 // The native Craft window uses the same pretty HTTPS URL as the browser, so
 // both wait on the same answer: is anything serving `dashboard.<domain>`?
 // eslint-disable-next-line ts/no-top-level-await
@@ -708,7 +752,6 @@ const proxyStarted = await startReverseProxy().catch((err) => {
 })
 
 const dashboardHttpsUrl = dashboardDomain ? `https://${dashboardDomain}` : null
-const dashboardLocalUrl = `http://localhost:${dashboardPort}`
 
 const initialUrl = dashboardHttpsUrl && proxyStarted
   ? `${dashboardHttpsUrl}/`

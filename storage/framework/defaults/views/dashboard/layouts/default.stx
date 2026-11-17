@@ -16,9 +16,15 @@
 // vendored or linked. `@stacksjs/defaults/*` is mapped onto the vendored tree in
 // `storage/framework/tsconfig.app.json` and falls back to the installed
 // package when there is none, so it resolves in both layouts.
+import { dashboardProjectIdentity } from '@stacksjs/defaults/resources/functions/dashboard/project-switcher'
 import { buildWebSidebarSections, webSidebarRoleMap } from '@stacksjs/defaults/resources/functions/dashboard/sidebar'
 
 export const sidebarSections = buildWebSidebarSections()
+
+// The project this dashboard serves, for the switcher at the top of the
+// sidebar. Only its name: the list of other projects is fetched by the
+// switcher itself, because this layout is rendered once and kept.
+export const dashboardProject = dashboardProjectIdentity()
 
 // Role gating (stacksjs/stacks#1843). Models can declare
 // `dashboard.roles: ['admin', 'dev']`; rows for those models are hidden from
@@ -429,6 +435,14 @@ html[data-appearance="arc"] [data-sidebar-section] > div:first-child {
   opacity: 0.55;
 }
 
+/* The project switcher's menu hangs below the sidebar header, over the rows.
+   The header and the scroll area are stacked at the same level and the scroll
+   area comes later, so it would paint over the menu: the header is lifted
+   while the menu is open. */
+[data-stx-sidebar] > div:has([data-project-switcher][data-open="true"]) {
+  z-index: 30;
+}
+
 /* A viewer can hide navigation sections they never use. Kept as CSS on an
    attribute rather than a DOM removal so the rows stay hydrated and a later
    change re-shows them without a re-render - the same approach the role
@@ -758,6 +772,9 @@ onDestroy(() => {
           region, and in a browser it is the same empty strip macOS sidebars
           carry above their first row. -->
       <SidebarHeader windowControls="native" />
+      @if(dashboardProject.enabled)
+        <ProjectSwitcher :name="dashboardProject.name" />
+      @endif
     </template>
     <template #footer>
       <div class="px-3 py-2 text-neutral-600 text-xs dark:text-neutral-300" data-sidebar-order-controls>
