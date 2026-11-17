@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.619...v0.75.620)
+
+## 🐛 Bug Fixes
+
+- **scaffold**: qualify the exact template source during release ([768874b](https://github.com/stacksjs/stacks/commit/768874b)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- regenerate command reference for template source selection ([74c4adc](https://github.com/stacksjs/stacks/commit/74c4adc)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.618...v0.75.619)
 
 ## ✨ Features
