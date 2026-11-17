@@ -779,7 +779,7 @@ describe('dashboard native STX bindings', () => {
     const search = componentSource('UI/SearchFilter.stx')
     // Drawn with the shared input, so it matches the dropdowns beside it
     // (stacksjs/stacks#3310), and it reports only what the person types.
-    expect(search).toContain('<Input v-model:value="query" type="search"')
+    expect(search).toContain('<Input v-model:value="term" type="search"')
     expect(search).toContain(':placeholder="placeholder()"')
     expect(search).toContain(':ariaLabel="ariaLabel() || placeholder()"')
     expect(search).toContain("emit('update:searchValue', value)")
@@ -1159,7 +1159,7 @@ describe('dashboard native STX bindings', () => {
     expect(view).toContain('<SettingsDashboard />')
     expect(view).not.toContain('<script')
     expect(page).toContain('const drafts = reactive<')
-    expect(page).toContain('<SearchFilter v-model:searchValue="query"')
+    expect(page).toContain('<SearchFilter v-model:searchValue="configQuery"')
     expect(page).toContain('x-model="drafts[field.key]"')
     expect(page).toContain('x-model.number="drafts[field.key]"')
     // A yes or no is the shared switch, bound to its draft the same way.

@@ -18,7 +18,10 @@ const placeholder = useReactiveProp('placeholder', 'Search...')
 // bar names the list it searches ("Search coupons").
 const ariaLabel = useReactiveProp('ariaLabel', '')
 const requested = useReactiveProp('searchValue', '')
-const query = state(requested())
+// Not `query`: a render's context has a `query` of its own (the request's
+// query-string object), and the binding below resolved to that, filling
+// every dashboard search box with "[object Object]".
+const term = state(requested())
 const emit = defineEmits(['update:searchValue', 'search'])
 // What the box last showed that the parent already knows: the value it was
 // seeded with, or the last search reported. Only a change the person makes is
@@ -29,11 +32,11 @@ let known = requested()
 effect(() => {
   const next = requested()
   known = next
-  query.set(next)
+  term.set(next)
 })
 
 effect(() => {
-  const value = query()
+  const value = term()
   if (value === known)
     return
   known = value
@@ -48,7 +51,7 @@ effect(() => {
   The box is the root, so a caller's `class` (a width) sizes the whole field.
 -->
 <div>
-  <Input v-model:value="query" type="search" name="search" :placeholder="placeholder()" :ariaLabel="ariaLabel() || placeholder()" autocomplete="off" :spellcheck="false">
+  <Input v-model:value="term" type="search" name="search" :placeholder="placeholder()" :ariaLabel="ariaLabel() || placeholder()" autocomplete="off" :spellcheck="false">
     <template #iconLeft>
       <span aria-hidden="true" class="h-4 w-4 i-hugeicons-search-01"></span>
     </template>

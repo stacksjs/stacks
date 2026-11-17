@@ -43,14 +43,16 @@ const fields = state<ConfigField[]>([])
 const drafts = reactive<Record<string, string | number | boolean>>({})
 const selected = state('')
 const pendingSelection = state('')
-const query = state('')
+// Not `query`: the render context has one of its own (the request's query
+// string), and a component binding resolved to it.
+const configQuery = state('')
 const loading = state(true)
 const saving = state(false)
 const message = state('')
 const error = state('')
 
 const filteredFiles = derived(() => {
-  const needle = query().trim().toLowerCase()
+  const needle = configQuery().trim().toLowerCase()
   if (!needle)
     return files()
 
@@ -198,7 +200,7 @@ void loadFiles()
   <div class="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)]">
     <Card variant="default" padding="none">
       <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-        <SearchFilter v-model:searchValue="query" placeholder="Search config" ariaLabel="Search configuration" />
+        <SearchFilter v-model:searchValue="configQuery" placeholder="Search config" ariaLabel="Search configuration" />
       </div>
 
       <nav class="overflow-y-auto p-2 max-h-[68vh]" aria-label="Configuration files">

@@ -261,11 +261,11 @@ describe('the shared controls', () => {
 
   it('the search box is the shared input, and reports only what is typed', () => {
     const search = read('UI/SearchFilter.stx')
-    expect(search).toContain('<Input v-model:value="query" type="search"')
+    expect(search).toContain('<Input v-model:value="term" type="search"')
     expect(search).toContain('<template #iconLeft>')
     // Not on mount, and not the value a parent seeded: a page that reloads on
     // `@search` does not reload as it opens.
-    expect(search).toMatch(/const value = query\(\)\s*if \(value === known\)\s*return/)
+    expect(search).toMatch(/const value = term\(\)\s*if \(value === known\)\s*return/)
   })
 
   it('the dropdown keeps its choice when the options come after the value', () => {
