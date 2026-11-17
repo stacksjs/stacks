@@ -158,6 +158,9 @@ Uses `bun-plugin-stx` serve function with pattern-based view resolution:
 - Leaves `resources/functions` to the STX client auto-import pipeline because browser helpers may depend on signals and other browser-only primitives
 - Opens a Craft `createApp()` window when a supported SDK and native binary are available (1400x900, titlebar hidden)
 - Builds the web sidebar from configured sections and discovered model dashboard metadata
+- Records itself in `storage/framework/runtime/services/dashboard.json` (pid, port, address) once it is up, which is how `buddy dashboard`, the background daemon and every other dashboard's project switcher know this project already has one. Read it with `readProjectService(root, 'dashboard')` from `@stacksjs/path`; a record whose process has died reads as null
+- Serves the project switcher's routes under `/__buddy/` (`dev/dashboard-projects.ts`): the machine's project list, opening another project's dashboard through the daemon, adding a project. They stay out of `/api/` because an application may well have its own `/api/projects`
+- With `STACKS_DASHBOARD_IDLE_EXIT_MS` set (the daemon sets it), exits after that long without a request. An open page reports in on a timer, so a dashboard someone is reading stays up
 
 ### Docs Dev Server (docs.ts)
 - Uses `@stacksjs/bunpress` with `{ watch: true, quiet: true }`

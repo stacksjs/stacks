@@ -1,308 +1,131 @@
 ---
-title: Projects Command
-description: "The buddy projects command helps you discover and manage all Stacks projects on your system, making it easy to work with multiple projects."
+title: Projects
+description: "One buddy for every Stacks project on your machine: run it from any directory, target a project by name, and move between projects from the dashboard."
 ---
-# Projects Command
+# Projects
 
-The `buddy projects` command helps you discover and manage all Stacks projects on your system, making it easy to work with multiple projects.
+Buddy is installed once and works with every Stacks project on your machine. It finds the project you are in, keeps a list of the projects it has seen, and can open any of them from anywhere.
 
-## Basic Usage
+## Run buddy from anywhere
 
-```bash
-# Find all Stacks projects
-buddy projects
-
-# List projects
-buddy projects:list
-```
-
-## Command Syntax
+Inside a project, `buddy` works from any directory, not only the root:
 
 ```bash
-buddy projects [options]
-buddy projects:list [options]
+cd ~/Code/shop/app/Models
+buddy migrate          # runs for ~/Code/shop
 ```
 
-### Options
+Buddy walks up from where you are to the project root and runs the command there. If the project has its own `buddy` installed, that one does the work, so the command runs on the framework version the project pins.
 
-| Option | Description |
-|--------|-------------|
-| `-q, --quiet` | Use minimal output |
-| `-l, --list` | List all local Stacks projects |
-| `--verbose` | Enable verbose output |
+## Target a project by name
 
-## Examples
+Every built-in command takes `--project`, with a name from the project list or a path:
 
-### Find All Projects
+```bash
+buddy migrate --project shop
+buddy dev --project ~/Code/shop
+buddy ports -p shop
+```
+
+A name is matched exactly first, then as the start of a name, then anywhere in one. If more than one project matches, buddy names them and stops. It does not guess.
+
+## The project list
 
 ```bash
 buddy projects
 ```
 
-Output:
-
 ```
-buddy projects
-
-   - /Users/username/Code/my-app
-   - /Users/username/Code/another-project
-   - /Users/username/Projects/stacks-demo
-
+  shop        ~/Code/clients/acme/shop  ● http://localhost:3900
+  blog        ~/Code/personal/blog
+  docs-site   ~/Code/docs-site
 ```
 
-### List Projects
+Projects are listed most recently used first. A green dot marks a project whose dashboard is running, with its address.
+
+A project joins the list the first time buddy runs inside it. To add the projects already on disk:
 
 ```bash
-buddy projects:list
+buddy projects:scan            # look through your home directory
+buddy projects:scan ~/Code     # or one directory
 ```
 
-### Quiet Mode
+### Commands
 
-For scripting and piping:
+| Command | What it does |
+|---------|--------------|
+| `buddy projects` | List the projects on this machine |
+| `buddy projects --quiet` | Print only the paths, one per line |
+| `buddy projects --json` | Print the list as JSON |
+| `buddy projects:add [path]` | Add a project (the current one by default) |
+| `buddy projects:remove <name>` | Take a project off the list. The project itself is not touched |
+| `buddy projects:scan [dir]` | Find projects under a directory and add them |
+| `buddy projects:prune` | Drop listed projects whose directory is gone |
+
+The list lives in `~/.stacks/projects/`, one small file per project.
+
+### Jump to a project
+
+`buddy cd` prints a project's path, so a shell function can take you there:
 
 ```bash
-buddy projects --quiet
+# ~/.zshrc
+bcd() { eval "$(buddy cd "$1" --eval)"; }
 ```
-
-Output (no decorations):
-
-```
-/Users/username/Code/my-app
-/Users/username/Code/another-project
-/Users/username/Projects/stacks-demo
-```
-
-### Verbose Output
 
 ```bash
-buddy projects --verbose
-```
-
-Shows additional information about each project.
-
-## How It Works
-
-The command scans your home directory for directories containing:
-
-- `package.json` with Stacks dependencies
-- Stacks configuration files
-- The characteristic Stacks project structure
-
-## Use Cases
-
-### Multi-Project Development
-
-When working on multiple Stacks projects:
-
-```bash
-# See all projects
-buddy projects
-
-# Navigate to a specific project
-cd /Users/username/Code/my-app
-
-# Run commands in that project
-buddy dev
-```
-
-### Project Discovery
-
-Find forgotten or old projects:
-
-```bash
-buddy projects --verbose
+bcd shop
 ```
 
 ### Scripting
 
-Use in scripts for batch operations:
-
 ```bash
-# Run tests in all projects
+# Open a project picked with fzf
+code "$(buddy projects --quiet | fzf)"
+
+# Run a command in every project
 for project in $(buddy projects --quiet); do
-  echo "Testing $project"
-  (cd "$project" && buddy test)
+  buddy outdated --project "$project"
 done
 ```
 
-### Project Switching
-
-Create an alias for quick project switching:
+## Open a dashboard
 
 ```bash
-# Add to .zshrc or .bashrc
-function sp() {
-  local project=$(buddy projects --quiet | fzf)
-  if [ -n "$project" ]; then
-    cd "$project"
-  fi
-}
+buddy dashboard          # the project you are in
+buddy dashboard shop     # any project, from anywhere
 ```
 
-Then use `sp` to interactively select a project.
+The dashboard starts in the background if it is not already running, opens in your browser, and stops by itself once nobody has used it for a while. There is no terminal to keep open.
 
-## Search Locations
+Each project keeps the same address every time (`http://localhost:3900`, `3901`, and so on), so your browser remembers each project's session and settings separately.
 
-The command searches in:
+| Option | What it does |
+|--------|--------------|
+| `--no-open` | Start it and print the address without opening a browser |
+| `--stop` | Stop the project's background dashboard |
 
-- Home directory (`~/`)
-- Common development directories:
-  - `~/Code`
-  - `~/Projects`
-  - `~/Development`
-  - `~/Sites`
-  - `~/work`
+`buddy dev:dashboard` is still there when you want the dashboard in the foreground, in its own native window, for as long as the terminal is open.
 
-## Project Identification
+### Switch projects in the dashboard
 
-A directory is identified as a Stacks project if it contains:
+The top of the dashboard sidebar shows the project you are looking at. Click it to see every project on the machine, type to filter, and pick one. If that project's dashboard is not running yet, it is started for you and the page moves there when it is ready.
 
-- `package.json` with `@stacksjs/*` dependencies
-- `config/app.ts` or similar Stacks config
-- Stacks-specific directory structure
+"Add a project" at the bottom of the menu takes the path of a project that is not on the list yet.
 
-## Performance
+## Buddy in the background
 
-For faster scanning:
+Opening a dashboard from the switcher or with `buddy dashboard` uses a small background process that starts dashboards on request. You never have to start it: whatever needs it starts it, and it stops by itself when it has no dashboards left to look after.
 
 ```bash
-# Skip deep directories
-buddy projects --max-depth 3
-
-# Search specific directory
-buddy projects --path ~/Code
+buddy daemon            # is it running, and what is it running
+buddy daemon:stop       # stop it and the dashboards it started
+buddy daemon:logs       # what it has been doing
 ```
 
-## Integration with IDEs
+It is built to cost nothing when idle: it loads no project code, polls nothing, and holds about 25 MB while it runs. It listens on a socket file in `~/.stacks/buddy/` that only your user can open, not on a network port.
 
-### VS Code
+## Related
 
-Use the project list to add workspaces:
-
-```bash
-# Get project paths
-buddy projects --quiet > stacks-projects.txt
-
-# Open in VS Code
-code $(buddy projects --quiet | head -1)
-```
-
-### JetBrains IDEs
-
-```bash
-# Open in WebStorm
-webstorm $(buddy projects --quiet | head -1)
-```
-
-## Troubleshooting
-
-### No Projects Found
-
-```
-No Stacks projects found
-```
-
-**Solutions**:
-
-1. Ensure you have Stacks projects installed
-2. Check that projects have proper package.json
-3. Try with verbose mode to see search paths
-
-### Slow Scanning
-
-If scanning takes too long:
-
-1. Use `--quiet` mode
-2. Specify a search path
-3. Exclude large directories
-
-### Permission Errors
-
-```
-Permission denied: /some/directory
-```
-
-**Solution**: The command skips directories without read permission. These can be ignored safely.
-
-## Project Information
-
-For detailed information about a specific project:
-
-```bash
-# Navigate to project
-cd /path/to/project
-
-# View version
-buddy version
-
-# List available commands
-buddy list
-```
-
-## Working with Multiple Projects
-
-### Running Commands Across Projects
-
-```bash
-# !/bin/bash
-# upgrade-all.sh
-
-for project in $(buddy projects --quiet); do
-  echo "Upgrading $project"
-  (cd "$project" && buddy upgrade)
-done
-```
-
-### Checking Project Status
-
-```bash
-# !/bin/bash
-# status-all.sh
-
-for project in $(buddy projects --quiet); do
-  echo "=== $project ==="
-  (cd "$project" && git status --short)
-done
-```
-
-## Best Practices
-
-### Organize Projects
-
-Keep Stacks projects in a consistent location:
-
-```
-~/Code/
-├── project-a/
-├── project-b/
-└── project-c/
-```
-
-### Version Control
-
-Ensure all projects are in version control:
-
-```bash
-for project in $(buddy projects --quiet); do
-  if [ ! -d "$project/.git" ]; then
-    echo "Not a git repo: $project"
-  fi
-done
-```
-
-### Regular Updates
-
-Keep all projects up to date:
-
-```bash
-for project in $(buddy projects --quiet); do
-  echo "Checking $project"
-  (cd "$project" && buddy outdated)
-done
-```
-
-## Related Commands
-
-- [buddy version](/guide/buddy/version) - View version information
-- [buddy upgrade](/guide/buddy/upgrade) - Upgrade dependencies
-- [buddy list](/guide/buddy/intro) - List available commands
+- [Dev command](/guide/buddy/dev) - development servers
+- [Buddy command reference](/guide/buddy/commands) - every command and option

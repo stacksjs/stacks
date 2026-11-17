@@ -402,9 +402,14 @@ isIpv6(address)                          // check if AddressInfo is IPv6 (handle
 ## Find Stacks Projects (`find.ts`)
 
 ```typescript
-await findStacksProjects(dir?, options?)   // recursively search for Stacks projects
-// A Stacks project = directory with 'buddy' file + 'storage/framework/core/buddy' structure
-// Excludes: node_modules, dist, vendor, storage/framework, ~/Documents, ~/Pictures, ~/Library, ~/.Trash, dotfolders
+await findStacksProjects(dir?, options?)   // walk a directory tree for Stacks projects ({ quiet, maxDepth })
+// The disk scan behind `buddy projects:scan`. To ask which projects are on the
+// machine, read the list instead: `listProjects()` / `findProject()` in `@stacksjs/path`.
+// A Stacks project = whatever `isProjectRoot()` in `@stacksjs/path` accepts: a package.json
+// beside `storage/framework`, or beside `config/app.ts`, or declaring a native app.
+// Skips by directory NAME: node_modules, dist, out, vendor, pantry and dot-folders, and does not
+// look inside a project it has found. With no `dir` it starts at the home directory and also
+// skips ~/Documents, ~/Pictures, ~/Library, ~/Movies, ~/Music, ~/Applications.
 ```
 
 ## Git Utilities (`git.ts`)

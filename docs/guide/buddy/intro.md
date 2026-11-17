@@ -22,8 +22,20 @@ panx buddy new my-project
 cd my-project
 
 # Buddy is now available
-buddy --help
+./buddy --help
 ```
+
+### One buddy for every project
+
+Install Buddy once and use it in every Stacks project on your machine:
+
+```bash
+bun add -g @stacksjs/buddy
+```
+
+After that, `buddy` works from any directory inside a project, takes `--project <name>` to target another one, and `buddy dashboard` opens any project's dashboard. Inside a project that has its own Buddy installed, the global one finds the project and hands the command to it, so each project keeps running on the framework version it pins.
+
+See [Projects](/guide/buddy/projects) for the project list, the dashboard's project switcher and the background process behind them.
 
 ### Pantry Execution
 
@@ -53,13 +65,13 @@ Buddy respects your project's configuration files located in the `config/` direc
 
 ## CLI Aliases
 
-The published `@stacksjs/buddy` package ships `buddy`, `bud`, and `stx` bins, so
+The published `@stacksjs/buddy` package ships `buddy`, `bud`, and `stacks` bins, so
 any command can be run under any of the three names. Inside this repository the
 CLI is invoked as `./buddy`:
 
 ```bash
 ./buddy fresh   # inside this repo
-buddy fresh     # via the published package (bud and stx work too)
+buddy fresh     # via the published package (bud and stacks work too)
 ```
 
 ## Command Structure

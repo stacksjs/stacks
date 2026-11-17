@@ -15,6 +15,9 @@ The complete CLI runtime for the Stacks framework, lazy-loaded for fast cold sta
 - CLI entry point: `storage/framework/core/buddy/src/cli.ts`
 - Commands directory: `storage/framework/core/buddy/src/commands/`
 - Lazy command registry: `storage/framework/core/buddy/src/lazy-commands.ts`
+- Launcher (which project, whose CLI): `storage/framework/core/buddy/src/launcher.ts`
+- Machine project list and service records: `storage/framework/core/path/src/projects.ts`
+- Background daemon: `storage/framework/core/actions/src/daemon/`
 - Config system: `storage/framework/core/buddy/src/config.ts`
 - Shell entry: `buddy` (shell script at project root that invokes `bun run ./storage/framework/core/buddy/src/cli.ts`)
 - Application commands: `app/Commands/` (auto-discovered; no registration step)
@@ -24,6 +27,65 @@ The complete CLI runtime for the Stacks framework, lazy-loaded for fast cold sta
 ## CLI Aliases
 `./buddy`, `bud`, and `stacks` invoke the Stacks CLI. The `stx` binary belongs
 to the STX template engine; use it for template and native screen compilation.
+
+## One buddy for every project
+
+Buddy is installed once (`bun add -g @stacksjs/buddy`) and serves every Stacks
+project on the machine. Each invocation first settles two things in
+`launcher.ts`, before any command module loads:
+
+1. **Which project.** `--project <name|path>` when given (`-p` too, on the
+   built-in commands that declare it as the project), otherwise the nearest
+   ancestor of the working directory that `isProjectRoot` accepts. So
+   `buddy migrate` works from `app/Models`, and `buddy migrate --project shop`
+   works from anywhere. A name that matches no project, or more than one, is
+   refused rather than guessed.
+2. **Whose code runs it.** A project that has its own `buddy` installed gets
+   the command handed to it (the process is replaced, not wrapped), so it runs
+   on the framework version that project pins. A project with nothing
+   installed is run by the buddy that was invoked.
+
+The process that does the work always starts in the project root, because Bun
+reads `bunfig.toml` and its preloads from the directory it starts in.
+
+Machine-level commands are never handed to a project and run from any
+directory: `new`, `create`, `projects`, `projects:*`, `cd`, `daemon`,
+`daemon:*`, `dashboard`.
+
+```bash
+buddy projects                 # the projects on this machine, most recently used first
+  -q/--quiet                   # paths only, one per line
+  --json                       # the list as JSON
+buddy projects:add [path]      # add a project (the current one by default)
+buddy projects:remove <name>   # take one off the list (alias: projects:forget)
+buddy projects:scan [dir]      # find projects on disk and add them
+buddy projects:prune           # drop listed projects whose directory is gone
+buddy cd <name>                # print a project's path (--eval for a shell function)
+
+buddy dashboard [project]      # open a project's dashboard, started in the background if needed
+  --no-open                    # print the address without opening a browser
+  --stop                       # stop that project's background dashboard
+
+buddy daemon                   # is buddy running in the background, and what is it running
+buddy daemon:start             # start it (nothing requires this; it starts on demand)
+buddy daemon:stop              # stop it and the dashboards it started
+buddy daemon:restart
+buddy daemon:logs              # --lines <count>
+```
+
+A project joins the list (`~/.stacks/projects/<id>.json`, one file each) the
+first time buddy runs inside it. Read the list with `listProjects()` and
+`findProject()` from `@stacksjs/path`; do not walk the filesystem for
+projects. `findStacksProjects()` in `@stacksjs/utils` is the disk scan behind
+`projects:scan` and nothing else should need it.
+
+The daemon (`core/actions/src/daemon/`) starts a project's dashboard through
+that project's own `./buddy dev:dashboard`, on a port reserved for that project
+(3900 upwards, the same one every time), with no native window and an idle
+limit. It listens on a unix socket in `~/.stacks/buddy/`, loads no project
+code, polls nothing, and exits once it has no dashboards left. Reach it through
+`openProjectDashboard()` / `daemonStatus()` in `@stacksjs/actions/daemon/client`,
+which start it when it is not running.
 
 ## Architecture
 
@@ -650,11 +712,10 @@ buddy search                 # search engine operations
 buddy configure              # configure project
 buddy create                 # create new project
 buddy completion [shell]     # shell completion (bash/zsh/fish)
-buddy ports                  # port management
-  -l/--list                  # list used ports (default)
-  -c/--check                 # check port availability
-buddy ports:list             # list ports for project
-buddy ports:check            # check ports across all Stacks projects
+buddy ports                  # the ports this project's servers use
+  -c/--check                 # which of them are free and which are in use
+buddy ports:list             # same list
+buddy ports:check            # which of this project's ports are free or in use
 buddy setup                  # ensure project is set up correctly (alias: ensure)
   --skip-aws                 # skip AWS configuration
   --skip-keygen              # skip APP_KEY generation
@@ -680,7 +741,7 @@ buddy auth                   # auth commands
 buddy queue                  # queue management
 buddy schedule               # schedule management
 buddy package                # package management
-buddy projects               # project management
+buddy projects               # the Stacks projects on this machine (see "One buddy for every project")
 buddy prepublish             # pre-publish checks
 buddy stacks                 # Stacks framework commands (registered as 'stack' in lazy-commands)
 ```
@@ -767,7 +828,9 @@ export default {
 
 ## Gotchas
 - Application commands go in `app/Commands/`, framework commands in `storage/framework/core/buddy/src/commands/`
-- The `buddy` file at root is a shell script that bootstraps pantry, ensures Bun is available, then runs `bun run ./storage/framework/core/buddy/src/cli.ts`
+- The `buddy` file at root is a shell script that picks a usable Bun and runs the project's CLI entry: vendored `storage/framework/core/buddy/src/cli.ts` first, then `@stacksjs/buddy` from `node_modules`, then from `pantry`. `projectCliEntry()` in `@stacksjs/path` looks in the same places in the same order, and `buddy/tests/launcher.test.ts` fails when the two disagree
+- `--project` is read by the launcher, before the command runs, and only for built-in commands. An application command's own `--project` is passed through untouched. `build`, `make`, `preview`, `serve`, `serve:api` and `share` use `-p` for something else, so only the long form selects a project there
+- `buddy dev:dashboard` becomes the dashboard server (the CLI process is replaced) instead of waiting beside it
 - Commands are lazy-loaded with a 5-second timeout per command to prevent startup hangs
 - The `list` command loads ALL commands to display them
 - When no command matches, the CLI loads only `version` for minimal overhead

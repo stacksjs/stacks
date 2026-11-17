@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **400 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **411 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -23,6 +23,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `config` | 1 |
 | `configure` | 1 |
 | `core` | 1 |
+| `daemon` | 5 |
 | `dashboard` | 2 |
 | `db` | 3 |
 | `deploy` | 3 |
@@ -38,7 +39,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `format` | 1 |
 | `forms` | 2 |
 | `gdpr` | 5 |
-| `general` | 52 |
+| `general` | 54 |
 | `generate` | 18 |
 | `hq` | 3 |
 | `inspire` | 1 |
@@ -56,7 +57,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `package` | 1 |
 | `phone` | 4 |
 | `ports` | 2 |
-| `projects` | 1 |
+| `projects` | 5 |
 | `publish` | 8 |
 | `queue` | 21 |
 | `realtime` | 2 |
@@ -522,7 +523,7 @@ Print the absolute path of a Stacks project by name
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--eval` | Emit `cd "path"` instead of just the path - pair with `eval "$(buddy cd <name> --eval)"` for real shell-cd | boolean, optional | `false` |
-| `--root` | Search root for the project scan (overrides STACKS_PROJECTS_ROOT and the home-dir default) | value, required | - |
+| `--root` | A directory to look in for a project that is not on the list yet (overrides STACKS_PROJECTS_ROOT) | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `changelog`
@@ -1098,6 +1099,87 @@ Examples:
 ```bash
 buddy core:status
 ```
+
+### `daemon`
+
+Show whether buddy is running in the background and what it is running
+
+- Usage: `$ buddy daemon`
+- Namespace: none
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--json` | Print the status as JSON | boolean, optional | `false` |
+
+### `daemon:logs`
+
+Print the background buddy's log
+
+- Usage: `$ buddy daemon:logs`
+- Namespace: `daemon`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--lines` | How many lines from the end to print | value, required | `50` |
+
+### `daemon:restart`
+
+Restart the background buddy
+
+- Usage: `$ buddy daemon:restart`
+- Namespace: `daemon`
+- Aliases: none
+- Arguments: none
+
+### `daemon:start`
+
+Start buddy in the background
+
+- Usage: `$ buddy daemon:start`
+- Namespace: `daemon`
+- Aliases: none
+- Arguments: none
+
+### `daemon:status`
+
+Show whether buddy is running in the background and what it is running
+
+- Usage: `$ buddy daemon:status`
+- Namespace: `daemon`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--json` | Print the status as JSON | boolean, optional | `false` |
+
+### `daemon:stop`
+
+Stop the background buddy and the dashboards it started
+
+- Usage: `$ buddy daemon:stop`
+- Namespace: `daemon`
+- Aliases: none
+- Arguments: none
+
+### `dashboard`
+
+Open a project's dashboard, starting it in the background if needed
+
+- Usage: `$ buddy dashboard [project]`
+- Namespace: none
+- Aliases: none
+- Arguments: `[project]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `-p`, `--project` | The project to open, by name or path | value, optional | - |
+| `--no-open` | Start it and print its address without opening a browser | boolean, optional, negated | `true` |
+| `--stop` | Stop the project's background dashboard | boolean, optional | `false` |
 
 ### `dashboard:install`
 
@@ -4424,7 +4506,7 @@ Show phone service status
 
 ### `ports`
 
-Let buddy check your project for potential issues and misconfigurations
+List the ports this project's servers use
 
 - Usage: `$ buddy ports`
 - Namespace: none
@@ -4433,15 +4515,14 @@ Let buddy check your project for potential issues and misconfigurations
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-l`, `--list` | List the used ports | boolean, optional | `true` |
-| `-c`, `--check` | Check if the ports are available | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | - |
 | `-q`, `--quiet` | Use minimal output | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+| `-c`, `--check` | Check which of this project's ports are free and which are in use | boolean, optional | `false` |
 
 ### `ports:check`
 
-Check if the ports are available
+Check which of this project's ports are free and which are in use
 
 - Usage: `$ buddy ports:check`
 - Namespace: `ports`
@@ -4450,13 +4531,13 @@ Check if the ports are available
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `"<project root>"` |
+| `-p`, `--project` | Target a specific project | value, optional | - |
 | `-q`, `--quiet` | Use minimal output | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `ports:list`
 
-Check if the ports are available
+List the ports this project's servers use
 
 - Usage: `$ buddy ports:list`
 - Namespace: `ports`
@@ -4505,7 +4586,7 @@ buddy preview dist --port 4000
 
 ### `projects`
 
-Find all Stacks projects on your system
+List the Stacks projects on this machine
 
 - Usage: `$ buddy projects`
 - Namespace: none
@@ -4514,13 +4595,21 @@ Find all Stacks projects on your system
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-q`, `--quiet` | Use minimal output | boolean, optional | `false` |
-| `-l`, `--list` | List all local Stacks projects | boolean, optional | `false` |
-| `--verbose` | Enable verbose output | boolean, optional | `false` |
+| `-q`, `--quiet` | Print only the paths, one per line | boolean, optional | `false` |
+| `--json` | Print the list as JSON | boolean, optional | `false` |
+
+### `projects:add`
+
+Add a Stacks project to this machine's list
+
+- Usage: `$ buddy projects:add [path]`
+- Namespace: `projects`
+- Aliases: none
+- Arguments: `[path]`
 
 ### `projects:list`
 
-Find all Stacks projects on your system
+List the Stacks projects on this machine
 
 - Usage: `$ buddy projects:list`
 - Namespace: `projects`
@@ -4529,9 +4618,39 @@ Find all Stacks projects on your system
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-q`, `--quiet` | Use minimal output | boolean, optional | `false` |
-| `-l`, `--list` | List all local Stacks projects | boolean, optional | `true` |
-| `--verbose` | Enable verbose output | boolean, optional | `false` |
+| `-q`, `--quiet` | Print only the paths, one per line | boolean, optional | `false` |
+| `--json` | Print the list as JSON | boolean, optional | `false` |
+
+### `projects:prune`
+
+Drop listed projects whose directory is gone
+
+- Usage: `$ buddy projects:prune`
+- Namespace: `projects`
+- Aliases: none
+- Arguments: none
+
+### `projects:remove`
+
+Take a project off this machine's list (the project itself is not touched)
+
+- Usage: `$ buddy projects:remove <name>`
+- Namespace: `projects`
+- Aliases: `projects:forget`
+- Arguments: `<name>`
+
+### `projects:scan`
+
+Find Stacks projects under a directory and add them to the list
+
+- Usage: `$ buddy projects:scan [dir]`
+- Namespace: `projects`
+- Aliases: none
+- Arguments: `[dir]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--depth` | How many levels below the directory to look | value, required | `6` |
 
 ### `publish`
 

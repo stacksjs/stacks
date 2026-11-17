@@ -454,6 +454,12 @@ All of `./buddy`, `bud`, and `stacks` invoke the same CLI. (The `stx` bin belong
 template engine, not buddy - see stacksjs/stacks#2081.) Run `buddy list` for everything and
 `buddy <command> --help` for flags. Full reference with every flag: `stacks-buddy`.
 
+**Any project, from anywhere**
+- Buddy is installed once (`bun add -g @stacksjs/buddy`) and works in every Stacks project: from any directory inside one, or with `--project <name|path>` on any built-in command. A project's own installed `buddy` does the work when it has one
+- `buddy projects[:add|remove|scan|prune]` the projects on this machine; `buddy cd <name>` prints one's path
+- `buddy dashboard [project]` opens a project's dashboard, started in the background if needed; its sidebar switches between projects
+- `buddy daemon[:status|start|stop|restart|logs]` the background buddy that starts those dashboards (it starts and stops by itself)
+
 **Develop & serve**
 - `buddy dev [frontend|api|docs|dashboard|desktop]` start dev server(s) + reverse proxy; `buddy dev:components` component playground
 - `buddy down` / `buddy up` enter / exit maintenance mode

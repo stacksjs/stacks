@@ -714,6 +714,36 @@ form, a console, the search palette) with what they are.
 - A hidden label becomes `ariaLabel`. A visible word beside the dropdown
   ("Sort") stays, with the dropdown inside its label at `size="sm"`.
 
+### The project switcher
+
+The top of the sidebar names the project being served and opens a menu of
+every Stacks project on the machine (`resources/components/Dashboard/ProjectSwitcher.stx`,
+placed in the layout's `#header` slot under the window-controls strip).
+
+A dashboard process serves exactly one project: its config, database
+connection, routes and model globals are bound when it starts. Switching
+therefore goes to the other project's dashboard, at that project's own
+address, and never re-points the running one. Do not try to make a dashboard
+page read another project's data.
+
+- The button is rendered on the server with the project's name
+  (`dashboardProjectIdentity()` in `resources/functions/dashboard/project-switcher.ts`),
+  so the sidebar does not shift on hydration. The list is fetched in the
+  browser when the menu opens, because the layout is rendered once and kept.
+- The client lives in `functions/projects.ts` and talks to the dev dashboard
+  server's `/__buddy/` routes. Picking a project whose dashboard is up goes
+  straight there; otherwise the server asks the background daemon to start it
+  and answers with the address once it is ready.
+- It is drawn only on the developer's machine. The dev dashboard server sets
+  `STACKS_DASHBOARD_PROJECTS=1`; a deployed dashboard has one project and no
+  switcher.
+- Each project has its own origin (a port reserved for it, the same every
+  time), so appearance settings, the sign-in token and kept state are per
+  project by construction.
+- The sidebar's header and its scroll area are stacked at the same level, so
+  the layout lifts the header (`:has([data-project-switcher][data-open="true"])`)
+  while the menu is open. A new header control with a menu needs the same.
+
 ### Sidebar-aware overlays
 
 The desktop sidebar is fixed and publishes its current width through
