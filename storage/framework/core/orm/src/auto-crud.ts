@@ -419,6 +419,13 @@ export const SYSTEM_COLUMNS = ['id', 'uuid', 'created_at', 'updated_at', 'delete
  * REJECTING the real column spelling `discount_type`. The map accepts
  * either spelling and always emits the column spelling.
  *
+ * Foreign keys from `belongsTo` are readable too, in both spellings
+ * (`?order_id=7`, `?orderId=7`). The relation creates the column without a
+ * matching attribute, so a map built from attributes alone silently ignored
+ * the filter every child listing is filtered by — `GET /api/order-items?
+ * order_id=7` returned every order's items. The write path already accepted
+ * these keys; the read path now agrees with it.
+ *
  * Hidden attributes are removed under BOTH spellings — sorting or
  * equality-filtering on a hidden column (`?two_factor_secret=x`) is a
  * blind-enumeration oracle even though the value never appears in the
@@ -427,9 +434,11 @@ export const SYSTEM_COLUMNS = ['id', 'uuid', 'created_at', 'updated_at', 'delete
 export function buildReadColumnMap(
   attributes: Record<string, unknown> | null | undefined,
   hiddenFields: string[],
+  belongsTo?: unknown,
 ): Map<string, string> {
   const map = new Map<string, string>()
-  for (const name of [...Object.keys(attributes ?? {}), ...SYSTEM_COLUMNS]) {
+  const foreignKeys = belongsToEntries(belongsTo).map(relation => relation.foreignKey)
+  for (const name of [...Object.keys(attributes ?? {}), ...SYSTEM_COLUMNS, ...foreignKeys]) {
     const column = toSnakeCase(name)
     // bun-query-builder interpolates ORDER BY / WHERE columns raw and
     // unquoted — only word-shaped columns may enter the map.
@@ -437,9 +446,24 @@ export function buildReadColumnMap(
     map.set(name, column)
     map.set(column, column)
   }
-  for (const f of hiddenFields) {
+  // A foreign key also answers to its camelCase spelling (`orderId`),
+  // matching what the write path accepts for the same relation.
+  for (const foreignKey of foreignKeys) {
+    const column = toSnakeCase(foreignKey)
+    if (!/^\w+$/.test(column)) continue
+    const camel = column.replace(/_([a-z0-9])/g, (_, letter: string) => letter.toUpperCase())
+    if (camel !== column && !map.has(camel))
+      map.set(camel, column)
+  }
+  // Remove every spelling that reaches a hidden column, aliases included:
+  // deleting only the declared names would leave `ownerId` pointing at a
+  // hidden `owner_id`.
+  const hiddenColumns = new Set(hiddenFields.map(field => toSnakeCase(field)))
+  for (const f of hiddenFields)
     map.delete(f)
-    map.delete(toSnakeCase(f))
+  for (const [name, column] of [...map]) {
+    if (hiddenColumns.has(column))
+      map.delete(name)
   }
   return map
 }

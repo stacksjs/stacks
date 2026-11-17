@@ -284,6 +284,29 @@ describe('buildReadColumnMap (read-path sort/filter allowlist)', () => {
     expect(map.get('id')).toBe('id')
     expect(map.size).toBe(5)
   })
+
+  it('includes belongsTo foreign keys under both spellings', () => {
+    // The relation creates `order_id` with no matching attribute; filtering a
+    // child listing by its parent is the most common read there is.
+    const map = buildReadColumnMap(attributes, hidden, ['Order', { model: 'Product' }])
+    expect(map.get('order_id')).toBe('order_id')
+    expect(map.get('orderId')).toBe('order_id')
+    expect(map.get('product_id')).toBe('product_id')
+    expect(map.get('productId')).toBe('product_id')
+  })
+
+  it('uses a declared foreign key name', () => {
+    const map = buildReadColumnMap({}, [], [{ model: 'User', foreignKey: 'author_id' }])
+    expect(map.get('author_id')).toBe('author_id')
+    expect(map.get('authorId')).toBe('author_id')
+    expect(map.has('user_id')).toBe(false)
+  })
+
+  it('still lets hidden win over a foreign key', () => {
+    const map = buildReadColumnMap({}, ['owner_id'], [{ model: 'User', foreignKey: 'owner_id' }])
+    expect(map.has('owner_id')).toBe(false)
+    expect(map.has('ownerId')).toBe(false)
+  })
 })
 
 describe('applySorting (allowlist + camel→snake mapping)', () => {
