@@ -4944,10 +4944,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     if (typeof ability !== 'string' || ability.length === 0)
       return false
     const { Gate } = requestGateModule ??= await import('@stacksjs/auth/gate')
-    // Gate types its user as the ORM's `UserModel`, which no User row matches,
-    // so the row crosses over as one (stacksjs/stacks#3314).
-    const user = (this._authenticatedUser ?? null) as unknown as Parameters<typeof Gate.allows>[1]
-    return Gate.allows(ability, user, ...args)
+    return Gate.allows(ability, this._authenticatedUser ?? null, ...args)
   },
   async cannot(ability: string, ...args: unknown[]) {
     return !(await this.can!(ability, ...args))
@@ -4956,9 +4953,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
   // AuthorizationException (403) on deny.
   async authorize(ability: string, ...args: unknown[]) {
     const { Gate } = requestGateModule ??= await import('@stacksjs/auth/gate')
-    // As in `can`: stacksjs/stacks#3314.
-    const user = (this._authenticatedUser ?? null) as unknown as Parameters<typeof Gate.authorize>[1]
-    await Gate.authorize(ability, user, ...args)
+    await Gate.authorize(ability, this._authenticatedUser ?? null, ...args)
   },
 }
 

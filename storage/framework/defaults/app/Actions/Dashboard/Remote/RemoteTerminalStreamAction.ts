@@ -1,4 +1,3 @@
-import type { UserModel } from '@stacksjs/orm'
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { response, stream } from '@stacksjs/router'
@@ -17,7 +16,7 @@ export default new Action({
   method: 'GET',
   async handle(request: RequestInstance) {
     try {
-      const user = (await request.user() ?? null) as UserModel | null
+      const user = (await request.user()) ?? null
       const resumeFrom = request.get('after') ?? request.headers.get('last-event-id') ?? 0
       const after = Number(resumeFrom)
       const events = terminalSessions.watch(request.getParam('id'), user, Number.isInteger(after) && after > 0 ? after : 0)

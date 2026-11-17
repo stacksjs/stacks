@@ -1,4 +1,3 @@
-import type { UserModel } from '@stacksjs/orm'
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { Gate } from '@stacksjs/auth'
@@ -23,7 +22,7 @@ export default new Action({
     try {
       // `request.user()` answers `AuthenticatedUser | undefined`; the gate and
       // the audit identity both want the model or an explicit null.
-      const user = (await request.user() ?? null) as UserModel | null
+      const user = (await request.user()) ?? null
       const hostKey = request.get('host')
       const commandKey = request.get('command')
 

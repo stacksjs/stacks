@@ -1,4 +1,4 @@
-import type { UserModel } from '@stacksjs/orm'
+import type { GateUser } from '@stacksjs/auth'
 import type { RemoteHost } from './remote-commands'
 import type { TerminalAuditSink, TerminalEvent, TerminalProcess, TerminalSessionOptions } from './remote-terminal'
 import { describe, expect, it, jest } from 'bun:test'
@@ -16,8 +16,8 @@ import { encodeTerminalEvent, terminalEventStream, terminalSessions } from './te
  * local shell standing in for ssh.
  */
 
-const alice = { id: 1, email: 'alice@example.com' } as unknown as UserModel
-const bob = { id: 2, email: 'bob@example.com' } as unknown as UserModel
+const alice = { id: 1, email: 'alice@example.com' } as unknown as GateUser
+const bob = { id: 2, email: 'bob@example.com' } as unknown as GateUser
 
 const shellHost: RemoteHost = { key: 'app', host: 'app.example.com', user: 'deploy', knownHosts: 'app.example.com ssh-ed25519 AAAA', terminal: true }
 const commandOnlyHost: RemoteHost = { key: 'db', host: 'db.example.com', user: 'deploy', knownHosts: 'db.example.com ssh-ed25519 AAAA' }

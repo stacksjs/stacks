@@ -1,13 +1,14 @@
-import type { UserModel as OrmUserModel } from '@stacksjs/orm'
+import type { User } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
 import { Auth } from './authentication'
 
-// Local aliases — keep the existing `UserModel` / `UserJsonResponse` symbols
-// in this module while sourcing the underlying type from the ORM.
-type UserModel = OrmUserModel
-type UserJsonResponse = OrmUserModel
-
-export type AuthUser = UserJsonResponse
+/**
+ * The signed-in user: the row `User.find` returns, so an app's own User model
+ * and its columns come through. It is what `Auth.user()` resolves, what the
+ * Auth middleware stamps on `request._authenticatedUser`, and what `Gate`,
+ * policies and the RBAC helpers receive (stacksjs/stacks#3314).
+ */
+export type AuthUser = NonNullable<Awaited<ReturnType<typeof User.find>>>
 
 /**
  * Get the currently authenticated user
@@ -24,19 +25,14 @@ export type AuthUser = UserJsonResponse
  *   console.log('Logged in as:', user.email)
  * }
  */
-export async function authUser(): Promise<UserModel | undefined> {
+export async function authUser(): Promise<AuthUser | undefined> {
   // First check if already set by middleware (fastest path).
-  //
-  // The marker is declared `unknown` on the request, deliberately: the User
-  // shape is project-defined. Narrowed here, where the function promises a
-  // UserModel, rather than through a `(request)` that also unchecked
-  // the property name itself.
-  const middlewareUser = request?._authenticatedUser as UserModel | undefined
+  const middlewareUser = request?._authenticatedUser
   if (middlewareUser) {
     return middlewareUser
   }
 
-  return await Auth.user() as UserModel | undefined
+  return await Auth.user()
 }
 
 export async function check(): Promise<boolean> {

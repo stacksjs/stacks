@@ -1,4 +1,4 @@
-import type { UserModel } from '@stacksjs/orm'
+import type { GateUser } from '@stacksjs/auth'
 import type { ResponseStatus } from '@stacksjs/bun-router'
 
 /**
@@ -233,12 +233,12 @@ export function resolveCommand(commands: readonly RemoteCommand[], key: unknown,
  * `role:admin` is one bit. The gate receives both keys, so an application can
  * scope by host, by command, or by both without this file knowing how.
  */
-export type RemoteAuthorizer = (user: UserModel | null, hostKey: string, commandKey: string) => Promise<boolean> | boolean
+export type RemoteAuthorizer = (user: GateUser | null, hostKey: string, commandKey: string) => Promise<boolean> | boolean
 
 /** Refuses when no authorizer is configured. */
 export async function authorize(
   authorizer: RemoteAuthorizer | undefined,
-  user: UserModel | null,
+  user: GateUser | null,
   host: RemoteHost,
   command: RemoteCommand,
 ): Promise<void> {
@@ -281,7 +281,7 @@ export function normalizeTimeout(value: number | undefined): number {
 export async function runRemoteCommand(
   input: { hostKey: unknown, commandKey: unknown },
   context: {
-    user: UserModel | null
+    user: GateUser | null
     hosts: readonly RemoteHost[]
     commands: readonly RemoteCommand[]
     authorizer?: RemoteAuthorizer

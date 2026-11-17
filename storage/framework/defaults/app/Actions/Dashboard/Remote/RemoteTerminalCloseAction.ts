@@ -1,4 +1,3 @@
-import type { UserModel } from '@stacksjs/orm'
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
@@ -12,7 +11,7 @@ export default new Action({
   method: 'DELETE',
   async handle(request: RequestInstance) {
     try {
-      const user = (await request.user() ?? null) as UserModel | null
+      const user = (await request.user()) ?? null
       await terminalSessions.close(request.getParam('id'), user)
       return response.json({ ok: true })
     }

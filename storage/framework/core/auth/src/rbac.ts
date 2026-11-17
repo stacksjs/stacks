@@ -10,12 +10,11 @@
  * if (await hasRole(user, 'admin')) { ... }
  * await assignRole(userId, 'editor')
  */
-import type { UserModel as OrmUserModel } from '@stacksjs/orm'
+import type { GateUser } from './gate'
 import { config } from '@stacksjs/config'
 
-// Use the row/instance shape from orm so role helpers operate on the
-// authenticated user object, not the User class constructor.
-type UserModel = OrmUserModel
+// The signed-in user, as `Gate` receives it.
+type UserModel = GateUser
 
 export interface RoleRecord {
   id: number

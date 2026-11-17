@@ -1,4 +1,3 @@
-import type { UserModel } from '@stacksjs/orm'
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { hosts } from '~/config/remote'
@@ -19,7 +18,7 @@ export default new Action({
   method: 'POST',
   async handle(request: RequestInstance) {
     try {
-      const user = (await request.user() ?? null) as UserModel | null
+      const user = (await request.user()) ?? null
       const session = await terminalSessions.open({
         user,
         hosts,

@@ -14,7 +14,7 @@
 //   - authorization fails CLOSED when no gate is configured
 //   - a run is recorded before it starts, not only when it finishes
 
-import type { UserModel } from '@stacksjs/orm'
+import type { GateUser } from '@stacksjs/auth'
 import type { RemoteAuditSink, RemoteCommand, RemoteHost } from './remote-commands'
 import { beforeEach, describe, expect, it } from 'bun:test'
 import {
@@ -46,7 +46,7 @@ const commands: RemoteCommand[] = [
   { key: 'restart-api', description: 'Restart the API', argv: ['systemctl', 'restart', 'api'], hosts: ['app'] },
 ]
 
-const user = { id: 1, email: 'ops@example.com' } as unknown as UserModel
+const user = { id: 1, email: 'ops@example.com' } as unknown as GateUser
 
 let recorded: string[] = []
 const audit: RemoteAuditSink = {

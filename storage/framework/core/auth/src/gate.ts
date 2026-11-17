@@ -4,12 +4,22 @@
  * Laravel-like authorization gates for fine-grained access control.
  * Supports both inline gates and policy classes.
  */
-import type { UserModel as OrmUserModel } from '@stacksjs/orm'
+import type { AuthenticatedUser } from '@stacksjs/types'
+import type { AuthUser } from './user'
 
-// Alias the ORM-derived UserModel under the name this module uses internally.
-// The gate API receives authenticated user objects (rows / instances),
-// not the User class constructor.
-type UserModel = OrmUserModel
+/**
+ * The user a gate, a policy or an RBAC helper is handed (stacksjs/stacks#3314).
+ *
+ * The same object arrives under two types. The router's request carries the
+ * User row (`AuthUser`, what `User.find` returns), so `request.can()` and an
+ * action typed with the router's request pass that. An action typed with
+ * `RequestInstance` from `@stacksjs/types` gets `request.user()` as
+ * `AuthenticatedUser`, the app's User columns without the model's methods,
+ * since that package cannot depend on the ORM. Both have `id` and `email`.
+ */
+export type GateUser = AuthUser | AuthenticatedUser
+
+type UserModel = GateUser
 
 /**
  * Gate callback function type

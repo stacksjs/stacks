@@ -29,8 +29,8 @@ export type { AuthenticatedUser, StacksRequestExtensions, StacksRequestMacros, S
  * Augmentation target: the types an application gives the request.
  *
  * `user` is the type of the signed-in user the Auth middleware stamps on
- * `request._authenticatedUser`. `@stacksjs/orm` registers its `UserModel`,
- * which an app narrows to its own User by augmenting `UserModel`. With
+ * `request._authenticatedUser`. `@stacksjs/auth` registers the User row
+ * `User.find` returns, so an app's own User model comes through. With
  * nothing registered, the user is anything with an `id`.
  *
  * Declared here, in the entry, rather than beside the markers: an

@@ -11,14 +11,11 @@
  *   // User can update the post
  * }
  */
-import type { UserModel as OrmUserModel } from '@stacksjs/orm'
-import type { AuthorizationResponse } from './gate'
+import type { AuthorizationResponse, GateUser } from './gate'
 import { all, any, authorize as gateAuthorize, can, cannot, inspect } from './gate'
 
-// Alias the ORM-derived UserModel under the name the rest of this module
-// expects. Using the row/instance shape (rather than `typeof User`) lets
-// callers pass plain authenticated user objects to the gate helpers.
-type UserModel = OrmUserModel
+// The signed-in user, as `Gate` receives it.
+type UserModel = GateUser
 
 /**
  * Check if a user can perform an ability

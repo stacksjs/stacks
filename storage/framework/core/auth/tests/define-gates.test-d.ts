@@ -10,8 +10,9 @@
  * `bun run typecheck`.
  */
 
-import type { UserModel } from '@stacksjs/orm'
-import type { Ability, GatesDefinition, PolicyMapping, PolicyModelName, PolicyName } from '../src/gate'
+import type { AuthenticatedUser } from '@stacksjs/types'
+import type { Ability, GatesDefinition, GateUser, PolicyMapping, PolicyModelName, PolicyName } from '../src/gate'
+import type { AuthUser } from '../src/user'
 import { defineGates } from '../src/gate'
 import { Gate } from '../src/gate'
 
@@ -135,7 +136,7 @@ export const ok = true
 // A gate's declared parameters survive `defineGates`, which is what the
 // registry reads. If this widens to `GateCallback` again, the registry that
 // derives from it silently stops constraining anything.
-export const gateKeepsItsSignature: (user: UserModel | null) => boolean
+export const gateKeepsItsSignature: (user: GateUser | null) => boolean
   = authorization.gates['view-dashboard']
 
 // The keys stay a literal union rather than collapsing to `string`.
@@ -156,7 +157,7 @@ export const rejectsUnknownName: DeclaredGateNames = 'not-a-declared-gate'
  * checked against several abilities, which may each declare different
  * parameters, so no single tuple is correct for the call.
  */
-declare const someone: UserModel | null
+declare const someone: GateUser | null
 
 export async function everyCheckerAgrees(): Promise<void> {
   // `view-dashboard` is declared `(user) => boolean` above: no extra arguments.
@@ -194,4 +195,22 @@ export async function everyCheckerRejectsExtras(): Promise<void> {
 export async function dynamicAbilitiesStillCompile(routeParam: string): Promise<void> {
   await Gate.allows(routeParam, someone)
   await Gate.allows('publish', someone, { id: 1 })
+}
+
+// ── the signed-in user, from either request type ──────────────────────────
+
+/*
+ * The router's request carries the User row; an action typed with
+ * `RequestInstance` reads `request.user()` as `AuthenticatedUser`. Both are
+ * the same object, and both reach a gate without a cast. Gate used to type its
+ * user as the ORM's hand-written `UserModel`, which neither satisfied, so the
+ * router's own `request.can()` crossed over with `as unknown as`
+ * (stacksjs/stacks#3314).
+ */
+declare const row: AuthUser | null
+declare const requestUser: AuthenticatedUser | null
+
+export async function eitherUserReachesAGate(): Promise<void> {
+  await Gate.allows('view-dashboard', row)
+  await Gate.authorize('view-dashboard', requestUser)
 }

@@ -5,33 +5,32 @@
  *
  * @example
  * export class PostPolicy extends BasePolicy<Post> {
- *   viewAny(user: UserModel | null): boolean {
+ *   viewAny(user: AuthUser | null): boolean {
  *     return true // Anyone can view posts list
  *   }
  *
- *   view(user: UserModel | null, post: Post): boolean {
+ *   view(user: AuthUser | null, post: Post): boolean {
  *     return post.published || user?.id === post.userId
  *   }
  *
- *   create(user: UserModel | null): boolean {
+ *   create(user: AuthUser | null): boolean {
  *     return user !== null
  *   }
  *
- *   update(user: UserModel | null, post: Post): boolean {
+ *   update(user: AuthUser | null, post: Post): boolean {
  *     return user?.id === post.userId
  *   }
  *
- *   delete(user: UserModel | null, post: Post): boolean {
+ *   delete(user: AuthUser | null, post: Post): boolean {
  *     return user?.id === post.userId || user?.isAdmin
  *   }
  * }
  */
-import type { UserModel as OrmUserModel } from '@stacksjs/orm'
+import type { GateUser } from './gate'
 import { AuthorizationResponse } from './gate'
 
-// Use the row/instance shape from orm so policies operate on the
-// authenticated user object, not the User class constructor.
-type UserModel = OrmUserModel
+// The signed-in user, as `Gate` receives it.
+type UserModel = GateUser
 
 export abstract class BasePolicy<T = any> {
   /**
@@ -39,7 +38,7 @@ export abstract class BasePolicy<T = any> {
    * Return true to allow, false to deny, or null to continue to specific method.
    *
    * @example
-   * before(user: UserModel | null, ability: string): boolean | null {
+   * before(user: AuthUser | null, ability: string): boolean | null {
    *   // Super admins can do everything
    *   if (user?.role === 'super-admin') {
    *     return true

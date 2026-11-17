@@ -1,4 +1,4 @@
-import type { UserModel } from '@stacksjs/orm'
+import type { GateUser } from '@stacksjs/auth'
 import type { RemoteHost } from './remote-commands'
 import { randomBytes } from 'node:crypto'
 import { RemoteCommandError, resolveHost } from './remote-commands'
@@ -68,7 +68,7 @@ export interface TerminalAuditSink {
 }
 
 /** Whether `user` may open a terminal on the host with this key. */
-export type TerminalAuthorizer = (user: UserModel | null, hostKey: string) => Promise<boolean> | boolean
+export type TerminalAuthorizer = (user: GateUser | null, hostKey: string) => Promise<boolean> | boolean
 
 /** What a viewer receives: output in order, then the end. */
 export type TerminalEvent =
@@ -124,7 +124,7 @@ interface Session {
   detachTimer?: ReturnType<typeof setTimeout>
 }
 
-function ownerOf(user: UserModel | null): string {
+function ownerOf(user: GateUser | null): string {
   if (!user)
     throw new RemoteCommandError('Authentication is required.', 401)
   const id = (user as { id?: unknown }).id
@@ -160,7 +160,7 @@ export class TerminalSessions {
    * process starts, so a session that hangs on connect is still on record.
    */
   async open(input: {
-    user: UserModel | null
+    user: GateUser | null
     hosts: readonly RemoteHost[]
     hostKey: unknown
     authorizer?: TerminalAuthorizer
@@ -237,7 +237,7 @@ export class TerminalSessions {
   }
 
   /** Type into the session. */
-  async input(id: string, user: UserModel | null, data: unknown): Promise<void> {
+  async input(id: string, user: GateUser | null, data: unknown): Promise<void> {
     const session = this.find(id, user)
     if (typeof data !== 'string' || data.length === 0)
       throw new RemoteCommandError('Input is a non-empty string.', 422)
@@ -251,13 +251,13 @@ export class TerminalSessions {
       await this.recordInput(session, data)
   }
 
-  resize(id: string, user: UserModel | null, cols: unknown, rows: unknown): void {
+  resize(id: string, user: GateUser | null, cols: unknown, rows: unknown): void {
     const session = this.find(id, user)
     const size = normalizeSize(cols, rows)
     session.process.resize(size.cols, size.rows)
   }
 
-  async close(id: string, user: UserModel | null): Promise<void> {
+  async close(id: string, user: GateUser | null): Promise<void> {
     await this.end(this.find(id, user), 'closed')
   }
 
@@ -277,7 +277,7 @@ export class TerminalSessions {
    * viewer stops reading. A viewer that reconnects passes the last sequence it
    * saw and misses nothing still in the replay buffer.
    */
-  watch(id: string, user: UserModel | null, afterSeq = 0): AsyncIterable<TerminalEvent> {
+  watch(id: string, user: GateUser | null, afterSeq = 0): AsyncIterable<TerminalEvent> {
     const session = this.find(id, user)
     const queue: TerminalEvent[] = session.backlog
       .filter(chunk => chunk.seq > afterSeq)
@@ -327,7 +327,7 @@ export class TerminalSessions {
   }
 
   /** The session with this id, if this user owns it. Anyone else gets the 404 a missing id gets. */
-  private find(id: unknown, user: UserModel | null): Session {
+  private find(id: unknown, user: GateUser | null): Session {
     const owner = ownerOf(user)
     const session = typeof id === 'string' ? this.sessions.get(id) : undefined
     if (!session || session.owner !== owner || session.ended)
