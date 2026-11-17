@@ -335,6 +335,7 @@ declare module '@stacksjs/database' {
       shipping_city: string
       shipping_state: string
       shipping_zip: string
+      discount_code: string | null
       customer_id: number
       coupon_id: number
     }
@@ -616,6 +617,39 @@ declare module '@stacksjs/database' {
       requires_login: number
       automatic_delivery: number
       status: "active" | "inactive"
+    }
+    discounts: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      title: string
+      code: string | null
+      type: "percentage" | "fixed_amount" | "buy_x_get_y" | "volume" | "free_shipping"
+      value: number
+      scope: "product" | "order" | null
+      per_item: number
+      target: string | null
+      buy_quantity: number | null
+      buy_target: string | null
+      get_quantity: number | null
+      get_target: string | null
+      get_percent: number | null
+      max_applications: number | null
+      tiers: string | null
+      max_shipping: number | null
+      minimum_subtotal: number | null
+      minimum_quantity: number | null
+      max_amount: number | null
+      combines_with_product: number
+      combines_with_order: number
+      combines_with_shipping: number
+      usage_limit: number | null
+      usage_count: number
+      is_active: number
+      starts_at: string | null
+      ends_at: string | null
     }
     email_idempotency: {
       // columns
@@ -1245,6 +1279,49 @@ declare module '@stacksjs/database' {
       status: "pending" | "confirmed" | "cancelled"
       auction_id: number
       customer_id: number
+    }
+    post_purchase_offer_responses: {
+      // columns
+      id: number
+      created_at: string
+      updated_at: string | null
+      status: "viewed" | "pending" | "accepted" | "declined" | "failed"
+      product_id: number
+      variant_id: number | null
+      quantity: number | null
+      unit_price: number | null
+      compare_at_price: number | null
+      amount: number | null
+      currency: string | null
+      payment_reference: string | null
+      payment_provider: string | null
+      failure_reason: string | null
+      order_item_id: number | null
+      responded_at: string | null
+      post_purchase_offer_id: number
+      order_id: number
+    }
+    post_purchase_offers: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      name: string
+      headline: string | null
+      message: string | null
+      product_ids: string
+      discount_percent: number
+      min_quantity: number
+      default_quantity: number
+      max_quantity: number | null
+      trigger_product_ids: string | null
+      min_order_total: number | null
+      window_minutes: number
+      priority: number
+      is_active: number
+      starts_at: string | null
+      ends_at: string | null
     }
     posts: {
       // columns
