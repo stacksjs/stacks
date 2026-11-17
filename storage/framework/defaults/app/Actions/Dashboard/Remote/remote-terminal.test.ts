@@ -396,28 +396,48 @@ describe.if(Boolean(SSHD))('a terminal session over real SSH', () => {
     for (const name of ['host_key', 'client_key'])
       Bun.spawnSync(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', join(dir, name)])
     writeFileSync(join(dir, 'authorized_keys'), readFileSync(join(dir, 'client_key.pub')), { mode: 0o600 })
-    const port = 20000 + Math.floor(Math.random() * 20000)
-    writeFileSync(join(dir, 'sshd_config'), [
-      `Port ${port}`,
-      'ListenAddress 127.0.0.1',
-      `HostKey ${join(dir, 'host_key')}`,
-      `AuthorizedKeysFile ${join(dir, 'authorized_keys')}`,
-      `PidFile ${join(dir, 'sshd.pid')}`,
-      'UsePAM no',
-      'StrictModes no',
-      'PasswordAuthentication no',
-      'KbdInteractiveAuthentication no',
-      'LogLevel ERROR',
-      // The same shell whoever runs this, rather than their login shell -
-      // some report 0 for `exit 7`, which would make the exit status untestable.
-      'ForceCommand /bin/sh -i',
-    ].join('\n'))
-    const daemon = Bun.spawn([SSHD!, '-D', '-f', join(dir, 'sshd_config'), '-E', join(dir, 'sshd.log')])
-    for (let i = 0; i < 50; i++) {
-      if (Bun.spawnSync(['nc', '-z', '127.0.0.1', String(port)]).exitCode === 0)
-        break
-      await Bun.sleep(100)
+    // A port the OS says is free, rather than a random one: sshd exits when its
+    // port is taken, and a random pick in a busy CI job sometimes is. Retried
+    // if sshd exits anyway, and a daemon that never listens fails here with its
+    // own log, not later as a misleading "Connection refused".
+    let port = 0
+    let daemon: ReturnType<typeof Bun.spawn> | undefined
+    for (let attempt = 0; attempt < 3 && !daemon; attempt++) {
+      const probe = Bun.listen({ hostname: '127.0.0.1', port: 0, socket: { data() {} } })
+      port = probe.port
+      probe.stop(true)
+      writeFileSync(join(dir, 'sshd_config'), [
+        `Port ${port}`,
+        'ListenAddress 127.0.0.1',
+        `HostKey ${join(dir, 'host_key')}`,
+        `AuthorizedKeysFile ${join(dir, 'authorized_keys')}`,
+        `PidFile ${join(dir, 'sshd.pid')}`,
+        'UsePAM no',
+        'StrictModes no',
+        'PasswordAuthentication no',
+        'KbdInteractiveAuthentication no',
+        'LogLevel ERROR',
+        // The same shell whoever runs this, rather than their login shell -
+        // some report 0 for `exit 7`, which would make the exit status untestable.
+        'ForceCommand /bin/sh -i',
+      ].join('\n'))
+      const started = Bun.spawn([SSHD!, '-D', '-f', join(dir, 'sshd_config'), '-E', join(dir, 'sshd.log')])
+      for (let i = 0; i < 50 && started.exitCode === null; i++) {
+        if (Bun.spawnSync(['nc', '-z', '127.0.0.1', String(port)]).exitCode === 0) {
+          daemon = started
+          break
+        }
+        await Bun.sleep(100)
+      }
+      if (!daemon)
+        started.kill()
     }
+    if (!daemon) {
+      const log = existsSync(join(dir, 'sshd.log')) ? readFileSync(join(dir, 'sshd.log'), 'utf8') : 'no sshd log'
+      rmSync(dir, { force: true, recursive: true })
+      throw new Error(`the test sshd never listened on 127.0.0.1:${port}: ${log}`)
+    }
+    const running = daemon
     const hostKey = readFileSync(join(dir, 'host_key.pub'), 'utf8').split(' ').slice(0, 2).join(' ')
     const host: RemoteHost = {
       key: 'local',
@@ -431,7 +451,7 @@ describe.if(Boolean(SSHD))('a terminal session over real SSH', () => {
     return {
       host,
       stop: () => {
-        daemon.kill()
+        running.kill()
         rmSync(dir, { force: true, recursive: true })
       },
     }
