@@ -5,31 +5,31 @@ import os from 'node:os'
 import path from 'node:path'
 import { italic } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
+import { isProjectRoot } from '@stacksjs/path'
 
-const targetFileName = 'buddy' // The exact name of the target file
+/**
+ * Directory names never worth entering: dependency and build output, and
+ * anything hidden. Matched against the directory's own NAME.
+ *
+ * These used to be tested against the whole absolute path, and one of them
+ * matched the letters "out" anywhere in it: a home directory called `scout`,
+ * or a parent folder called `layouts`, silently excluded everything beneath
+ * it, and the scan came back empty with no word of why.
+ */
+const skippedNames = new Set(['node_modules', 'dist', 'out', 'vendor', 'pantry'])
 
-// Always-excluded — these are noise regardless of where the search root is.
-const alwaysExcludePatterns: Array<string | RegExp> = [
-  'node_modules',
-  'dist',
-  'vendor',
-  'storage/framework',
-  /.*out.*/, // exclude any folder with 'out' in the name
-  /.*\/\..*/, // exclude any folder that starts with a dot
-]
-
-// Home-dir noise — only excluded when the search defaults to `os.homedir()`.
+// Home-dir noise, only skipped when the search defaults to `os.homedir()`.
 // If the caller passes an explicit `dir`, they've opted in to searching it
 // even when it lives under one of these paths (e.g. `~/Documents/Projects`).
-const homeOnlyExcludePatterns: string[] = [
-  `${os.homedir()}/Documents`,
-  `${os.homedir()}/Pictures`,
-  `${os.homedir()}/Library`,
-  `${os.homedir()}/.Trash`,
-]
+const homeOnlyExcludes = ['Documents', 'Pictures', 'Library', 'Movies', 'Music', 'Applications']
+
+/** How far below the search root a project may sit. `~/Code/clients/acme/app` is four. */
+const DEFAULT_MAX_DEPTH = 6
 
 interface FindStacksProjectsOptions {
   quiet?: boolean
+  /** Levels below the search root to look at. */
+  maxDepth?: number
 }
 
 const MAX_CONCURRENT_FS_READS = 32
@@ -50,67 +50,59 @@ async function withFsReadSlot<T>(operation: () => Promise<T>): Promise<T> {
   }
 }
 
+/**
+ * Walk a directory tree for Stacks projects.
+ *
+ * This is the slow way to learn what is on a machine, kept for the one moment
+ * it is needed: `buddy projects:scan`, which adds what it finds to the
+ * machine's project list. Everything else reads that list (`listProjects` in
+ * `@stacksjs/path`), which a project joins the first time `buddy` runs in it.
+ *
+ * A project is whatever `isProjectRoot` says it is, the same test `buddy` uses
+ * to find the project it was run in. The scan used to have its own: a `buddy`
+ * file beside a vendored `storage/framework/core/buddy`, which no app created
+ * since the framework moved into `node_modules` has.
+ */
 export async function findStacksProjects(dir?: string, options?: FindStacksProjectsOptions): Promise<string[]> {
-  const dirWasExplicit = !!dir
-  dir = dir || os.homedir()
-
-  const excludePatterns: Array<string | RegExp> = dirWasExplicit
-    ? alwaysExcludePatterns
-    : [...alwaysExcludePatterns, ...homeOnlyExcludePatterns]
+  const root = path.resolve(dir || os.homedir())
+  const excluded = new Set(dir ? [] : homeOnlyExcludes.map(name => path.join(root, name)))
 
   if (!options?.quiet) {
-    log.info(`Searching for Stacks projects in: ${italic(dir)}`)
-    log.info(`This may take a few moments...`)
+    log.info(`Searching for Stacks projects in: ${italic(root)}`)
     console.log('')
     console.log(italic('  Please note, while Stacks is searching for projects on your machine,'))
     console.log(italic('  you may be asked for permissions to scan certain directories.'))
     console.log('')
-    log.debug(`Excluding directories: ${excludePatterns.join(', ')}`)
   }
 
-  const foundProjects = await searchDirectory(dir, excludePatterns)
-
-  if (!foundProjects)
-    throw new Error('No Stacks projects found')
-
-  return foundProjects
+  const found = await searchDirectory(root, excluded, options?.maxDepth ?? DEFAULT_MAX_DEPTH)
+  return found.sort()
 }
 
-// this searches a dir for Stacks projects which we define
-// as a dir that contains a 'buddy' file and a 'storage'
-// dir with a 'framework/core/buddy' structure
-async function searchDirectory(directory: string, excludePatterns: Array<string | RegExp>): Promise<string[]> {
-  const isExcluded = excludePatterns.some(pattern =>
-    typeof pattern === 'string' ? directory.includes(pattern) : pattern.test(directory),
-  )
+async function searchDirectory(directory: string, excluded: ReadonlySet<string>, depth: number): Promise<string[]> {
+  // A project's own subdirectories are not searched: what sits inside one is
+  // its source, its dependencies and its build output, and that pruning is
+  // what keeps a scan of a code folder to a fraction of a second.
+  if (isProjectRoot(directory))
+    return [directory]
 
-  if (isExcluded)
+  if (depth <= 0)
     return []
 
   let items: Dirent[]
   try {
     items = await withFsReadSlot(() => fs.readdir(directory, { withFileTypes: true }))
   }
-  catch (error) {
-    console.error(`Error reading directory ${directory}:`, error)
+  catch {
+    // Unreadable (a protected folder, a volume that went away): nothing to find.
     return []
   }
 
-  const buddyFileFound = items.some(item => item.isFile() && item.name === targetFileName)
-  const storageDirFound = items.some(item => item.isDirectory() && item.name === 'storage')
-    && await withFsReadSlot(() => fs.access(path.join(directory, 'storage/framework/core/buddy'))).then(() => true).catch(() => false)
-
-  // A framework's storage tree contains tens of thousands of files but can
-  // never contain another project root. Prune it and traverse sibling
-  // directories concurrently. The former depth-first await made a typical
-  // ~/Code scan take many seconds even on an SSD.
   const children = items
-    .filter(item => item.isDirectory() && item.name !== 'storage')
-    .map(item => searchDirectory(path.join(directory, item.name), excludePatterns))
-  const nested = (await Promise.all(children)).flat()
+    .filter(item => item.isDirectory() && !item.name.startsWith('.') && !skippedNames.has(item.name))
+    .map(item => path.join(directory, item.name))
+    .filter(child => !excluded.has(child))
+    .map(child => searchDirectory(child, excluded, depth - 1))
 
-  if (buddyFileFound && storageDirFound)
-    nested.push(directory)
-
-  return nested
+  return (await Promise.all(children)).flat()
 }
