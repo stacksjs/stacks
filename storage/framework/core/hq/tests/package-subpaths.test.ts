@@ -12,7 +12,7 @@ test('a built hq package ships the JavaScript behind every public subpath', asyn
   const consumer = mkdtempSync(join(tmpdir(), 'hq-consumer-'))
   try {
     const manifest = await Bun.file(join(root, 'package.json')).json()
-    for (const subpath of ['meter', 'service', 'client', 'testing', 'route-manifest']) {
+    for (const subpath of ['meter', 'service', 'client', 'testing', 'route-manifest', 'connect-return']) {
       for (const condition of ['bun', 'types'])
         expect(await Bun.file(join(root, manifest.exports['./*'][condition].replace('*', subpath))).exists(), `${subpath} (${condition})`).toBe(true)
     }

@@ -120,6 +120,26 @@ The approve page is the service's own. It calls `hq.describeConnect(code)` to
 show which app is asking and `hq.approveConnect(code, user, typed)` when the
 signed-in user confirms, where `typed` is the confirmation code they entered.
 
+Somebody who opens the approve link signed out has to sign in first, and has
+to land back on the approve page afterwards: a sign-in that ends on the
+dashboard reads as the connect having worked, and the terminal times out.
+`@stacksjs/hq/connect-return` is the link and its check, with no imports, so a
+page's client script can use it:
+
+```ts
+import { connectReturn, withConnectReturn } from '@stacksjs/hq/connect-return'
+
+// The approve page, signed out: /login?next=%2Fcli%2Fconnect%3Fcode%3D...
+const signInHref = withConnectReturn('/login', code)
+
+// The sign-in page, after a successful sign-in.
+navigate(connectReturn(route.query.next) || '/dashboard')
+```
+
+`connectReturn` answers the path only when it is exactly `/cli/connect?code=`
+with a well-formed code, and an empty string for anything else, so a `next`
+written by a stranger is never followed.
+
 An approve link can be minted by anyone for any app name, so approving on the
 link alone would let a signed-in person be talked into handing over their keys.
 The confirmation code is six characters derived from the connect code, and the
