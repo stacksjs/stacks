@@ -876,8 +876,8 @@ export interface UserModel {
   // No `hasStripeId()`. It was declared here and bound nowhere, so every
   // payments call written against it threw "is not a function" on a real
   // user. Ask `manageCustomer.hasStripeId(user)` in `@stacksjs/payments`.
-  hasRole: (role: string) => boolean | Promise<boolean>
-  assignRole: (role: string) => unknown | Promise<unknown>
+  // No `hasRole()` / `assignRole()` either, for the same reason: only
+  // `withRbac(user)` in `@stacksjs/auth` adds them (stacksjs/stacks#3314).
   update: (data: Record<string, unknown>) => Promise<UserModel>
   [key: string]: unknown
 }

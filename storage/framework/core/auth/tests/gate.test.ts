@@ -5,9 +5,8 @@ import {
   Gate,
 } from '../src/gate'
 
-// Gate functions reference the global `User` type (typeof User).
-// For testing we use plain objects as stand-ins since the gate callbacks
-// accept `UserModel | null` and only forward them to our test callbacks.
+// Gate callbacks receive a `GateUser | null` and only forward it to the
+// test callbacks here, so plain objects stand in for the user.
 
 type TestUser = Record<string, any> | null
 

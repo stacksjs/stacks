@@ -360,6 +360,17 @@ objects can cross bundle copies; arbitrary objects, forged prototypes and
 accessor fields are rejected. A conflicting shared-state version/shape refuses
 module initialization. This does not synchronize different processes or Workers.
 
+### The user a gate receives: `GateUser`
+Every gate callback, policy method, `Gate.*` check and RBAC helper takes
+`GateUser | null`. That is the User row (`AuthUser`, what `User.find` returns,
+carried by the router's request and passed by `request.can()`) or the
+`AuthenticatedUser` that `request.user()` gives an action typed with
+`RequestInstance` from `@stacksjs/types`. They are the same object; pass either
+with no cast. Annotate a callback with `GateUser | null` from `@stacksjs/auth`,
+or leave it unannotated and let `defineGates` infer it. Not the ORM's
+`UserModel`: no User row satisfies that hand-written interface
+(stacksjs/stacks#3314).
+
 ### Gate Functions
 - `define<T>(ability: string, callback: GateCallback<T>): void`
 - `policy(model: string | { name }, policyClass: new () => Policy): void`
@@ -602,7 +613,7 @@ with the reason and whether the address was ever verified. It only lists.
 
 ## User Helpers (user.ts)
 
-- `authUser(): Promise<UserModel | undefined>`
+- `authUser(): Promise<AuthUser | undefined>` - `AuthUser` is the User row `User.find` returns
 - `check(): Promise<boolean>`
 - `id(): Promise<number | undefined>`
 - `email(): Promise<string | undefined>`

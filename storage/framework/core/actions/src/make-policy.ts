@@ -60,10 +60,8 @@ export async function makePolicy(options: MakePolicyOptions): Promise<boolean> {
  * Generate policy file content
  */
 function generatePolicyContent(policyName: string, modelName: string): string {
-  return `import type _User from '../models/User'
+  return `import type { GateUser } from '@stacksjs/auth'
 import { BasePolicy } from '@stacksjs/auth'
-
-type UserModel = _User
 
 /**
  * ${policyName}
@@ -95,7 +93,7 @@ export default class ${policyName} extends BasePolicy<${modelName}> {
    * Run before any other checks.
    * Return true to allow, false to deny, null to continue.
    */
-  before(user: UserModel | null, ability: string): boolean | null {
+  before(user: GateUser | null, ability: string): boolean | null {
     // Example: Admins can do anything
     // if (user?.role === 'admin') return true
     return null
@@ -104,49 +102,49 @@ export default class ${policyName} extends BasePolicy<${modelName}> {
   /**
    * Determine if the user can view any ${modelName.toLowerCase()}s.
    */
-  viewAny(user: UserModel | null): boolean {
+  viewAny(user: GateUser | null): boolean {
     return true
   }
 
   /**
    * Determine if the user can view the ${modelName.toLowerCase()}.
    */
-  view(user: UserModel | null, model: ${modelName}): boolean {
+  view(user: GateUser | null, model: ${modelName}): boolean {
     return true
   }
 
   /**
    * Determine if the user can create ${modelName.toLowerCase()}s.
    */
-  create(user: UserModel | null): boolean {
+  create(user: GateUser | null): boolean {
     return user !== null
   }
 
   /**
    * Determine if the user can update the ${modelName.toLowerCase()}.
    */
-  update(user: UserModel | null, model: ${modelName}): boolean {
+  update(user: GateUser | null, model: ${modelName}): boolean {
     return user?.id === model.user_id
   }
 
   /**
    * Determine if the user can delete the ${modelName.toLowerCase()}.
    */
-  delete(user: UserModel | null, model: ${modelName}): boolean {
+  delete(user: GateUser | null, model: ${modelName}): boolean {
     return user?.id === model.user_id
   }
 
   /**
    * Determine if the user can restore the ${modelName.toLowerCase()}.
    */
-  restore(user: UserModel | null, model: ${modelName}): boolean {
+  restore(user: GateUser | null, model: ${modelName}): boolean {
     return user?.id === model.user_id
   }
 
   /**
    * Determine if the user can permanently delete the ${modelName.toLowerCase()}.
    */
-  forceDelete(user: UserModel | null, model: ${modelName}): boolean {
+  forceDelete(user: GateUser | null, model: ${modelName}): boolean {
     return user?.id === model.user_id
   }
 }
