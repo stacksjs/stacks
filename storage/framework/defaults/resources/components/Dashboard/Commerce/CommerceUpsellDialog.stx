@@ -1,0 +1,191 @@
+<script client>
+import type { UpsellOfferRecord } from '../../../../app/Actions/Dashboard/Commerce/upsell-offer-records'
+import { minorToInput, moneyInputError, moneyInputStep, parseMoneyInput } from '@stacksjs/commerce/money'
+import { formErrorMessages } from '../../../../functions/dashboard-form'
+
+/**
+ * Add or edit a post-purchase offer: what the confirmation page says, which
+ * products it offers and at what discount, which orders see it and for how
+ * long. A preview shows the banner the shopper will read.
+ */
+interface PickedProduct { id: string, label: string }
+
+const open = useReactiveProp('open', false)
+const mode = useReactiveProp('mode', 'add')
+const record = useReactiveProp('record', null as UpsellOfferRecord | null)
+const currency = useReactiveProp('currency', 'USD')
+const busy = useReactiveProp('busy', false)
+const errors = useReactiveProp('errors', {} as Record<string, string>)
+const emit = defineEmits(['submit', 'close'])
+
+const offerName = state('')
+const headlineText = state('')
+const messageText = state('')
+const products = state<PickedProduct[]>([])
+const discountPercent = state('60')
+const minQuantity = state('1')
+const defaultQuantity = state('1')
+const maxQuantity = state('')
+const triggers = state<PickedProduct[]>([])
+const minOrderTotal = state('')
+const windowMinutes = state('30')
+const priority = state('0')
+const startsAt = state('')
+const endsAt = state('')
+const isActive = state(true)
+let hydrationKey = ''
+
+effect(() => {
+  if (!open()) {
+    hydrationKey = ''
+    return
+  }
+  const current = record()
+  const key = `${mode()}:${current?.id || 'new'}`
+  if (hydrationKey === key)
+    return
+  hydrationKey = key
+  offerName.set(current?.name || '')
+  headlineText.set(current?.headline || '')
+  messageText.set(current?.message || '')
+  products.set((current?.products ?? []).map(p => ({ id: p.id, label: p.label })))
+  discountPercent.set(String(current?.discountPercent ?? 60))
+  minQuantity.set(String(current?.minQuantity ?? 1))
+  defaultQuantity.set(String(current?.defaultQuantity ?? 1))
+  maxQuantity.set(current?.maxQuantity ? String(current.maxQuantity) : '')
+  triggers.set((current?.triggerProducts ?? []).map(p => ({ id: p.id, label: p.label })))
+  minOrderTotal.set(current?.minOrderTotal != null ? minorToInput(current.minOrderTotal, currency()) : '')
+  windowMinutes.set(String(current?.windowMinutes ?? 30))
+  priority.set(String(current?.priority ?? 0))
+  startsAt.set(current?.startsAt || '')
+  endsAt.set(current?.endsAt || '')
+  isActive.set(current?.isActive ?? true)
+})
+
+function setProducts(list: PickedProduct[]): void {
+  products.set(list)
+}
+
+function setTriggers(list: PickedProduct[]): void {
+  triggers.set(list)
+}
+
+function whole(text: string): number | undefined {
+  if (!text.trim())
+    return undefined
+  const n = Number(text)
+  return Number.isFinite(n) ? n : undefined
+}
+
+function quantitiesValid(): boolean {
+  const min = Number(minQuantity())
+  const start = Number(defaultQuantity())
+  const max = maxQuantity().trim() ? Number(maxQuantity()) : null
+  return Number.isInteger(min) && min >= 1
+    && Number.isInteger(start) && start >= min
+    && (max === null || (Number.isInteger(max) && max >= min && start <= max))
+}
+
+function valid(): boolean {
+  const percent = Number(discountPercent())
+  const window = Number(windowMinutes())
+  return Boolean(offerName().trim())
+    && products().length > 0
+    && Number.isInteger(percent) && percent >= 0 && percent <= 100
+    && quantitiesValid()
+    && Number.isInteger(window) && window >= 1
+    && !moneyInputError(minOrderTotal(), currency(), { required: false })
+}
+
+/** The banner as the confirmation page will show it. */
+function previewHeadline(): string {
+  return headlineText().trim() || 'One-time offer'
+}
+
+function previewMessage(): string {
+  return messageText().trim() || `Add ${minQuantity()}+ and get ${discountPercent() || 0}% off, only on this page.`
+}
+
+function submit(): void {
+  if (!valid())
+    return
+  emit('submit', {
+    name: offerName().trim(),
+    headline: headlineText().trim(),
+    message: messageText().trim(),
+    productIds: products().map(p => p.id),
+    discountPercent: Number(discountPercent()),
+    minQuantity: Number(minQuantity()),
+    defaultQuantity: Number(defaultQuantity()),
+    maxQuantity: whole(maxQuantity()),
+    triggerProductIds: triggers().map(p => p.id),
+    minOrderTotal: parseMoneyInput(minOrderTotal(), currency(), { required: false }) ?? undefined,
+    windowMinutes: Number(windowMinutes()),
+    priority: whole(priority()) ?? 0,
+    startsAt: startsAt() || undefined,
+    endsAt: endsAt() || undefined,
+    isActive: isActive(),
+  })
+}
+
+function errorMessages(): string[] {
+  return formErrorMessages(errors())
+}
+</script>
+
+<Modal
+  :isOpen="open()"
+  :title="mode() === 'edit' ? 'Edit post-purchase offer' : 'Add post-purchase offer'"
+  description="Shown once on the order confirmation page. Accepting adds the items to the order just placed, charged to the same payment method."
+  size="xl"
+  @close="emit('close')"
+>
+  <form id="upsell-form" class="flex flex-col gap-6" @submit.prevent="submit">
+    <ul :if="errorMessages().length > 0" class="p-3 space-y-1 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+      <li :for="text in errorMessages()" :key="text">{{ text }}</li>
+    </ul>
+
+    <section class="grid gap-4 grid-cols-1 sm:grid-cols-2" aria-label="What the shopper sees">
+      <div class="sm:col-span-2"><Input v-model:value="offerName" label="Name" hint="For you: how this offer is listed here" :maxLength="255" :required="true" /></div>
+      <Input v-model:value="headlineText" label="Headline" placeholder="One-time offer" :maxLength="255" />
+      <div class="sm:row-span-2"><Textarea v-model:value="messageText" label="Message" :rows="4" placeholder="Thank you for your purchase! Grab 5+ pairs and get 60% off." /></div>
+      <div class="flex gap-3 items-start p-4 bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 rounded-lg dark:border-neutral-700" aria-label="Preview">
+        <span class="flex-shrink-0 mt-0.5 h-5 w-5 text-gray-600 dark:text-neutral-300 i-hugeicons-gift"></span>
+        <div class="min-w-0">
+          <p class="font-semibold text-gray-900 text-sm dark:text-white">{{ previewHeadline() }}</p>
+          <p class="mt-1 text-gray-600 text-sm dark:text-neutral-300">{{ previewMessage() }}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-4" aria-label="The offer">
+      <CommerceProductPicker label="Products offered" :selected="products()" :max="12" emptyLabel="Choose the products to offer, in the order they should appear" :error="errors().productIds || ''" @change="setProducts" />
+      <div class="grid gap-4 grid-cols-2 sm:grid-cols-4">
+        <Input v-model:value="discountPercent" label="Percent off" type="number" min="0" max="100" step="1" :required="true" />
+        <Input v-model:value="minQuantity" label="Minimum quantity" type="number" min="1" step="1" :required="true" />
+        <Input v-model:value="defaultQuantity" label="Default quantity" type="number" min="1" step="1" :required="true" />
+        <Input v-model:value="maxQuantity" label="Maximum quantity" type="number" min="1" step="1" placeholder="No limit" />
+      </div>
+      <p :if="!quantitiesValid()" class="text-amber-700 text-xs dark:text-amber-300">The default quantity has to sit between the minimum and the maximum.</p>
+    </section>
+
+    <section class="flex flex-col gap-4" aria-label="Who sees it">
+      <p class="font-semibold text-gray-900 text-sm dark:text-white">Who sees it</p>
+      <CommerceProductPicker label="Only orders containing" :selected="triggers()" emptyLabel="Every order" hint="Leave empty to show the offer after any order." @change="setTriggers" />
+      <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
+        <Input v-model:value="minOrderTotal" label="Minimum order total" type="number" min="0" :step="moneyInputStep(currency())" placeholder="Any total" />
+        <Input v-model:value="windowMinutes" label="Open for (minutes)" type="number" min="1" max="10080" step="1" hint="After the order is placed" :required="true" />
+        <Input v-model:value="priority" label="Priority" type="number" step="1" hint="Higher shows first" />
+        <Input v-model:value="startsAt" label="Starts" type="date" />
+        <Input v-model:value="endsAt" label="Ends" type="date" />
+      </div>
+    </section>
+
+    <div class="p-4 bg-gray-50 dark:bg-neutral-900/50 rounded-lg">
+      <Toggle v-model:checked="isActive" label="Running" description="Switched off, the offer is kept with its results but shown to nobody." labelPosition="left" />
+    </div>
+  </form>
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full"><Button variant="secondary" :disabled="busy()" @click="emit('close')">Cancel</Button><Button type="submit" form="upsell-form" :loading="busy()" :disabled="!valid()">{{ mode() === 'edit' ? 'Save offer' : 'Add offer' }}</Button></div>
+  </template>
+</Modal>

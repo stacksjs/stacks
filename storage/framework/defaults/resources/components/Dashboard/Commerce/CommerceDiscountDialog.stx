@@ -1,0 +1,353 @@
+<script client>
+import type { DiscountRecord, DiscountType } from '../../../../app/Actions/Dashboard/Commerce/discount-records'
+import { discountLabel } from '@stacksjs/commerce/discounts/engine'
+import { formatCurrency, minorToInput, moneyInputError, moneyInputStep, parseMoneyInput } from '@stacksjs/commerce/money'
+import { formErrorMessages } from '../../../../functions/dashboard-form'
+
+/**
+ * Add or edit a discount. The fields follow the type: a percentage or an
+ * amount off (the order, or chosen products), buy X get Y, volume tiers, or
+ * free shipping. A preview shows the badge the storefront will draw, and the
+ * server checks the rule through the discount engine before saving it.
+ *
+ * Money fields are typed as decimals of the store currency and sent as
+ * integer minor units, like every commerce dialog.
+ */
+interface PickedProduct { id: string, label: string }
+interface TierRow { minQuantity: string, percent: string }
+
+const open = useReactiveProp('open', false)
+const mode = useReactiveProp('mode', 'add')
+const record = useReactiveProp('record', null as DiscountRecord | null)
+const currency = useReactiveProp('currency', 'USD')
+const busy = useReactiveProp('busy', false)
+const errors = useReactiveProp('errors', {} as Record<string, string>)
+const emit = defineEmits(['submit', 'close'])
+
+const TYPE_OPTIONS: Array<{ value: DiscountType, label: string }> = [
+  { value: 'percentage', label: 'Percentage off' },
+  { value: 'fixed_amount', label: 'Amount off' },
+  { value: 'buy_x_get_y', label: 'Buy X, get Y' },
+  { value: 'volume', label: 'Volume tiers (buy more, save more)' },
+  { value: 'free_shipping', label: 'Free shipping' },
+]
+
+const TYPE_HINTS: Record<DiscountType, string> = {
+  percentage: 'A percentage off the whole order, or off the products you choose.',
+  fixed_amount: 'An amount off the order, off the chosen products once, or off each chosen item.',
+  buy_x_get_y: 'Buy a number of items, get more at a discount. The cheapest qualifying items are the ones discounted.',
+  volume: 'The more of the chosen products a shopper buys together, the bigger the percentage off.',
+  free_shipping: 'Waives the shipping fee, optionally only up to a rate you set.',
+}
+
+const titleText = state('')
+const method = state<'automatic' | 'code'>('automatic')
+const code = state('')
+const type = state<DiscountType>('percentage')
+const value = state('10')
+const scope = state<'order' | 'product'>('order')
+const perItem = state(false)
+const targetProducts = state<PickedProduct[]>([])
+const buyQuantity = state('4')
+const buyProducts = state<PickedProduct[]>([])
+const getQuantity = state('4')
+const getProducts = state<PickedProduct[]>([])
+const getPercent = state('100')
+const maxApplications = state('')
+const tiers = state<TierRow[]>([{ minQuantity: '5', percent: '10' }])
+const maxShipping = state('')
+const minimumSubtotal = state('')
+const minimumQuantity = state('')
+const maxAmount = state('')
+const combineProduct = state(false)
+const combineOrder = state(false)
+const combineShipping = state(false)
+const usageLimit = state('')
+const startsAt = state('')
+const endsAt = state('')
+const isActive = state(true)
+/** Kept as they were: the dialog edits products, and must not drop variant or category targets. */
+let keptTargets = { target: { variantIds: [] as string[], categoryIds: [] as string[] }, buy: { variantIds: [] as string[], categoryIds: [] as string[] }, get: { variantIds: [] as string[], categoryIds: [] as string[] } }
+let hydrationKey = ''
+
+function picked(ids: string[], labels: Record<string, string>): PickedProduct[] {
+  return ids.map(id => ({ id, label: labels[id] ?? `Product #${id}` }))
+}
+
+effect(() => {
+  if (!open()) {
+    hydrationKey = ''
+    return
+  }
+  const current = record()
+  const key = `${mode()}:${current?.id || 'new'}`
+  if (hydrationKey === key)
+    return
+  hydrationKey = key
+  const labels = current?.productLabels ?? {}
+  titleText.set(current?.title || '')
+  method.set(current?.method || 'automatic')
+  code.set(current?.code || '')
+  type.set(current?.type || 'percentage')
+  value.set(current
+    ? current.type === 'fixed_amount' ? minorToInput(current.value, currency()) : String(current.value || '')
+    : '10')
+  scope.set(current?.appliesTo === 'product' ? 'product' : 'order')
+  perItem.set(current?.perItem ?? false)
+  targetProducts.set(picked(current?.target.productIds ?? [], labels))
+  buyQuantity.set(String(current?.buyQuantity ?? 4))
+  buyProducts.set(picked(current?.buyTarget.productIds ?? [], labels))
+  getQuantity.set(String(current?.getQuantity ?? 4))
+  getProducts.set(picked(current?.getTarget.productIds ?? [], labels))
+  getPercent.set(String(current?.getPercent ?? 100))
+  maxApplications.set(current?.maxApplications ? String(current.maxApplications) : '')
+  tiers.set(current?.tiers.length ? current.tiers.map(t => ({ minQuantity: String(t.minQuantity), percent: String(t.percent) })) : [{ minQuantity: '5', percent: '10' }])
+  maxShipping.set(current?.maxShipping != null ? minorToInput(current.maxShipping, currency()) : '')
+  minimumSubtotal.set(current?.minimumSubtotal ? minorToInput(current.minimumSubtotal, currency()) : '')
+  minimumQuantity.set(current?.minimumQuantity ? String(current.minimumQuantity) : '')
+  maxAmount.set(current?.maxAmount ? minorToInput(current.maxAmount, currency()) : '')
+  combineProduct.set(current?.combinesWith.product ?? false)
+  combineOrder.set(current?.combinesWith.order ?? false)
+  combineShipping.set(current?.combinesWith.shipping ?? false)
+  usageLimit.set(current?.usageLimit ? String(current.usageLimit) : '')
+  startsAt.set(current?.startsAt || '')
+  endsAt.set(current?.endsAt || '')
+  isActive.set(current?.isActive ?? true)
+  keptTargets = {
+    target: { variantIds: current?.target.variantIds ?? [], categoryIds: current?.target.categoryIds ?? [] },
+    buy: { variantIds: current?.buyTarget.variantIds ?? [], categoryIds: current?.buyTarget.categoryIds ?? [] },
+    get: { variantIds: current?.getTarget.variantIds ?? [], categoryIds: current?.getTarget.categoryIds ?? [] },
+  }
+})
+
+function isType(...types: DiscountType[]): boolean {
+  return types.includes(type())
+}
+
+/** Whether the discount reaches chosen products rather than the order. */
+function targetsProducts(): boolean {
+  return isType('volume') || (isType('percentage', 'fixed_amount') && scope() === 'product')
+}
+
+function optionalWhole(text: string): number | undefined {
+  if (!text.trim())
+    return undefined
+  const n = Number(text)
+  return Number.isFinite(n) ? n : undefined
+}
+
+function optionalMoney(text: string): number | undefined {
+  return parseMoneyInput(text, currency(), { required: false }) ?? undefined
+}
+
+function target(products: PickedProduct[], kept: { variantIds: string[], categoryIds: string[] }) {
+  return { productIds: products.map(p => p.id), variantIds: kept.variantIds, categoryIds: kept.categoryIds }
+}
+
+function setTargetProducts(products: PickedProduct[]): void {
+  targetProducts.set(products)
+}
+
+function setBuyProducts(products: PickedProduct[]): void {
+  buyProducts.set(products)
+}
+
+function setGetProducts(products: PickedProduct[]): void {
+  getProducts.set(products)
+}
+
+function addTier(): void {
+  const last = tiers()[tiers().length - 1]
+  const next = last ? Number(last.minQuantity) * 2 || 10 : 5
+  tiers.set([...tiers(), { minQuantity: String(next), percent: '' }])
+}
+
+function setTier(index: number, field: keyof TierRow, text: string): void {
+  tiers.set(tiers().map((tier, i) => i === index ? { ...tier, [field]: text } : tier))
+}
+
+function removeTier(index: number): void {
+  tiers.set(tiers().filter((_, i) => i !== index))
+}
+
+function valueValid(): boolean {
+  if (isType('fixed_amount'))
+    return !moneyInputError(value(), currency(), { min: 1 })
+  if (isType('percentage')) {
+    const n = Number(value())
+    return Number.isInteger(n) && n >= 1 && n <= 100
+  }
+  return true
+}
+
+function valid(): boolean {
+  if (!titleText().trim() || (method() === 'code' && !code().trim()) || !valueValid())
+    return false
+  if (targetsProducts() && isType('percentage', 'fixed_amount') && targetProducts().length === 0)
+    return false
+  if (isType('volume') && tiers().length === 0)
+    return false
+  return !moneyInputError(minimumSubtotal(), currency(), { required: false })
+    && !moneyInputError(maxAmount(), currency(), { required: false })
+    && !moneyInputError(maxShipping(), currency(), { required: false })
+}
+
+/** The badge the storefront will show for what is filled in so far. */
+function preview(): string {
+  try {
+    const money = (minor: number) => formatCurrency(minor, currency())
+    switch (type()) {
+      case 'percentage': return discountLabel({ effect: { type: 'percentage', percent: Number(value()) || 0 } })
+      case 'fixed_amount': return discountLabel({ effect: { type: 'fixed_amount', amount: parseMoneyInput(value(), currency(), { required: false }) ?? 0, perItem: perItem() && scope() === 'product' } }, money)
+      case 'buy_x_get_y': return discountLabel({ effect: { type: 'buy_x_get_y', buyQuantity: Number(buyQuantity()) || 0, getQuantity: Number(getQuantity()) || 0, getPercent: Number(getPercent()) || 0 } })
+      case 'volume': return discountLabel({ effect: { type: 'volume', tiers: tiers().map(t => ({ minQuantity: Number(t.minQuantity) || 0, percent: Number(t.percent) || 0 })) } })
+      default: return discountLabel({ effect: { type: 'free_shipping' } })
+    }
+  }
+  catch {
+    return ''
+  }
+}
+
+function submit(): void {
+  if (!valid())
+    return
+  emit('submit', {
+    title: titleText().trim(),
+    method: method(),
+    code: method() === 'code' ? code().trim().toUpperCase() : '',
+    type: type(),
+    value: isType('fixed_amount') ? parseMoneyInput(value(), currency(), { min: 1 }) : isType('percentage') ? Number(value()) : 0,
+    scope: isType('percentage', 'fixed_amount') ? scope() : null,
+    perItem: isType('fixed_amount') && scope() === 'product' && perItem(),
+    target: targetsProducts() ? target(targetProducts(), keptTargets.target) : null,
+    buyQuantity: optionalWhole(buyQuantity()),
+    buyTarget: target(buyProducts(), keptTargets.buy),
+    getQuantity: optionalWhole(getQuantity()),
+    getTarget: target(getProducts(), keptTargets.get),
+    getPercent: optionalWhole(getPercent()),
+    maxApplications: optionalWhole(maxApplications()),
+    tiers: tiers().map(t => ({ minQuantity: Number(t.minQuantity), percent: Number(t.percent) })),
+    maxShipping: optionalMoney(maxShipping()),
+    minimumSubtotal: optionalMoney(minimumSubtotal()),
+    minimumQuantity: optionalWhole(minimumQuantity()),
+    maxAmount: optionalMoney(maxAmount()),
+    combinesWith: { product: combineProduct(), order: combineOrder(), shipping: combineShipping() },
+    usageLimit: optionalWhole(usageLimit()),
+    isActive: isActive(),
+    startsAt: startsAt() || undefined,
+    endsAt: endsAt() || undefined,
+  })
+}
+
+function errorMessages(): string[] {
+  return formErrorMessages(errors())
+}
+</script>
+
+<Modal
+  :isOpen="open()"
+  :title="mode() === 'edit' ? 'Edit discount' : 'Add discount'"
+  description="Automatic discounts apply by themselves; a code applies when a shopper enters it."
+  size="xl"
+  @close="emit('close')"
+>
+  <form id="discount-form" class="flex flex-col gap-6" @submit.prevent="submit">
+    <ul :if="errorMessages().length > 0" class="p-3 space-y-1 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+      <li :for="message in errorMessages()" :key="message">{{ message }}</li>
+    </ul>
+
+    <section class="grid gap-4 grid-cols-1 sm:grid-cols-2" aria-label="Discount">
+      <div class="sm:col-span-2"><Input v-model:value="titleText" label="Title" hint="What shoppers see beside the saving, e.g. BUY 4, GET 4 FREE | 50% OFF" :maxLength="255" :required="true" /></div>
+      <Select v-model:value="method" label="Method" placeholder="" :options="[{ value: 'automatic', label: 'Automatic: applies by itself' }, { value: 'code', label: 'Discount code: shopper enters it' }]" />
+      <div :if="method() === 'code'"><Input v-model:value="code" label="Code" :maxLength="64" :required="true" :spellcheck="false" :monospace="true" class="uppercase" placeholder="WELCOME10" /></div>
+      <div :else></div>
+      <div class="sm:col-span-2">
+        <Select v-model:value="type" label="Type" placeholder="" :options="TYPE_OPTIONS" />
+        <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ TYPE_HINTS[type()] }}</p>
+      </div>
+    </section>
+
+    <section :if="isType('percentage', 'fixed_amount')" class="grid gap-4 grid-cols-1 sm:grid-cols-2" aria-label="Value">
+      <div :if="isType('percentage')"><Input v-model:value="value" label="Percent off" type="number" min="1" max="100" step="1" :required="true" /></div>
+      <div :else><Input v-model:value="value" label="Amount off" type="number" min="0" :step="moneyInputStep(currency())" :required="true" :hint="'In ' + currency()" /></div>
+      <Select v-model:value="scope" label="Applies to" placeholder="" :options="[{ value: 'order', label: 'The entire order' }, { value: 'product', label: 'Specific products' }]" />
+      <div :if="scope() === 'product'" class="flex flex-col gap-3 sm:col-span-2">
+        <CommerceProductPicker label="Products" :selected="targetProducts()" emptyLabel="Choose at least one product" :error="errors().target || ''" @change="setTargetProducts" />
+        <div :if="isType('fixed_amount')"><Toggle v-model:checked="perItem" label="Take the amount off each item" description="Off: the amount comes off once across the chosen products." labelPosition="left" /></div>
+      </div>
+    </section>
+
+    <section :if="isType('buy_x_get_y')" class="grid gap-4 grid-cols-1 sm:grid-cols-2" aria-label="Buy X get Y">
+      <div class="flex flex-col gap-3 p-4 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <p class="font-semibold text-gray-900 text-sm dark:text-white">Customer buys</p>
+        <Input v-model:value="buyQuantity" label="Quantity" type="number" min="1" step="1" :required="true" />
+        <CommerceProductPicker label="Of these products" :selected="buyProducts()" emptyLabel="Any product" @change="setBuyProducts" />
+      </div>
+      <div class="flex flex-col gap-3 p-4 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <p class="font-semibold text-gray-900 text-sm dark:text-white">Customer gets</p>
+        <div class="grid gap-3 grid-cols-2">
+          <Input v-model:value="getQuantity" label="Quantity" type="number" min="1" step="1" :required="true" />
+          <Input v-model:value="getPercent" label="Percent off" type="number" min="1" max="100" step="1" hint="100 is free" :required="true" />
+        </div>
+        <CommerceProductPicker label="Of these products" :selected="getProducts()" emptyLabel="The same products as the purchase" @change="setGetProducts" />
+      </div>
+      <Input v-model:value="maxApplications" label="Uses per order" type="number" min="1" step="1" placeholder="Unlimited" hint="How many times one order can get it" />
+    </section>
+
+    <section :if="isType('volume')" class="flex flex-col gap-3" aria-label="Volume tiers">
+      <div class="flex items-center justify-between">
+        <p class="font-semibold text-gray-900 text-sm dark:text-white">Tiers</p>
+        <Button size="sm" variant="secondary" @click="addTier()"><span class="h-4 w-4 i-hugeicons-add-01"></span>Add tier</Button>
+      </div>
+      <ol class="flex flex-col gap-2">
+        <li :for="(tier, index) in tiers()" :key="index" class="flex gap-3 items-end">
+          <Input :value="tier.minQuantity" label="Buy at least" type="number" min="1" step="1" @update:value="setTier(index, 'minQuantity', $event)" />
+          <Input :value="tier.percent" label="Percent off" type="number" min="1" max="100" step="1" @update:value="setTier(index, 'percent', $event)" />
+          <Button variant="secondary" :disabled="tiers().length === 1" ariaLabel="Remove tier" @click="removeTier(index)"><span class="h-4 w-4 i-hugeicons-delete-02"></span></Button>
+        </li>
+      </ol>
+      <p :if="errors().tiers" class="text-red-600 text-xs dark:text-red-400">{{ errors().tiers }}</p>
+      <CommerceProductPicker label="On these products" :selected="targetProducts()" emptyLabel="Every product counts toward the tiers" @change="setTargetProducts" />
+    </section>
+
+    <section :if="isType('free_shipping')" class="grid gap-4 grid-cols-1 sm:grid-cols-2" aria-label="Free shipping">
+      <Input v-model:value="maxShipping" label="Only for rates up to" type="number" min="0" :step="moneyInputStep(currency())" placeholder="Any rate" :hint="'In ' + currency()" />
+    </section>
+
+    <section class="flex flex-col gap-3" aria-label="Requirements">
+      <p class="font-semibold text-gray-900 text-sm dark:text-white">Requirements and limits</p>
+      <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
+        <Input v-model:value="minimumSubtotal" label="Minimum purchase" type="number" min="0" :step="moneyInputStep(currency())" placeholder="None" />
+        <Input v-model:value="minimumQuantity" label="Minimum items" type="number" min="0" step="1" placeholder="None" />
+        <div :if="!isType('free_shipping')"><Input v-model:value="maxAmount" label="Most it can take off" type="number" min="0" :step="moneyInputStep(currency())" placeholder="No cap" /></div>
+        <Input v-model:value="usageLimit" label="Total uses" type="number" min="1" step="1" placeholder="Unlimited" />
+        <Input v-model:value="startsAt" label="Starts" type="date" />
+        <Input v-model:value="endsAt" label="Ends" type="date" />
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-3 p-4 border border-gray-200 rounded-lg dark:border-neutral-700" aria-label="Combinations">
+      <div>
+        <p class="font-semibold text-gray-900 text-sm dark:text-white">Combines with</p>
+        <p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">Two discounts apply together only when both allow it. Otherwise the one worth more wins.</p>
+      </div>
+      <div class="grid gap-3 grid-cols-1 sm:grid-cols-3">
+        <Toggle v-model:checked="combineProduct" label="Product discounts" />
+        <Toggle v-model:checked="combineOrder" label="Order discounts" />
+        <Toggle v-model:checked="combineShipping" label="Shipping discounts" />
+      </div>
+    </section>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 dark:bg-neutral-900/50 rounded-lg">
+      <Toggle v-model:checked="isActive" label="Enabled" description="A disabled discount is kept but never applied." labelPosition="left" />
+      <div :if="preview()" class="flex gap-2 items-center">
+        <span class="text-gray-500 text-xs dark:text-neutral-400">Storefront badge</span>
+        <span class="inline-flex gap-1.5 items-center px-2.5 py-1 font-semibold text-emerald-800 text-xs tracking-wide dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 rounded-full"><span class="h-3.5 w-3.5 i-hugeicons-discount-tag-01"></span>{{ preview() }}</span>
+      </div>
+    </div>
+  </form>
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full"><Button variant="secondary" :disabled="busy()" @click="emit('close')">Cancel</Button><Button type="submit" form="discount-form" :loading="busy()" :disabled="!valid()">{{ mode() === 'edit' ? 'Save discount' : 'Add discount' }}</Button></div>
+  </template>
+</Modal>

@@ -1,0 +1,19 @@
+<script client>
+import type { DiscountRecord } from '../../../../app/Actions/Dashboard/Commerce/discount-records'
+
+const open = useReactiveProp('open', false)
+const record = useReactiveProp('record', null as DiscountRecord | null)
+const busy = useReactiveProp('busy', false)
+const emit = defineEmits(['close', 'confirm'])
+const description = derived(() => `Delete "${record()?.title || 'this discount'}" permanently? Placed orders keep the amount it took off. To pause it instead, edit it and switch it off.`)
+</script>
+
+<ConfirmDialog
+  :isOpen="open()"
+  title="Delete discount"
+  :description="description()"
+  confirmLabel="Delete discount"
+  :busy="busy()"
+  @close="emit('close')"
+  @confirm="emit('confirm')"
+/>

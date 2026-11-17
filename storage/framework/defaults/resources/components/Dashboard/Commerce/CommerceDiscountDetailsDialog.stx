@@ -1,0 +1,110 @@
+<script client>
+import type { DiscountRecord, DiscountTargetRecord } from '../../../../app/Actions/Dashboard/Commerce/discount-records'
+import { formatCurrency } from '@stacksjs/commerce/money'
+
+const open = useReactiveProp('open', false)
+const record = useReactiveProp('record', null as DiscountRecord | null)
+const currency = useReactiveProp('currency', 'USD')
+const emit = defineEmits(['edit', 'close', 'delete'])
+
+const STATE_LABELS: Record<string, string> = { active: 'Active', scheduled: 'Scheduled', expired: 'Expired', exhausted: 'Used up', disabled: 'Disabled' }
+
+function money(value: number | null | undefined): string {
+  return value == null ? '' : formatCurrency(value, currency())
+}
+
+/** A target in words: product names, plus how many variants and categories it also names. */
+function targetText(target: DiscountTargetRecord | undefined, empty: string): string {
+  const current = record()
+  if (!target || !current)
+    return empty
+  const parts: string[] = target.productIds.map(id => current.productLabels[id] ?? `Product #${id}`)
+  if (target.variantIds.length)
+    parts.push(`${target.variantIds.length} variant${target.variantIds.length === 1 ? '' : 's'}`)
+  if (target.categoryIds.length)
+    parts.push(`${target.categoryIds.length} categor${target.categoryIds.length === 1 ? 'y' : 'ies'}`)
+  return parts.length ? parts.join(', ') : empty
+}
+
+/** What it does, in a sentence. */
+function summaryText(): string {
+  const current = record()
+  if (!current)
+    return ''
+  switch (current.type) {
+    case 'percentage':
+      return current.appliesTo === 'product' ? `${current.value}% off ${targetText(current.target, 'the chosen products')}` : `${current.value}% off the whole order`
+    case 'fixed_amount':
+      return current.appliesTo === 'product'
+        ? `${money(current.value)} off ${current.perItem ? 'each of ' : ''}${targetText(current.target, 'the chosen products')}`
+        : `${money(current.value)} off the order`
+    case 'buy_x_get_y':
+      return `Buy ${current.buyQuantity} of ${targetText(current.buyTarget, 'any product')}, get ${current.getQuantity} of ${targetText(current.getTarget, 'the same products')} ${current.getPercent === 100 ? 'free' : `${current.getPercent}% off`}${current.maxApplications ? `, up to ${current.maxApplications} times per order` : ''}`
+    case 'volume':
+      return `${current.tiers.map(t => `${t.minQuantity}+ for ${t.percent}% off`).join(', ')} on ${targetText(current.target, 'every product')}`
+    default:
+      return current.maxShipping != null ? `Free shipping on rates up to ${money(current.maxShipping)}` : 'Free shipping on any rate'
+  }
+}
+
+function combinations(): string {
+  const c = record()?.combinesWith
+  if (!c)
+    return 'Nothing'
+  const list = [c.product ? 'product' : '', c.order ? 'order' : '', c.shipping ? 'shipping' : ''].filter(Boolean)
+  return list.length ? `${list.join(', ')} discounts` : 'Nothing: the better discount wins'
+}
+
+/** When it runs, in words. */
+function runs(): string {
+  const current = record()
+  if (!current?.startsAt && !current?.endsAt)
+    return 'Always'
+  if (current.startsAt && current.endsAt)
+    return `${current.startsAt} to ${current.endsAt}`
+  return current.startsAt ? `From ${current.startsAt}` : `Until ${current.endsAt}`
+}
+
+function editRecord(): void {
+  const current = record()
+  if (!current)
+    return
+  emit('edit', current)
+  emit('close')
+}
+
+function deleteRecord(): void {
+  const current = record()
+  if (!current)
+    return
+  emit('delete', current)
+  emit('close')
+}
+</script>
+
+<Modal
+  :isOpen="open()"
+  :title="record()?.title || 'Discount'"
+  :description="summaryText()"
+  size="lg"
+  @close="emit('close')"
+>
+  <template #header-trailing>
+    <span class="px-2 py-1 font-semibold text-gray-700 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-700 rounded-full">{{ STATE_LABELS[record()?.state || ''] || 'Unknown' }}</span>
+  </template>
+  <div class="flex gap-2 items-center mb-5">
+    <span class="inline-flex gap-1.5 items-center px-2.5 py-1 font-semibold text-emerald-800 text-xs tracking-wide dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 rounded-full"><span class="h-3.5 w-3.5 i-hugeicons-discount-tag-01"></span>{{ record()?.label }}</span>
+    <span class="text-gray-500 text-xs dark:text-neutral-400">{{ record()?.method === 'code' ? 'Code ' + record()?.code : 'Automatic' }}</span>
+  </div>
+  <dl class="grid gap-4 grid-cols-2">
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Used</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.usageCount || 0 }} / {{ record()?.usageLimit || 'No limit' }}</dd></div>
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Combines with</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ combinations() }}</dd></div>
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Minimum purchase</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.minimumSubtotal ? money(record()?.minimumSubtotal) : 'None' }}</dd></div>
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Minimum items</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.minimumQuantity || 'None' }}</dd></div>
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Most it takes off</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.maxAmount ? money(record()?.maxAmount) : 'No cap' }}</dd></div>
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Runs</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ runs() }}</dd></div>
+  </dl>
+  <template #footer>
+    <div class="flex gap-2 justify-between w-full"><Button variant="danger" @click="deleteRecord()">Delete</Button><div class="flex gap-2"><Button variant="secondary" @click="emit('close')">Close</Button><Button @click="editRecord()">Edit discount</Button></div></div>
+  </template>
+</Modal>

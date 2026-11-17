@@ -204,6 +204,16 @@ const result = await commerce.upsells.acceptOffer({
 - Prices come from the catalog and offer, never the request. `charge` is
   required; `'collect-later'` is the explicit no-payment path.
 
+## Dashboard pages
+
+`/commerce/discounts` and `/commerce/upsells` (components
+`Dashboard/Commerce/CommerceDiscounts*` and `CommerceUpsells*`, actions
+`Actions/Dashboard/Commerce/CommerceDiscount*` / `CommerceUpsell*`, routes in
+`routes/dashboard-api.ts`). Both models are in `dedicatedPages`, so no generic
+`/models/...` page duplicates them. Writes go through `discountWriteData` /
+`upsellWriteData` (field errors, engine-checked); an answered offer cannot be
+deleted (409). `CommerceProductPicker` is the shared multi-product search.
+
 ## The default storefront
 
 - Cart, checkout steps and `PlaceOrderAction` price through

@@ -1663,6 +1663,34 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/commerce/discounts
+   */
+  getDashboardCommerceDiscounts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/discounts", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * POST /api/dashboard/commerce/discounts
+   */
+  postDashboardCommerceDiscounts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/commerce/discounts", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * DELETE /api/dashboard/commerce/discounts/{id}
+   */
+  deleteDashboardCommerceDiscountsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/dashboard/commerce/discounts/{id}", input ?? {}, [{"name":"id","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
+   * PATCH /api/dashboard/commerce/discounts/{id}
+   */
+  patchDashboardCommerceDiscountsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/dashboard/commerce/discounts/{id}", input ?? {}, [{"name":"id","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
    * GET /api/dashboard/commerce/gift-cards
    */
   getDashboardCommerceGiftCards(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -2150,6 +2178,41 @@ export function createClient(config: ClientConfig) {
    */
   patchDashboardCommerceUnitsIdDefault(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "PATCH", "/api/dashboard/commerce/units/{id}/default", input ?? {}, [{"name":"id","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
+   * GET /api/dashboard/commerce/upsells
+   */
+  getDashboardCommerceUpsells(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/upsells", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * POST /api/dashboard/commerce/upsells
+   */
+  postDashboardCommerceUpsells(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/commerce/upsells", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * GET /api/dashboard/commerce/upsells/{id}
+   */
+  getDashboardCommerceUpsellsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/upsells/{id}", input ?? {}, [{"name":"id","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
+   * DELETE /api/dashboard/commerce/upsells/{id}
+   */
+  deleteDashboardCommerceUpsellsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/dashboard/commerce/upsells/{id}", input ?? {}, [{"name":"id","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
+   * PATCH /api/dashboard/commerce/upsells/{id}
+   */
+  patchDashboardCommerceUpsellsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/dashboard/commerce/upsells/{id}", input ?? {}, [{"name":"id","in":"path","required":true}], null, "application/json", [], options)
   },
 
   /**
@@ -4407,6 +4470,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /dashboard/commerce/discounts
+   */
+  getDashboardCommerceDiscounts2(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/dashboard/commerce/discounts", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * GET /dashboard/commerce/gift-cards
    */
   getDashboardCommerceGiftCards2(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -4446,6 +4516,13 @@ export function createClient(config: ClientConfig) {
    */
   getDashboardCommerceTaxes2(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/dashboard/commerce/taxes", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * GET /dashboard/commerce/upsells
+   */
+  getDashboardCommerceUpsells2(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/dashboard/commerce/upsells", {}, [], null, "application/json", [], options)
   },
 
   /**

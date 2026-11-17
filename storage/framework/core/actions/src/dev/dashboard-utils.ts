@@ -65,7 +65,7 @@ export const iconMap: Record<string, string> = {
 export const excludeModels = new Set(['activity', 'request', 'error', 'failedjob'])
 
 // Models that have dedicated dashboard pages
-export const dedicatedPages = new Set(['user', 'team', 'subscriber', 'post', 'page', 'product', 'order', 'customer', 'payment', 'coupon', 'category', 'tag', 'comment', 'author', 'notification', 'job', 'campaign', 'review', 'gift-card'])
+export const dedicatedPages = new Set(['user', 'team', 'subscriber', 'post', 'page', 'product', 'order', 'customer', 'payment', 'coupon', 'discount', 'post-purchase-offer', 'category', 'tag', 'comment', 'author', 'notification', 'job', 'campaign', 'review', 'gift-card'])
 
 /**
  * Sidebar category each discovered model gets surfaced under.
@@ -660,12 +660,15 @@ export function buildSidebarConfig(
         { id: 'orders', label: 'Orders', icon: 'list.clipboard.fill', url: `${baseRoute}/commerce/orders` },
         { id: 'products', label: 'Products', icon: 'cube.box.fill', url: `${baseRoute}/commerce/products` },
         { id: 'coupons', label: 'Coupons', icon: 'ticket.fill', url: `${baseRoute}/commerce/coupons` },
+        { id: 'discounts', label: 'Discounts', icon: 'tag.fill', url: `${baseRoute}/commerce/discounts` },
+        { id: 'upsells', label: 'Upsells', icon: 'bolt.fill', url: `${baseRoute}/commerce/upsells` },
         { id: 'gift-cards', label: 'Gift Cards', icon: 'giftcard.fill', url: `${baseRoute}/commerce/gift-cards` },
         { id: 'payments', label: 'Payments', icon: 'creditcard.fill', url: `${baseRoute}/commerce/payments` },
         { id: 'delivery', label: 'Delivery', icon: 'truck.box.fill', url: `${baseRoute}/commerce/delivery` },
         { id: 'taxes', label: 'Taxes', icon: 'percent', url: `${baseRoute}/commerce/taxes` },
         ...categoryRows(baseRoute, discoveredModels, 'commerce', new Set([
-          'customer', 'order', 'product', 'coupon', 'gift-card', 'payment', 'review', 'category',
+          'customer', 'order', 'product', 'coupon', 'discount', 'post-purchase-offer', 'post-purchase-offer-response',
+          'gift-card', 'payment', 'review', 'category',
         ])),
       ],
     })

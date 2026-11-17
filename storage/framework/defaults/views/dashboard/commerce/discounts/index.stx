@@ -1,0 +1,10 @@
+@extends('layouts/default')
+
+@section('content')
+@title('Dashboard - Discounts')
+
+<div class="p-4 lg:p-8 min-h-[100dvh] dark:bg-neutral-900">
+  <CommerceDiscountsDashboard />
+</div>
+
+@endsection

@@ -1,0 +1,91 @@
+@import('../UI/Table')
+
+<script client>
+import type { UpsellOfferRecord } from '../../../../app/Actions/Dashboard/Commerce/upsell-offer-records'
+
+const records = useReactiveProp('records', [] as UpsellOfferRecord[])
+const loading = useReactiveProp('loading', false)
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
+const currency = useReactiveProp('currency', 'USD')
+const total = useReactiveProp('total', 0)
+const currentPage = useReactiveProp('currentPage', 1)
+const perPage = useReactiveProp('perPage', 25)
+const emit = defineEmits(['view', 'edit', 'delete', 'page-change', 'page-size-change', 'sort'])
+
+function percent(rate: number): string {
+  return `${(rate * 100).toFixed(rate > 0 && rate < 0.1 ? 1 : 0)}%`
+}
+
+const COLUMNS = derived(() => [
+  { key: 'name', label: 'Offer', sortable: true, subtitleKey: 'productsLabel', class: 'font-medium text-gray-900 dark:text-white' },
+  { key: 'dealLabel', label: 'Deal', subtitleKey: 'quantityLabel', searchable: false, class: 'font-semibold text-emerald-700 whitespace-nowrap dark:text-emerald-300' },
+  {
+    key: 'state',
+    label: 'Status',
+    type: 'badge' as const,
+    badgeClasses: {
+      running: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300',
+      scheduled: 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300',
+    },
+    badgeLabels: { running: 'Running', scheduled: 'Scheduled', ended: 'Ended', disabled: 'Disabled' },
+  },
+  { key: 'shown', label: 'Shown', type: 'number' as const, align: 'right' as const, searchable: false },
+  { key: 'takenLabel', label: 'Taken', align: 'right' as const, subtitleKey: 'conversionLabel', searchable: false, class: 'font-mono whitespace-nowrap' },
+  { key: 'revenue', label: 'Added to orders', type: 'currency' as const, currency: currency(), align: 'right' as const, searchable: false, class: 'font-semibold whitespace-nowrap' },
+  { key: 'priority', label: 'Priority', type: 'number' as const, align: 'right' as const, searchable: false },
+])
+
+const ROW_ACTIONS = [
+  { action: 'view', label: 'View results' },
+  { action: 'edit', label: 'Edit' },
+  { action: 'delete', label: 'Delete' },
+]
+
+const rows = derived(() => records().map(record => ({
+  ...record,
+  productsLabel: record.products.map(product => product.label).join(', ') || 'No products',
+  dealLabel: record.discountPercent > 0 ? `${record.discountPercent}% off` : 'Full price',
+  quantityLabel: record.maxQuantity ? `${record.minQuantity} to ${record.maxQuantity} each` : `${record.minQuantity}+ each`,
+  shown: record.stats.views,
+  takenLabel: record.stats.accepted.toLocaleString(),
+  conversionLabel: `${percent(record.stats.conversionRate)} conversion`,
+  revenue: record.stats.revenue,
+})))
+
+function handleRowAction(payload: { action: string, row: UpsellOfferRecord }): void {
+  emit(payload.action, payload.row)
+}
+
+function changePage(page: number): void {
+  emit('page-change', page)
+}
+
+function changePageSize(size: number): void {
+  emit('page-size-change', size)
+}
+
+function changeSort(sort: { key: string, direction: string }): void {
+  emit('sort', sort)
+}
+</script>
+
+<Table
+  :sort-reset-key="sortResetKey()"
+  :columns="COLUMNS()"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="name"
+  paginated
+  manual-pagination
+  manual-sort
+  :total="total()"
+  :current-page="currentPage()"
+  :page-size="perPage()"
+  empty-title="No post-purchase offers yet"
+  empty-description="Add an offer to show shoppers a one-time deal on their order confirmation page."
+  @row-action="handleRowAction"
+  @page-change="changePage"
+  @page-size-change="changePageSize"
+  @sort="changeSort"
+/>

@@ -1,0 +1,153 @@
+<script client>
+import type { UpsellOfferRecord, UpsellResponseRecord } from '../../../../app/Actions/Dashboard/Commerce/upsell-offer-records'
+import { formatCurrency } from '@stacksjs/commerce/money'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+
+/**
+ * An offer's results: the funnel from shown to taken, what it added to orders,
+ * and the latest responses, each with its order and outcome. The responses are
+ * read when the dialog opens.
+ */
+const open = useReactiveProp('open', false)
+const record = useReactiveProp('record', null as UpsellOfferRecord | null)
+const currency = useReactiveProp('currency', 'USD')
+const emit = defineEmits(['edit', 'close', 'delete'])
+
+const responses = state<UpsellResponseRecord[]>([])
+const loadingResponses = state(false)
+const responsesError = state('')
+let loadedFor = ''
+
+const STATUS_LABELS: Record<string, string> = { viewed: 'Shown', pending: 'Confirming payment', accepted: 'Added', declined: 'Declined', failed: 'Payment failed' }
+const STATUS_CLASSES: Record<string, string> = {
+  accepted: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300',
+  failed: 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300',
+  pending: 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300',
+  declined: 'bg-gray-100 text-gray-700 dark:bg-neutral-700 dark:text-neutral-200',
+  viewed: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+}
+
+effect(() => {
+  const current = record()
+  if (!open() || !current) {
+    loadedFor = ''
+    return
+  }
+  if (loadedFor === current.id)
+    return
+  loadedFor = current.id
+  void loadResponses(current.id)
+})
+
+async function loadResponses(id: string): Promise<void> {
+  loadingResponses.set(true)
+  responsesError.set('')
+  try {
+    const data = await dashboardApi<{ responses?: UpsellResponseRecord[] }>(`/api/dashboard/commerce/upsells/${id}`)
+    if (loadedFor === id)
+      responses.set(Array.isArray(data.responses) ? data.responses : [])
+  }
+  catch (error) {
+    responsesError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    loadingResponses.set(false)
+  }
+}
+
+function money(value: number | null | undefined): string {
+  return value == null ? '' : formatCurrency(value, currency())
+}
+
+function percent(rate: number): string {
+  return `${(rate * 100).toFixed(rate > 0 && rate < 0.1 ? 1 : 0)}%`
+}
+
+/** One bar per outcome, as a share of everything shown. */
+function funnel(): Array<{ label: string, count: number, color: string, width: string }> {
+  const stats = record()?.stats
+  if (!stats)
+    return []
+  const share = (count: number) => `${stats.views ? Math.max(count ? 2 : 0, Math.round((count / stats.views) * 100)) : 0}%`
+  const answered = stats.accepted + stats.declined + stats.pending + stats.failed
+  return [
+    { label: 'Shown', count: stats.views, color: 'bg-blue-500', width: stats.views ? '100%' : '0%' },
+    { label: 'Added to order', count: stats.accepted, color: 'bg-emerald-500', width: share(stats.accepted) },
+    { label: 'Declined', count: stats.declined, color: 'bg-gray-400', width: share(stats.declined) },
+    { label: 'Payment failed', count: stats.failed, color: 'bg-red-400', width: share(stats.failed) },
+    { label: 'Confirming payment', count: stats.pending, color: 'bg-amber-400', width: share(stats.pending) },
+    { label: 'No answer yet', count: Math.max(0, stats.views - answered), color: 'bg-gray-200 dark:bg-neutral-600', width: share(Math.max(0, stats.views - answered)) },
+  ]
+}
+
+function responseLine(response: UpsellResponseRecord): string {
+  if (response.status === 'accepted' || response.status === 'pending' || response.status === 'failed')
+    return `${response.quantity ?? 0} × ${response.productLabel} at ${money(response.unitPrice)} each`
+  return response.productLabel
+}
+
+function editRecord(): void {
+  const current = record()
+  if (!current)
+    return
+  emit('edit', current)
+  emit('close')
+}
+
+function deleteRecord(): void {
+  const current = record()
+  if (!current)
+    return
+  emit('delete', current)
+  emit('close')
+}
+</script>
+
+<Modal
+  :isOpen="open()"
+  :title="record()?.name || 'Offer'"
+  :description="(record()?.discountPercent || 0) + '% off ' + (record()?.products || []).map(p => p.label).join(', ')"
+  size="xl"
+  @close="emit('close')"
+>
+  <div class="flex flex-col gap-6">
+    <dl class="grid gap-3 grid-cols-2 sm:grid-cols-4">
+      <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><dt class="text-gray-500 text-xs dark:text-neutral-500">Shown</dt><dd class="mt-1 font-semibold tabular-nums text-gray-900 text-lg dark:text-white">{{ (record()?.stats.views || 0).toLocaleString() }}</dd></div>
+      <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><dt class="text-gray-500 text-xs dark:text-neutral-500">Conversion</dt><dd class="mt-1 font-semibold tabular-nums text-gray-900 text-lg dark:text-white">{{ percent(record()?.stats.conversionRate || 0) }}</dd></div>
+      <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><dt class="text-gray-500 text-xs dark:text-neutral-500">Added to orders</dt><dd class="mt-1 font-semibold tabular-nums text-gray-900 text-lg dark:text-white">{{ money(record()?.stats.revenue || 0) }}</dd></div>
+      <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><dt class="text-gray-500 text-xs dark:text-neutral-500">Units</dt><dd class="mt-1 font-semibold tabular-nums text-gray-900 text-lg dark:text-white">{{ (record()?.stats.units || 0).toLocaleString() }}</dd></div>
+    </dl>
+
+    <section aria-label="Funnel">
+      <h3 class="font-semibold text-gray-900 text-sm dark:text-white">Funnel</h3>
+      <div class="mt-3 space-y-2.5">
+        <div :for="step in funnel()" :key="step.label">
+          <div class="flex justify-between text-xs"><span class="text-gray-500 dark:text-neutral-400">{{ step.label }}</span><span class="font-mono text-gray-700 dark:text-neutral-200">{{ step.count.toLocaleString() }}</span></div>
+          <div class="mt-1 h-2 bg-gray-100 dark:bg-neutral-700 rounded-full"><div :class="'h-full rounded-full transition-[width] duration-500 ' + step.color" :style="'width: ' + step.width"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="Latest responses">
+      <h3 class="font-semibold text-gray-900 text-sm dark:text-white">Latest responses</h3>
+      <p :if="loadingResponses()" class="mt-3 text-gray-500 text-sm dark:text-neutral-400">Loading...</p>
+      <p :else-if="responsesError()" class="mt-3 text-red-600 text-sm dark:text-red-400">{{ responsesError() }}</p>
+      <p :else-if="responses().length === 0" class="mt-3 text-gray-500 text-sm dark:text-neutral-400">No order has seen this offer yet.</p>
+      <ul :else class="mt-3 divide-gray-100 divide-y dark:divide-neutral-700">
+        <li :for="response in responses()" :key="response.id" class="flex gap-3 items-center justify-between py-2.5">
+          <div class="min-w-0">
+            <p class="text-gray-900 text-sm truncate dark:text-white">{{ responseLine(response) }}</p>
+            <p class="text-gray-500 text-xs dark:text-neutral-400">Order #{{ response.orderId }}<span :if="response.failureReason"> · {{ response.failureReason }}</span></p>
+          </div>
+          <div class="flex flex-shrink-0 gap-3 items-center">
+            <span :if="response.status === 'accepted'" class="font-semibold tabular-nums text-gray-900 text-sm dark:text-white">{{ money(response.amount) }}</span>
+            <span :class="'px-2 py-0.5 rounded-full text-xs font-medium ' + (STATUS_CLASSES[response.status] || '')">{{ STATUS_LABELS[response.status] || response.status }}</span>
+          </div>
+        </li>
+      </ul>
+    </section>
+  </div>
+  <template #footer>
+    <div class="flex gap-2 justify-between w-full"><Button variant="danger" @click="deleteRecord()">Delete</Button><div class="flex gap-2"><Button variant="secondary" @click="emit('close')">Close</Button><Button @click="editRecord()">Edit offer</Button></div></div>
+  </template>
+</Modal>

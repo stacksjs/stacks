@@ -482,6 +482,8 @@ export function buildNavSections(
       { to: '/commerce/variants', icon: 'puzzle', text: 'Variants' },
       { to: '/commerce/reviews', icon: 'star', text: 'Reviews' },
       { to: '/commerce/coupons', icon: 'coupon', text: 'Coupons' },
+      { to: '/commerce/discounts', icon: 'sale-tag', text: 'Discounts' },
+      { to: '/commerce/upsells', icon: 'zap', text: 'Upsells' },
       { to: '/commerce/gift-cards', icon: 'gift', text: 'Gift Cards' },
       { to: '/commerce/payments', icon: 'invoice', text: 'Payments' },
       { to: '/commerce/taxes', icon: 'percent', text: 'Taxes' },
@@ -491,7 +493,8 @@ export function buildNavSections(
       { to: '/commerce/waitlist/restaurant', icon: 'clock', text: 'Restaurant Waitlist' },
       ...categoryNavItems(discoveredModels, 'commerce', new Set([
         'customer', 'order', 'product', 'product-variant', 'product-unit',
-        'manufacturer', 'review', 'coupon', 'gift-card', 'payment', 'category',
+        'manufacturer', 'review', 'coupon', 'discount', 'post-purchase-offer', 'post-purchase-offer-response',
+        'gift-card', 'payment', 'category',
         'cart', 'cart-item', 'order-item', 'tax-rate',
         'shipping-method', 'shipping-rate', 'shipping-zone',
         'delivery-route', 'courier', 'license-key', 'digital-delivery',

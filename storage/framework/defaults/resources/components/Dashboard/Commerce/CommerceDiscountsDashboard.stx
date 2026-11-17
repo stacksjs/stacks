@@ -1,0 +1,211 @@
+<script client>
+import type { DiscountRecord, DiscountSummary } from '../../../../app/Actions/Dashboard/Commerce/discount-records'
+import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
+import { useServerList } from '../../../../functions/dashboard-list'
+import { pushToast } from '../../../../functions/toasts'
+
+interface DiscountIndexResponse {
+  records: DiscountRecord[]
+  total: number
+  page: number
+  summary: DiscountSummary
+  currency: string
+}
+
+const emptySummary: DiscountSummary = {
+  total: 0,
+  automatic: 0,
+  code: 0,
+  active: 0,
+  scheduled: 0,
+  expired: 0,
+  exhausted: 0,
+  disabled: 0,
+  redemptions: 0,
+  byType: { percentage: 0, fixed_amount: 0, buy_x_get_y: 0, volume: 0, free_shipping: 0 },
+  mostUsed: [],
+}
+const summary = state<DiscountSummary>({ ...emptySummary })
+/** The store currency: amounts are minor units of it. */
+const currency = state('USD')
+const methodFilter = state('all')
+const typeFilter = state('all')
+const stateFilter = state('all')
+const sort = state('newest')
+const dialogOpen = state(false)
+const dialogMode = state<'add' | 'edit'>('add')
+const editingRecord = state<DiscountRecord | null>(null)
+const detailsRecord = state<DiscountRecord | null>(null)
+const deletingRecord = state<DiscountRecord | null>(null)
+const saving = state(false)
+const deleting = state(false)
+const validationErrors = state<Record<string, string>>({})
+
+const SELECT_SORTS: Record<string, { sort: string, direction: 'asc' | 'desc' }> = {
+  newest: { sort: 'newest', direction: 'desc' },
+  title: { sort: 'title', direction: 'asc' },
+  usage: { sort: 'usage', direction: 'desc' },
+  ends: { sort: 'ends', direction: 'asc' },
+}
+
+const {
+  records,
+  total,
+  page,
+  perPage,
+  search,
+  loading,
+  loadError,
+  load,
+  changePage,
+  changePageSize,
+  changeSort,
+} = useServerList<DiscountRecord>({
+  fetch: query => dashboardApi<DiscountIndexResponse>(`/api/dashboard/commerce/discounts?${query}`),
+  defaultSort: () => SELECT_SORTS[sort()] ?? SELECT_SORTS.newest!,
+  columnSorts: { title: 'title', startsAt: 'starts', endsAt: 'ends' },
+  filters: () => ({ method: methodFilter(), type: typeFilter(), state: stateFilter() }),
+  onLoad: (result) => {
+    const data = result as DiscountIndexResponse
+    summary.set(data.summary ?? { ...emptySummary })
+    currency.set(data.currency || 'USD')
+  },
+  onError: error => pushToast('error', 'Could not load discounts', { detail: error instanceof Error ? error.message : String(error) }),
+})
+
+function matchingLabel(): string {
+  const count = total()
+  return `${count.toLocaleString()} matching ${count === 1 ? 'discount' : 'discounts'}`
+}
+
+function metricCards(): Array<{ label: string, value: string, detail: string }> {
+  const current = summary()
+  return [
+    { label: 'Active now', value: String(current.active), detail: `of ${current.total} discounts` },
+    { label: 'Automatic', value: String(current.automatic), detail: `${current.code} by code` },
+    { label: 'Scheduled', value: String(current.scheduled), detail: `${current.expired} expired, ${current.exhausted} used up` },
+    { label: 'Uses', value: current.redemptions.toLocaleString(), detail: 'Orders that used a discount' },
+  ]
+}
+
+function openAdd(): void {
+  dialogMode.set('add')
+  editingRecord.set(null)
+  validationErrors.set({})
+  dialogOpen.set(true)
+}
+
+function openEdit(record: DiscountRecord): void {
+  dialogMode.set('edit')
+  editingRecord.set(record)
+  validationErrors.set({})
+  dialogOpen.set(true)
+}
+
+function closeDialog(): void {
+  if (saving())
+    return
+  dialogOpen.set(false)
+  editingRecord.set(null)
+  validationErrors.set({})
+}
+
+async function saveDiscount(payload: Record<string, unknown>): Promise<void> {
+  const current = editingRecord()
+  const editing = dialogMode() === 'edit' && current !== null
+  saving.set(true)
+  validationErrors.set({})
+  try {
+    await dashboardApi(editing ? `/api/dashboard/commerce/discounts/${current.id}` : '/api/dashboard/commerce/discounts', {
+      method: editing ? 'PATCH' : 'POST',
+      body: payload,
+    })
+    dialogOpen.set(false)
+    editingRecord.set(null)
+    pushToast('success', editing ? 'Discount updated' : 'Discount added', { detail: String(payload.title ?? '') })
+    await load()
+  }
+  catch (error) {
+    if (error instanceof DashboardApiError)
+      validationErrors.set(error.fields ?? {})
+    pushToast('error', 'Could not save discount', { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function openDetails(record: DiscountRecord): void {
+  detailsRecord.set(record)
+}
+
+function closeDetails(): void {
+  detailsRecord.set(null)
+}
+
+function openDelete(record: DiscountRecord): void {
+  deletingRecord.set(record)
+}
+
+function closeDelete(): void {
+  if (!deleting())
+    deletingRecord.set(null)
+}
+
+async function deleteDiscount(): Promise<void> {
+  const current = deletingRecord()
+  if (!current)
+    return
+  deleting.set(true)
+  try {
+    await dashboardApi(`/api/dashboard/commerce/discounts/${current.id}`, { method: 'DELETE' })
+    deletingRecord.set(null)
+    detailsRecord.set(null)
+    pushToast('success', 'Discount deleted', { detail: current.title })
+    await load()
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete discount', { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<div class="flex flex-col gap-6">
+  <PageHeader title="Discounts" description="Automatic discounts and discount codes: buy X get Y, volume tiers, amounts off and free shipping.">
+  <div class="flex flex-wrap gap-2">
+    <Button variant="secondary" :loading="loading()" @click="load()"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
+    <Button @click="openAdd()"><span class="h-4 w-4 i-hugeicons-add-01"></span>Add discount</Button>
+  </div>
+  </PageHeader>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <MetricCards label="Discount metrics" columns="grid-cols-2 lg:grid-cols-4" :items="metricCards()" />
+
+  <CommerceDiscountBreakdown :summary="summary()" />
+
+  <section class="flex flex-col gap-3">
+    <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-6">
+      <div class="sm:col-span-2"><SearchFilter v-model:searchValue="search" placeholder="Search titles or codes" ariaLabel="Search discounts" /></div>
+      <Select v-model:value="stateFilter" ariaLabel="Discount status" placeholder="" :options="[{ value: 'all', label: 'Any status' }, { value: 'active', label: 'Active' }, { value: 'scheduled', label: 'Scheduled' }, { value: 'exhausted', label: 'Used up' }, { value: 'expired', label: 'Expired' }, { value: 'disabled', label: 'Disabled' }]" />
+      <Select v-model:value="methodFilter" ariaLabel="Discount method" placeholder="" :options="[{ value: 'all', label: 'Automatic and codes' }, { value: 'automatic', label: 'Automatic' }, { value: 'code', label: 'Codes' }]" />
+      <Select v-model:value="typeFilter" ariaLabel="Discount type" placeholder="" :options="[{ value: 'all', label: 'All types' }, { value: 'percentage', label: 'Percentage' }, { value: 'fixed_amount', label: 'Amount off' }, { value: 'buy_x_get_y', label: 'Buy X get Y' }, { value: 'volume', label: 'Volume tiers' }, { value: 'free_shipping', label: 'Free shipping' }]" />
+      <Select v-model:value="sort" ariaLabel="Sort discounts" placeholder="" :options="[{ value: 'newest', label: 'Newest' }, { value: 'title', label: 'Title' }, { value: 'usage', label: 'Most used' }, { value: 'ends', label: 'Ending soonest' }]" />
+    </div>
+
+    <p class="text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
+
+    <CommerceDiscountsTable :sort-reset-key="sort()" :records="records()" :total="total()" :current-page="page()" :per-page="perPage()" :loading="loading()" @view="openDetails" @edit="openEdit" @delete="openDelete" @page-change="changePage" @page-size-change="changePageSize" @sort="changeSort" />
+  </section>
+</div>
+
+<CommerceDiscountDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :currency="currency()" :busy="saving()" :errors="validationErrors()" @submit="saveDiscount" @close="closeDialog()" />
+<CommerceDiscountDetailsDialog :open="Boolean(detailsRecord())" :record="detailsRecord()" :currency="currency()" @edit="openEdit" @delete="openDelete" @close="closeDetails()" />
+<CommerceDiscountDeleteDialog :open="Boolean(deletingRecord())" :record="deletingRecord()" :busy="deleting()" @confirm="deleteDiscount()" @close="closeDelete()" />

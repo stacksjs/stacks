@@ -1,0 +1,21 @@
+<script client>
+import type { UpsellOfferRecord } from '../../../../app/Actions/Dashboard/Commerce/upsell-offer-records'
+
+const open = useReactiveProp('open', false)
+const record = useReactiveProp('record', null as UpsellOfferRecord | null)
+const busy = useReactiveProp('busy', false)
+const emit = defineEmits(['close', 'confirm'])
+const description = derived(() => (record()?.stats.views ?? 0) > 0
+  ? `"${record()?.name}" has been shown to orders, and those responses are kept as the record of what was added. It cannot be deleted; edit it and switch it off instead.`
+  : `Delete "${record()?.name || 'this offer'}" permanently? It has not been shown to any order yet.`)
+</script>
+
+<ConfirmDialog
+  :isOpen="open()"
+  title="Delete offer"
+  :description="description()"
+  confirmLabel="Delete offer"
+  :busy="busy()"
+  @close="emit('close')"
+  @confirm="emit('confirm')"
+/>

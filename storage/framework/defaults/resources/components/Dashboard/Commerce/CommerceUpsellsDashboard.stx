@@ -1,0 +1,214 @@
+<script client>
+import type { UpsellOfferRecord, UpsellSummary } from '../../../../app/Actions/Dashboard/Commerce/upsell-offer-records'
+import { formatCurrency } from '@stacksjs/commerce/money'
+import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
+import { useServerList } from '../../../../functions/dashboard-list'
+import { pushToast } from '../../../../functions/toasts'
+
+interface UpsellIndexResponse {
+  records: UpsellOfferRecord[]
+  total: number
+  page: number
+  summary: UpsellSummary
+  currency: string
+}
+
+const emptySummary: UpsellSummary = { total: 0, running: 0, views: 0, accepted: 0, declined: 0, conversionRate: 0, revenue: 0, units: 0, top: [] }
+const summary = state<UpsellSummary>({ ...emptySummary })
+const currency = state('USD')
+const stateFilter = state('all')
+const sort = state('priority')
+const dialogOpen = state(false)
+const dialogMode = state<'add' | 'edit'>('add')
+const editingRecord = state<UpsellOfferRecord | null>(null)
+const detailsRecord = state<UpsellOfferRecord | null>(null)
+const deletingRecord = state<UpsellOfferRecord | null>(null)
+const saving = state(false)
+const deleting = state(false)
+const validationErrors = state<Record<string, string>>({})
+
+const SELECT_SORTS: Record<string, { sort: string, direction: 'asc' | 'desc' }> = {
+  priority: { sort: 'priority', direction: 'desc' },
+  revenue: { sort: 'revenue', direction: 'desc' },
+  newest: { sort: 'newest', direction: 'desc' },
+  name: { sort: 'name', direction: 'asc' },
+}
+
+const {
+  records,
+  total,
+  page,
+  perPage,
+  search,
+  loading,
+  loadError,
+  load,
+  changePage,
+  changePageSize,
+  changeSort,
+} = useServerList<UpsellOfferRecord>({
+  fetch: query => dashboardApi<UpsellIndexResponse>(`/api/dashboard/commerce/upsells?${query}`),
+  defaultSort: () => SELECT_SORTS[sort()] ?? SELECT_SORTS.priority!,
+  columnSorts: { name: 'name' },
+  filters: () => ({ state: stateFilter() }),
+  onLoad: (result) => {
+    const data = result as UpsellIndexResponse
+    summary.set(data.summary ?? { ...emptySummary })
+    currency.set(data.currency || 'USD')
+  },
+  onError: error => pushToast('error', 'Could not load offers', { detail: error instanceof Error ? error.message : String(error) }),
+})
+
+function money(value: number): string {
+  return formatCurrency(value, currency())
+}
+
+function percent(rate: number): string {
+  return `${(rate * 100).toFixed(rate > 0 && rate < 0.1 ? 1 : 0)}%`
+}
+
+function metricCards(): Array<{ label: string, value: string, detail: string }> {
+  const current = summary()
+  return [
+    { label: 'Running', value: String(current.running), detail: `of ${current.total} offers` },
+    { label: 'Shown', value: current.views.toLocaleString(), detail: 'Products shown after checkout' },
+    { label: 'Conversion', value: percent(current.conversionRate), detail: `${current.accepted.toLocaleString()} added, ${current.declined.toLocaleString()} declined` },
+    { label: 'Added to orders', value: money(current.revenue), detail: `${current.units.toLocaleString()} units` },
+  ]
+}
+
+function matchingLabel(): string {
+  const count = total()
+  return `${count.toLocaleString()} matching ${count === 1 ? 'offer' : 'offers'}`
+}
+
+function openAdd(): void {
+  dialogMode.set('add')
+  editingRecord.set(null)
+  validationErrors.set({})
+  dialogOpen.set(true)
+}
+
+function openEdit(record: UpsellOfferRecord): void {
+  dialogMode.set('edit')
+  editingRecord.set(record)
+  validationErrors.set({})
+  dialogOpen.set(true)
+}
+
+function closeDialog(): void {
+  if (saving())
+    return
+  dialogOpen.set(false)
+  editingRecord.set(null)
+  validationErrors.set({})
+}
+
+async function saveOffer(payload: Record<string, unknown>): Promise<void> {
+  const current = editingRecord()
+  const editing = dialogMode() === 'edit' && current !== null
+  saving.set(true)
+  validationErrors.set({})
+  try {
+    await dashboardApi(editing ? `/api/dashboard/commerce/upsells/${current.id}` : '/api/dashboard/commerce/upsells', {
+      method: editing ? 'PATCH' : 'POST',
+      body: payload,
+    })
+    dialogOpen.set(false)
+    editingRecord.set(null)
+    pushToast('success', editing ? 'Offer updated' : 'Offer added', { detail: String(payload.name ?? '') })
+    await load()
+  }
+  catch (error) {
+    if (error instanceof DashboardApiError)
+      validationErrors.set(error.fields ?? {})
+    pushToast('error', 'Could not save offer', { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function openDetails(record: UpsellOfferRecord): void {
+  detailsRecord.set(record)
+}
+
+function closeDetails(): void {
+  detailsRecord.set(null)
+}
+
+function openDelete(record: UpsellOfferRecord): void {
+  deletingRecord.set(record)
+}
+
+function closeDelete(): void {
+  if (!deleting())
+    deletingRecord.set(null)
+}
+
+async function deleteOffer(): Promise<void> {
+  const current = deletingRecord()
+  if (!current)
+    return
+  deleting.set(true)
+  try {
+    await dashboardApi(`/api/dashboard/commerce/upsells/${current.id}`, { method: 'DELETE' })
+    deletingRecord.set(null)
+    detailsRecord.set(null)
+    pushToast('success', 'Offer deleted', { detail: current.name })
+    await load()
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete offer', { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<div class="flex flex-col gap-6">
+  <PageHeader title="Upsells" description="One-time, discounted offers on the order confirmation page. Accepting adds the items to the order just placed, with no second checkout.">
+  <div class="flex flex-wrap gap-2">
+    <Button variant="secondary" :loading="loading()" @click="load()"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
+    <Button @click="openAdd()"><span class="h-4 w-4 i-hugeicons-add-01"></span>Add offer</Button>
+  </div>
+  </PageHeader>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <MetricCards label="Upsell metrics" columns="grid-cols-2 lg:grid-cols-4" :items="metricCards()" />
+
+  <section :if="summary().top.length > 0" aria-label="Best offers" class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Best offers</h2>
+    <ol class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 mt-3">
+      <li :for="(entry, index) in summary().top" :key="entry.id" class="flex gap-3 items-baseline">
+        <span class="font-mono text-gray-400 text-xs">{{ index + 1 }}</span>
+        <div class="min-w-0">
+          <p class="text-gray-900 text-sm truncate dark:text-white">{{ entry.name }}</p>
+          <p class="tabular-nums text-gray-500 text-xs dark:text-neutral-400">{{ money(entry.revenue) }} · {{ percent(entry.conversionRate) }}</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="sm:col-span-2"><SearchFilter v-model:searchValue="search" placeholder="Search names, headlines or messages" ariaLabel="Search offers" /></div>
+      <Select v-model:value="stateFilter" ariaLabel="Offer status" placeholder="" :options="[{ value: 'all', label: 'Any status' }, { value: 'running', label: 'Running' }, { value: 'scheduled', label: 'Scheduled' }, { value: 'ended', label: 'Ended' }, { value: 'disabled', label: 'Disabled' }]" />
+      <Select v-model:value="sort" ariaLabel="Sort offers" placeholder="" :options="[{ value: 'priority', label: 'Priority' }, { value: 'revenue', label: 'Most revenue' }, { value: 'newest', label: 'Newest' }, { value: 'name', label: 'Name' }]" />
+    </div>
+
+    <p class="text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
+
+    <CommerceUpsellsTable :sort-reset-key="sort()" :records="records()" :total="total()" :current-page="page()" :per-page="perPage()" :loading="loading()" :currency="currency()" @view="openDetails" @edit="openEdit" @delete="openDelete" @page-change="changePage" @page-size-change="changePageSize" @sort="changeSort" />
+  </section>
+</div>
+
+<CommerceUpsellDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :currency="currency()" :busy="saving()" :errors="validationErrors()" @submit="saveOffer" @close="closeDialog()" />
+<CommerceUpsellDetailsDialog :open="Boolean(detailsRecord())" :record="detailsRecord()" :currency="currency()" @edit="openEdit" @delete="openDelete" @close="closeDetails()" />
+<CommerceUpsellDeleteDialog :open="Boolean(deletingRecord())" :record="deletingRecord()" :busy="deleting()" @confirm="deleteOffer()" @close="closeDelete()" />

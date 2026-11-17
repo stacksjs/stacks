@@ -1,0 +1,115 @@
+<script client>
+import type { ProductChoice } from '../../../../app/Actions/Dashboard/Commerce/commerce-choice-records'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+
+/**
+ * Several products, picked by searching: the chosen ones as removable chips,
+ * the matches under a search box. The products come from the server search
+ * the other commerce dialogs use (`/api/dashboard/commerce/product-choices`),
+ * so a store with thousands of products is searched, not listed.
+ *
+ * `selected` is `[{ id, label }]`; every change emits the whole new list.
+ */
+interface PickedProduct { id: string, label: string }
+
+const selected = useReactiveProp('selected', [] as PickedProduct[])
+const label = useReactiveProp('label', 'Products')
+const hint = useReactiveProp('hint', '')
+const emptyLabel = useReactiveProp('emptyLabel', 'No products chosen')
+const max = useReactiveProp('max', 0)
+const error = useReactiveProp('error', '')
+const emit = defineEmits(['change'])
+
+// Not `query`: the render context has one of its own (the request's).
+const searchTerm = state('')
+const matches = state<ProductChoice[]>([])
+const searching = state(false)
+let request = 0
+let timer: ReturnType<typeof setTimeout> | null = null
+
+async function search(term: string): Promise<void> {
+  const current = ++request
+  if (!term) {
+    matches.set([])
+    searching.set(false)
+    return
+  }
+  searching.set(true)
+  let found: ProductChoice[] = []
+  try {
+    const data = await dashboardApi<{ choices?: ProductChoice[] }>(`/api/dashboard/commerce/product-choices?${new URLSearchParams({ q: term, limit: '8' })}`)
+    found = Array.isArray(data.choices) ? data.choices : []
+  }
+  catch {
+    // Soft-fail: what is already chosen stays chosen.
+  }
+  if (current !== request)
+    return
+  matches.set(found)
+  searching.set(false)
+}
+
+function searchSoon(): void {
+  if (timer)
+    clearTimeout(timer)
+  timer = setTimeout(() => { void search(searchTerm().trim()) }, 250)
+}
+
+function isChosen(id: string): boolean {
+  return selected().some(product => product.id === id)
+}
+
+function full(): boolean {
+  return max() > 0 && selected().length >= max()
+}
+
+/** Matches not chosen yet. */
+function options(): ProductChoice[] {
+  return matches().filter(choice => !isChosen(choice.id))
+}
+
+function add(choice: ProductChoice): void {
+  if (isChosen(choice.id) || full())
+    return
+  emit('change', [...selected(), { id: choice.id, label: choice.label }])
+  searchTerm.set('')
+  matches.set([])
+}
+
+function remove(id: string): void {
+  emit('change', selected().filter(product => product.id !== id))
+}
+</script>
+
+<div class="flex flex-col gap-2">
+  <div class="flex items-baseline justify-between">
+    <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">{{ label() }}</span>
+    <span :if="max() > 0" class="tabular-nums text-gray-400 text-xs dark:text-neutral-500">{{ selected().length }} / {{ max() }}</span>
+  </div>
+
+  <ul :if="selected().length > 0" class="flex flex-wrap gap-1.5" aria-label="Chosen products">
+    <li :for="product in selected()" :key="product.id" class="inline-flex gap-1 items-center pl-2.5 pr-1 py-1 text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 rounded-full">
+      <span class="max-w-[14rem] truncate">{{ product.label }}</span>
+      <button type="button" class="inline-flex items-center justify-center h-5 w-5 text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-neutral-600 rounded-full transition-colors" :aria-label="'Remove ' + product.label" @click="remove(product.id)">
+        <span class="h-3 w-3 i-hugeicons-cancel-01" aria-hidden="true"></span>
+      </button>
+    </li>
+  </ul>
+  <p :else class="text-gray-500 text-xs dark:text-neutral-400">{{ emptyLabel() }}</p>
+
+  <div :if="!full()" class="relative">
+    <Input v-model:value="searchTerm" type="search" ariaLabel="Search products to add" placeholder="Search products by name or id" @input="searchSoon()" />
+    <ul :if="options().length > 0" class="absolute overflow-auto z-20 mt-1 py-1 max-h-56 w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 shadow-lg" role="listbox">
+      <li :for="choice in options()" :key="choice.id" role="option">
+        <button type="button" class="flex gap-3 items-center justify-between px-3 py-2 w-full text-left text-sm hover:bg-gray-50 dark:hover:bg-neutral-700" @click="add(choice)">
+          <span class="text-gray-900 truncate dark:text-white">{{ choice.label }}</span>
+          <span class="flex-shrink-0 text-gray-400 text-xs">{{ choice.detail }}</span>
+        </button>
+      </li>
+    </ul>
+    <p :if="searching()" class="mt-1 text-gray-400 text-xs">Searching...</p>
+  </div>
+
+  <p :if="error()" class="text-red-600 text-xs dark:text-red-400">{{ error() }}</p>
+  <p :else-if="hint()" class="text-gray-500 text-xs dark:text-neutral-400">{{ hint() }}</p>
+</div>

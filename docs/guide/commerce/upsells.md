@@ -109,3 +109,7 @@ await upsells.offerStats(offerId)
 | `POST /api/orders/offers/decline` | `Actions/Storefront/DeclineOrderOfferAction` |
 
 How the addition is paid for is one file, `app/Storefront/UpsellCharge.ts`. The default charges off-session through the provider that took the order's payment, or collects the addition the same way as the order when the order recorded no provider payment. Copy it into your app at the same path to charge your own way.
+
+## In the dashboard
+
+**Commerce > Upsells** (`/commerce/upsells`) lists the offers with their funnel: how many times each was shown, how many orders took it, the conversion and what it added to orders, plus the totals and best offers across all of them. The dialog edits what the shopper reads (with a preview of the confirmation-page banner), the products offered, the discount and quantities, which orders see it and for how long. **View results** shows the funnel bar by bar and the latest responses, each with its order and outcome. An offer that orders have already answered cannot be deleted, since its responses are the record of what was added; switch it off instead.

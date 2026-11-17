@@ -627,6 +627,8 @@ if (feature('commerce')) {
     route.get('/orders', 'Actions/Dashboard/Commerce/CommerceOrdersAction')
     route.get('/products', 'Actions/Dashboard/Commerce/CommerceProductsAction')
     route.get('/coupons', 'Actions/Dashboard/Commerce/CommerceCouponsAction')
+    route.get('/discounts', 'Actions/Dashboard/Commerce/CommerceDiscountsAction')
+    route.get('/upsells', 'Actions/Dashboard/Commerce/CommerceUpsellsAction')
     route.get('/gift-cards', 'Actions/Dashboard/Commerce/CommerceGiftCardsAction')
     route.get('/payments', 'Actions/Dashboard/Commerce/CommercePaymentsAction')
     route.get('/delivery', 'Actions/Dashboard/Commerce/CommerceDeliveryAction')

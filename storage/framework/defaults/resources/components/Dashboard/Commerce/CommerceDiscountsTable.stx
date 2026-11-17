@@ -1,0 +1,105 @@
+@import('../UI/Table')
+
+<script client>
+import type { DiscountRecord } from '../../../../app/Actions/Dashboard/Commerce/discount-records'
+
+const records = useReactiveProp('records', [] as DiscountRecord[])
+const loading = useReactiveProp('loading', false)
+/** The parent's sort select: a change hands the order back from a header sort. */
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
+const total = useReactiveProp('total', 0)
+const currentPage = useReactiveProp('currentPage', 1)
+const perPage = useReactiveProp('perPage', 25)
+const emit = defineEmits(['view', 'edit', 'delete', 'page-change', 'page-size-change', 'sort'])
+
+/** The kind of discount and what it comes off, in a few words. */
+function kind(record: DiscountRecord): string {
+  switch (record.type) {
+    case 'percentage': return record.appliesTo === 'product' ? 'Percentage off products' : 'Percentage off the order'
+    case 'fixed_amount': return record.appliesTo === 'product' ? (record.perItem ? 'Amount off each item' : 'Amount off products') : 'Amount off the order'
+    case 'buy_x_get_y': return 'Buy X get Y'
+    case 'volume': return 'Volume tiers'
+    default: return 'Shipping'
+  }
+}
+
+const COLUMNS = [
+  { key: 'title', label: 'Discount', sortable: true, subtitleKey: 'methodLabel', class: 'font-medium text-gray-900 dark:text-white' },
+  {
+    key: 'label',
+    label: 'Offer',
+    subtitleKey: 'kind',
+    searchable: false,
+    class: 'font-semibold text-emerald-700 whitespace-nowrap dark:text-emerald-300 tracking-wide text-xs',
+  },
+  {
+    key: 'state',
+    label: 'Status',
+    type: 'badge' as const,
+    badgeClasses: {
+      active: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300',
+      scheduled: 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300',
+      exhausted: 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300',
+    },
+    badgeLabels: { active: 'Active', scheduled: 'Scheduled', expired: 'Expired', exhausted: 'Used up', disabled: 'Disabled' },
+  },
+  { key: 'usageLabel', label: 'Used', align: 'right' as const, searchable: false, class: 'font-mono whitespace-nowrap' },
+  // Calendar days: parseDashboardDate reads them as that day in every zone.
+  { key: 'startsAt', label: 'Starts', type: 'date' as const, sortable: true, emptyText: 'Now', class: 'whitespace-nowrap' },
+  { key: 'endsAt', label: 'Ends', type: 'date' as const, sortable: true, emptyText: 'Never', class: 'whitespace-nowrap' },
+]
+
+const ROW_ACTIONS = [
+  { action: 'view', label: 'View' },
+  { action: 'edit', label: 'Edit' },
+  { action: 'delete', label: 'Delete' },
+]
+
+const rows = derived(() => records().map(record => ({
+  ...record,
+  methodLabel: record.method === 'code' ? `Code ${record.code}` : 'Automatic',
+  kind: kind(record),
+  usageLabel: `${record.usageCount.toLocaleString()} / ${record.usageLimit ? record.usageLimit.toLocaleString() : 'No limit'}`,
+})))
+
+function handleRowAction(payload: { action: string, row: DiscountRecord }): void {
+  emit(payload.action, payload.row)
+}
+
+function changePage(page: number): void {
+  emit('page-change', page)
+}
+
+function changePageSize(size: number): void {
+  emit('page-size-change', size)
+}
+
+function changeSort(sort: { key: string, direction: string }): void {
+  emit('sort', sort)
+}
+</script>
+
+{{--
+  No `searchable` or `filterable`: the parent dashboard owns the search box
+  and the filter selects. The server pages and sorts what they match.
+--}}
+<Table
+  :sort-reset-key="sortResetKey()"
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="title"
+  paginated
+  manual-pagination
+  manual-sort
+  :total="total()"
+  :current-page="currentPage()"
+  :page-size="perPage()"
+  empty-title="No discounts found"
+  empty-description="Add a discount, or adjust the filters."
+  @row-action="handleRowAction"
+  @page-change="changePage"
+  @page-size-change="changePageSize"
+  @sort="changeSort"
+/>

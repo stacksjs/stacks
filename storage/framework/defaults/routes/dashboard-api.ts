@@ -128,6 +128,18 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
     guard(route.post('/commerce/coupons', 'Actions/Commerce/CouponStoreAction'))
     guard(route.patch('/commerce/coupons/{id}', 'Actions/Commerce/CouponUpdateAction'))
     guard(route.delete('/commerce/coupons/{id}', 'Actions/Commerce/CouponDestroyAction'))
+    // Automatic and code discounts (buy X get Y, volume tiers, free shipping),
+    // written through the discount engine so a saved rule always prices.
+    guard(route.get('/commerce/discounts', 'Actions/Dashboard/Commerce/CommerceDiscountsAction'))
+    guard(route.post('/commerce/discounts', 'Actions/Dashboard/Commerce/CommerceDiscountStoreAction'))
+    guard(route.patch('/commerce/discounts/{id}', 'Actions/Dashboard/Commerce/CommerceDiscountUpdateAction'))
+    guard(route.delete('/commerce/discounts/{id}', 'Actions/Dashboard/Commerce/CommerceDiscountDestroyAction'))
+    // Post-purchase offers with their funnel, and one offer's latest responses.
+    guard(route.get('/commerce/upsells', 'Actions/Dashboard/Commerce/CommerceUpsellsAction'))
+    guard(route.get('/commerce/upsells/{id}', 'Actions/Dashboard/Commerce/CommerceUpsellDetailAction'))
+    guard(route.post('/commerce/upsells', 'Actions/Dashboard/Commerce/CommerceUpsellStoreAction'))
+    guard(route.patch('/commerce/upsells/{id}', 'Actions/Dashboard/Commerce/CommerceUpsellUpdateAction'))
+    guard(route.delete('/commerce/upsells/{id}', 'Actions/Dashboard/Commerce/CommerceUpsellDestroyAction'))
     guard(route.get('/commerce/gift-cards', 'Actions/Dashboard/Commerce/CommerceGiftCardsAction'))
     guard(route.get('/commerce/gift-cards/export', 'Actions/Dashboard/Commerce/CommerceGiftCardsExportAction'))
     guard(route.post('/commerce/gift-cards', 'Actions/Commerce/GiftCardStoreAction'))

@@ -554,7 +554,8 @@ describe('dashboard-utils', () => {
       expect(library.items.length).toBe(2)
 
       const commerce = config.sections.find(s => s.id === 'commerce')!
-      expect(commerce.items.length).toBe(9)
+      // Discounts and Upsells joined Coupons (the commerce dashboard pages).
+      expect(commerce.items.length).toBe(11)
 
       const utilities = config.sections.find(s => s.id === 'utilities')!
       expect(utilities.items.length).toBe(4)

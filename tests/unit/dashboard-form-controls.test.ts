@@ -36,8 +36,10 @@ describe('commerce dialogs', () => {
       shared += (source.match(/<(?:Input|Select|Textarea)\b/g) || []).length
     }
     expect(native).toEqual({})
-    // Every one of them moved, none was dropped: 166 controls were counted before.
-    expect(shared).toBe(166)
+    // Every one of them moved, none was dropped: 166 controls were counted
+    // before; the Discount and Upsell dialogs (stacksjs/stacks commerce
+    // dashboard) added 32, all shared.
+    expect(shared).toBe(198)
   })
 
   it('bind nothing into a control under a name the Modal has for itself', () => {
