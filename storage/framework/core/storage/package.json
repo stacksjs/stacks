@@ -71,7 +71,7 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-cloud": "^0.16.143",
     "@stacksjs/ts-xml": "^0.1.0",
-    "ts-images": "https://registry.pantry.dev/ts-images@22073a9"
+    "ts-images": "https://registry.pantry.dev/ts-images@71051e6"
   },
   "devDependencies": {
     "@stacksjs/types": "workspace:*",

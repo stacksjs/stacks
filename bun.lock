@@ -927,7 +927,7 @@
       "dependencies": {
         "@stacksjs/ts-svg": "https://registry.pantry.dev/@stacksjs/ts-svg@367a010",
         "@stacksjs/types": "workspace:*",
-        "ts-images": "https://registry.pantry.dev/ts-images@22073a9",
+        "ts-images": "https://registry.pantry.dev/ts-images@71051e6",
       },
       "devDependencies": {
         "better-dx": "^0.2.39",
@@ -1411,7 +1411,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ts-cloud": "^0.16.143",
         "@stacksjs/ts-xml": "^0.1.0",
-        "ts-images": "https://registry.pantry.dev/ts-images@22073a9",
+        "ts-images": "https://registry.pantry.dev/ts-images@71051e6",
       },
       "devDependencies": {
         "@stacksjs/types": "workspace:*",
@@ -1598,7 +1598,7 @@
     "@stacksjs/stx": "0.2.908",
     "@stacksjs/ts-svg": "https://registry.pantry.dev/@stacksjs/ts-svg@367a010",
     "bun-plugin-stx": "0.2.908",
-    "ts-images": "https://registry.pantry.dev/ts-images@22073a9",
+    "ts-images": "https://registry.pantry.dev/ts-images@71051e6",
   },
   "packages": {
     "@actions/expressions": ["@actions/expressions@0.3.61", "", {}, "sha512-Ig+tXELvTjlqxQAWBQnLNn2dPpNraLMdSnT+vDzDPmJtbNUhIAH/Z9kVT8pZ8UtJi9vUGs8hwHE8JFJmbOnLEA=="],
@@ -2219,7 +2219,7 @@
 
     "ts-gif": ["ts-gif@0.1.5", "", { "dependencies": { "data-uri-to-buffer": "^6.0.2" } }, "sha512-Z2bf6Mwq+AyxAcq9zxQvuzTCIFmfnbZhFED/6KVnkNCPJJaohx/sXjolAlI8vU7YqGL56yT0JV+4yoi+eJxnTQ=="],
 
-    "ts-images": ["ts-images@https://registry.pantry.dev/ts-images@22073a9", { "dependencies": { "@stacksjs/ts-avif": "^0.1.4", "@stacksjs/ts-bmp": "^0.1.0", "@stacksjs/ts-heic": "^0.0.2", "@stacksjs/ts-png": "^0.1.2", "@stacksjs/ts-svg": "https://registry.pantry.dev/@stacksjs/ts-svg@367a010", "@stacksjs/ts-webp": "^0.1.7", "ts-gif": "^0.1.2", "ts-jpeg": "^0.3.1" }, "bin": { "imgx": "./dist/bin/cli.js" } }, "sha512-t3gg14VxM3HPSiXYyp9vzbMUvvdsYtDd/WDEf0HkL8uiYGwcBGf+SE6jPWkkjNDii9iz1iltgxbaQqlxey0DnQ=="],
+    "ts-images": ["ts-images@https://registry.pantry.dev/ts-images@71051e6", { "dependencies": { "@stacksjs/ts-avif": "^0.1.4", "@stacksjs/ts-bmp": "^0.1.0", "@stacksjs/ts-heic": "^0.0.2", "@stacksjs/ts-png": "^0.1.2", "@stacksjs/ts-svg": "https://registry.pantry.dev/@stacksjs/ts-svg@367a010", "@stacksjs/ts-webp": "^0.1.7", "ts-gif": "^0.1.2", "ts-jpeg": "^0.3.1" }, "bin": { "imgx": "./dist/bin/cli.js" } }, "sha512-Sw5BYcUd7ismEKcJCMq0o5LL6ibGbY4VPIEeZp2YX0xDAwWqaFL1TzgbMBmVeL2iKUTEAfZzeQt2Ka1ZH3COQA=="],
 
     "ts-jpeg": ["ts-jpeg@0.3.6", "", {}, "sha512-BJB8NzbRx/vWH97iA17D065J/LaaJfdgoSvspV+EcpPHTN/aXvWhUf9LNhSclu0kd4SSoBecD9qIiFAnjwXT0g=="],
 

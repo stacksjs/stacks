@@ -33,7 +33,7 @@
   "dependencies": {
     "@stacksjs/ts-svg": "https://registry.pantry.dev/@stacksjs/ts-svg@367a010",
     "@stacksjs/types": "workspace:*",
-    "ts-images": "https://registry.pantry.dev/ts-images@22073a9"
+    "ts-images": "https://registry.pantry.dev/ts-images@71051e6"
   },
   "devDependencies": {
     "better-dx": "^0.2.39"
