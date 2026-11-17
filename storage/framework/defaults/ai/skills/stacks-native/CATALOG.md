@@ -58,7 +58,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/hq` | [`stacks-hq`](../stacks-hq/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/src/index.ts) | 11 |
 | `@stacksjs/http` | [`stacks-http`](../stacks-http/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/src/index.ts) | 4 |
 | `@stacksjs/i18n` | [`stacks-i18n`](../stacks-i18n/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/index.ts) | 7 |
-| `@stacksjs/image` | [`stacks-image`](../stacks-image/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/index.ts) | 4 |
+| `@stacksjs/image` | [`stacks-image`](../stacks-image/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/index.ts) | 5 |
 | `@stacksjs/lint` | [`stacks-lint`](../stacks-lint/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/lint/src/index.ts) | 3 |
 | `@stacksjs/logging` | [`stacks-logging`](../stacks-logging/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/logging/src/index.ts) | 14 |
 | `@stacksjs/mobile` | [`stacks-mobile`](../stacks-mobile/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/mobile/src/index.ts) | 23 |
@@ -580,7 +580,7 @@ Declared runtime exports: `ImageBuilder`, `image`, `imageResponseHeaders`, `nego
 
 Local source modules: [src/app-icons.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/app-icons.ts), [src/app-store.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/app-store.ts), [src/fonts.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/fonts.ts), [src/generate.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/generate.ts), [src/social.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/social.ts), [src/splash.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/splash.ts), [src/theme.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/theme.ts), [src/upload.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/upload.ts).
 
-Evidence directory: [4 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [5 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/lint
 
