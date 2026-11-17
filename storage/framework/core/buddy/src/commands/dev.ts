@@ -742,7 +742,7 @@ export function dev(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       await checkFrameworkDefaults()
-      await (await actions()).runDashboardDevServer(options)
+      await (await actions()).becomeDashboardDevServer(options)
     })
 
   buddy

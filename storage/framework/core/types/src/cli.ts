@@ -230,6 +230,13 @@ export type ActionOptions = {
   dryRun?: boolean // used in buddy release
   /** The job or record an action targets, used by `queue:retry` / `queue:inspect`. */
   id?: string | number
+  /**
+   * Become the action instead of waiting on it: the calling process is
+   * replaced by the action's, where the platform allows. For a command whose
+   * whole job is one long-running server, so the CLI that started it does not
+   * sit in memory beside it for as long as it runs.
+   */
+  replaceProcess?: boolean
 } & CliOptions &
 DomainsOptions
 

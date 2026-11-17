@@ -37,6 +37,16 @@ export async function runDashboardDevServer(options: DevOptions): Promise<void> 
   await runAction(Action.DevDashboard, options)
 }
 
+/**
+ * Become the dashboard server. For `buddy dev:dashboard`, which starts this
+ * one server and nothing else: the dashboard supervises itself, so a CLI
+ * process kept alive beside it would only be a third of its idle memory.
+ * `buddy dev` runs several servers and keeps using `runDashboardDevServer`.
+ */
+export async function becomeDashboardDevServer(options: DevOptions): Promise<void> {
+  await runAction(Action.DevDashboard, { ...options, replaceProcess: true })
+}
+
 export async function runSystemTrayDevServer(options: DevOptions): Promise<void> {
   await runAction(Action.DevSystemTray, options)
 }

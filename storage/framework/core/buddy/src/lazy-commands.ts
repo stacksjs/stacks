@@ -37,6 +37,9 @@ const commandRegistry: Record<string, CommandLoader> = {
   'auth': { path: './commands/auth.ts', load: () => import('./commands/auth.ts'), exportName: 'auth' },
   'build': { path: './commands/build.ts', load: () => import('./commands/build.ts'), exportName: 'build' },
   'cd': { path: './commands/cd.ts', load: () => import('./commands/cd.ts'), exportName: 'cd' },
+  // Machine-level: buddy in the background, and a project's dashboard from anywhere.
+  'daemon': { path: './commands/daemon.ts', load: () => import('./commands/daemon.ts'), exportName: 'daemon' },
+  'dashboard': { path: './commands/dashboard.ts', load: () => import('./commands/dashboard.ts'), exportName: 'dashboard' },
   'changelog': { path: './commands/changelog.ts', load: () => import('./commands/changelog.ts'), exportName: 'changelog' },
   'clean': { path: './commands/clean.ts', load: () => import('./commands/clean.ts'), exportName: 'clean' },
   'cloud': { path: './commands/cloud.ts', load: () => import('./commands/cloud.ts'), exportName: 'cloud' },

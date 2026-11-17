@@ -293,7 +293,8 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   // An argv array, not a joined string: `runCommand` splits a string on
   // whitespace without a shell, so a value or a path containing a space was
   // cut into several arguments (see `buddyOptionArgs`).
-  const opts = isDevAction || !options ? [] : buddyOptionArgs(options as Record<string, any>)
+  const { replaceProcess, ...forwardedOptions } = options ?? {}
+  const opts = isDevAction || !options ? [] : buddyOptionArgs(forwardedOptions as Record<string, any>)
   // Only optional launcher flags may disappear. An empty option value is
   // still an argv token: dropping it turns `--model ''` into `--model true`.
   const cmd = [...['bun', developmentCondition, watchFlag, path].filter(Boolean), ...opts]
@@ -322,6 +323,16 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
     // injectGlobalAutoImports) and pure waste for the frontend/docs servers,
     // which never touch models. Flag the subprocess so the preloader skips it.
     env: { ...options?.env, NODE_PATH: nodePath, ...(isDevAction ? { STACKS_DEV_SERVER: '1' } : {}) },
+  }
+
+  // Nothing is left for this process to do but wait, and a server runs for
+  // hours: hand it this process instead of a child of it. The same Bun that
+  // is running this is the one `bun` names, since the launcher puts it first
+  // on PATH. Where a process cannot be replaced, the child below is the
+  // answer it has always been.
+  if (replaceProcess && typeof process.execve === 'function') {
+    process.chdir(String(optionsWithCwd.cwd))
+    process.execve(process.execPath, [process.execPath, ...cmd.slice(1)], { ...process.env, ...optionsWithCwd.env } as Record<string, string>)
   }
 
   const result = await runCommand(cmd, optionsWithCwd)
