@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.623...v0.75.624)
+
+## ✨ Features
+
+- **ai**: generate MCP servers from router APIs ([914cdbf](https://github.com/stacksjs/stacks/commit/914cdbf)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- declare shared host memory pressure headroom ([a975d30](https://github.com/stacksjs/stacks/commit/a975d30)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **ai**: document router MCP setup and customization ([ce643c1](https://github.com/stacksjs/stacks/commit/ce643c1)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **deps**: ts-cloud 0.16.144 and ts-broadcasting 0.0.14 (#3322) ([acca691](https://github.com/stacksjs/stacks/commit/acca691)) _(by Chris)_ ([#3322](https://github.com/stacksjs/stacks/issues/3322))
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.622...v0.75.623)
 
 ## 🐛 Bug Fixes
