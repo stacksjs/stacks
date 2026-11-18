@@ -124,6 +124,69 @@ export async function buildNativeProject(root: string, args: string[] = []): Pro
   finally { prepared.cleanup() }
 }
 
+/** A framework package a native app declares: the meta-package, `@stacksjs/*`, and the STX compiler and router. */
+function isFrameworkPackage(name: string): boolean {
+  return name === 'stacks' || name.startsWith('@stacksjs/') || name === 'bun-plugin-stx' || name === 'stx-router'
+}
+
+/**
+ * Move a native app's exactly pinned framework packages to the newest release
+ * within their own line, as a caret range already moves on `bun update`.
+ *
+ * `bun update` keeps an exact pin where it is. A native app scaffolded with
+ * `"@stacksjs/buddy": "0.75.520"` therefore stayed on 0.75.520 through every
+ * `buddy upgrade`, which printed "v0.75.629 available" and changed nothing,
+ * while an app declaring carets moved. The pin stays exact; only its version
+ * moves, and never past the package's own minor line (0.x) or `latest` tag.
+ */
+export async function raiseExactFrameworkPins(
+  root: string,
+  options: { dryRun?: boolean, read?: typeof fetch } = {},
+): Promise<Array<{ name: string, from: string, to: string }>> {
+  const read = options.read ?? fetch
+  const path = join(root, 'package.json')
+  const raw = readFileSync(path, 'utf8')
+  const manifest = JSON.parse(raw) as Record<string, Record<string, string> | undefined>
+  const fields = ['dependencies', 'devDependencies', 'overrides', 'resolutions'] as const
+  const pinned = new Map<string, string>()
+  for (const field of fields) {
+    for (const [name, spec] of Object.entries(manifest[field] ?? {})) {
+      if (typeof spec === 'string' && isFrameworkPackage(name) && /^\d+\.\d+\.\d+$/.test(spec))
+        pinned.set(name, spec)
+    }
+  }
+
+  const targets = new Map<string, string>()
+  await Promise.all([...pinned].map(async ([name, from]) => {
+    const response = await read(`https://registry.npmjs.org/${name.replace('/', '%2f')}`, { headers: { accept: 'application/vnd.npm.install-v1+json' } })
+    if (!response.ok)
+      throw new Error(`Could not list the published releases of ${name}.`)
+    const packument = await response.json() as { 'versions'?: Record<string, unknown>, 'dist-tags'?: Record<string, string> }
+    const latest = packument['dist-tags']?.latest
+    const newest = Object.keys(packument.versions ?? {})
+      .filter(version => !version.includes('-') && Bun.semver.satisfies(version, `^${from}`) && (!latest || Bun.semver.order(version, latest) <= 0))
+      .sort((a, b) => Bun.semver.order(b, a))[0]
+    if (newest && newest !== from)
+      targets.set(name, newest)
+  }))
+
+  const changes: Array<{ name: string, from: string, to: string }> = []
+  for (const field of fields) {
+    for (const [name, spec] of Object.entries(manifest[field] ?? {})) {
+      const to = targets.get(name)
+      if (to && spec === pinned.get(name)) {
+        manifest[field]![name] = to
+        if (!changes.some(change => change.name === name))
+          changes.push({ name, from: spec, to })
+      }
+    }
+  }
+
+  if (changes.length > 0 && !options.dryRun)
+    writeFileSync(path, `${JSON.stringify(manifest, null, 2)}${raw.endsWith('\n') ? '\n' : ''}`)
+  return changes
+}
+
 /** Return false to let the ordinary Buddy registry handle unrelated commands. */
 export async function runNativeProjectCommand(root: string, args: string[]): Promise<boolean> {
   const [command = 'help', ...flags] = args
@@ -168,6 +231,9 @@ export async function runNativeProjectCommand(root: string, args: string[]): Pro
     // have no framework defaults, route generation, or migrations to sync.
     if (flags.some(flag => flag !== '--dry-run' && flag !== '--verbose'))
       throw new Error('Native upgrades support --dry-run and --verbose. Use bun add to select a specific package version.')
+    const raised = await raiseExactFrameworkPins(root, { dryRun: flags.includes('--dry-run') })
+    for (const pin of raised)
+      console.log(`  ${pin.name}  ${pin.from}  →  ${pin.to}`)
     if (flags.includes('--dry-run')) console.log('Would run bun update for the native app; no files changed.')
     else {
       const proc = Bun.spawn(['bun', 'update'], { cwd: root, stdin: 'inherit', stdout: 'inherit', stderr: 'inherit' })
