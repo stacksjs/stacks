@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.622...v0.75.623)
+
+## 🐛 Bug Fixes
+
+- **orm**: let useApi index filter and sort by belongsTo foreign keys (#3321) ([13fc0be](https://github.com/stacksjs/stacks/commit/13fc0be)) _(by Chris)_ ([#3321](https://github.com/stacksjs/stacks/issues/3321))
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.621...v0.75.622)
 
 ## ✨ Features
