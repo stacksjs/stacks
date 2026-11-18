@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, test } from 'bun:test'
 import { readMailSettings, updateMailSettings } from './mail-settings'
 
-interface Fixture { cwd: string, env: string, privateKey: null, backupPath: string, envPath: string }
+interface Fixture { cwd: string, env: string, privateKey: null, backupPathFor: (file: string) => string, envPath: string }
 
 /** A project with `.env` and, optionally, more env files, read as the `staging` environment with no private key. */
 async function fixture(content: string, more: Record<string, string> = {}): Promise<Fixture> {
@@ -13,7 +13,8 @@ async function fixture(content: string, more: Record<string, string> = {}): Prom
     cwd,
     env: 'staging',
     privateKey: null,
-    backupPath: join(cwd, 'runtime', 'environment.backup'),
+    // Every backup in the fixture's own folder, never the checkout's.
+    backupPathFor: (file: string) => join(cwd, 'runtime', `${file}.backup`),
     envPath: join(cwd, '.env'),
   }
   await writeFile(options.envPath, content)
@@ -85,7 +86,7 @@ describe('dashboard mail settings', () => {
     expect(content).toContain('MAIL_PASSWORD=keep-this')
     expect(content).toContain('APP_KEY=untouched')
     expect(content).toContain('MAIL_HOST=smtp.example.com')
-    expect(await readFile(options.backupPath, 'utf8')).toContain('MAIL_MAILER=log')
+    expect(await readFile(options.backupPathFor('.env'), 'utf8')).toContain('MAIL_MAILER=log')
   })
 
   test('requires provider credentials without returning stored secrets', async () => {

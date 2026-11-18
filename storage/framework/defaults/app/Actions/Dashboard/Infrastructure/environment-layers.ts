@@ -2,8 +2,8 @@ import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { activeEnvName, declaredEnvPublicKey, encryptValue, environmentFiles, envHasCiphertext, parse, resolvePrivateKey } from '@stacksjs/env'
-import { frameworkRuntimePath, projectPath } from '@stacksjs/path'
-import { applyEnvironmentEntries, atomicWrite, parseEnvironmentEntries, validateEnvironmentFile } from './environment-file'
+import { projectPath } from '@stacksjs/path'
+import { applyEnvironmentEntries, atomicWrite, environmentBackupPath, parseEnvironmentEntries, validateEnvironmentFile } from './environment-file'
 import type { EnvironmentFileIssue } from './environment-file'
 
 /**
@@ -29,8 +29,8 @@ export interface EnvironmentLayersOptions {
   env?: string
   /** The key encrypted values are decrypted with. Default: the app's (`resolvePrivateKey`); null for none. */
   privateKey?: string | null
-  /** Where the replaced `.env` is kept. Default: the Environment page's backup. */
-  backupPath?: string
+  /** Where the content a file had before a save is kept. Default: {@link environmentBackupPath}. */
+  backupPathFor?: (file: string) => string
 }
 
 export interface EnvironmentLayer {
@@ -64,14 +64,14 @@ export interface EnvironmentLayersIssue {
   message: string
 }
 
-function resolved(options: EnvironmentLayersOptions): { cwd: string, privateKey: string | undefined, backupPath: string, env: string } {
+function resolved(options: EnvironmentLayersOptions): { cwd: string, privateKey: string | undefined, backupPathFor: (file: string) => string, env: string } {
   const cwd = options.cwd ?? projectPath()
   const env = options.env ?? activeEnvName()
   return {
     cwd,
     env,
     privateKey: options.privateKey === null ? undefined : (options.privateKey ?? resolvePrivateKey({ env, cwd })),
-    backupPath: options.backupPath ?? frameworkRuntimePath('dashboard/environment.backup'),
+    backupPathFor: options.backupPathFor ?? environmentBackupPath,
   }
 }
 
@@ -127,7 +127,7 @@ export function environmentLayerIssues(layers: EnvironmentLayers): Array<Environ
  * A value that is encrypted in that file stays encrypted, under the file's own
  * public key, and so does a key named in `secrets` in a file that holds any
  * ciphertext. An empty value is written as it is. Each changed file is
- * replaced atomically; `.env` keeps the backup the Environment page keeps.
+ * replaced atomically, after its old content is kept as its backup.
  */
 export async function updateEnvironmentLayers(
   updates: Record<string, string>,
@@ -138,7 +138,7 @@ export async function updateEnvironmentLayers(
   if (current.revision !== revision)
     return { conflict: true }
 
-  const { cwd, backupPath } = resolved(options)
+  const { cwd, backupPathFor } = resolved(options)
   const secrets = new Set(options.secrets ?? [])
   const byFile = new Map<string, Record<string, string>>()
   const issues: EnvironmentLayersIssue[] = []
@@ -183,10 +183,53 @@ export async function updateEnvironmentLayers(
     return { issues }
 
   for (const { file, before, after } of rewritten) {
-    if (file === '.env' && before !== undefined)
-      await atomicWrite(backupPath, before)
+    if (before !== undefined)
+      await atomicWrite(backupPathFor(file), before)
     await atomicWrite(join(cwd, file), after)
   }
 
   return { layers: await readEnvironmentLayers(options) }
+}
+
+/**
+ * The env files a person can open on the Environment page: `.env`, which a
+ * project always has a place for, and every other file the app loads. A file
+ * name from a request is only ever one of these, so it cannot name a path.
+ */
+export function editableEnvironmentFiles(layers: EnvironmentLayers): string[] {
+  return ['.env', ...layers.layers.map(layer => layer.file).filter(file => file !== '.env')]
+}
+
+export interface KeyReadElsewhere {
+  key: string
+  /** The later file the app reads the key from instead. */
+  file: string
+  /**
+   * False when that file holds it encrypted and this server cannot decrypt it:
+   * the app here still reads this file's value, but wherever that file's key
+   * is present, it reads the later one.
+   */
+  readable: boolean
+}
+
+/**
+ * The keys a file sets whose value the app takes from a file it loads later,
+ * so editing them in this one changes nothing it reads.
+ */
+export function keysReadElsewhere(layers: EnvironmentLayers, file: string): KeyReadElsewhere[] {
+  const order = layers.layers.map(layer => layer.file)
+  const position = order.indexOf(file)
+  const layer = layers.layers[position]
+  if (!layer)
+    return []
+
+  return Object.keys(layer.raw).flatMap((key): KeyReadElsewhere[] => {
+    const source = layers.sources[key]
+    if (source && order.indexOf(source) > position)
+      return [{ key, file: source, readable: true }]
+    const unreadable = layers.unreadable[key]
+    if (unreadable && order.indexOf(unreadable) > position)
+      return [{ key, file: unreadable, readable: false }]
+    return []
+  })
 }

@@ -12,12 +12,13 @@ import { readEnvironmentLayers, updateEnvironmentLayers } from './environment-la
  */
 const directories: string[] = []
 
-function project(files: Record<string, string>): { cwd: string, backupPath: string } {
+/** A project in a temp folder; every backup goes in its own `runtime/`, never the checkout's. */
+function project(files: Record<string, string>): { cwd: string, backupPathFor: (file: string) => string } {
   const cwd = mkdtempSync(join(tmpdir(), 'stacks-env-layers-'))
   directories.push(cwd)
   for (const [name, content] of Object.entries(files))
     writeFileSync(join(cwd, name), content)
-  return { cwd, backupPath: join(cwd, 'runtime', 'environment.backup') }
+  return { cwd, backupPathFor: (file: string) => join(cwd, 'runtime', `${file}.backup`) }
 }
 
 function text(cwd: string, file: string): string {
@@ -47,7 +48,9 @@ describe('environment layers', () => {
     expect(text(location.cwd, '.env.staging')).toBe('MAIL_HOST=saved.test\n')
     // A key no file sets is added to `.env`.
     expect(text(location.cwd, '.env')).toBe('MAIL_HOST=base.test\nMAIL_PORT=2525\n\nMAIL_MAILER=smtp\n')
-    expect(text(location.cwd, 'runtime/environment.backup')).toBe('MAIL_HOST=base.test\nMAIL_PORT=25\n')
+    // Each file it replaced is kept, under its own name.
+    expect(text(location.cwd, 'runtime/.env.backup')).toBe('MAIL_HOST=base.test\nMAIL_PORT=25\n')
+    expect(text(location.cwd, 'runtime/.env.staging.backup')).toBe('MAIL_HOST=staging.test\n')
   })
 
   test('an encrypted entry with no key to read it does not win, and is named', async () => {
