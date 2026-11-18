@@ -1,10 +1,12 @@
 ---
 title: AI Package
-description: "An AI integration package providing unified access to multiple AI providers including Anthropic (Claude), OpenAI, Ollama, and AWS Bedrock."
+description: "AI providers, speech, retrieval, and MCP servers generated from Stacks router APIs and useApi models."
 ---
 # AI Package
 
 An AI integration package providing unified access to multiple AI providers including Anthropic (Claude), OpenAI, Ollama, and AWS Bedrock.
+It also [generates MCP servers from your API](#generate-an-mcp-server-from-your-api),
+including model-driven CRUD, without requiring an AI provider.
 
 ## Installation
 
@@ -523,6 +525,78 @@ credential must also satisfy the API's guards. Model API selection through
 `security.api.models` or `STACKS_MODEL_APIS`, route subsets in `useApi.routes`,
 and user route overrides are respected because only registered routes are read.
 
+### A model with `useApi`
+
+For example, define a shared catalog model in `app/Models/CatalogItem.ts`:
+
+```typescript
+import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
+
+export default defineModel({
+  name: 'CatalogItem',
+  table: 'catalog_items',
+  traits: {
+    useApi: {
+      uri: 'catalog-items', prefix: 'v1',
+      routes: ['index', 'show'], middleware: ['auth'],
+    },
+  },
+  attributes: {
+    title: { fillable: true, required: true, validation: { rule: schema.string().max(120) } },
+    internalNote: { hidden: true },
+  },
+})
+```
+
+Generate and review its migration, then apply it:
+
+```bash
+./buddy generate:migrations
+./buddy migrate
+```
+
+With the MCP mount above, this model contributes tools for
+`GET /api/v1/catalog-items` and `GET /api/v1/catalog-items/{id}`. Both require the
+API's `auth` middleware, and `internal_note` stays hidden. The model's declared
+route list publishes no writes. App models are selected by default; if you have
+restricted `security.api.models` or `STACKS_MODEL_APIS`, include `CatalogItem`.
+See [model API selection and authorization](/skills/data/models).
+
+### Connect and call a generated tool
+
+A client should discover tool names rather than reconstruct their generated
+hash suffix. This example uses the native Stacks MCP client and an existing row
+with ID 42. Set `STACKS_INTEGRATION_TOKEN` to a credential accepted by both your
+MCP authentication callback and the API's auth middleware:
+
+```typescript
+import { MCPClient } from '@stacksjs/ai/mcp'
+
+const token = process.env.STACKS_INTEGRATION_TOKEN
+if (!token) throw new Error('Set STACKS_INTEGRATION_TOKEN')
+
+const client = new MCPClient({
+  name: 'catalog',
+  transport: {
+    type: 'streamable-http',
+    url: 'http://localhost:3008/api/mcp', // use your API server's URL
+    headers: { Authorization: `Bearer ${token}` },
+  },
+})
+
+try {
+  await client.connect()
+  const show = client.listTools().find(tool => tool.description === 'GET /api/v1/catalog-items/{id}')
+  if (!show) throw new Error('Catalog show tool is not exposed')
+  const result = await client.callTool(show.name, { path: { id: 42 } })
+  console.log(result)
+}
+finally {
+  await client.disconnect()
+}
+```
+
 ### Customize the generated server
 
 ```typescript
@@ -542,7 +616,7 @@ mountRouterMCPServer({
     return {
       ...tool,
       description: `My application: ${tool.description}`,
-      available: principal => principal.scopes.includes('api:read'),
+      available: principal => principal.scopes.includes(endpoint.method === 'GET' ? 'api:read' : 'api:write'),
     }
   },
   requestHeaders: ({ principal }) => ({ Authorization: `Bearer ${principal.apiToken}` }),
@@ -573,6 +647,40 @@ For manual endpoint registration, `createRouterMCPServer(options)` returns
 mount GET/DELETE as described by the native MCP server. The first request's
 endpoint path is excluded from generated tools; filter out any additional MCP
 aliases if you mount the handler at multiple paths.
+
+### Router MCP options
+
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `router` | Default Stacks router | Select the router whose registrations are exposed and invoked. |
+| `path` | `/mcp` | Mount path, relative to the current route group; accepted by `mountRouterMCPServer`. |
+| `prefix` | `/api` | Absolute API path prefix. An empty string includes all registered paths. |
+| `origin` | `http://stacks-mcp.internal` | Exact HTTP(S) origin used for in-process API requests, without a trailing slash. |
+| `filter(endpoint)` | Include eligible routes | Return `false` to exclude a method/path. |
+| `configureTool(endpoint, tool)` | Generated tool | Return a customized tool or `false` to omit it. Runs once during discovery. |
+| `requestHeaders(context, endpoint)` | Forward Authorization | Supply API credentials or other headers; accepts an async callback. |
+| `maxResponseBytes` | `1048576` | Bound the API response read in UTF-8 bytes. |
+| `authenticate(request)` | Required | Return the authenticated principal or a 401/403 `Response`; accepts an async callback. |
+
+`endpoint` contains `method` and `path`; `context` contains `principal`, the MCP
+`request`, and its abort `signal`. Tool `available(principal)` runs for each
+discovery and call, so it can restrict visibility per authenticated caller.
+Custom names must be unique across generated and additional tools.
+
+### Troubleshooting
+
+- **No model tools:** verify the model declares `useApi`, is selected for API
+  registration, and falls under the configured `prefix`. Mount MCP before
+  starting the server, then restart after changing routes or models.
+- **HTTP 401/403:** the MCP credential check and the API's own authorization
+  both apply. For browser clients, configure the exact `allowedOrigins`; bearer
+  authentication does not bypass the origin allowlist.
+- **A call returns `isError`:** inspect `structuredContent.status` and `body`
+  for API validation, authorization or rate-limit failures. Transport exceptions
+  use a redacted message; `onError` provides server-side diagnostics.
+- **Different mount URL:** a default mount in `routes/api.ts` is `/api/mcp`,
+  while a mount outside a prefixed route group is `/mcp`. `path` changes the
+  endpoint URL; `prefix` selects the API routes exposed as tools.
 
 ## API Reference
 

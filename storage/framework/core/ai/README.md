@@ -35,6 +35,30 @@ const client = useAI()
 // client...
 ```
 
+## Generate an MCP server from your API
+
+Register one MCP endpoint in `routes/api.ts` to expose your router API, including
+selected model `useApi` CRUD routes:
+
+```ts
+import { mountRouterMCPServer } from '@stacksjs/ai/router-mcp'
+
+mountRouterMCPServer({
+  name: 'my-app', version: '1.0.0',
+  authenticate: request => authenticateIntegrationToken(request),
+})
+```
+
+Supply your application's integration-token check, returning a principal or a
+401/403 `Response`. This mounts `/api/mcp`; calls retain the API's middleware,
+validation and authorization. Only Authorization is forwarded by default.
+
+Customize route selection with `prefix` and `filter`, tools with `configureTool`,
+API credentials with `requestHeaders`, and add custom `tools`, resources or
+prompts. No AI provider is needed. See the
+[MCP API guide](https://stacksjs.com/docs/packages/ai#generate-an-mcp-server-from-your-api)
+for a model example, client discovery and calls, option defaults and limitations.
+
 ## Compact project context
 
 Stacks conventions reduce the amount of application-owned code a coding model

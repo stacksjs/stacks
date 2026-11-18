@@ -34,6 +34,12 @@ source and retained evidence; driver limits are explicit.
 - config/ai.ts
 - Gotchas
 - Usage, retries and multimodal messages
+- Serving MCP tools
+- Generate MCP tools from router APIs
+
+For API-backed MCP servers, see
+[Generate an MCP server from your API](/packages/ai#generate-an-mcp-server-from-your-api)
+for the `useApi` example, extension hooks and client usage.
 
 ## Using it
 

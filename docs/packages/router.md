@@ -26,6 +26,17 @@ route.get('/users/:id', 'Controllers/UserController@show')
 await serve({ port: 3000 })
 ```
 
+## Expose routes through MCP
+
+Use `mountRouterMCPServer` from `@stacksjs/ai/router-mcp` to generate MCP tools
+from registered API routes. It includes selected model `useApi` CRUD routes and
+executes calls through the router's validation, middleware and authorization.
+Applications can select routes and customize tool schemas, credentials and
+availability, or add their own tools.
+
+See [Generate an MCP server from your API](/packages/ai#generate-an-mcp-server-from-your-api)
+for setup, a `useApi` example, client discovery and calls, customization and limits.
+
 ## Route Definitions
 
 ### HTTP Methods
