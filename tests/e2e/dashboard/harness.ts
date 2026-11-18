@@ -19,7 +19,10 @@
  *    (`DB_MIGRATIONS_PATH`, `DB_SNAPSHOT_PATH`), so nothing in the checkout
  *    is written. Then seeds it.
  * 3. Starts the dashboard server as a worker on a free port: no reverse
- *    proxy (which would ask for sudo), no native window.
+ *    proxy (which would ask for sudo), no native window. It runs in a scratch
+ *    project (`scratchProject`), so a page that writes the project's own
+ *    files, as Mail settings writes `.env` and General settings writes
+ *    `config/*.ts`, writes the scratch copy and never the checkout.
  * 4. Opens headless Chrome on it.
  *
  * `close()` stops all of it and drops the database. Without a Postgres URL or
@@ -31,7 +34,7 @@ import type { CreatedDisposableDatabase } from '@stacksjs/testing/disposable-dat
 import { click, findChrome, launch, navigate, waitFor } from '@stacksjs/testing/browser'
 import { createDisposableDatabase, disposablePostgresUrl } from '@stacksjs/testing/disposable-database'
 import { SQL } from 'bun'
-import { mkdirSync, readFileSync } from 'node:fs'
+import { cpSync, mkdirSync, readdirSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
 
@@ -44,6 +47,11 @@ export interface DashboardE2E {
   origin: string
   database: CreatedDisposableDatabase
   browser: LaunchedChrome
+  /**
+   * The project directory the dashboard runs in: the checkout's code, with
+   * its own `config/`, `.env` and runtime state (see `scratchProject`).
+   */
+  project: string
   /** Run SQL against the dashboard's database, to arrange or check rows. */
   sql: <T = Record<string, unknown>>(query: string, ...values: unknown[]) => Promise<T[]>
   /** Stop the browser and the server, and drop the database. Safe to call twice. */
@@ -53,6 +61,7 @@ export interface DashboardE2E {
 /** Start the dashboard on a fresh, migrated and seeded database. */
 export async function startDashboardE2E(): Promise<DashboardE2E> {
   const database = await createDisposableDatabase('postgres', { prefix: 'stacks_e2e' })
+  const checkoutBefore = trackedChanges()
   let server: ReturnType<typeof Bun.spawn> | undefined
   let browser: LaunchedChrome | undefined
   let client: SQL | undefined
@@ -65,6 +74,9 @@ export async function startDashboardE2E(): Promise<DashboardE2E> {
     await server?.exited
     await client?.close().catch(() => {})
     await database.drop()
+    const written = [...trackedChanges()].filter(line => !checkoutBefore.has(line))
+    if (written.length)
+      throw new Error(`The dashboard under test changed the checkout:\n${written.join('\n')}`)
   }
 
   try {
@@ -75,8 +87,9 @@ export async function startDashboardE2E(): Promise<DashboardE2E> {
     const port = await freePort()
     const out = join(database.directory, 'dashboard.out')
     const err = join(database.directory, 'dashboard.err')
+    const project = scratchProject(join(database.directory, 'project'))
     server = Bun.spawn([process.execPath, join(checkout, 'storage/framework/core/actions/src/dev/dashboard.ts')], {
-      cwd: checkout,
+      cwd: project,
       env: { ...env, PORT_ADMIN: String(port), STACKS_DASHBOARD_WORKER: '1', STACKS_DEV_SERVER: '1', STACKS_DEV_AUTO_MIGRATE: '0' },
       stdin: 'ignore',
       stdout: Bun.file(out),
@@ -93,6 +106,7 @@ export async function startDashboardE2E(): Promise<DashboardE2E> {
       origin,
       database,
       browser,
+      project,
       sql: async <T>(query: string, ...values: unknown[]) => await sql.unsafe(query, values) as T[],
       close,
     }
@@ -133,6 +147,9 @@ function dashboardEnv(database: CreatedDisposableDatabase): Record<string, strin
     AWS_PROFILE: '',
     AWS_SHARED_CREDENTIALS_FILE: join(scratch, 'no-aws-credentials'),
     AWS_CONFIG_FILE: join(scratch, 'no-aws-config'),
+    // Per-person dashboard preferences (the sidebar order) live under the
+    // config home, outside any project. A test must not write a person's.
+    XDG_CONFIG_HOME: join(scratch, 'config-home'),
   }
 }
 
@@ -164,6 +181,78 @@ export async function signIn(e2e: DashboardE2E): Promise<string> {
   await click(cdp, 'button[type="submit"]')
   await waitFor(async () => (await cdp.evaluate<string>('location.pathname')) !== '/login' || null, 20_000, { label: `sign in as ${user.email}` })
   return user.email
+}
+
+/**
+ * A Stacks project for the dashboard to run in that is not the checkout.
+ *
+ * Every path the framework writes to is the project root's: `.env`,
+ * `config/`, `storage/framework/runtime`. There are dozens of them (45
+ * places build a `config/` path and 54 a `.env` one), so pointing a test at
+ * scratch files one setting at a time would cover two and miss the rest.
+ * Running in a different project covers all of them.
+ *
+ * The project links to the checkout for everything it only reads: the code,
+ * the framework, `node_modules`. It owns:
+ *
+ * - `config/`, a copy, which General settings edits;
+ * - `.env`, empty, which Mail settings and the Environment page write. The
+ *   checkout's `.env` files hold real credentials, so none is copied; what
+ *   the server needs is given outright in `dashboardEnv`;
+ * - `storage/framework/runtime`, where the Environment page keeps the copy of
+ *   `.env` it replaced, and which would otherwise overwrite the checkout's;
+ * - `storage/framework/defaults`, a copy. It has to be a real directory: a
+ *   linked one reads as a package-based app (`usesVendoredDefaults`), which
+ *   takes its defaults from the installed `@stacksjs/defaults`, an old build
+ *   here, and not from the checkout's source;
+ * - `storage/framework/auto-imports` and `types`, copies. A server that finds
+ *   them stale regenerates them, and through a link it would rewrite the
+ *   checkout's tracked files.
+ *
+ * `close()` still checks that no tracked file in the checkout changed, so a
+ * write this list misses fails the suite instead of passing unseen.
+ *
+ * It lives in a temp folder, which the project list treats as transient
+ * (`isTransientCheckout`), so it is never listed as one of a person's
+ * projects.
+ */
+function scratchProject(root: string): string {
+  const owned = new Set(['.git', 'config', 'storage'])
+  mkdirSync(root, { recursive: true })
+  for (const entry of readdirSync(checkout)) {
+    if (!owned.has(entry) && !entry.startsWith('.env'))
+      symlinkSync(join(checkout, entry), join(root, entry))
+  }
+  cpSync(join(checkout, 'config'), join(root, 'config'), { recursive: true })
+  writeFileSync(join(root, '.env'), '')
+
+  mkdirSync(join(root, 'storage/framework/runtime'), { recursive: true })
+  for (const entry of readdirSync(join(checkout, 'storage'))) {
+    if (entry !== 'framework')
+      symlinkSync(join(checkout, 'storage', entry), join(root, 'storage', entry))
+  }
+  const copied = new Set(['auto-imports', 'defaults', 'types'])
+  for (const entry of readdirSync(join(checkout, 'storage/framework'))) {
+    if (entry === 'runtime')
+      continue
+    if (copied.has(entry))
+      cpSync(join(checkout, 'storage/framework', entry), join(root, 'storage/framework', entry), { recursive: true })
+    else
+      symlinkSync(join(checkout, 'storage/framework', entry), join(root, 'storage/framework', entry))
+  }
+  return root
+}
+
+/**
+ * The checkout's changed tracked files, as `git status` lists them. Compared
+ * before and after a run, it is what proves the scratch project kept the
+ * dashboard's writes to itself.
+ */
+function trackedChanges(): Set<string> {
+  const status = Bun.spawnSync(['git', 'status', '--porcelain', '--untracked-files=no'], { cwd: checkout })
+  if (status.exitCode !== 0)
+    throw new Error(`git status failed in ${checkout}: ${status.stderr.toString()}`)
+  return new Set(status.stdout.toString().split('\n').filter(Boolean))
 }
 
 async function buddy(args: string[], env: Record<string, string>, directory: string, label: string): Promise<void> {
