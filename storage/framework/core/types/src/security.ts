@@ -78,10 +78,52 @@ export interface RateLimitSecurityOptions {
   scale: number
 }
 
+/** One reviewed WAF rule exclusion. Guardian's exclusion wizard writes these. */
+export interface WafRuleExclusion {
+  /** OWASP CRS rule id to switch off. */
+  ruleId: number
+  /** Only for request paths matching this regular expression. Omit to switch it off everywhere. */
+  pathPattern?: string
+  /** Why, so the exclusion is reviewed rather than inherited forever. */
+  reason: string
+}
+
+/**
+ * The web application firewall (zig-waf) in front of the app.
+ *
+ * On box deploys it becomes ts-cloud's `infrastructure.compute.waf`; anything `config/cloud.ts`
+ * sets there explicitly still wins, field by field. On AWS deploys the options AWS WAF cannot
+ * express are reported rather than silently dropped.
+ *
+ * The default mode is `detection`: rules score and log, nothing is refused. Switching to
+ * `blocking` is a deliberate change after reading the detection log; nothing does it for you.
+ */
+export interface WafSecurityOptions {
+  /** @default 'detection' */
+  mode?: 'off' | 'detection' | 'blocking'
+  /** OWASP CRS paranoia level. 1 is the only level safe unattended. @default 1 */
+  paranoiaLevel?: 1 | 2 | 3 | 4
+  /** Inbound anomaly score at which `blocking` mode refuses a request. @default 5 */
+  inboundThreshold?: number
+  /** Outbound anomaly score threshold. @default 4 */
+  outboundThreshold?: number
+  /** Largest request body inspected, in bytes. */
+  maxBodyBytes?: number
+  /** Paths never inspected. Each one is an unguarded route. */
+  bypassPaths?: string[]
+  /** Reviewed rule exclusions. */
+  exclusions?: WafRuleExclusion[]
+  /** Ship audit events to Guardian. Typically read from GUARDIAN_INGEST_URL / GUARDIAN_INGEST_TOKEN. */
+  forward?: { url: string, token: string, intervalSeconds?: number }
+}
+
 export interface SecurityOptions {
   driver: 'aws'
 
   firewall: FirewallOptions
+
+  /** Web application firewall. Unset leaves each deploy target's own defaults in place. */
+  waf?: WafSecurityOptions
 
   /** Security defaults for the routes a model's `useApi` trait generates. */
   api: ApiSecurityOptions

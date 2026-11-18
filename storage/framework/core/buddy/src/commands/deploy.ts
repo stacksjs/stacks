@@ -10,7 +10,7 @@ import { runAction } from '@stacksjs/actions/run-action'
 import { assertPublicationAllowed } from '@stacksjs/actions/publication-preflight'
 import { runBeforeDeployHook } from '@stacksjs/actions/deploy/hooks'
 import { italic, onUnknownSubcommand, outro, prompts } from "@stacksjs/cli"
-import { app, dns as dnsConfig, email as emailConfig } from '@stacksjs/config'
+import { app, dns as dnsConfig, email as emailConfig, security as securityConfig } from '@stacksjs/config'
 import { resolvePrivateTenants } from '../cloud-tenants'
 import { addDomain, hasUserDomainBeenAddedToCloud, syncDnsConfig } from '@stacksjs/dns'
 import { loadProjectDnsConfig } from '../config'
@@ -28,6 +28,7 @@ import { assertComputeResidency } from '@stacksjs/ts-cloud'
 import { resultFailed } from '../result'
 import { deploymentRetirements, explicitDeploymentEnvFile, validateDeploymentProviderInputs } from '../deployment-inputs'
 import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
+import { applySecurityWaf } from '../waf-config'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
 import { buildPreviewTeardownScript, derivePreviewConfig, previewDomain, previewPort, previewTarget } from './preview-deploy'
 import type { SshTarget } from './deploy-ssh-target'
@@ -664,7 +665,11 @@ export async function loadTsCloudConfig(envName?: string): Promise<TsCloudConfig
     // query string forces a fresh evaluation).
     const spec = envName ? `${base}?env=${envName}` : base
     const mod = await import(spec)
-    return mod.tsCloud
+    // `security.waf` drives the deploy target's firewall; an explicit compute.waf still wins.
+    const applied = applySecurityWaf(mod.tsCloud, securityConfig?.waf, resolveProvider(mod.tsCloud))
+    for (const warning of applied.warnings)
+      log.warn(warning)
+    return applied.config
   }
   catch (err) {
     log.debug('Could not load config/cloud.ts tsCloud export:', err)

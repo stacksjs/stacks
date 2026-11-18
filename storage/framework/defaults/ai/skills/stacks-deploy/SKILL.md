@@ -219,6 +219,8 @@ session in a deployed app starts from, instead of asking for a host and a path.
 It needs `@stacksjs/ts-cloud` 0.16.126 or newer and says so on an older one.
 
 ## Gotchas
+
+- **The web firewall comes from `security.waf`.** Box deploys run zig-waf in detection mode by default; `config/security.ts` `waf` tunes it (see `stacks-security`), and `infrastructure.compute.waf` in `config/cloud.ts` overrides it field by field. `compute.waf: false` turns it off.
 - The API reachability guard recognises `serve:api`, source `serve/api.js`
   entrypoints and compiled `storage/framework/runtime/production/api.js`
   bundles, including wrapper commands and custom site names. Page sites still
