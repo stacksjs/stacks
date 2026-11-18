@@ -589,6 +589,9 @@ interface WrappedModelInstance {
   _relations?: Record<string, unknown>
   id?: unknown
   isDirty?: (_key?: string) => boolean
+  getChanges?: () => Record<string, unknown>
+  fill?: (_data: Record<string, unknown>) => unknown
+  _exists?: boolean
   save: () => unknown
   update: (_data: Record<string, unknown>) => unknown
   delete: () => unknown
@@ -682,6 +685,35 @@ function keepWrapped<R>(result: R, raw: object, wrapped: object): R {
   return (result === raw ? wrapped : result) as R
 }
 
+/**
+ * Hold an instance write to the rules `Model.create` and `Model.update(id, data)`
+ * already apply: the changed attributes are validated (`updating` for a stored
+ * row, `creating` for a new one) and datetime attributes are converted to the
+ * form their column stores.
+ *
+ * `row.update(data)` and `row.save()` used to reach the builder's own save with
+ * neither, so the same model wrote `2026-11-17T10:00:00.000` through `create`
+ * and `2026-11-17T10:00:00Z` through `row.update`, and a rule a static write
+ * enforced could be skipped by loading the row first.
+ */
+function prepareInstanceWrite(target: WrappedModelInstance): void {
+  const def = target._definition
+  if (!def || typeof target.getChanges !== 'function') return
+  const changes = target.getChanges()
+  if (!changes || Object.keys(changes).length === 0) return
+  if (!validationIsSuppressed() && hasWriteValidators(def)) {
+    const result = validateWriteBody(changes, def, target._exists === false ? 'creating' : 'updating')
+    if (!result.valid)
+      throw new ModelValidationError(String(def.name ?? 'Model'), result.errors)
+  }
+  const normalized = normalizeTimestampWrites(changes, def)
+  if (normalized === changes) return
+  for (const [key, value] of Object.entries(normalized)) {
+    if (value !== changes[key])
+      target._attributes[key] = value
+  }
+}
+
 function wrapModelInstance<T extends object>(
   instance: T,
   casts?: Record<string, CastType | CasterInterface>,
@@ -738,6 +770,7 @@ function wrapModelInstance<T extends object>(
       // code written when it was the only one that waited.
       if (prop === 'save' || prop === 'saveAsync') {
         const save = (): unknown => writeResult(Boolean(target._definition?.__writesWait), () => settle(function* (): Generator<unknown, unknown, unknown> {
+          prepareInstanceWrite(target)
           const def = target._definition
           const setters = def?.set as Record<string, (attrs: Record<string, unknown>) => unknown> | undefined
           if (!setters || Object.keys(setters).length === 0 || typeof target.isDirty !== 'function')
@@ -762,6 +795,16 @@ function wrapModelInstance<T extends object>(
         return prop === 'save' ? save : async () => save()
       }
 
+      // update(): fill, then the save above, so the write is validated and
+      // normalized like every other. The builder's own update() fills and
+      // calls its own save(), which skips both.
+      if (prop === 'update' && typeof target.fill === 'function') {
+        return function (data: Record<string, unknown>) {
+          ;(target.fill as (_data: Record<string, unknown>) => unknown)(data)
+          return (recv as WrappedModelInstance).save()
+        }
+      }
+
       if (prop === 'updateAsync') {
         return async function (data: Record<string, unknown>) {
           // fill() then saveAsync() — same flow as instance.update() but
@@ -784,9 +827,11 @@ function wrapModelInstance<T extends object>(
       // pattern, useful for bulk imports / backfills where firing every
       // per-row event would either overwhelm a queue or trigger a
       // feedback loop (e.g., an `updated` listener that itself updates).
+      // The quiet variants go through the wrapped save/update for the same
+      // reason: skipping events is not skipping validation.
       if (prop === 'saveQuietly') {
         return function () {
-          return withoutEvents(() => target.save())
+          return withoutEvents(() => (recv as WrappedModelInstance).save())
         }
       }
       if (prop === 'saveAsyncQuietly') {
@@ -796,7 +841,7 @@ function wrapModelInstance<T extends object>(
       }
       if (prop === 'updateQuietly') {
         return function (data: Record<string, unknown>) {
-          return withoutEvents(() => target.update(data))
+          return withoutEvents(() => (recv as WrappedModelInstance).update(data))
         }
       }
       if (prop === 'updateAsyncQuietly') {
