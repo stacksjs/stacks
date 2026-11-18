@@ -33,7 +33,9 @@ Install Buddy once and use it in every Stacks project on your machine:
 bun add -g @stacksjs/buddy
 ```
 
-After that, `buddy` works from any directory inside a project, takes `--project <name>` to target another one, and `buddy dashboard` opens any project's dashboard. Inside a project that has its own Buddy installed, the global one finds the project and hands the command to it, so each project keeps running on the framework version it pins.
+After that, `buddy` works from any directory inside a project, takes `--project <name>` to target another one, and `buddy dashboard` opens any project's dashboard. Inside a project that has its own Buddy installed, the global one finds the project and hands the command to it, so each project keeps running on the framework version it pins. In a fresh clone, run `buddy install` first.
+
+To list the projects already on your machine in one go, run `buddy projects:scan`.
 
 See [Projects](/guide/buddy/projects) for the project list, the dashboard's project switcher and the background process behind them.
 

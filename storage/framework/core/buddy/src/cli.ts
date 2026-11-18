@@ -34,7 +34,7 @@ async function runCli(): Promise<void> {
     import('./launcher'),
     import('./lazy-commands'),
   ])
-  launch({
+  const { projectInstalled } = launch({
     args: typedArgs,
     cwd: process.cwd(),
     main: Bun.main,
@@ -196,8 +196,10 @@ async function runCli(): Promise<void> {
       const commandsToLoad = getCommandsToLoad(args)
       await loadCommands(commandsToLoad, buddy)
 
-      // Load user commands from app/Commands/
-      await dynamicImports(buddy)
+      // Load user commands from app/Commands/. Not in a project with nothing
+      // installed: their imports have nothing to resolve to (see the launcher).
+      if (projectInstalled)
+        await dynamicImports(buddy)
     }
     else {
       // For minimal commands, only load what's needed for better cold start

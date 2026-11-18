@@ -1,6 +1,7 @@
 import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 import { version } from './package.json'
 import { generateNativeTemplates } from './scripts/native-templates'
+import { CLI_SHEBANG } from './src/runtime-flags'
 
 generateNativeTemplates()
 
@@ -53,11 +54,13 @@ if (updated)
 
 // Ensure the published CLI entry starts with a shebang so it is directly
 // executable (npm marks bin files executable when they begin with one).
-// The transpiler drops any shebang from source, so re-add it post-build.
+// The transpiler drops any shebang from source, so re-add it post-build. It
+// starts Bun without the config of the directory it is typed in: see
+// `src/runtime-flags.ts`.
 const cliPath = './dist/cli.js'
 const cliSource = await Bun.file(cliPath).text()
-if (!cliSource.startsWith('#!'))
-  await Bun.write(cliPath, `#!/usr/bin/env bun\n${cliSource}`)
+const cliBody = cliSource.startsWith('#!') ? cliSource.slice(cliSource.indexOf('\n') + 1) : cliSource
+await Bun.write(cliPath, `${CLI_SHEBANG}\n${cliBody}`)
 
 await outro({
   dir: import.meta.dir,

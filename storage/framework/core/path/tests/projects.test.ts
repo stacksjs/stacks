@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -8,7 +8,9 @@ import {
   clearProjectService,
   findProject,
   forgetProject,
+  isTransientCheckout,
   listProjects,
+  noteProjectUsed,
   pruneProjects,
   readProjectService,
   recordProjectService,
@@ -212,6 +214,58 @@ describe('the machine project list', () => {
     writeFileSync(join(stacksHome('projects'), 'broken.json'), '{ "path": ')
 
     expect(listProjects().map(project => project.name)).toEqual(['shop'])
+  })
+
+  it('leaves out a project whose directory is gone, and keeps it for when it is back', () => {
+    const shop = makeProject('shop')
+    const drive = makeProject('drive')
+    registerProject(shop)
+    expect(reserveProjectPort(drive, 'dashboard', 3900)).toBe(3900)
+
+    // An external volume that is not mounted looks exactly like this.
+    renameSync(drive, `${drive}-unmounted`)
+    expect(listProjects().map(project => project.name)).toEqual(['shop'])
+    expect(listProjects({ includeMissing: true }).map(project => project.name).sort()).toEqual(['drive', 'shop'])
+    // Its port is still its own.
+    expect(reserveProjectPort(shop, 'dashboard', 3900)).toBe(3901)
+
+    renameSync(`${drive}-unmounted`, drive)
+    expect(listProjects().map(project => project.name).sort()).toEqual(['drive', 'shop'])
+  })
+})
+
+describe('transient checkouts', () => {
+  /** Make `root` a linked worktree the way `git worktree add` does. */
+  function linkAsWorktree(root: string): void {
+    writeFileSync(join(root, '.git'), `gitdir: ${join(sandbox, 'main/.git/worktrees', 'feature')}\n`)
+  }
+
+  it('takes a linked worktree and anything under a temporary directory for a copy', () => {
+    const worktree = makeProject('feature')
+    linkAsWorktree(worktree)
+    const submodule = makeProject('vendored')
+    writeFileSync(join(submodule, '.git'), `gitdir: ${join(sandbox, 'main/.git/modules/vendored')}\n`)
+    const checkout = makeProject('checkout')
+    mkdirSync(join(checkout, '.git'))
+
+    // The sandbox itself lives in the temporary directory, so these say
+    // where temporary is: nowhere, then the sandbox.
+    expect(isTransientCheckout(worktree, [])).toBe(true)
+    expect(isTransientCheckout(submodule, [])).toBe(false)
+    expect(isTransientCheckout(checkout, [])).toBe(false)
+    expect(isTransientCheckout(checkout, [sandbox])).toBe(true)
+    expect(isTransientCheckout(checkout)).toBe(true)
+  })
+
+  it('does not list one just because buddy ran in it, unless it is listed already', () => {
+    const clone = makeProject('review-job')
+    expect(noteProjectUsed(clone)).toBeNull()
+    expect(listProjects()).toEqual([])
+
+    // Listed on purpose (`buddy projects:add`), it is kept up to date.
+    registerProject(clone, new Date(0))
+    expect(noteProjectUsed(clone)?.lastUsedAt).not.toBe(new Date(0).toISOString())
+    expect(listProjects().map(project => project.name)).toEqual(['review-job'])
   })
 })
 

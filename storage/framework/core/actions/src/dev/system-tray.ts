@@ -3,7 +3,7 @@ import { basename, join } from 'node:path'
 import process from 'node:process'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { openDevWindow } from '@stacksjs/desktop-build'
-import { defaultsPath, listProjects, projectPath, registerProject } from '@stacksjs/path'
+import { defaultsPath, isTransientCheckout, listProjects, projectPath, registerProject } from '@stacksjs/path'
 import { findStacksProjects } from '@stacksjs/utils'
 import { findAvailablePort, waitForServer } from './dashboard-utils'
 import { isTrustedTrayRequest, trayOrigins } from './tray-origin'
@@ -45,8 +45,10 @@ function forbidden(request: Request): Response | null {
 async function discoverProjects(refresh = false): Promise<string[]> {
   if (refresh) {
     const neverUsed = new Date(0)
-    for (const found of await findStacksProjects(undefined, { quiet: true }).catch(() => []))
-      registerProject(found, neverUsed)
+    for (const found of await findStacksProjects(undefined, { quiet: true }).catch(() => [])) {
+      if (!isTransientCheckout(found))
+        registerProject(found, neverUsed)
+    }
   }
 
   const candidates = [...new Set([projectPath(), ...listProjects().map(project => project.path)])]

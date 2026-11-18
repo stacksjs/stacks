@@ -38,15 +38,22 @@ project on the machine. Each invocation first settles two things in
    built-in commands that declare it as the project), otherwise the nearest
    ancestor of the working directory that `isProjectRoot` accepts. So
    `buddy migrate` works from `app/Models`, and `buddy migrate --project shop`
-   works from anywhere. A name that matches no project, or more than one, is
-   refused rather than guessed.
+   (or `buddy --project shop migrate`) works from anywhere. A name that
+   matches no project, or more than one, is refused rather than guessed. The
+   selector is consumed there: the command starts in the root and never sees
+   it.
 2. **Whose code runs it.** A project that has its own `buddy` installed gets
    the command handed to it (the process is replaced, not wrapped), so it runs
    on the framework version that project pins. A project with nothing
-   installed is run by the buddy that was invoked.
+   installed runs `buddy install` and nothing else: its code imports packages
+   that are not there.
 
 The process that does the work always starts in the project root, because Bun
-reads `bunfig.toml` and its preloads from the directory it starts in.
+reads `bunfig.toml` and its preloads from the directory it starts in. The
+published executable starts Bun with `--config=/dev/null --no-install`
+(`src/runtime-flags.ts`), so the visiting process never runs the project's
+preloads; when it is the project's own CLI it restarts under the project's
+config.
 
 Machine-level commands are never handed to a project and run from any
 directory: `new`, `create`, `projects`, `projects:*`, `cd`, `daemon`,
@@ -74,7 +81,10 @@ buddy daemon:logs              # --lines <count>
 ```
 
 A project joins the list (`~/.stacks/projects/<id>.json`, one file each) the
-first time buddy runs inside it. Read the list with `listProjects()` and
+first time buddy runs inside it (`noteProjectUsed`), unless it is a git
+worktree or under the temp directory (`isTransientCheckout`); `projects:add`
+and `registerProject` list anything. `listProjects()` leaves out entries whose
+directory is missing (`{ includeMissing: true }` for all). Read the list with `listProjects()` and
 `findProject()` from `@stacksjs/path`; do not walk the filesystem for
 projects. `findStacksProjects()` in `@stacksjs/utils` is the disk scan behind
 `projects:scan` and nothing else should need it.

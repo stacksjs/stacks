@@ -4,7 +4,8 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
 import { projectCliEntry, registerProject } from '@stacksjs/path'
-import { findProjectSelector, isMachineCommand, planInvocation, SHORT_P_IS_NOT_PROJECT } from '../src/launcher'
+import { findProjectSelector, isMachineCommand, planInvocation, projectAfterCommand, SHORT_P_IS_NOT_PROJECT } from '../src/launcher'
+import { CLI_SHEBANG, isIsolatedRuntime, ISOLATED_RUNTIME_FLAGS } from '../src/runtime-flags'
 import { getCommandNames } from '../src/lazy-commands'
 
 const builtInCommands = new Set(getCommandNames())
@@ -64,18 +65,33 @@ describe('which project a command runs for', () => {
     expect(plan(['env:get', 'KEY'], sandbox)).toEqual({ kind: 'run', root: null, args: ['env:get', 'KEY'] })
   })
 
-  it('runs in place from the root of a project that has nothing installed', () => {
+  it('installs a project that has nothing installed, in place', () => {
     const root = makeProject('fresh')
     expect(plan(['install'], root)).toEqual({ kind: 'run', root, args: ['install'] })
   })
 
+  it('runs nothing else for a project that has nothing installed, and says how to install it', () => {
+    const root = makeProject('fresh', { shim: true })
+
+    // Its code imports packages that are not there; run by a buddy from
+    // elsewhere they would resolve through Bun's auto-install instead.
+    // Describing the commands means loading them: `list` and `--help` too.
+    for (const args of [['migrate'], ['dev'], ['sync:clients'], ['list'], ['--help'], []]) {
+      expect(plan(args, root)).toEqual({
+        kind: 'refuse',
+        message: expect.stringContaining('buddy install --project fresh'),
+      })
+    }
+  })
+
   it('restarts in the project root when run from a directory inside it', () => {
-    const root = makeProject('fresh')
-    const invocation = plan(['migrate'], join(root, 'app/Models'), { main: cliEntry })
+    const root = makeProject('shop', { installed: true })
+    const own = join(root, 'node_modules/@stacksjs/buddy/dist/cli.js')
+    const invocation = plan(['migrate'], join(root, 'app/Models'), { main: own })
 
     // Bun reads bunfig.toml, and the preload that loads .env, only from the
     // directory it starts in: changing directory afterwards would not do.
-    expect(invocation).toEqual({ kind: 'handoff', root, command: [process.execPath, cliEntry, 'migrate'] })
+    expect(invocation).toEqual({ kind: 'handoff', root, command: [process.execPath, own, 'migrate'] })
   })
 
   it('hands over to the project\'s own buddy, through its shim', () => {
@@ -105,6 +121,40 @@ describe('which project a command runs for', () => {
     expect(plan(['migrate'], root, { main: own })).toEqual({ kind: 'run', root, args: ['migrate'] })
   })
 
+  it('restarts under the project\'s config when the executable turns out to be the project\'s own', () => {
+    const root = makeProject('shop', { installed: true, shim: true })
+    const own = join(root, 'node_modules/@stacksjs/buddy/dist/cli.js')
+    const isolated = [...ISOLATED_RUNTIME_FLAGS]
+
+    // `node_modules/.bin/buddy` in an npm script: started without the
+    // project's bunfig, in the project. Its env plugin and preloader have to run.
+    expect(planInvocation({ args: ['migrate'], cwd: root, main: own, execArgv: isolated, builtInCommands })).toEqual({
+      kind: 'handoff',
+      root,
+      command: [process.execPath, own, 'migrate'],
+    })
+    // Once restarted it is where it should be.
+    expect(planInvocation({ args: ['migrate'], cwd: root, main: own, execArgv: [], handedRoot: root, builtInCommands })).toEqual({ kind: 'run', root, args: ['migrate'] })
+  })
+
+  it('keeps a project with nothing installed away from the config that preloads what is missing', () => {
+    const root = makeProject('fresh')
+    const isolated = [...ISOLATED_RUNTIME_FLAGS]
+
+    expect(planInvocation({ args: ['install'], cwd: root, main: cliEntry, execArgv: isolated, builtInCommands })).toEqual({ kind: 'run', root, args: ['install'] })
+    expect(planInvocation({ args: ['install'], cwd: join(root, 'app'), main: cliEntry, execArgv: isolated, builtInCommands })).toEqual({
+      kind: 'handoff',
+      root,
+      command: [process.execPath, ...isolated, cliEntry, 'install'],
+    })
+  })
+
+  it('publishes an executable that starts Bun isolated', () => {
+    expect(CLI_SHEBANG).toBe('#!/usr/bin/env -S bun --config=/dev/null --no-install')
+    expect(isIsolatedRuntime(['--config=/dev/null', '--no-install', '--smol'])).toBe(true)
+    expect(isIsolatedRuntime(['--no-install'])).toBe(false)
+  })
+
   it('stays put once it has been handed the project, whatever the entries look like', () => {
     const root = makeProject('shop', { installed: true, shim: true })
 
@@ -115,23 +165,55 @@ describe('which project a command runs for', () => {
 })
 
 describe('--project', () => {
-  it('targets a listed project by name and passes its path on', () => {
+  it('targets a listed project by name and starts the command in it', () => {
     const shop = makeProject('shop', { installed: true, shim: true })
     registerProject(shop)
 
+    // The selector is spent on choosing the project. The command starts in
+    // its root, which every command reading --project falls back to, and a
+    // project's own buddy from before this launcher never sees the option it
+    // would resolve by running a `buddy` from PATH.
     expect(plan(['migrate', '--project', 'shop', '--diff'], sandbox)).toEqual({
       kind: 'handoff',
       root: shop,
-      command: [join(shop, 'buddy'), 'migrate', '--project', shop, '--diff'],
+      command: [join(shop, 'buddy'), 'migrate', '--diff'],
     })
-    expect(plan(['migrate', '--project=shop'], sandbox)).toMatchObject({ command: [join(shop, 'buddy'), 'migrate', `--project=${shop}`] })
-    expect(plan(['dev:dashboard', '-p', 'shop'], sandbox)).toMatchObject({ root: shop })
+    expect(plan(['migrate', '--project=shop'], sandbox)).toMatchObject({ command: [join(shop, 'buddy'), 'migrate'] })
+    expect(plan(['dev:dashboard', '-p', 'shop', '--verbose'], sandbox)).toMatchObject({ root: shop, command: [join(shop, 'buddy'), 'dev:dashboard', '--verbose'] })
   })
 
   it('takes a path as well as a name', () => {
-    const shop = makeProject('shop')
+    const shop = makeProject('shop', { installed: true, shim: true })
 
-    expect(plan(['migrate', '--project', './shop/app'], sandbox, { main: cliEntry })).toMatchObject({ kind: 'handoff', root: shop })
+    expect(plan(['migrate', '--project', './shop/app'], sandbox)).toMatchObject({ kind: 'handoff', root: shop })
+  })
+
+  it('takes the project in front of the command too, for any command', () => {
+    const shop = makeProject('shop', { installed: true, shim: true })
+    registerProject(shop)
+
+    expect(projectAfterCommand(['-p', 'shop', 'serve', '-p', '3000'])).toEqual(['serve', '--project', 'shop', '-p', '3000'])
+    expect(projectAfterCommand(['--project=shop', 'migrate'])).toEqual(['migrate', '--project', 'shop'])
+    // Nothing to move it behind.
+    expect(projectAfterCommand(['-p', 'shop'])).toEqual(['-p', 'shop'])
+
+    // `serve -p` is a port behind the command, and still the project in front of it.
+    expect(plan(['-p', 'shop', 'serve', '-p', '3000'], sandbox)).toEqual({ kind: 'handoff', root: shop, command: [join(shop, 'buddy'), 'serve', '-p', '3000'] })
+    // An application command's own --project is its own only behind it.
+    expect(plan(['--project', 'shop', 'sync:clients'], sandbox)).toEqual({ kind: 'handoff', root: shop, command: [join(shop, 'buddy'), 'sync:clients'] })
+    // A machine command reads it itself.
+    expect(plan(['-p', 'shop', 'dashboard'], sandbox)).toEqual({ kind: 'run', root: null, args: ['dashboard', '--project', 'shop'] })
+  })
+
+  it('installs a project named from outside it', () => {
+    const fresh = makeProject('fresh')
+    registerProject(fresh)
+
+    expect(plan(['install', '--project', 'fresh'], sandbox, { main: cliEntry })).toEqual({
+      kind: 'handoff',
+      root: fresh,
+      command: [process.execPath, cliEntry, 'install'],
+    })
   })
 
   it('refuses a project it cannot identify rather than running in the wrong one', () => {
@@ -161,10 +243,14 @@ describe('--project', () => {
   })
 
   it('leaves an application command\'s own --project alone', () => {
-    const here = makeProject('here')
+    const here = makeProject('here', { installed: true })
 
     expect(findProjectSelector(['sync:clients', '--project', 'acme'], builtInCommands)).toBeNull()
-    expect(plan(['sync:clients', '--project', 'acme'], here)).toEqual({ kind: 'run', root: here, args: ['sync:clients', '--project', 'acme'] })
+    expect(plan(['sync:clients', '--project', 'acme'], here)).toEqual({
+      kind: 'handoff',
+      root: here,
+      command: [process.execPath, join(here, 'node_modules/@stacksjs/buddy/dist/cli.js'), 'sync:clients', '--project', 'acme'],
+    })
   })
 })
 

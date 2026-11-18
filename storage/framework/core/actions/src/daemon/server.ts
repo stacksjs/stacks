@@ -2,7 +2,7 @@ import type { DashboardLaunch, DashboardProcess, DashboardSnapshot, OpenedDashbo
 import { accessSync, chmodSync, closeSync, constants, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
-import { isProcessAlive, isProjectRoot, readProjectService, registerProject, reserveProjectPort } from '@stacksjs/path'
+import { isProcessAlive, isProjectRoot, projectCliEntry, readProjectService, registerProject, reserveProjectPort } from '@stacksjs/path'
 import { machineEnvironment } from './environment'
 import { portAnswers, portIsFree } from './net'
 import { DAEMON_IDLE_EXIT_MS, DAEMON_PROTOCOL, daemonDir, daemonSocket, daemonStateFile, dashboardLogFile } from './paths'
@@ -182,7 +182,9 @@ export async function runDaemon(options: DaemonOptions = {}): Promise<void> {
 
   const supervisor = new DashboardSupervisor({
     isProject: isProjectRoot,
-    canLaunch: root => isExecutable(join(root, 'buddy')),
+    // The shim alone is not enough: in a fresh clone it is there and has no
+    // CLI behind it, and would die printing a path list instead of the fix.
+    canLaunch: root => isExecutable(join(root, 'buddy')) && projectCliEntry(root) !== null,
     launch: (launch) => {
       log(`starting the dashboard for ${launch.root} on port ${launch.port}`)
       return launchDashboard(launch)

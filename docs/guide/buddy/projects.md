@@ -17,17 +17,27 @@ buddy migrate          # runs for ~/Code/shop
 
 Buddy walks up from where you are to the project root and runs the command there. If the project has its own `buddy` installed, that one does the work, so the command runs on the framework version the project pins.
 
+A fresh clone has no `buddy` of its own until its dependencies are installed, so the one thing buddy runs there is the install. Anything else tells you to do that first:
+
+```bash
+cd ~/Code/shop          # just cloned
+buddy install           # then everything else works
+```
+
 ## Target a project by name
 
-Every built-in command takes `--project`, with a name from the project list or a path:
+Every built-in command takes `--project`, with a name from the project list or a path, before or after the command:
 
 ```bash
 buddy migrate --project shop
+buddy --project shop migrate
 buddy dev --project ~/Code/shop
 buddy ports -p shop
 ```
 
 A name is matched exactly first, then as the start of a name, then anywhere in one. If more than one project matches, buddy names them and stops. It does not guess.
+
+In front of the command, `-p` always means the project. After it, a command that uses `-p` for something else keeps it: `buddy serve -p 3000` is a port, `buddy -p shop serve -p 3000` is both.
 
 ## The project list
 
@@ -49,6 +59,10 @@ A project joins the list the first time buddy runs inside it. To add the project
 buddy projects:scan            # look through your home directory
 buddy projects:scan ~/Code     # or one directory
 ```
+
+Git worktrees and checkouts in the system's temporary directory are copies of a project rather than projects of their own, so neither running buddy in one nor a scan adds it. `buddy projects:add` adds one when you want it listed.
+
+A project whose directory is gone (deleted, or on a drive that is not mounted) is left out of the list until it is back. `buddy projects:prune` forgets those for good.
 
 ### Commands
 

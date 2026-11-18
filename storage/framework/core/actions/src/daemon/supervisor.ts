@@ -144,7 +144,7 @@ export class DashboardSupervisor {
       return { url: held.url, port: held.port, started: false }
 
     if (!this.options.canLaunch(root))
-      throw new DashboardError(409, `${basename(root)} has no \`./buddy\` to start a dashboard with. Install its dependencies first: run \`buddy install\` in ${root}.`)
+      throw new DashboardError(409, `${basename(root)} has nothing installed yet, so there is no dashboard to start. Install its dependencies first: buddy install --project ${basename(root)}`)
 
     return this.start(root)
   }

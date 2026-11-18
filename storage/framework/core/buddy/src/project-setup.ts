@@ -19,6 +19,10 @@ const APP_KEY_OPTIONAL_COMMANDS = [
   'cd',
   'daemon',
   'dashboard',
+  // Installing dependencies is what a fresh clone does before anything else,
+  // and it reads no secret. Generating a key first wrote a `.env` into a
+  // project that was only being installed.
+  'install',
   // Apple signing/provisioning also serves standalone Stacks native apps.
   'desktop:apple',
   'build',

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { basename, isAbsolute, join, resolve, sep } from 'node:path'
 import process from 'node:process'
 import { findProjectRoot, isProjectRoot } from './project'
@@ -190,6 +190,55 @@ export function registerProject(root: string, now: Date = new Date()): Registere
   return project
 }
 
+function isInside(path: string, directory: string): boolean {
+  return path === directory || path.startsWith(directory.endsWith(sep) ? directory : `${directory}${sep}`)
+}
+
+/**
+ * Whether a project root is a copy that comes and goes: a checkout under the
+ * system's temporary directory (a CI job, a review bot's clone) or a linked git
+ * worktree of a project that is listed in its own right.
+ *
+ * Running `buddy` in one of those is not a sign that it is a project of its
+ * own. Listed, a machine that runs agents or reviews collects dozens of them,
+ * and the dashboard's switcher becomes a list of throwaway copies of the five
+ * projects that matter, most of them deleted by the time anyone looks.
+ */
+export function isTransientCheckout(root: string, temporaryDirectories: string[] = [tmpdir(), '/tmp', '/var/folders']): boolean {
+  const path = realPath(root)
+  if (temporaryDirectories.flatMap(directory => [directory, realPath(directory)]).some(directory => isInside(path, directory)))
+    return true
+
+  // A linked worktree's `.git` is a file pointing into the main checkout's
+  // `.git/worktrees/`. A submodule's points into `.git/modules/`, and is a
+  // project of its own.
+  try {
+    const git = join(path, '.git')
+    return statSync(git).isFile() && /[/\\]worktrees[/\\]/.test(readFileSync(git, 'utf8'))
+  }
+  catch {
+    return false
+  }
+}
+
+/**
+ * Note that `buddy` just ran in a project, which lists it the first time.
+ *
+ * What the launcher calls on every invocation. Unlike `registerProject`, which
+ * is a person asking for a project to be listed, this leaves a transient
+ * checkout off the list unless it is already on it (see `isTransientCheckout`).
+ */
+export function noteProjectUsed(root: string, now: Date = new Date()): RegisteredProject | null {
+  const path = realPath(root)
+  if (!isProjectRoot(path))
+    return null
+
+  if (!locate(path).existing && isTransientCheckout(path))
+    return null
+
+  return registerProject(path, now)
+}
+
 /**
  * The port a project's `service` is given, the same one every time.
  *
@@ -212,7 +261,9 @@ export function reserveProjectPort(root: string, service: string, base: number):
   if (held)
     return held
 
-  const taken = new Set(listProjects().map(other => other.ports?.[service]).filter(Boolean))
+  // Every entry, present or not: a project on a volume that is not mounted
+  // keeps its port for when it is.
+  const taken = new Set(listProjects({ includeMissing: true }).map(other => other.ports?.[service]).filter(Boolean))
   let port = base
   while (taken.has(port))
     port++
@@ -227,8 +278,23 @@ export function reserveProjectPort(root: string, service: string, base: number):
   return port
 }
 
-/** Every project on the list, most recently used first. */
-export function listProjects(): RegisteredProject[] {
+export interface ListProjectsOptions {
+  /**
+   * Include projects whose directory is not there right now. Off by default:
+   * nothing that lists projects for a person can do anything with one, and a
+   * deleted worktree or clone would otherwise stay in every list until someone
+   * ran `buddy projects:prune`.
+   */
+  includeMissing?: boolean
+}
+
+/**
+ * The projects on the list, most recently used first.
+ *
+ * One whose directory is missing is left out but not forgotten: a project on a
+ * volume that is not mounted comes back the moment it is.
+ */
+export function listProjects(options: ListProjectsOptions = {}): RegisteredProject[] {
   let files: string[]
   try {
     files = readdirSync(registryDir())
@@ -240,7 +306,7 @@ export function listProjects(): RegisteredProject[] {
   return files
     .filter(file => file.endsWith('.json'))
     .map(file => readEntry(file.slice(0, -'.json'.length)))
-    .filter((project): project is RegisteredProject => project !== null)
+    .filter((project): project is RegisteredProject => project !== null && (options.includeMissing === true || existsSync(project.path)))
     .sort((a, b) => b.lastUsedAt.localeCompare(a.lastUsedAt) || a.name.localeCompare(b.name))
 }
 
@@ -260,7 +326,7 @@ export function forgetProject(project: Pick<RegisteredProject, 'id'>): boolean {
  * mounted reads as gone, which is why this is asked for and never automatic.
  */
 export function pruneProjects(): RegisteredProject[] {
-  const stale = listProjects().filter(project => !isProjectRoot(project.path))
+  const stale = listProjects({ includeMissing: true }).filter(project => !isProjectRoot(project.path))
   for (const project of stale)
     forgetProject(project)
 

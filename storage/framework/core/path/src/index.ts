@@ -32,8 +32,8 @@ import { appPath, defaultsPath, frameworkDefaultsRoot, frameworkPath, projectPat
 import { findProject } from './projects'
 
 export { appPath, defaultsPath, findProjectRoot, frameworkDefaultsRoot, frameworkPath, isCompiledBinary, isInstalledDefaultsRoot, isProjectRoot, isVisitingCli, linkPackagedDefaults, packagedDefaultsRoot, projectCliEntry, projectPath, storagePath, usesVendoredDefaults } from './project'
-export { clearProjectService, findProject, forgetProject, isProcessAlive, listProjects, pruneProjects, readProjectService, recordProjectService, registerProject, reserveProjectPort, stacksHome } from './projects'
-export type { ProjectMatch, ProjectService, RegisteredProject } from './projects'
+export { clearProjectService, findProject, forgetProject, isProcessAlive, isTransientCheckout, listProjects, noteProjectUsed, pruneProjects, readProjectService, recordProjectService, registerProject, reserveProjectPort, stacksHome } from './projects'
+export type { ListProjectsOptions, ProjectMatch, ProjectService, RegisteredProject } from './projects'
 export { resolveModulePath } from './module-resolution'
 
 /**

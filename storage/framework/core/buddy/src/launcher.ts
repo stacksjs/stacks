@@ -1,7 +1,8 @@
 import { accessSync, constants, realpathSync } from 'node:fs'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import process from 'node:process'
-import { findProject, findProjectRoot, isCompiledBinary, isVisitingCli, projectCliEntry, registerProject } from '@stacksjs/path'
+import { findProject, findProjectRoot, isCompiledBinary, isVisitingCli, noteProjectUsed, projectCliEntry } from '@stacksjs/path'
+import { isIsolatedRuntime, withoutIsolation } from './runtime-flags'
 
 /**
  * One `buddy` for the whole machine.
@@ -101,6 +102,30 @@ export function findProjectSelector(args: string[], builtInCommands: ReadonlySet
   return null
 }
 
+/**
+ * `buddy --project shop migrate` as `buddy migrate --project shop`.
+ *
+ * In front of the command, `-p` can only mean the project, whatever the
+ * command later does with a `-p` of its own (`serve -p` is a port), so it is
+ * moved behind the command in its long form, where everything else reads it.
+ * Without a command after it there is nothing to move it behind.
+ */
+export function projectAfterCommand(args: string[]): string[] {
+  const first = args[0]
+  if (first === '--project' || first === '-p') {
+    const [, value, command, ...rest] = args
+    if (value !== undefined && !value.startsWith('-') && command !== undefined && !command.startsWith('-'))
+      return [command, '--project', value, ...rest]
+    return args
+  }
+
+  const attached = first?.match(/^(?:--project|-p)=(.+)$/)
+  if (attached && args[1] !== undefined && !args[1].startsWith('-'))
+    return [args[1], '--project', attached[1]!, ...args.slice(2)]
+
+  return args
+}
+
 function samePath(a: string, b: string): boolean {
   try {
     return realpathSync(a) === realpathSync(b)
@@ -118,6 +143,16 @@ function isExecutable(file: string): boolean {
   catch {
     return false
   }
+}
+
+/**
+ * What a project with nothing installed can still be asked: to install. Even
+ * `help` and `list` cannot be answered there, because describing the commands
+ * means loading them, and the project's own commands and models import
+ * packages that are not there yet.
+ */
+function runsWithoutInstall(args: string[]): boolean {
+  return args[0] === 'install'
 }
 
 export type Invocation
@@ -145,13 +180,18 @@ export interface InvocationContext {
  * decision out.
  */
 export function planInvocation(context: InvocationContext): Invocation {
-  const { args, cwd } = context
+  const { cwd } = context
+  const args = projectAfterCommand(context.args)
   const command = args[0]
 
   if (isMachineCommand(command))
     return { kind: 'run', root: findProjectRoot(cwd), args }
 
-  const selector = findProjectSelector(args, context.builtInCommands)
+  // Typed in front of the command it was the project, for any command; an
+  // application command's own `--project` is only left alone behind it.
+  const selector = args !== context.args
+    ? { value: args[2]!, index: 2, attached: null }
+    : findProjectSelector(args, context.builtInCommands)
   let root: string | null
   let forwarded = args
 
@@ -167,10 +207,12 @@ export function planInvocation(context: InvocationContext): Invocation {
     }
 
     root = match.project.path
-    // The command still receives the option. It gets the root's path, which
-    // is what the few commands that read `--project` themselves expect.
-    forwarded = [...args]
-    forwarded[selector.index] = selector.attached ? `${selector.attached}=${root}` : root
+    // The selector is spent here. Whatever runs the command starts in the
+    // root, which is what every command that reads `--project` falls back to.
+    // Forwarding it would hand the option to a project's own `buddy`, and one
+    // released before this launcher resolves it its own way: by running a
+    // `buddy` from PATH, which crashes where there is none.
+    forwarded = selector.attached ? args.toSpliced(selector.index, 1) : args.toSpliced(selector.index - 1, 2)
   }
   else {
     root = findProjectRoot(cwd)
@@ -179,10 +221,32 @@ export function planInvocation(context: InvocationContext): Invocation {
   if (!root)
     return { kind: 'run', root: null, args }
 
+  // A project with nothing installed has no `buddy` of its own, and its code
+  // (commands, models, config) imports packages that are not there. Run by
+  // this one, every such import would go to Bun's runtime auto-install and
+  // come back at whatever version it picked, so the command would run against
+  // a framework the project never asked for. Installing is the one thing to
+  // do there.
+  if (projectCliEntry(root) === null && !runsWithoutInstall(forwarded)) {
+    const name = basename(root)
+    return {
+      kind: 'refuse',
+      message: `${name} has nothing installed yet, so it has no buddy of its own to run this. Install its dependencies first:\n\n  buddy install --project ${name}\n`,
+    }
+  }
+
+  // Started the way the published executable starts, without the config of
+  // the directory it was typed in (see `runtime-flags.ts`), and the project
+  // has a CLI of its own: whichever CLI ends up running this needs the
+  // project's config. With nothing installed, the project's config only
+  // preloads packages that are not there, and the isolation stays.
+  const projectHasCli = projectCliEntry(root) !== null
+  const needsProjectConfig = projectHasCli && isIsolatedRuntime(context.execArgv)
+
   // A process this launcher already started for this root is where it should
   // be. Checked before the entries are compared, so a layout the comparison
   // misjudges costs one extra start and not an endless one.
-  if (context.handedRoot && samePath(context.handedRoot, root) && samePath(cwd, root))
+  if (context.handedRoot && samePath(context.handedRoot, root) && samePath(cwd, root) && !needsProjectConfig)
     return { kind: 'run', root, args: forwarded }
 
   if (isVisitingCli(root, context.main)) {
@@ -195,9 +259,11 @@ export function planInvocation(context: InvocationContext): Invocation {
     }
   }
 
-  if (!samePath(cwd, root)) {
+  // This is the project's own CLI (or the project has none, for `install`).
+  if (!samePath(cwd, root) || needsProjectConfig) {
     // A compiled binary is its own entry; anything else is Bun running one.
-    const self = isCompiledBinary(context.main) ? [process.execPath] : [process.execPath, ...context.execArgv, context.main]
+    const execArgv = projectHasCli ? withoutIsolation(context.execArgv) : context.execArgv
+    const self = isCompiledBinary(context.main) ? [process.execPath] : [process.execPath, ...execArgv, context.main]
     return { kind: 'handoff', root, command: [...self, ...forwarded] }
   }
 
@@ -231,7 +297,7 @@ function handOff(root: string, command: string[]): never {
  * one that runs the command, with `process.argv` carrying what it should
  * parse; otherwise it does not return.
  */
-export function launch(context: InvocationContext): { root: string | null } {
+export function launch(context: InvocationContext): { root: string | null, projectInstalled: boolean } {
   const invocation = planInvocation(context)
 
   if (invocation.kind === 'refuse') {
@@ -241,14 +307,20 @@ export function launch(context: InvocationContext): { root: string | null } {
 
   // Seen once, a project is on the machine's list from then on: that is what
   // `buddy projects`, `--project <name>` and the dashboard's switcher read.
+  // A temporary clone or a worktree is not (see `isTransientCheckout`).
   if (invocation.root)
-    registerProject(invocation.root)
+    noteProjectUsed(invocation.root)
 
   if (invocation.kind === 'handoff')
     handOff(invocation.root, invocation.command)
 
-  if (invocation.args !== context.args)
+  if (invocation.args.length !== context.args.length || invocation.args.some((arg, index) => arg !== context.args[index]))
     process.argv.splice(2, process.argv.length, ...invocation.args)
 
-  return { root: invocation.root }
+  return {
+    root: invocation.root,
+    // False only for a project with nothing installed, which this process is
+    // running because the command is one that loads none of its code.
+    projectInstalled: invocation.root === null || projectCliEntry(invocation.root) !== null,
+  }
 }

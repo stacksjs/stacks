@@ -4,7 +4,7 @@ import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import process from 'node:process'
 import { bold, dim, green, onUnknownSubcommand } from '@stacksjs/cli'
-import { findProject, findProjectRoot, forgetProject, isProjectRoot, listProjects, pruneProjects, readProjectService, registerProject } from '@stacksjs/path'
+import { findProject, findProjectRoot, forgetProject, isProjectRoot, isTransientCheckout, listProjects, pruneProjects, readProjectService, registerProject } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 
 /**
@@ -130,8 +130,12 @@ export function projects(buddy: CLI): void {
     .option('--depth <levels>', 'How many levels below the directory to look', { default: 6 })
     .action(async (dir: string | undefined, options: { depth?: number | string }) => {
       const { findStacksProjects } = await import('@stacksjs/utils')
-      const known = new Set(listProjects().map(project => project.path))
-      const found = await findStacksProjects(dir ? resolve(dir) : undefined, { quiet: true, maxDepth: Number(options.depth) || 6 })
+      const known = new Set(listProjects({ includeMissing: true }).map(project => project.path))
+      const discovered = await findStacksProjects(dir ? resolve(dir) : undefined, { quiet: true, maxDepth: Number(options.depth) || 6 })
+      // A worktree or a temporary clone is a copy of a project, not one of its
+      // own (`isTransientCheckout`); `buddy projects:add` lists one on purpose.
+      const found = discovered.filter(root => !isTransientCheckout(root))
+      const copies = discovered.length - found.length
 
       // Found is not used: a project the scan turns up is listed below the
       // ones that have actually been worked in, until it is.
@@ -142,7 +146,7 @@ export function projects(buddy: CLI): void {
 
       for (const project of added)
         console.log(`  ${green('+')} ${bold(project.name)}  ${dim(shortPath(project.path))}`)
-      console.log(`Found ${found.length} ${found.length === 1 ? 'project' : 'projects'}, ${added.length} new.`)
+      console.log(`Found ${found.length} ${found.length === 1 ? 'project' : 'projects'}, ${added.length} new.${copies > 0 ? dim(` Left out ${copies} git ${copies === 1 ? 'worktree' : 'worktrees'} and temporary ${copies === 1 ? 'checkout' : 'checkouts'}.`) : ''}`)
       process.exit(ExitCode.Success)
     })
 
