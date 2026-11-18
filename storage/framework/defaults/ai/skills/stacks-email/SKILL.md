@@ -197,10 +197,13 @@ The source of truth for dashboard mail settings is `.env`:
 The dashboard endpoints are `GET` and `PUT` at
 `/api/dashboard/mail-settings`. They are guarded outside local development,
 return no stored secret values, preserve a secret when its input is blank, and
-require an explicit clear flag to remove one. Writes use the shared atomic
-environment-file service, create a machine-local backup under
-`storage/framework/runtime/dashboard/`, and reject stale revisions instead of
-overwriting concurrent edits.
+require an explicit clear flag to remove one. Reads and writes go through the
+environment-layers service: each value is read from, and saved to, the env
+file the app loads it from, so a key set in `.env.<env>` is edited there and
+not in `.env`. A mail key a later file holds encrypted beyond the server's
+reach is named on the page. Writes are atomic, keep a machine-local backup
+per file under `storage/framework/runtime/dashboard/`, and reject stale
+revisions instead of overwriting concurrent edits.
 
 ## Driver Interface
 

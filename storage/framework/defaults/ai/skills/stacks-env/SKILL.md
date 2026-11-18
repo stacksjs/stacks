@@ -318,21 +318,27 @@ The API is `partitionTenantEnv(values, { self, tenants })` from
 
 ## Dashboard environment editor
 
-The dashboard reads and writes `.env` through guarded
-`/api/dashboard/environment` GET and PUT endpoints. The write contract:
+The dashboard reads and writes the env files the app loads through guarded
+`/api/dashboard/environment` GET and PUT endpoints, which take a `file`:
+`.env` by default, or any other file `environmentFiles()` lists. Any other
+name is answered 404. The GET also lists the files and the keys in the open
+one that a later file sets again (`keysReadElsewhere`), since the app reads
+those from there. The write contract:
 
 - validates uppercase environment keys and duplicate definitions
 - limits the file to 1 MB and rejects null bytes
 - requires the SHA-256 revision returned by the latest read
 - writes through a 0600 temporary file and atomic rename
-- stores the previous content under
-  `storage/framework/runtime/dashboard/environment.backup`
+- stores the previous content per file under
+  `storage/framework/runtime/dashboard/`: `environment.backup` for `.env`,
+  `environment.<suffix>.backup` for `.env.<suffix>`
 - returns `Cache-Control: no-store` because the response contains secrets
 
-Structured settings pages should use `updateEnvironmentEntries()` from the
-dashboard environment-file service. It updates only named keys while
-preserving comments, ordering, unrelated values, and the same revision and
-backup guarantees. Do not implement settings with repeated `writeFileSync`
+Structured settings pages should use `updateEnvironmentLayers()` from the
+dashboard environment-layers service. It writes each named key to the env
+file the app reads it from (`.env` when none sets it), keeps an encrypted
+value encrypted under that file's public key, and preserves comments,
+ordering, unrelated values, and the same revision and backup guarantees. Do not implement settings with repeated `writeFileSync`
 calls or raw client-side `fetch`.
 
 ## Gotchas

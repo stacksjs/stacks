@@ -7,7 +7,7 @@ interface EnvironmentFileIssue {
 }
 
 interface EnvironmentFileState {
-  path: '.env'
+  path: string
   content: string
   revision: string
   exists: boolean
@@ -19,11 +19,27 @@ interface EnvironmentFileState {
   }
 }
 
+interface KeyReadElsewhere {
+  key: string
+  file: string
+  readable: boolean
+}
+
 interface EnvironmentResponse {
   environment: EnvironmentFileState
+  files: string[]
+  readElsewhere: KeyReadElsewhere[]
 }
 
 const envValues = state('')
+// The env file open in the editor, and every env file the app loads
+// (stacksjs/stacks#3341). A key a later file sets again is read from there.
+const file = state('.env')
+const files = state<string[]>(['.env'])
+const readElsewhere = state<KeyReadElsewhere[]>([])
+const readElsewhereLabel = derived(() => readElsewhere()
+  .map(entry => entry.readable ? `${entry.key} (${entry.file})` : `${entry.key} (${entry.file}, encrypted, not readable here)`)
+  .join(', '))
 const revision = state('')
 const backupContent = state('')
 const backupUpdatedAt = state<string | null>(null)
@@ -58,7 +74,11 @@ const variableCount = derived(() => envValues().split('\n').filter((line) => {
 }).length)
 const dirty = derived(() => Boolean(revision()) && envValues() !== loadedContent())
 
-function applyEnvironment(environment: EnvironmentFileState): void {
+function applyEnvironment(result: EnvironmentResponse): void {
+  const { environment } = result
+  file.set(environment.path)
+  files.set(result.files)
+  readElsewhere.set(result.readElsewhere)
   envValues.set(environment.content)
   loadedContent.set(environment.content)
   revision.set(environment.revision)
@@ -74,8 +94,8 @@ async function loadEnvironment(): Promise<void> {
   isLoading.set(true)
   loadError.set('')
   try {
-    const result = await dashboardApi<EnvironmentResponse>('/api/dashboard/environment')
-    applyEnvironment(result.environment)
+    const result = await dashboardApi<EnvironmentResponse>(`/api/dashboard/environment?file=${encodeURIComponent(file())}`)
+    applyEnvironment(result)
   }
   catch (error) {
     loadError.set(describeError(error, 'The environment file could not be loaded.'))
@@ -83,6 +103,17 @@ async function loadEnvironment(): Promise<void> {
   finally {
     isLoading.set(false)
   }
+}
+
+/** Open another env file. Unsaved edits keep the current one open until they are saved. */
+function openFile(name: string): void {
+  if (isBusy() || dirty() || name === file())
+    return
+  successMessage.set('')
+  saveError.set('')
+  validationIssues.set([])
+  file.set(name)
+  void loadEnvironment()
 }
 
 function openAddModal(): void {
@@ -155,11 +186,12 @@ async function handleSave(): Promise<void> {
     const result = await dashboardApi<EnvironmentResponse & { success: true }>('/api/dashboard/environment', {
       method: 'PUT',
       body: {
+        file: file(),
         content: envValues(),
         revision: revision(),
       },
     })
-    applyEnvironment(result.environment)
+    applyEnvironment(result)
     successMessage.set('Environment file saved. Restart long-running processes to load changed values.')
   }
   catch (error) {
@@ -198,7 +230,7 @@ onMount(() => void loadEnvironment())
 <div class="flex flex-col gap-6 mx-auto pb-12 pt-6 px-4 sm:px-6 lg:px-8 max-w-7xl">
   <PageHeader
     title="Environment Variables"
-    description="Edit the project .env file with validation, conflict protection, and an automatic backup."
+    description="Edit the env files the app loads, with validation, conflict protection, and an automatic backup."
   >
     <template #actions>
       <div class="flex gap-2 items-center">
@@ -217,7 +249,7 @@ onMount(() => void loadEnvironment())
   <div class="grid gap-3 sm:grid-cols-3">
     <div class="p-4 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
       <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">File</p>
-      <p class="mt-1 font-mono text-sm text-stone-900 dark:text-white">.env</p>
+      <p class="mt-1 font-mono text-sm text-stone-900 dark:text-white" :text="file()"></p>
     </div>
     <div class="p-4 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
       <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">Variables</p>
@@ -227,6 +259,26 @@ onMount(() => void loadEnvironment())
       <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">Status</p>
       <p class="mt-1 font-medium text-sm" :class="dirty() ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'" :text="dirty() ? 'Unsaved changes' : 'Saved on disk'"></p>
     </div>
+  </div>
+
+  <div :if="files().length > 1" class="flex flex-wrap gap-2 items-center" role="group" aria-label="Env file">
+    <button
+      :for="name in files"
+      type="button"
+      class="px-3 py-1.5 font-mono text-sm border rounded-lg disabled:opacity-60 transition-colors"
+      :class="name === file() ? 'text-white bg-stone-900 border-stone-900 dark:text-neutral-900 dark:bg-white dark:border-white' : 'text-stone-700 bg-white border-stone-200 hover:bg-stone-50 dark:text-neutral-200 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:bg-neutral-800'"
+      :aria-pressed="String(name === file())"
+      :disabled="isBusy() || (dirty() && name !== file())"
+      @click="openFile(name)"
+      :text="name"
+    ></button>
+    <span :if="dirty()" class="text-stone-500 text-xs dark:text-neutral-400">Save your edits before opening another file.</span>
+  </div>
+
+  <div :if="readElsewhere().length" class="p-4 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900" role="note" data-env-read-elsewhere>
+    <p class="font-medium">Some keys here are set again in a file the app loads later.</p>
+    <p class="mt-1">Wherever the app can read that later value, it uses it instead of this file's, so change them there:</p>
+    <p class="mt-1 font-mono text-xs" :text="readElsewhereLabel()"></p>
   </div>
 
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-xl dark:border-red-900" role="alert">
@@ -246,7 +298,7 @@ onMount(() => void loadEnvironment())
   <div :if="!loadError()">
     <CodeEditor
       v-model:value="envValues"
-      label=".env"
+      :label="file()"
       language="env"
       :loading="isLoading()"
       @save="handleSave"

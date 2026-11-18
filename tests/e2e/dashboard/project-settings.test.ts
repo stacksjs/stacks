@@ -76,6 +76,32 @@ describe.skipIf(!dashboardE2EAvailable)('settings that write the project', () =>
     await waitFor(async () => await valueOf(cdp, 'input[aria-label="Host"]') === 'saved-layer.quillwort.test' || null, 5_000, { label: 'the saved host' })
   }, 120_000)
 
+  test('the Environment page opens the later env file and saves it, with its own backup (stacksjs/stacks#3341)', async () => {
+    const { cdp } = e2e!.browser
+    // The layered mail test left MAIL_HOST in `.env` and, winning, in `.env.test`.
+    const envBefore = fileText(join(e2e!.project, '.env'))
+    const testBefore = fileText(join(e2e!.project, '.env.test'))
+    expect(testBefore).toContain('MAIL_HOST=saved-layer.quillwort.test')
+
+    await navigate(cdp, `${e2e!.origin}/environment`)
+    const fileButtons = `[...document.querySelectorAll('[aria-label="Env file"] button')].map(button => button.textContent.trim())`
+    await waitFor(async () => (await cdp.evaluate<string[]>(fileButtons)).length === 2 || null, 20_000, { label: 'the env file switcher' })
+    expect(await cdp.evaluate<string[]>(fileButtons)).toEqual(['.env', '.env.test'])
+    expect(await cdp.evaluate<string>(`document.querySelector('[data-env-read-elsewhere]')?.textContent ?? ''`)).toContain('MAIL_HOST (.env.test)')
+
+    await click(cdp, { selector: '[aria-label="Env file"] button', text: '.env.test' }, { timeoutMs: 5_000 })
+    await waitFor(async () => await valueOf(cdp, 'textarea[aria-label=".env.test"]') === testBefore || null, 10_000, { label: '.env.test in the editor' })
+    expect(await cdp.evaluate<boolean>(`Boolean(document.querySelector('[data-env-read-elsewhere]'))`)).toBe(false)
+
+    await fill(cdp, 'textarea[aria-label=".env.test"]', 'MAIL_HOST=env-page.quillwort.test\n')
+    await click(cdp, { selector: 'button', text: 'Save changes' }, { timeoutMs: 5_000 })
+    await waitFor(async () => await cdp.evaluate<boolean>(`[...document.querySelectorAll('[role="status"]')].some(node => node.textContent.includes('Environment file saved'))`) || null, 15_000, { label: 'the saved message' })
+
+    expect(fileText(join(e2e!.project, '.env.test'))).toBe('MAIL_HOST=env-page.quillwort.test\n')
+    expect(fileText(join(e2e!.project, 'storage/framework/runtime/dashboard/environment.test.backup'))).toBe(testBefore)
+    expect(fileText(join(e2e!.project, '.env'))).toBe(envBefore)
+  }, 120_000)
+
   test('general settings save a value to the project config file', async () => {
     const { cdp } = e2e!.browser
     const checkoutConfig = fileText(join(checkout, 'config/app.ts'))

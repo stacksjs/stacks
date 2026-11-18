@@ -2,11 +2,11 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
-import { updateEnvironmentFile } from './environment-file'
+import { saveEnvironmentPage } from './environment-page'
 
 export default new Action({
   name: 'EnvironmentUpdateAction',
-  description: 'Validates and atomically updates the project environment file.',
+  description: 'Validates and atomically updates one of the env files the app loads.',
   method: 'PUT',
   apiResponse: true,
 
@@ -21,11 +21,13 @@ export default new Action({
 
     let result
     try {
-      result = await updateEnvironmentFile(content, revision)
+      result = await saveEnvironmentPage(request.get('file'), content, revision)
     }
     catch (error) {
       return dashboardOperationalError(error, 'Environment file could not be saved.', 'EnvironmentUpdateAction', 500)
     }
+    if (result.unknownFile)
+      return response.json({ message: 'That is not one of the env files this app loads.' }, 404)
     if (result.issues?.length) {
       const errors = Object.fromEntries(result.issues.map((issue, index) => [
         issue.line ? String(issue.line) : `file-${index}`,
@@ -43,10 +45,7 @@ export default new Action({
     }
 
     return Response.json(
-      {
-        success: true,
-        environment: result.state,
-      },
+      { success: true, ...result.page },
       { headers: { 'Cache-Control': 'no-store', Pragma: 'no-cache' } },
     )
   },

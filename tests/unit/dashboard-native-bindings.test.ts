@@ -1131,7 +1131,7 @@ describe('dashboard native STX bindings', () => {
 
     expect(view).toContain('<EnvironmentDashboard />')
     expect(view).not.toContain('<script')
-    expect(page).toContain("dashboardApi<EnvironmentResponse>('/api/dashboard/environment')")
+    expect(page).toContain("dashboardApi<EnvironmentResponse>(`/api/dashboard/environment?file=${encodeURIComponent(file())}`)")
     expect(page).toContain('v-model:value="envValues"')
     expect(page).toContain("useEventListener('keydown', handlePageKeydown)")
     expect(page).toContain('<Modal')
