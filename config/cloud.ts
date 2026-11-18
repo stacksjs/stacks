@@ -301,8 +301,9 @@ export const tsCloud: TsCloudConfig = {
         allowedPorts: [25, 143, 465, 587, 993, 8008, 8443],
       },
       // Deploy-time Bun installs can briefly exceed physical headroom on this
-      // shared host. Low-swappiness swap prevents a box-wide OOM cascade.
-      swapGb: 4,
+      // shared host. Keep additional headroom while CX53 capacity is unavailable.
+      // The minimum includes existing swap and grows without taking it offline.
+      swapGb: 12,
       managedServices: {
         vitess: {
           mode: 'cluster',
