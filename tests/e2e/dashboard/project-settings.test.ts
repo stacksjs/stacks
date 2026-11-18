@@ -1,0 +1,123 @@
+/**
+ * The settings pages that write the project's own files: Mail settings
+ * writes `.env`, General settings writes `config/*.ts` (stacksjs/stacks#3320).
+ *
+ * The dashboard runs in a scratch project (`scratchProject` in the harness),
+ * so these are its copies. Each test also reads the checkout's file before
+ * and after, because a save that reached the checkout would pass every other
+ * check here: the page would show the new value either way.
+ */
+import type { Cdp } from '@stacksjs/testing/browser'
+import type { DashboardE2E } from './harness'
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
+import { existsSync, readFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+import { click, navigate, waitFor } from '@stacksjs/testing/browser'
+import { dashboardE2EAvailable, signIn, startDashboardE2E } from './harness'
+
+const checkout = resolve(import.meta.dir, '../../..')
+
+describe.skipIf(!dashboardE2EAvailable)('settings that write the project', () => {
+  let e2e: DashboardE2E | undefined
+
+  beforeAll(async () => {
+    e2e = await startDashboardE2E()
+    await signIn(e2e)
+  }, 180_000)
+
+  afterAll(async () => {
+    await e2e?.close()
+  })
+
+  test('mail settings save the driver to the project .env', async () => {
+    const { cdp } = e2e!.browser
+    const checkoutEnv = fileText(join(checkout, '.env'))
+    await openMailSettings(cdp, e2e!.origin)
+    expect(await valueOf(cdp, 'select[aria-label="Mail driver"]')).toBe('log')
+
+    await choose(cdp, 'select[aria-label="Mail driver"]', 'smtp')
+    await waitFor(async () => await cdp.evaluate<boolean>(`Boolean(document.querySelector('input[aria-label="Host"]'))`) || null, 5_000, { label: 'the SMTP fields' })
+    await fill(cdp, 'input[aria-label="Sender email address"]', 'mail@quillwort.test')
+    await fill(cdp, 'input[aria-label="Host"]', 'smtp.quillwort.test')
+    await fill(cdp, 'input[aria-label="Port"]', '2525')
+    await click(cdp, { selector: 'button[type="submit"]', text: 'Save mail settings' }, { timeoutMs: 5_000 })
+    await waitFor(async () => await cdp.evaluate<boolean>(`[...document.querySelectorAll('[role="status"]')].some(node => node.textContent.includes('Mail settings saved'))`) || null, 15_000, { label: 'the saved message' })
+
+    const saved = envEntries(fileText(join(e2e!.project, '.env')) ?? '')
+    expect(saved.MAIL_MAILER).toBe('smtp')
+    expect(saved.MAIL_FROM_ADDRESS).toBe('mail@quillwort.test')
+    expect(saved.MAIL_HOST).toBe('smtp.quillwort.test')
+    expect(saved.MAIL_PORT).toBe('2525')
+    expect(fileText(join(checkout, '.env'))).toBe(checkoutEnv)
+
+    // A fresh load reads the file back, not the form it was typed into.
+    await openMailSettings(cdp, e2e!.origin)
+    expect(await valueOf(cdp, 'select[aria-label="Mail driver"]')).toBe('smtp')
+    await waitFor(async () => await valueOf(cdp, 'input[aria-label="Host"]') === 'smtp.quillwort.test' || null, 5_000, { label: 'the saved host' })
+  }, 120_000)
+
+  test('general settings save a value to the project config file', async () => {
+    const { cdp } = e2e!.browser
+    const checkoutConfig = fileText(join(checkout, 'config/app.ts'))
+    const description = 'Quillwort journey description'
+    await openConfig(cdp, e2e!.origin, 'App')
+    expect(await valueOf(cdp, '#config-description')).not.toBe(description)
+
+    await fill(cdp, '#config-description', description)
+    await click(cdp, { selector: 'button', text: 'Save changes' }, { timeoutMs: 5_000 })
+    await waitFor(async () => await cdp.evaluate<boolean>(`document.body.innerText.includes('Saved config/app.ts')`) || null, 15_000, { label: 'the saved message' })
+
+    expect(fileText(join(e2e!.project, 'config/app.ts'))).toContain(`description: '${description}'`)
+    expect(fileText(join(checkout, 'config/app.ts'))).toBe(checkoutConfig)
+
+    await openConfig(cdp, e2e!.origin, 'App')
+    expect(await valueOf(cdp, '#config-description')).toBe(description)
+  }, 120_000)
+})
+
+async function openMailSettings(cdp: Cdp, origin: string): Promise<void> {
+  await navigate(cdp, `${origin}/settings/mail`)
+  await waitFor(async () => await cdp.evaluate<boolean>(`Boolean(document.querySelector('select[aria-label="Mail driver"]'))`) || null, 20_000, { label: 'the mail settings form' })
+}
+
+/** Open General settings on one config file, by the name its list shows. */
+async function openConfig(cdp: Cdp, origin: string, title: string): Promise<void> {
+  await navigate(cdp, `${origin}/settings`)
+  await waitFor(async () => await cdp.evaluate<boolean>(`[...document.querySelectorAll('main button')].some(button => button.textContent.trim().startsWith(${JSON.stringify(title)}))`) || null, 20_000, { label: 'the config list' })
+  await cdp.evaluate(`[...document.querySelectorAll('main button')].find(button => button.textContent.trim().split('\\n')[0].trim() === ${JSON.stringify(title)}).click()`)
+  await waitFor(async () => await cdp.evaluate<boolean>(`Boolean(document.querySelector('#config-description'))`) || null, 10_000, { label: `config/${title.toLowerCase()}.ts` })
+}
+
+/** Replace a field's text the way typing does: focus it, select what is there, type over it. */
+async function fill(cdp: Cdp, selector: string, text: string): Promise<void> {
+  await click(cdp, selector, { timeoutMs: 5_000 })
+  await cdp.evaluate(`document.querySelector(${JSON.stringify(selector)}).select()`)
+  await cdp.send('Input.insertText', { text })
+}
+
+async function choose(cdp: Cdp, selector: string, value: string): Promise<void> {
+  await cdp.evaluate(`(() => {
+    const select = document.querySelector(${JSON.stringify(selector)})
+    select.value = ${JSON.stringify(value)}
+    select.dispatchEvent(new Event('input', { bubbles: true }))
+    select.dispatchEvent(new Event('change', { bubbles: true }))
+  })()`)
+}
+
+async function valueOf(cdp: Cdp, selector: string): Promise<string | null> {
+  return await cdp.evaluate<string | null>(`document.querySelector(${JSON.stringify(selector)})?.value ?? null`)
+}
+
+function fileText(path: string): string | null {
+  return existsSync(path) ? readFileSync(path, 'utf8') : null
+}
+
+function envEntries(content: string): Record<string, string> {
+  const entries: Record<string, string> = {}
+  for (const line of content.split('\n')) {
+    const separator = line.indexOf('=')
+    if (separator > 0)
+      entries[line.slice(0, separator).trim()] = line.slice(separator + 1).trim()
+  }
+  return entries
+}
