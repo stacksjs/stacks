@@ -101,7 +101,11 @@ function serializeEnvironmentValue(value: string): string {
     .replace(/\n/g, '\\n')}"`
 }
 
-async function atomicWrite(path: string, content: string): Promise<void> {
+/**
+ * Write a file the way an env file has to be written: whole or not at all
+ * (a same-directory rename), and readable by its owner only.
+ */
+export async function atomicWrite(path: string, content: string): Promise<void> {
   await mkdir(dirname(path), { recursive: true })
   const temporaryPath = join(
     dirname(path),

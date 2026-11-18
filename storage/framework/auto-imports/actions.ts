@@ -508,6 +508,7 @@ export const actions = {
   'Actions/Dashboard/Infrastructure/ServerShowAction': '../defaults/app/Actions/Dashboard/Infrastructure/ServerShowAction.ts',
   'Actions/Dashboard/Infrastructure/dns-overview': '../defaults/app/Actions/Dashboard/Infrastructure/dns-overview.ts',
   'Actions/Dashboard/Infrastructure/environment-file': '../defaults/app/Actions/Dashboard/Infrastructure/environment-file.ts',
+  'Actions/Dashboard/Infrastructure/environment-layers': '../defaults/app/Actions/Dashboard/Infrastructure/environment-layers.ts',
   'Actions/Dashboard/Infrastructure/insights-dashboard': '../defaults/app/Actions/Dashboard/Infrastructure/insights-dashboard.ts',
   'Actions/Dashboard/Infrastructure/log-dashboard': '../defaults/app/Actions/Dashboard/Infrastructure/log-dashboard.ts',
   'Actions/Dashboard/Infrastructure/log-provider': '../defaults/app/Actions/Dashboard/Infrastructure/log-provider.ts',
