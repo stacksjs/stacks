@@ -46,28 +46,61 @@ function getSnapshotPath(): string {
   return snapshotPath
 }
 
+type Guarantee = readonly [string, () => Promise<{ success: boolean, error?: string }>]
+
 /**
  * Auth/oauth, notification, RBAC, and polymorphic-trait tables live outside the generated
- * model migrations — `buddy migrate` guarantees them as a separate step
- * after `runDatabaseMigration()` (stacksjs/stacks#1948). Test databases
- * need the identical guarantee, or feature tests hit "no such table:
- * oauth_access_tokens" / "no such column: email_verified_at" against a
- * freshly migrated schema. All four migrators are CREATE TABLE IF NOT
- * EXISTS plus defensive ALTERs, so reruns are no-ops. Failures surface
- * on stderr but don't throw — matching `buddy migrate` semantics, so
- * tests that never touch these tables aren't broken by one failed
- * guarantee.
+ * model migrations (stacksjs/stacks#1948). Test databases need the same
+ * guarantees as `buddy migrate`, in the same order, or feature tests hit
+ * "no such table: oauth_access_tokens" / "no such column: email_verified_at".
+ *
+ * The order is `buddy migrate`'s: auth BEFORE the numbered migrations,
+ * because 0000000098-revoke-legacy-long-lived-tokens.sql deletes from
+ * oauth_access_tokens and fails on a database that has none. That failure
+ * stopped the run there, so every app table after it was missing, and the
+ * fast path snapshotted the half-built schema for every later test. Auth runs
+ * again afterwards for its `users` ALTERs, which need the table the numbered
+ * migrations create; the rest run after so a model-owned table stays
+ * authoritative over the framework's fallback.
+ *
+ * All the migrators are CREATE TABLE IF NOT EXISTS plus defensive ALTERs, so
+ * reruns are no-ops. Their failures surface on stderr but don't throw,
+ * matching `buddy migrate`, so tests that never touch these tables aren't
+ * broken by one failed guarantee.
  */
-async function migrateFrameworkTables(): Promise<void> {
-  const steps = [
+// Built per call, not once at load: the imports are live bindings, and a list
+// made at module evaluation keeps whatever they were then, so a later
+// `mock.module('@stacksjs/database')` never reached the migrators.
+function guaranteesBefore(): Guarantee[] {
+  return [['auth', migrateAuthTables]]
+}
+
+function guaranteesAfter(): Guarantee[] {
+  return [
     ['auth', migrateAuthTables],
     ['notification', migrateNotificationTables],
     ['RBAC', migrateRbacTables],
     ['trait', migrateTraitTables],
     ['utc-datetime', ensureUtcDatetimeColumns],
     ['utc-defaults', ensureUtcTimestampDefaults],
-  ] as const
+  ]
+}
 
+/**
+ * Migrate a test database: the framework guarantees around the app's
+ * migrations. A failed model migration throws. Reporting it and carrying on
+ * left a database without the app's tables, which every test then failed
+ * against with "no such table" far from the cause.
+ */
+async function migrateTestDatabase(): Promise<void> {
+  await runGuarantees(guaranteesBefore())
+  const result = await runDatabaseMigration()
+  await runGuarantees(guaranteesAfter())
+  if (result?.isErr)
+    throw new Error(`[testing] Database migration failed: ${result.error instanceof Error ? result.error.message : String(result.error)}`)
+}
+
+async function runGuarantees(steps: Guarantee[]): Promise<void> {
   for (const [name, migrateTables] of steps) {
     try {
       const result = await migrateTables()
@@ -85,8 +118,7 @@ export async function setupDatabase(): Promise<void> {
 
   if (currentDriver() === 'mysql') {
     await db.unsafe(`CREATE DATABASE IF NOT EXISTS ${dbName}`).execute()
-    await runDatabaseMigration()
-    await migrateFrameworkTables()
+    await migrateTestDatabase()
   }
 }
 
@@ -134,10 +166,9 @@ export async function truncateSqlite(): Promise<void> {
     await copyModelFiles(file)
   }
 
-  await runDatabaseMigration()
   // Runs before `truncateSqliteFast()` snapshots the schema, so the
   // fast-restore path keeps the framework tables too.
-  await migrateFrameworkTables()
+  await migrateTestDatabase()
 }
 
 /**
@@ -163,14 +194,22 @@ export async function truncateSqliteFast(): Promise<void> {
   const snapshotIsStale = (() => {
     if (!fs.existsSync(snapPath)) return true
     const snapMtime = fs.statSync(snapPath).mtimeMs
-    const watched = globSync(
-      [
-        path.userModelsPath('*.ts'),
-        path.defaultsPath('app/Models/**/*.ts'),
-        path.userMigrationsPath('*.ts'),
-      ],
-      { absolute: true },
-    )
+    // Migrations are generated as `.sql`. Watching only `*.ts` meant a newly
+    // generated migration never invalidated the snapshot, so its table was
+    // missing from every test until a model file happened to change. The
+    // directory itself is watched for a removed or renamed migration.
+    const watched = [
+      path.userMigrationsPath(),
+      ...globSync(
+        [
+          path.userModelsPath('*.ts'),
+          path.defaultsPath('app/Models/**/*.ts'),
+          path.userMigrationsPath('**/*.ts'),
+          path.userMigrationsPath('**/*.sql'),
+        ],
+        { absolute: true },
+      ),
+    ]
     for (const f of watched) {
       try {
         if (fs.statSync(f).mtimeMs > snapMtime) return true

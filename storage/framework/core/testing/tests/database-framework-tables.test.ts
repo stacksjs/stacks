@@ -12,6 +12,7 @@ import { join } from 'node:path'
 // snapshotted that column-less schema for every subsequent test.
 
 const calls: string[] = []
+let migrationResult: { isOk?: boolean, isErr?: boolean, error?: unknown } = { isOk: true }
 
 const tempDir = mkdtempSync(join(tmpdir(), 'stacks-testing-db-'))
 const sqliteFile = join(tempDir, 'test.sqlite')
@@ -52,8 +53,10 @@ mock.module('@stacksjs/database', () => ({
   },
   runDatabaseMigration: async () => {
     calls.push('runDatabaseMigration')
-    return { isOk: true }
+    return migrationResult
   },
+  ensureUtcDatetimeColumns: async () => ({ success: true }),
+  ensureUtcTimestampDefaults: async () => ({ success: true }),
   sql: Object.assign(() => ({ execute: async () => {} }), { raw: (s: string) => s }),
 }))
 
@@ -67,16 +70,34 @@ describe('test database framework-table guarantees (stacksjs/stacks#1948)', () =
     const { truncateSqlite } = await import('../src/database')
     await truncateSqlite()
 
-    expect(calls).toContain('runDatabaseMigration')
-    // After, not before: the users.email_verified_at ALTER needs the
-    // users table the model migrations create.
-    expect(calls.indexOf('migrateAuthTables')).toBeGreaterThan(calls.indexOf('runDatabaseMigration'))
+    const migrated = calls.indexOf('runDatabaseMigration')
+    expect(migrated).toBeGreaterThan(-1)
+    // Before: 0000000098-revoke-legacy-long-lived-tokens.sql deletes from
+    // oauth_access_tokens, which has to exist by then. And after: the
+    // users.email_verified_at ALTER needs the users table the model
+    // migrations create. Same order as `buddy migrate`.
+    expect(calls.indexOf('migrateAuthTables')).toBeLessThan(migrated)
+    expect(calls.lastIndexOf('migrateAuthTables')).toBeGreaterThan(migrated)
+    expect(calls.indexOf('migrateNotificationTables')).toBeGreaterThan(migrated)
     expect(calls).toContain('migrateNotificationTables')
     expect(calls).toContain('migrateRbacTables')
     // commentables/taggables/categorizables have no model, so nothing in
     // runDatabaseMigration() creates them — a test DB without this step
     // fails any commentable/taggable trait call with "no such table".
     expect(calls).toContain('migrateTraitTables')
+  })
+
+  it('truncateSqlite throws when the model migrations fail, after the guarantees ran', async () => {
+    const { truncateSqlite } = await import('../src/database')
+    calls.length = 0
+    migrationResult = { isErr: true, error: new Error('no such table: oauth_access_tokens') }
+    try {
+      await expect(truncateSqlite()).rejects.toThrow('Database migration failed: no such table: oauth_access_tokens')
+      expect(calls).toContain('migrateTraitTables')
+    }
+    finally {
+      migrationResult = { isOk: true }
+    }
   })
 
   it('setupDatabase (mysql branch) wires the same guarantees', () => {
@@ -88,7 +109,6 @@ describe('test database framework-table guarantees (stacksjs/stacks#1948)', () =
     expect(setupIdx).toBeGreaterThan(-1)
     const nextFnIdx = source.indexOf('export async function', setupIdx + 1)
     const body = source.slice(setupIdx, nextFnIdx === -1 ? undefined : nextFnIdx)
-    expect(body).toContain('await runDatabaseMigration()')
-    expect(body.indexOf('await migrateFrameworkTables()')).toBeGreaterThan(body.indexOf('await runDatabaseMigration()'))
+    expect(body).toContain('await migrateTestDatabase()')
   })
 })
