@@ -190,6 +190,11 @@ import { loadEnv, autoLoadEnv, envPlugin } from '@stacksjs/env'
 const loaded = loadEnv({ path: '.env', overload: false }) // { loaded, errors }
 autoLoadEnv()  // .env, .env.local, .env.<effectiveEnv>, .env.<effectiveEnv>.local
 
+// The files autoLoadEnv reads, in that order, existing ones only. The last
+// one that sets a key (and that this process can decrypt) is where the app's
+// value comes from, so a tool that edits env files writes there.
+environmentFiles(activeEnvName(), projectRoot) // ['.env', '.env.development']
+
 // Bun plugin (auto-loads .env before app starts)
 envPlugin()
 ```

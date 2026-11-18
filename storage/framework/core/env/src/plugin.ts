@@ -461,28 +461,35 @@ export function autoLoadEnv(options: Omit<EnvPluginOptions, 'path'> = {}): { loa
     cachedPrivateKey = undefined
   }
 
-  // Load from least to most specific. loadEnv preserves variables that were
-  // present before this call while allowing later files in this list to
-  // override values loaded from earlier files.
-  const paths: string[] = []
-  const addIfPresent = (file: string): void => {
-    if (!paths.includes(file) && existsSync(resolve(cwd, file)))
-      paths.push(file)
-  }
-
-  addIfPresent('.env')
-  addIfPresent('.env.local')
-
-  const envFile = `.env.${env}`
-  const envLocalFile = `.env.${env}.local`
-  addIfPresent(envFile)
-  addIfPresent(envLocalFile)
-
   return loadEnv({
     ...options,
-    path: paths,
+    path: environmentFiles(env, cwd),
     env,
   })
+}
+
+/**
+ * The env files {@link autoLoadEnv} reads for an environment, least specific
+ * first: `.env`, `.env.local`, `.env.<env>`, `.env.<env>.local`, each only if
+ * it exists in `cwd`.
+ *
+ * A later file's value replaces an earlier one's (loadEnv preserves what was
+ * set before the call, and lets later files in the list override earlier
+ * ones), so the last file here that sets a key, and that this process can
+ * read, is where the app's value for it comes from.
+ *
+ * Exported so a tool that edits env files edits the ones the app loads. The
+ * dashboard's Mail settings page edited `.env` alone, and a key set again in
+ * `.env.<env>` kept that file's value however often it was saved
+ * (stacksjs/stacks#3340).
+ */
+export function environmentFiles(env: string, cwd: string = process.cwd()): string[] {
+  const files: string[] = []
+  for (const file of ['.env', '.env.local', `.env.${env}`, `.env.${env}.local`]) {
+    if (!files.includes(file) && existsSync(resolve(cwd, file)))
+      files.push(file)
+  }
+  return files
 }
 
 // Default export for easy usage
