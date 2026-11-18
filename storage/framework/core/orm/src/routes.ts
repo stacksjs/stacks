@@ -644,13 +644,13 @@ for (const [modelName, model] of Object.entries(apiModels)) {
   const hiddenFields = getHiddenFields(model)
   const basePath = apiBasePath(uri, apiConfig.prefix)
 
-  // Read-path column allowlist: declared model attributes + system columns,
-  // minus anything marked `hidden`, mapped from EITHER spelling (attribute
+  // Read-path column allowlist: declared model attributes + system columns +
+  // `belongsTo` foreign keys, minus anything marked `hidden`, mapped from EITHER spelling (attribute
   // name or snake_case column) to the real snake_case column. Computed once
   // per model and shared by `?sort=` and the `?<column>=` filter loop so
   // neither can target a ghost column (camelCase attribute → 500) nor
   // enumerate sensitive/hidden columns.
-  const readColumns = buildReadColumnMap(model.attributes, hiddenFields)
+  const readColumns = buildReadColumnMap(model.attributes, hiddenFields, model.belongsTo)
 
   // Per-model middleware from the `useApi.middleware` field. Secure-by-default
   // on both sides: with nothing declared, reads AND writes get `auth`. A public
