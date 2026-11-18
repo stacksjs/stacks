@@ -14,6 +14,7 @@ import { runPostSyncAiRefresh, runPostSyncDatabaseTypesRefresh } from './framewo
 import {
   measureDefaultsDrift,
   migrateAppGatesUser,
+  migrateBuddyBotConfig,
   migratePackageProjectManifest,
   migratePackageProjectTsconfig,
   summarizeStructureChanges,
@@ -885,7 +886,7 @@ catch (error) {
   const structureChanges = existsSync(join(defaultsPackageRoot, 'package.json'))
     ? syncPackageProjectFiles(projectRoot, defaultsPackageRoot)
     : []
-  const tsconfigChanges = [...migratePackageProjectTsconfig(projectRoot), ...migrateAppGatesUser(projectRoot)]
+  const tsconfigChanges = [...migratePackageProjectTsconfig(projectRoot), ...migrateAppGatesUser(projectRoot), ...migrateBuddyBotConfig(projectRoot)]
 
   await refreshPantryWorkspaceMetadata(projectRoot, Boolean(options.changedBeforeRestart || changes.length || manifestChanges.length || projectManifestChanges.length))
   const rejoined = await installOneRuntime(projectRoot)

@@ -590,6 +590,39 @@ export function migrateAppGatesUser(
   return [{ path: 'app/Gates.ts', action: 'update' }]
 }
 
+/**
+ * Point an app's dependency-bot config at the package's current name.
+ *
+ * buddy-bot is `@buddysh/buddy` now, and better-dx ships it under that name
+ * with its config type renamed `BuddyConfig`. `config/buddy-bot.ts` as every
+ * app was scaffolded imports `BuddyBotConfig` from `buddy-bot`, which resolved
+ * only while an older lock still held the old package: the first install that
+ * re-resolves better-dx drops it, and the file stops compiling (predicthq).
+ * The file keeps its name, which the bot still reads.
+ */
+export function migrateBuddyBotConfig(
+  projectRoot: string,
+  options: PackageProjectOptions = {},
+): ProjectStructureChange[] {
+  const path = join(projectRoot, 'config/buddy-bot.ts')
+  if (!existsSync(path))
+    return []
+
+  const raw = readFileSync(path, 'utf8')
+  const oldImport = /^import type \{ BuddyBotConfig \} from 'buddy-bot'$/m
+  if (!oldImport.test(raw))
+    return []
+
+  const next = raw
+    .replace(oldImport, `import type { BuddyConfig } from '@buddysh/buddy'`)
+    .replace(/\bBuddyBotConfig\b/g, 'BuddyConfig')
+
+  if (!options.dryRun)
+    writeFileSync(path, next)
+
+  return [{ path: 'config/buddy-bot.ts', action: 'update' }]
+}
+
 export type DetectedAiProvider = 'claude' | 'codex' | 'cursor' | 'copilot' | 'gemini'
 
 /**

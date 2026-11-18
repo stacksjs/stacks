@@ -8,6 +8,7 @@ import {
   detectProjectAiProviders,
   measureDefaultsDrift,
   migrateAppGatesUser,
+  migrateBuddyBotConfig,
   migratePackageProjectManifest,
   migratePackageProjectTsconfig,
   raiseBunPins,
@@ -544,5 +545,23 @@ describe('app/Gates.ts moves to GateUser', () => {
 
     write('app/Gates.ts', scaffolded.replace(`import type { UserModel } from '@stacksjs/orm'`, `import type { GateUser } from '@stacksjs/auth'`).replaceAll('UserModel', 'GateUser'))
     expect(migrateAppGatesUser(root)).toEqual([])
+  })
+})
+
+describe('config/buddy-bot.ts follows the bot to @buddysh/buddy', () => {
+  const scaffolded = `import type { BuddyBotConfig } from 'buddy-bot'\n\nexport default {\n  repository: { provider: 'github' },\n} satisfies BuddyBotConfig\n`
+
+  it('imports BuddyConfig from @buddysh/buddy, once', () => {
+    write('config/buddy-bot.ts', scaffolded)
+    expect(migrateBuddyBotConfig(root)).toEqual([{ path: 'config/buddy-bot.ts', action: 'update' }])
+    expect(readFileSync(join(root, 'config/buddy-bot.ts'), 'utf8')).toBe(`import type { BuddyConfig } from '@buddysh/buddy'\n\nexport default {\n  repository: { provider: 'github' },\n} satisfies BuddyConfig\n`)
+    expect(migrateBuddyBotConfig(root)).toEqual([])
+  })
+
+  it('writes nothing in a dry run or without a config', () => {
+    expect(migrateBuddyBotConfig(root)).toEqual([])
+    write('config/buddy-bot.ts', scaffolded)
+    expect(migrateBuddyBotConfig(root, { dryRun: true })).toHaveLength(1)
+    expect(readFileSync(join(root, 'config/buddy-bot.ts'), 'utf8')).toBe(scaffolded)
   })
 })
