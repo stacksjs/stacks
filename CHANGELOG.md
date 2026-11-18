@@ -1,5 +1,29 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.630...v0.75.631)
+
+## ✨ Features
+
+- **dashboard**: one backup per env file, and which keys a later file wins ([8ff63da](https://github.com/stacksjs/stacks/commit/8ff63da)) _(by glennmichael123)_ ([#3341](https://github.com/stacksjs/stacks/issues/3341), [#3340](https://github.com/stacksjs/stacks/issues/3340))
+
+## 🐛 Bug Fixes
+
+- **deps**: dtsx 0.11.56, so facades publish every member ([5a9ff17](https://github.com/stacksjs/stacks/commit/5a9ff17)) _(by Chris Breuer)_
+- **dashboard**: the Environment page edits any env file the app loads ([835c717](https://github.com/stacksjs/stacks/commit/835c717)) _(by glennmichael123)_ ([#3341](https://github.com/stacksjs/stacks/issues/3341))
+
+## 📝 Documentation
+
+- 780 default actions ([485a60d](https://github.com/stacksjs/stacks/commit/485a60d)) _(by glennmichael123)_ ([#3340](https://github.com/stacksjs/stacks/issues/3340))
+
+## 🔧 Chores
+
+- ignore the test database snapshot and its WAL sidecars ([7a7886e](https://github.com/stacksjs/stacks/commit/7a7886e)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.629...v0.75.630)
 
 ## ✨ Features
