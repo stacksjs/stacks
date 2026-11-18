@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.625...v0.75.626)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: pin an app's STX to the release the framework resolves, not its floor ([85d88c6](https://github.com/stacksjs/stacks/commit/85d88c6)) _(by Chris Breuer)_
+- **deploy**: drop the unreachable legacy stack template ([61ba8f0](https://github.com/stacksjs/stacks/commit/61ba8f0)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.624...v0.75.625)
 
 ## 🐛 Bug Fixes
