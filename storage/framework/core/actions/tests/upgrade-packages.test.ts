@@ -107,6 +107,24 @@ describe('package-only buddy updates', () => {
     expect(needsFrameworkInstall(project, '0.74.11', pins)).toBeFalse()
   })
 
+  it('accepts the newer patch a declared caret range installed', () => {
+    const project = mkdtempSync(join(tmpdir(), 'stacks-upgrade-'))
+    temporaryProjects.push(project)
+    mkdirSync(join(project, 'node_modules/stacks'), { recursive: true })
+    mkdirSync(join(project, 'node_modules/@stacksjs/stx'), { recursive: true })
+    writeFileSync(join(project, 'package.json'), JSON.stringify({ dependencies: { stacks: '^0.75.623', '@stacksjs/stx': '^0.2.908' } }))
+    writeFileSync(join(project, 'node_modules/stacks/package.json'), JSON.stringify({ version: '0.75.623' }))
+    const pins = { '@stacksjs/stx': '0.2.908' }
+
+    // `^0.2.908` installs the newest 0.2.x. Demanding exactly 0.2.908 failed
+    // every upgrade of an app whose runtime had published a patch since.
+    writeFileSync(join(project, 'node_modules/@stacksjs/stx/package.json'), JSON.stringify({ version: '0.2.910' }))
+    expect(needsFrameworkInstall(project, '0.75.623', pins)).toBeFalse()
+    // Still behind what the manifest asks for: install again.
+    writeFileSync(join(project, 'node_modules/@stacksjs/stx/package.json'), JSON.stringify({ version: '0.2.894' }))
+    expect(needsFrameworkInstall(project, '0.75.623', pins)).toBeTrue()
+  })
+
   it('does not repeatedly reinstall intentional source and installer rules', () => {
     const project = mkdtempSync(join(tmpdir(), 'stacks-upgrade-'))
     temporaryProjects.push(project)

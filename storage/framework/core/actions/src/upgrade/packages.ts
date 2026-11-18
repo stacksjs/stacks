@@ -121,7 +121,11 @@ export function needsFrameworkInstall(projectRoot: string, target: string, runti
         const spec = declared[name]
         if (typeof spec !== 'string' || !publishedRange.test(spec) || customResolution(name)) continue
         const manifest = JSON.parse(readFileSync(Bun.resolveSync(`${name}/package.json`, projectRoot), 'utf8')) as { version?: string }
-        if (manifest.version !== baseVersion(version)) return true
+        // What the manifest declares, not its base: `^0.2.908` installs the
+        // newest 0.2.x, and demanding 0.2.908 exactly failed every upgrade of
+        // an app whose runtime had published a patch since the release.
+        const installedVersion = manifest.version ?? ''
+        if (!Bun.semver.satisfies(installedVersion, spec) || Bun.semver.order(installedVersion, baseVersion(version)) < 0) return true
       }
     }
     return false
