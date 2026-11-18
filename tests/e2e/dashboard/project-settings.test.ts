@@ -1,6 +1,7 @@
 /**
  * The settings pages that write the project's own files: Mail settings
- * writes `.env`, General settings writes `config/*.ts` (stacksjs/stacks#3320).
+ * writes the env files the app loads, General settings writes `config/*.ts`
+ * (stacksjs/stacks#3320, #3340).
  *
  * The dashboard runs in a scratch project (`scratchProject` in the harness),
  * so these are its copies. Each test also reads the checkout's file before
@@ -10,7 +11,7 @@
 import type { Cdp } from '@stacksjs/testing/browser'
 import type { DashboardE2E } from './harness'
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { click, navigate, waitFor } from '@stacksjs/testing/browser'
 import { dashboardE2EAvailable, signIn, startDashboardE2E } from './harness'
@@ -54,6 +55,25 @@ describe.skipIf(!dashboardE2EAvailable)('settings that write the project', () =>
     await openMailSettings(cdp, e2e!.origin)
     expect(await valueOf(cdp, 'select[aria-label="Mail driver"]')).toBe('smtp')
     await waitFor(async () => await valueOf(cdp, 'input[aria-label="Host"]') === 'smtp.quillwort.test' || null, 5_000, { label: 'the saved host' })
+  }, 120_000)
+
+  test('a mail value set in a later env file is shown and saved there (stacksjs/stacks#3340)', async () => {
+    const { cdp } = e2e!.browser
+    // The server runs as APP_ENV=test, so `.env.test` loads after `.env` and wins.
+    writeFileSync(join(e2e!.project, '.env.test'), 'MAIL_HOST=layered.quillwort.test\n')
+    await openMailSettings(cdp, e2e!.origin)
+    await waitFor(async () => await valueOf(cdp, 'input[aria-label="Host"]') === 'layered.quillwort.test' || null, 5_000, { label: 'the host from .env.test' })
+    expect(await cdp.evaluate<string>(`[...document.querySelectorAll('p')].find(node => node.textContent.trim() === 'Source')?.nextElementSibling?.textContent ?? ''`)).toBe('.env, .env.test')
+
+    await fill(cdp, 'input[aria-label="Host"]', 'saved-layer.quillwort.test')
+    await click(cdp, { selector: 'button[type="submit"]', text: 'Save mail settings' }, { timeoutMs: 5_000 })
+    await waitFor(async () => await cdp.evaluate<boolean>(`[...document.querySelectorAll('[role="status"]')].some(node => node.textContent.includes('Mail settings saved'))`) || null, 15_000, { label: 'the saved message' })
+
+    expect(envEntries(fileText(join(e2e!.project, '.env.test')) ?? '').MAIL_HOST).toBe('saved-layer.quillwort.test')
+    expect(envEntries(fileText(join(e2e!.project, '.env')) ?? '').MAIL_HOST).toBe('smtp.quillwort.test')
+
+    await openMailSettings(cdp, e2e!.origin)
+    await waitFor(async () => await valueOf(cdp, 'input[aria-label="Host"]') === 'saved-layer.quillwort.test' || null, 5_000, { label: 'the saved host' })
   }, 120_000)
 
   test('general settings save a value to the project config file', async () => {

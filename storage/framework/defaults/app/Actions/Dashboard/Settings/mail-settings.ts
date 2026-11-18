@@ -1,11 +1,5 @@
-import { encryptValue } from '@stacksjs/env'
-import {
-  parseEnvironmentEntries,
-  readEnvironmentFile,
-  updateEnvironmentEntries,
-  validateEnvironmentFile,
-} from '../Infrastructure/environment-file'
-import type { EnvironmentFileOptions } from '../Infrastructure/environment-file'
+import { environmentLayerIssues, readEnvironmentLayers, updateEnvironmentLayers } from '../Infrastructure/environment-layers'
+import type { EnvironmentLayersOptions } from '../Infrastructure/environment-layers'
 
 export const MAIL_DRIVERS = [
   'log',
@@ -21,6 +15,19 @@ export type MailDriver = typeof MAIL_DRIVERS[number]
 
 export interface MailSettingsState {
   revision: string
+  /**
+   * The env files the shown values come from, in the order the app loads
+   * them; `.env` when none sets any. A save writes each value back to the
+   * file it came from (stacksjs/stacks#3340).
+   */
+  sources: string[]
+  /**
+   * Mail keys a later env file sets with ciphertext this server cannot
+   * decrypt. The app skips those entries here, so the values shown are the
+   * ones in use; wherever that file's key is present, its values apply
+   * instead of what is saved.
+   */
+  overridden: Array<{ key: string, file: string }>
   driver: MailDriver
   fromName: string
   fromAddress: string
@@ -88,6 +95,49 @@ const SECRET_KEYS = [
   'MAILTRAP_TOKEN',
 ] as const
 
+/** The form field each written key is entered in, so a refusal about it shows there. */
+const KEY_FIELDS: Record<string, string> = {
+  MAIL_MAILER: 'driver',
+  MAIL_FROM_NAME: 'fromName',
+  MAIL_FROM_ADDRESS: 'fromAddress',
+  MAIL_HOST: 'smtp.host',
+  MAIL_PORT: 'smtp.port',
+  MAIL_USERNAME: 'smtp.username',
+  MAIL_ENCRYPTION: 'smtp.encryption',
+  AWS_SES_REGION: 'ses.region',
+  AWS_ACCESS_KEY_ID: 'ses.accessKeyId',
+  MAILGUN_DOMAIN: 'mailgun.domain',
+  MAILGUN_ENDPOINT: 'mailgun.endpoint',
+  MAILTRAP_HOST: 'mailtrap.host',
+  MAILTRAP_INBOX_ID: 'mailtrap.inboxId',
+  MAIL_PASSWORD: 'smtp.password',
+  AWS_SECRET_ACCESS_KEY: 'ses.secretAccessKey',
+  SENDGRID_API_KEY: 'sendgrid.apiKey',
+  MAILGUN_API_KEY: 'mailgun.apiKey',
+  MAILTRAP_TOKEN: 'mailtrap.token',
+}
+
+/** Every env key the page reads. */
+const MAIL_KEYS = [
+  'APP_NAME',
+  'MAIL_MAILER',
+  'MAIL_DRIVER',
+  'MAIL_FROM_NAME',
+  'MAIL_FROM_ADDRESS',
+  'MAIL_HOST',
+  'MAIL_PORT',
+  'MAIL_USERNAME',
+  'MAIL_ENCRYPTION',
+  'AWS_SES_REGION',
+  'AWS_DEFAULT_REGION',
+  'AWS_ACCESS_KEY_ID',
+  'MAILGUN_DOMAIN',
+  'MAILGUN_ENDPOINT',
+  'MAILTRAP_HOST',
+  'MAILTRAP_INBOX_ID',
+  ...SECRET_KEYS,
+] as const
+
 function stringValue(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
 }
@@ -125,18 +175,23 @@ function portValue(value: string | undefined): number {
   return parsed
 }
 
-export async function readMailSettings(options: EnvironmentFileOptions = {}): Promise<MailSettingsState> {
-  const environment = await readEnvironmentFile(options)
-  const environmentIssues = validateEnvironmentFile(environment.content)
+export async function readMailSettings(options: EnvironmentLayersOptions = {}): Promise<MailSettingsState> {
+  const layers = await readEnvironmentLayers(options)
+  const environmentIssues = environmentLayerIssues(layers)
   if (environmentIssues.length) {
     const issue = environmentIssues[0]!
-    const location = issue.line > 0 ? ` on line ${issue.line}` : ''
+    const location = issue.line > 0 ? ` on line ${issue.line} of ${issue.file}` : ` (${issue.file})`
     throw new TypeError(`The environment file is invalid${location}: ${issue.message}`)
   }
-  const entries = parseEnvironmentEntries(environment.content)
+  const { entries } = layers
+  const read = MAIL_KEYS.filter(key => layers.sources[key])
+  const sources = layers.layers.map(layer => layer.file).filter(file => read.some(key => layers.sources[key] === file))
+  const overridden = MAIL_KEYS.flatMap(key => layers.unreadable[key] ? [{ key, file: layers.unreadable[key]! }] : [])
 
   return {
-    revision: environment.revision,
+    revision: layers.revision,
+    sources: sources.length ? sources : ['.env'],
+    overridden,
     driver: normalizedDriver(entries.MAIL_MAILER ?? entries.MAIL_DRIVER),
     fromName: entries.MAIL_FROM_NAME ?? entries.APP_NAME ?? 'Stacks',
     fromAddress: entries.MAIL_FROM_ADDRESS ?? '',
@@ -179,38 +234,16 @@ function validateSecret(value: unknown, field: string, fields: Record<string, st
   return secret
 }
 
-function secretUpdate(
-  entries: Record<string, string>,
-  key: typeof SECRET_KEYS[number],
-  value: string,
-  clear: boolean,
-  fields: Record<string, string>,
-): string | undefined {
-  if (value) {
-    const encryptedFile = Object.values(entries).some(entry =>
-      entry.startsWith('encrypted:') || entry.startsWith('enc:'),
-    )
-    if (!encryptedFile)
-      return value
-
-    const publicKey = entries.DOTENV_PUBLIC_KEY
-    if (!publicKey) {
-      fields[key] = 'The encrypted environment file has no public key. Repair it before changing secrets.'
-      return undefined
-    }
-
-    try {
-      return encryptValue(value, publicKey)
-    }
-    catch {
-      fields[key] = 'The secret could not be encrypted with the environment public key.'
-      return undefined
-    }
-  }
-
+/**
+ * What to write for a secret: a new value, an empty one to clear it, or
+ * nothing to keep the stored one. Encrypting it, where its file is encrypted,
+ * is `updateEnvironmentLayers`'s job, under that file's own public key.
+ */
+function secretUpdate(value: string, clear: boolean): string | undefined {
+  if (value)
+    return value
   if (clear)
     return ''
-
   return undefined
 }
 
@@ -224,7 +257,7 @@ function validHost(value: string): boolean {
 
 export async function updateMailSettings(
   input: MailSettingsInput,
-  options: EnvironmentFileOptions = {},
+  options: EnvironmentLayersOptions = {},
 ): Promise<MailSettingsUpdateResult> {
   const fields: Record<string, string> = {}
   const revision = stringValue(input.revision)
@@ -241,11 +274,11 @@ export async function updateMailSettings(
   if (!validEmail(fromAddress))
     fields.fromAddress = 'Enter a valid sender email address.'
 
-  const currentEnvironment = await readEnvironmentFile(options)
-  if (currentEnvironment.revision !== revision)
+  const currentLayers = await readEnvironmentLayers(options)
+  if (currentLayers.revision !== revision)
     return { conflict: true }
 
-  const currentEntries = parseEnvironmentEntries(currentEnvironment.content)
+  const currentEntries = currentLayers.entries
   const updates: Record<string, string> = {
     MAIL_MAILER: driver,
     MAIL_FROM_NAME: fromName,
@@ -258,13 +291,7 @@ export async function updateMailSettings(
     const username = stringValue(input.smtp?.username)
     const encryption = stringValue(input.smtp?.encryption)
     const password = validateSecret(input.smtp?.password, 'smtp.password', fields)
-    const nextPassword = secretUpdate(
-      currentEntries,
-      'MAIL_PASSWORD',
-      password,
-      input.smtp?.clearPassword === true,
-      fields,
-    )
+    const nextPassword = secretUpdate(password, input.smtp?.clearPassword === true)
 
     if (!validHost(host))
       fields['smtp.host'] = 'Enter a valid SMTP host.'
@@ -284,13 +311,7 @@ export async function updateMailSettings(
     const region = stringValue(input.ses?.region)
     const accessKeyId = stringValue(input.ses?.accessKeyId)
     const secret = validateSecret(input.ses?.secretAccessKey, 'ses.secretAccessKey', fields)
-    const nextSecret = secretUpdate(
-      currentEntries,
-      'AWS_SECRET_ACCESS_KEY',
-      secret,
-      input.ses?.clearSecretAccessKey === true,
-      fields,
-    )
+    const nextSecret = secretUpdate(secret, input.ses?.clearSecretAccessKey === true)
 
     if (!/^[a-z]{2}(?:-gov)?-[a-z]+-\d$/.test(region))
       fields['ses.region'] = 'Enter a valid AWS region, such as us-east-1.'
@@ -302,13 +323,7 @@ export async function updateMailSettings(
   }
   else if (driver === 'sendgrid') {
     const apiKey = validateSecret(input.sendgrid?.apiKey, 'sendgrid.apiKey', fields)
-    const nextApiKey = secretUpdate(
-      currentEntries,
-      'SENDGRID_API_KEY',
-      apiKey,
-      input.sendgrid?.clearApiKey === true,
-      fields,
-    )
+    const nextApiKey = secretUpdate(apiKey, input.sendgrid?.clearApiKey === true)
 
     if (!apiKey && input.sendgrid?.clearApiKey !== true && !configured(currentEntries.SENDGRID_API_KEY))
       fields['sendgrid.apiKey'] = 'Enter a SendGrid API key.'
@@ -321,13 +336,7 @@ export async function updateMailSettings(
     const domain = stringValue(input.mailgun?.domain)
     const endpoint = stringValue(input.mailgun?.endpoint)
     const apiKey = validateSecret(input.mailgun?.apiKey, 'mailgun.apiKey', fields)
-    const nextApiKey = secretUpdate(
-      currentEntries,
-      'MAILGUN_API_KEY',
-      apiKey,
-      input.mailgun?.clearApiKey === true,
-      fields,
-    )
+    const nextApiKey = secretUpdate(apiKey, input.mailgun?.clearApiKey === true)
 
     if (!validHost(domain))
       fields['mailgun.domain'] = 'Enter the verified Mailgun domain.'
@@ -347,13 +356,7 @@ export async function updateMailSettings(
     const host = stringValue(input.mailtrap?.host)
     const inboxId = stringValue(input.mailtrap?.inboxId)
     const token = validateSecret(input.mailtrap?.token, 'mailtrap.token', fields)
-    const nextToken = secretUpdate(
-      currentEntries,
-      'MAILTRAP_TOKEN',
-      token,
-      input.mailtrap?.clearToken === true,
-      fields,
-    )
+    const nextToken = secretUpdate(token, input.mailtrap?.clearToken === true)
 
     // Both optional, as in the driver: an inbox id captures mail in that
     // sandbox inbox, no inbox id delivers it through the Sending API, and a
@@ -386,14 +389,16 @@ export async function updateMailSettings(
   if (Object.keys(fields).length)
     return { validation: { fields } }
 
-  const result = await updateEnvironmentEntries(updates, revision, options)
+  // Each value goes back to the env file the app reads it from, encrypted
+  // where that file keeps it encrypted (stacksjs/stacks#3340).
+  const result = await updateEnvironmentLayers(updates, revision, { ...options, secrets: SECRET_KEYS })
   if (result.conflict)
     return { conflict: true }
   if (result.issues?.length) {
     return {
       validation: {
-        fields: Object.fromEntries(result.issues.map((issue, index) => [
-          issue.line ? String(issue.line) : `file-${index}`,
+        fields: Object.fromEntries(result.issues.map(issue => [
+          KEY_FIELDS[issue.key] ?? issue.key,
           issue.message,
         ])),
       },

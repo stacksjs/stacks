@@ -4,13 +4,21 @@ import { join } from 'node:path'
 import { describe, expect, test } from 'bun:test'
 import { readMailSettings, updateMailSettings } from './mail-settings'
 
-async function fixture(content: string): Promise<{ envPath: string, backupPath: string }> {
-  const root = await mkdtemp(join(tmpdir(), 'stacks-dashboard-mail-'))
+interface Fixture { cwd: string, env: string, privateKey: null, backupPath: string, envPath: string }
+
+/** A project with `.env` and, optionally, more env files, read as the `staging` environment with no private key. */
+async function fixture(content: string, more: Record<string, string> = {}): Promise<Fixture> {
+  const cwd = await mkdtemp(join(tmpdir(), 'stacks-dashboard-mail-'))
   const options = {
-    envPath: join(root, '.env'),
-    backupPath: join(root, 'runtime', 'environment.backup'),
+    cwd,
+    env: 'staging',
+    privateKey: null,
+    backupPath: join(cwd, 'runtime', 'environment.backup'),
+    envPath: join(cwd, '.env'),
   }
   await writeFile(options.envPath, content)
+  for (const [file, text] of Object.entries(more))
+    await writeFile(join(cwd, file), text)
   return options
 }
 
@@ -150,6 +158,38 @@ describe('dashboard mail settings', () => {
     await expect(readMailSettings(invalidEncryption)).rejects.toThrow('MAIL_ENCRYPTION must be empty, tls, or ssl')
 
     const malformedEnvironment = await fixture('MAIL_MAILER=log\nMAIL_MAILER=smtp\n')
-    await expect(readMailSettings(malformedEnvironment)).rejects.toThrow('environment file is invalid on line 2')
+    await expect(readMailSettings(malformedEnvironment)).rejects.toThrow('environment file is invalid on line 2 of .env')
+  })
+
+  test('reads a value from the env file the app reads it from, and saves it there (stacksjs/stacks#3340)', async () => {
+    const options = await fixture('MAIL_MAILER=log\nMAIL_FROM_ADDRESS=hello@example.com\nMAIL_HOST=base.example.com\n', {
+      '.env.staging': 'MAIL_MAILER=smtp\nMAIL_HOST=staging.example.com\n',
+    })
+    const current = await readMailSettings(options)
+    expect(current).toMatchObject({ driver: 'smtp', sources: ['.env', '.env.staging'], overridden: [] })
+    expect(current.smtp.host).toBe('staging.example.com')
+
+    const result = await updateMailSettings({
+      revision: current.revision,
+      driver: 'smtp',
+      fromName: 'Stacks',
+      fromAddress: 'hello@example.com',
+      smtp: { host: 'saved.example.com', port: '587', username: '', encryption: '', password: '' },
+    }, options)
+    expect('state' in result && result.state.smtp.host).toBe('saved.example.com')
+    const staging = await readFile(join(options.cwd, '.env.staging'), 'utf8')
+    expect(staging).toContain('MAIL_HOST=saved.example.com')
+    expect(staging).toContain('MAIL_MAILER=smtp')
+    expect(await readFile(options.envPath, 'utf8')).toContain('MAIL_HOST=base.example.com')
+  })
+
+  test('names the mail keys a later file keeps encrypted beyond this server\'s reach', async () => {
+    const options = await fixture('MAIL_MAILER=log\nMAIL_FROM_ADDRESS=hello@example.com\n', {
+      '.env.staging': 'MAIL_MAILER="encrypted:not-readable-here"\n',
+    })
+    const current = await readMailSettings(options)
+    expect(current.driver).toBe('log')
+    expect(current.sources).toEqual(['.env'])
+    expect(current.overridden).toEqual([{ key: 'MAIL_MAILER', file: '.env.staging' }])
   })
 })

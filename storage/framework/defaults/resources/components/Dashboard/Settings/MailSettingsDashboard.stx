@@ -5,6 +5,8 @@ type MailDriver = 'log' | 'smtp' | 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' |
 
 interface MailSettings {
   revision: string
+  sources: string[]
+  overridden: Array<{ key: string, file: string }>
   driver: MailDriver
   fromName: string
   fromAddress: string
@@ -55,6 +57,8 @@ const encryptionOptions = [
 ]
 
 const revision = state('')
+const sources = state<string[]>(['.env'])
+const overridden = state<Array<{ key: string, file: string }>>([])
 const driver = state<MailDriver>('log')
 const fromName = state('')
 const fromAddress = state('')
@@ -178,6 +182,8 @@ function resetSecrets(): void {
 
 function applySettings(settings: MailSettings): void {
   revision.set(settings.revision)
+  sources.set(settings.sources)
+  overridden.set(settings.overridden)
   driver.set(settings.driver)
   fromName.set(settings.fromName)
   fromAddress.set(settings.fromAddress)
@@ -310,7 +316,7 @@ onMount(() => void loadSettings())
     </div>
     <div class="p-4 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
       <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">Source</p>
-      <p class="mt-1 font-mono text-sm text-stone-900 dark:text-white">.env</p>
+      <p class="mt-1 font-mono text-sm text-stone-900 dark:text-white" :text="sources().join(', ')"></p>
     </div>
     <div class="p-4 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
       <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">Configuration</p>
@@ -321,6 +327,12 @@ onMount(() => void loadSettings())
   <div :if="errorMessage()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-xl dark:border-red-900" role="alert">
     <p :text="errorMessage()"></p>
     <Button :if="isLoading() === false && !revision()" class="mt-3" size="sm" variant="secondary" @click="loadSettings">Try again</Button>
+  </div>
+
+  <div :if="overridden().length" class="p-4 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900" role="note" data-mail-overridden>
+    <p class="font-medium">Some values are also set, encrypted, in a file this server cannot decrypt.</p>
+    <p class="mt-1">This server uses the values shown here. Where that file's private key is present, its values apply instead, whatever is saved here:</p>
+    <p class="mt-1 font-mono text-xs" :text="overridden().map(entry => entry.key + ' in ' + entry.file).join(', ')"></p>
   </div>
 
   <div :if="successMessage()" class="p-4 text-emerald-700 text-sm dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 rounded-xl dark:border-emerald-900" role="status" :text="successMessage()"></div>
@@ -501,7 +513,7 @@ onMount(() => void loadSettings())
     </section>
 
     <div class="flex flex-col gap-3 items-start justify-between sm:flex-row sm:items-center">
-      <p class="text-stone-500 text-xs dark:text-neutral-400">Saving creates a machine-local backup of the previous .env content.</p>
+      <p class="text-stone-500 text-xs dark:text-neutral-400">Saving writes each value to the file it comes from, and keeps a machine-local backup of the previous .env content.</p>
       <Button type="submit" :loading="isSaving()" :disabled="isBusy() || !isDirty()">Save mail settings</Button>
     </div>
   </form>
