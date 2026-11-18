@@ -18,6 +18,35 @@ attaches verification receipts to the standard GitHub release. See
 Builds and publishing continue in GitHub Actions after the push. Check the
 workflow and the required public artifacts before updating consumers.
 
+## Native workflow credentials
+
+Generated Stacks workflows check declared native acceptance inputs before
+building the simulator app. For an actual tagged release, they also check the
+signing, upload, verification and cleanup inputs before that build starts.
+Credentials remain confined to their declared steps and the short preflight;
+the build does not receive signing or deployment credentials.
+
+```bash
+./buddy workflow:check-credentials native-accept
+./buddy workflow:check-credentials native-release
+```
+
+These commands check whether configured values are present, including rejecting
+whitespace-only values. They print missing variable names, never values, and
+do not establish that a provider will accept the credentials. Native jobs use
+the `ios-testflight` environment. Credentials configured only in `production`
+are not inherited there; configure shared publication inputs explicitly in
+each environment that needs them. Direct `buddy workflow:step` execution also
+checks its declared inputs before starting application commands.
+
+After a successful upload, a later screenshot or docs publication failure does
+not require another app upload. Preserve the original failed run and its
+artifact digests, restore its verified acceptance and upload receipts into the
+matching release workspace, configure the missing inputs, then retry the
+project's normal `buddy workflow:step native-verify` command. Confirm Apple
+tester availability and the published media independently. Keep recovery
+results separate from the original CI verdict.
+
 ## Usage
 
 Choose the increment explicitly for a non-interactive release:

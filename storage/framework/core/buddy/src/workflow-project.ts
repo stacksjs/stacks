@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { appendFileSync, existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { renderReviewOsWorkflow, validateWorkflowConfig } from './workflow-template'
+import { nativeReleaseSecretNames, nativeWorkflowSecretNames, renderReviewOsWorkflow, validateWorkflowConfig } from './workflow-template'
 
 export async function loadWorkflowConfig(root: string): Promise<WorkflowConfig> {
   const file = join(root, 'config/workflows.ts')
@@ -11,6 +11,20 @@ export async function loadWorkflowConfig(root: string): Promise<WorkflowConfig> 
   const config = (await import(pathToFileURL(file).href)).default as WorkflowConfig
   validateWorkflowConfig(config)
   return config
+}
+
+function requireWorkflowSecrets(names: string[], phase: string, env: Record<string, string | undefined>): void {
+  const missing = [...new Set(names)].filter(name => !env[name]?.trim())
+  if (missing.length) throw new Error(`Missing workflow credentials for ${phase}: ${missing.join(', ')}. Configure these names in the ios-testflight environment. Values are never printed.`)
+}
+
+/** Check scoped inputs before expensive native builds, without revealing values. */
+export async function checkNativeWorkflowCredentials(root: string, phase: string, env: Record<string, string | undefined> = process.env): Promise<void> {
+  if (!['native-accept', 'native-release'].includes(phase)) throw new Error('Choose native-accept or native-release credentials')
+  const config = await loadWorkflowConfig(root)
+  if (!config.native) throw new Error('Configure a native workflow before checking its credentials')
+  if (phase === 'native-release' && !config.release) throw new Error('Configure native release metadata before checking release credentials')
+  requireWorkflowSecrets(phase === 'native-release' ? nativeReleaseSecretNames(config) : nativeWorkflowSecretNames(config, 'native-accept'), phase, env)
 }
 
 function ownedFile(root: string, file: string): string {
@@ -49,6 +63,7 @@ function downloadedArtifact(root: string, config: WorkflowConfig): string {
 export async function runWorkflowStep(root: string, step: WorkflowStep): Promise<void> {
   const config = await loadWorkflowConfig(root)
   if (!['prepare', 'lint', 'typecheck', 'test', 'build', 'deploy', 'after-deploy', 'native-build', 'native-accept', 'native-sign', 'native-upload', 'native-verify', 'native-cleanup'].includes(step)) throw new Error('Unknown workflow step')
+  requireWorkflowSecrets(nativeWorkflowSecretNames(config, step), step, process.env)
   const defaults: Partial<Record<WorkflowStep, string[][]>> = {
     prepare: existsSync(join(root, 'pantry.lock')) ? [['pantry', 'ci']] : [],
     lint: [['./buddy', 'lint']], typecheck: [['./buddy', 'typecheck']], test: [['./buddy', 'test']],

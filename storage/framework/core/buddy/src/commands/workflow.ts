@@ -1,8 +1,9 @@
 import type { CLI, WorkflowStep } from '@stacksjs/types'
+import { print } from '@stacksjs/cli/output'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { projectWorkflowClient } from '../workflow-client'
-import { loadWorkflowConfig, runWorkflowStep, writeProjectWorkflow, writeWorkflowReleaseState } from '../workflow-project'
+import { checkNativeWorkflowCredentials, loadWorkflowConfig, runWorkflowStep, writeProjectWorkflow, writeWorkflowReleaseState } from '../workflow-project'
 
 export function workflow(buddy: CLI): void {
   buddy.command('workflow:setup', 'Generate the normal Stacks workflow from config/workflows.ts')
@@ -20,6 +21,11 @@ export function workflow(buddy: CLI): void {
     })
   buddy.command('workflow:step <step>', 'Run one declared application step through Stacks')
     .action(async (step: WorkflowStep) => { await runWorkflowStep(process.cwd(), step) })
+  buddy.command('workflow:check-credentials <phase>', 'Check native-accept or native-release inputs without printing credentials')
+    .action(async (phase: string) => {
+      await checkNativeWorkflowCredentials(process.cwd(), phase)
+      print(`Workflow ${phase} credentials are configured.`)
+    })
   buddy.command('workflow:release-state', 'Verify the committed release identity and set its upload output')
     .action(async () => { await writeWorkflowReleaseState(process.cwd()) })
   buddy.command('workflow:runs [file]', 'Read the exact-source workflow run history')

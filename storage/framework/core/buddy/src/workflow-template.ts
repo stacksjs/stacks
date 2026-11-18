@@ -1,4 +1,22 @@
-import type { WorkflowConfig } from '@stacksjs/types'
+import type { WorkflowConfig, WorkflowStep } from '@stacksjs/types'
+
+export function nativeWorkflowSecretNames(config: WorkflowConfig, step: WorkflowStep): string[] {
+  switch (step) {
+    case 'native-build':
+    case 'native-accept':
+    case 'native-sign':
+    case 'native-upload':
+    case 'native-verify':
+    case 'native-cleanup':
+      return config.stepSecrets?.[step] ?? (step === 'native-sign' ? config.secrets?.ios ?? [] : [])
+    default:
+      return []
+  }
+}
+
+export function nativeReleaseSecretNames(config: WorkflowConfig): string[] {
+  return [...new Set((['native-sign', 'native-upload', 'native-verify', 'native-cleanup'] as const).flatMap(step => nativeWorkflowSecretNames(config, step)))]
+}
 
 function relativePath(value: string): boolean {
   return typeof value === 'string' && !!value && !/^[A-Za-z]:|^[\\/]|[\\\r\n\x00]/.test(value) && !value.split('/').some(segment => segment === '.' || segment === '..')
@@ -43,7 +61,7 @@ export function renderReviewOsWorkflow(config: WorkflowConfig): string {
   const upload = "steps.release.outputs.upload == 'true'"
   const secretEnv = (group: 'checks' | 'deploy' | 'ios') => Object.fromEntries((config.secrets?.[group] ?? []).map(name => [name, '${{ secrets.' + name + ' }}']))
   const nativeSecrets = (step: keyof NonNullable<WorkflowConfig['stepSecrets']>) => {
-    const names = config.stepSecrets?.[step] ?? (step === 'native-sign' ? config.secrets?.ios ?? [] : [])
+    const names = nativeWorkflowSecretNames(config, step)
     return names.length ? { env: Object.fromEntries(names.map(name => [name, '${{ secrets.' + name + ' }}'])) } : {}
   }
   const bootstrap = () => [
@@ -75,6 +93,8 @@ export function renderReviewOsWorkflow(config: WorkflowConfig): string {
     reviewos: { ...jobPriority('ios'), secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.ios ?? [])] }, env: { ...config.env?.checks, ...config.env?.ios, ...secretEnv('checks') },
     steps: [...bootstrap(),
       { name: 'Read the committed release identity', id: 'release', run: './buddy workflow:release-state', env: { WORKFLOW_UPLOAD_REQUESTED: "${{ inputs.upload && 'true' || 'false' }}" } },
+      { name: 'Validate native acceptance credentials', run: './buddy workflow:check-credentials native-accept', ...nativeSecrets('native-accept') },
+      ...(config.release ? [{ name: 'Validate release credentials', if: upload, run: './buddy workflow:check-credentials native-release', ...(nativeReleaseSecretNames(config).length ? { env: Object.fromEntries(nativeReleaseSecretNames(config).map(name => [name, '${{ secrets.' + name + ' }}'])) } : {}) }] : []),
       { name: 'Build the simulator application', run: './buddy workflow:step native-build', ...nativeSecrets('native-build') },
       { name: 'Publish the simulator application', uses: 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02', with: { name: 'native-simulator-${{ github.run_id }}-${{ github.run_attempt }}', path: config.native.artifacts.join('\n'), 'if-no-files-found': 'error', 'retention-days': 7 } },
       { name: 'Download the published application', uses: 'actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093', with: { name: 'native-simulator-${{ github.run_id }}-${{ github.run_attempt }}', path: config.native.downloadDirectory } },

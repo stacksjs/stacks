@@ -57,6 +57,56 @@ test('the actual Buddy CLI generates and checks application workflows', async ()
     const stale = await run('workflow:setup', '--check')
     expect(stale.code).not.toBe(0)
     expect(stale.output + stale.error).toContain('Regenerate')
+    const nonNative = await run('workflow:check-credentials', 'native-accept')
+    expect(nonNative.code).not.toBe(0)
+    expect(nonNative.output + nonNative.error).toContain('Configure a native workflow')
   }
   finally { rmSync(root, { recursive: true, force: true }) }
-})
+}, 30000)
+
+test('the actual workflow credential check detects missing native inputs without exposing configured values', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'stacks-workflow-credentials-'))
+  const names = ['WORKFLOW_FIXTURE_SIGNING', 'WORKFLOW_FIXTURE_PREVIEW_USER', 'WORKFLOW_FIXTURE_PREVIEW_PASSWORD', 'WORKFLOW_FIXTURE_ATHLETE']
+  try {
+    mkdirSync(join(root, 'config'))
+    writeFileSync(join(root, 'package.json'), '{}')
+    writeFileSync(join(root, 'bunfig.toml'), 'preload = []')
+    const config = {
+      provider: 'reviewos', origin: 'https://reviewos.org', repository: 'owner/app',
+      runners: { checks: ['self-hosted', 'linux'], ios: ['self-hosted', 'macos'] },
+      commands: Object.fromEntries(['native-build', 'native-accept', 'native-sign', 'native-upload', 'native-verify', 'native-cleanup'].map(step => [step, [[process.execPath, '-e', 'await Bun.write("executed.txt", "unexpected")']]])),
+      secrets: { ios: names },
+      stepSecrets: { 'native-accept': [names[3]], 'native-sign': [names[0]], 'native-verify': [names[1], names[2]] },
+      native: { artifacts: ['storage/out/*.zip'], downloadDirectory: 'storage/in', archivePattern: '*.zip' },
+      release: { versionFile: 'product.json' },
+    }
+    writeFileSync(join(root, 'config/workflows.ts'), `export default ${JSON.stringify(config)}`)
+    const cli = fileURLToPath(new URL('../src/cli.ts', import.meta.url))
+    async function run(args: string[], supplied: Record<string, string> = {}) {
+      const env = { ...process.env, CI: '1', APP_ENV: 'test', ...supplied }
+      for (const name of names) if (!(name in supplied)) delete env[name]
+      const child = Bun.spawn([process.execPath, '--no-env-file', cli, ...args], { cwd: root, env, stdout: 'pipe', stderr: 'pipe' })
+      const [output, error, code] = await Promise.all([new Response(child.stdout).text(), new Response(child.stderr).text(), child.exited])
+      return { text: output + error, code }
+    }
+    const missing = await run(['workflow:check-credentials', 'native-release'])
+    expect(missing.code).not.toBe(0)
+    expect(missing.text).toContain('WORKFLOW_FIXTURE_PREVIEW_PASSWORD')
+    expect(missing.text).toContain('ios-testflight')
+    const partial = await run(['workflow:check-credentials', 'native-release'], { [names[0]!]: 'fixture-private-value-no-log', [names[1]!]: 'reviewer', [names[2]!]: '   ' })
+    expect(partial.code).not.toBe(0)
+    expect(partial.text).not.toContain('fixture-private-value-no-log')
+    expect(partial.text).not.toContain('reviewer')
+    const configured = await run(['workflow:check-credentials', 'native-release'], { [names[0]!]: 'fixture-private-value-no-log', [names[1]!]: 'reviewer', [names[2]!]: 'fixture-preview-value-no-log' })
+    expect(configured.code).toBe(0)
+    expect(configured.text).not.toContain('fixture-private-value-no-log')
+    expect(configured.text).not.toContain('fixture-preview-value-no-log')
+    expect((await run(['workflow:check-credentials', 'native-accept'], { [names[3]!]: 'synthetic-athlete' })).code).toBe(0)
+    const step = await run(['workflow:step', 'native-verify'])
+    expect(step.code).not.toBe(0)
+    expect(step.text).toContain('WORKFLOW_FIXTURE_PREVIEW_PASSWORD')
+    expect(await Bun.file(join(root, 'executed.txt')).exists()).toBe(false)
+    expect((await run(['workflow:check-credentials', 'unknown'])).code).not.toBe(0)
+  }
+  finally { rmSync(root, { recursive: true, force: true }) }
+}, 30000)

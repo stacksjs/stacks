@@ -26,6 +26,31 @@ function fixture() {
   return { root, config, git, run }
 }
 
+test('native release inputs are checked before building, with credentials confined to their preflight', () => {
+  const { root, config } = fixture()
+  try {
+    const workflow = Bun.YAML.parse(renderReviewOsWorkflow({
+      ...config,
+      secrets: { ios: ['ATHLETE_FIXTURE', 'SIGNING_KEY', 'PREVIEW_USER', 'PREVIEW_PASSWORD'] },
+      stepSecrets: { 'native-accept': ['ATHLETE_FIXTURE'], 'native-sign': ['SIGNING_KEY'], 'native-verify': ['PREVIEW_USER', 'PREVIEW_PASSWORD'] },
+    })) as any
+    const native = workflow.jobs.native
+    const acceptance = native.steps.findIndex((step: any) => step.run === './buddy workflow:check-credentials native-accept')
+    const release = native.steps.findIndex((step: any) => step.run === './buddy workflow:check-credentials native-release')
+    const build = native.steps.findIndex((step: any) => step.run === './buddy workflow:step native-build')
+    expect(acceptance).toBeGreaterThan(-1)
+    expect(release).toBeGreaterThan(acceptance)
+    expect(build).toBeGreaterThan(release)
+    expect(native.steps[acceptance].env).toEqual({ ATHLETE_FIXTURE: '${{ secrets.ATHLETE_FIXTURE }}' })
+    expect(native.steps[release].if).toBe("steps.release.outputs.upload == 'true'")
+    expect(native.steps[release].env).toEqual({ SIGNING_KEY: '${{ secrets.SIGNING_KEY }}', PREVIEW_USER: '${{ secrets.PREVIEW_USER }}', PREVIEW_PASSWORD: '${{ secrets.PREVIEW_PASSWORD }}' })
+    expect(native.steps[build].env).toBeUndefined()
+    expect(native.env.SIGNING_KEY).toBeUndefined()
+    expect(native.env.PREVIEW_PASSWORD).toBeUndefined()
+  }
+  finally { rmSync(root, { recursive: true, force: true }) }
+})
+
 test('release preflight requires actual full source acceptance, before allocating another build', async () => {
   const { root, config, git, run } = fixture()
   try {

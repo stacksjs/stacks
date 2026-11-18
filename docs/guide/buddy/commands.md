@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **411 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **412 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -85,7 +85,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `unpublish` | 2 |
 | `upgrade` | 5 |
 | `user` | 3 |
-| `workflow` | 7 |
+| `workflow` | 8 |
 
 ## Commands
 
@@ -6672,6 +6672,15 @@ Read retained artifact identities and digests
 - Namespace: `workflow`
 - Aliases: none
 - Arguments: `<number>`
+
+### `workflow:check-credentials`
+
+Check native-accept or native-release inputs without printing credentials
+
+- Usage: `$ buddy workflow:check-credentials <phase>`
+- Namespace: `workflow`
+- Aliases: none
+- Arguments: `<phase>`
 
 ### `workflow:release-state`
 
