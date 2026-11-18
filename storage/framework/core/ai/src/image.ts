@@ -7,6 +7,10 @@
 
 import type { AIMessage, AIResult } from './types'
 import { anthropicApiVersion } from './drivers/anthropic'
+import { realpath } from 'node:fs/promises'
+import { isAbsolute, relative, resolve } from 'node:path'
+import { storagePath } from '@stacksjs/path'
+import { fetchPublicUrl } from '@stacksjs/security'
 import { DEFAULT_ANTHROPIC_MODEL } from './models'
 
 // ============================================================================
@@ -39,7 +43,22 @@ export interface VisionOptions {
   maxTokens?: number
   temperature?: number
   detail?: 'auto' | 'low' | 'high'
+  /**
+   * How `{ type: 'url' }` images are fetched. Image URLs often come from users, so they are
+   * fetched through `fetchPublicUrl`: https only, no private or local addresses (re-checked on
+   * every redirect), at most 3 redirects, and a size cap. Loosen only for trusted sources.
+   */
+  fetch?: { allowHttp?: boolean, allowPrivate?: boolean, maxBytes?: number }
+  /**
+   * Directories `{ type: 'file' }` images may be read from. A path that resolves outside all of
+   * them (including through a symlink) is refused, so a caller-supplied path cannot read the
+   * app's secrets and send them to a model provider. Defaults to the app's storage directory.
+   */
+  fileRoots?: string[]
 }
+
+/** Largest image fetched for vision input, matching the providers' own request limits. */
+const DEFAULT_MAX_IMAGE_BYTES = 20 * 1024 * 1024
 
 export interface VisionResult extends AIResult {
   provider: string
@@ -275,25 +294,32 @@ export async function analyzeImage(
   }
 }
 
-async function resolveImageToBase64(input: ImageInput): Promise<{ data: string; mediaType: string }> {
+async function resolveImageToBase64(input: ImageInput, options: VisionOptions = {}): Promise<{ data: string; mediaType: string }> {
   if (input.type === 'base64') {
     return { data: input.data, mediaType: input.mediaType }
   }
 
   if (input.type === 'url') {
-    const response = await fetch(input.url)
+    const maxBytes = options.fetch?.maxBytes ?? DEFAULT_MAX_IMAGE_BYTES
+    const response = await fetchPublicUrl(input.url, {}, {
+      allowHttp: options.fetch?.allowHttp,
+      allowPrivate: options.fetch?.allowPrivate,
+      maxBytes,
+    })
     if (!response.ok) throw new Error(`Failed to fetch image from URL: ${input.url}`)
+    const contentType = (response.headers.get('content-type') || '').split(';')[0]!.trim().toLowerCase()
+    if (!contentType.startsWith('image/'))
+      throw new Error(`Refusing image URL that returned ${contentType || 'no content type'}: ${input.url}`)
     const buffer = await response.arrayBuffer()
-    const base64 = Buffer.from(buffer).toString('base64')
-    const contentType = response.headers.get('content-type') || 'image/png'
-    return { data: base64, mediaType: contentType }
+    return { data: Buffer.from(buffer).toString('base64'), mediaType: contentType }
   }
 
   if (input.type === 'file') {
     const { readFile } = await import('node:fs/promises')
-    const buffer = await readFile(input.path)
+    const path = await resolveAllowedImagePath(input.path, options.fileRoots ?? [storagePath()])
+    const buffer = await readFile(path)
     const base64 = buffer.toString('base64')
-    const ext = input.path.split('.').pop()?.toLowerCase() || 'png'
+    const ext = path.split('.').pop()?.toLowerCase() || 'png'
     const mediaTypes: Record<string, string> = {
       png: 'image/png',
       jpg: 'image/jpeg',
@@ -307,6 +333,22 @@ async function resolveImageToBase64(input: ImageInput): Promise<{ data: string; 
   throw new Error('Invalid image input type')
 }
 
+/**
+ * Resolve an image file path and require its real location to sit inside one of `roots`.
+ * Exported for tests.
+ */
+export async function resolveAllowedImagePath(path: string, roots: string[]): Promise<string> {
+  const real = await realpath(resolve(path))
+  for (const root of roots) {
+    const realRoot = await realpath(resolve(root)).catch(() => null)
+    if (!realRoot) continue
+    const rel = relative(realRoot, real)
+    if (rel !== '' && !rel.startsWith('..') && !isAbsolute(rel))
+      return real
+  }
+  throw new Error(`Refusing image file outside the allowed directories: ${path}`)
+}
+
 async function analyzeImageAnthropic(
   imageInput: ImageInput,
   prompt: string,
@@ -317,7 +359,7 @@ async function analyzeImageAnthropic(
     throw new Error('ANTHROPIC_API_KEY environment variable is required for Claude vision.')
   }
 
-  const { data, mediaType } = await resolveImageToBase64(imageInput)
+  const { data, mediaType } = await resolveImageToBase64(imageInput, options)
   const model = options.model || DEFAULT_ANTHROPIC_MODEL
   const maxTokens = options.maxTokens || 4096
 
@@ -386,7 +428,7 @@ async function analyzeImageOpenAI(
     imageContent = { type: 'image_url', image_url: { url: imageInput.url, detail } }
   }
   else {
-    const { data, mediaType } = await resolveImageToBase64(imageInput)
+    const { data, mediaType } = await resolveImageToBase64(imageInput, options)
     imageContent = {
       type: 'image_url',
       image_url: { url: `data:${mediaType};base64,${data}`, detail },
@@ -441,7 +483,7 @@ async function analyzeImageOllama(
   const host = process.env.OLLAMA_HOST || 'http://localhost:11434'
   const model = options.model || 'llava'
 
-  const { data } = await resolveImageToBase64(imageInput)
+  const { data } = await resolveImageToBase64(imageInput, options)
 
   const response = await fetch(`${host}/api/generate`, {
     method: 'POST',
@@ -496,7 +538,7 @@ export async function analyzeImages(
     const contentBlocks: any[] = []
 
     for (const img of images) {
-      const { data, mediaType } = await resolveImageToBase64(img)
+      const { data, mediaType } = await resolveImageToBase64(img, options)
       contentBlocks.push({
         type: 'image',
         source: { type: 'base64', media_type: mediaType, data },
@@ -551,7 +593,7 @@ export async function analyzeImages(
         contentBlocks.push({ type: 'image_url', image_url: { url: img.url, detail } })
       }
       else {
-        const { data, mediaType } = await resolveImageToBase64(img)
+        const { data, mediaType } = await resolveImageToBase64(img, options)
         contentBlocks.push({
           type: 'image_url',
           image_url: { url: `data:${mediaType};base64,${data}`, detail },

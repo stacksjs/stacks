@@ -67,7 +67,9 @@
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
+    "@stacksjs/security": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/ts-cloud": "^0.16.144"
   },
