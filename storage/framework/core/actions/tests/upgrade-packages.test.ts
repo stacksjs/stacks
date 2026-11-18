@@ -207,27 +207,64 @@ describe('frontend versions paired with a published framework', () => {
     expect(applyRuntimePins(pkg, pins)).toEqual([])
   })
 
-  it('reads the requested STX manifest and preserves the paired compiler and component versions', async () => {
+  /**
+   * A registry with the given releases of each package, `latest` at the newest
+   * unless named, and STX manifests whose runtime pins name their own release.
+   */
+  function registry(releases: Record<string, string[]>, options: { latest?: Record<string, string>, manifest?: (version: string) => unknown } = {}) {
     const requested: string[] = []
-    const pins = await resolvePublishedRuntimePins({ '@stacksjs/stx': '0.2.682', '@stacksjs/components': '0.2.682', 'bun-plugin-stx': '0.2.682' }, (async (url) => {
-      requested.push(String(url))
-      return Response.json({ name: '@stacksjs/stx', version: '0.2.682', dependencies: {
-        '@stacksjs/desktop': '0.2.682', '@stacksjs/sanitizer': '0.2.682', 'stx-router': '0.2.682', 'bun-plugin-stx': '0.2.682', bunfig: '^0.15.21',
-      } })
-    }) as typeof fetch)
-    expect(requested).toEqual(['https://registry.npmjs.org/@stacksjs%2fstx/0.2.682'])
+    const read = (async (url: string | URL | Request) => {
+      const path = decodeURIComponent(String(url).replace('https://registry.npmjs.org/', ''))
+      requested.push(path)
+      const exact = /^(@stacksjs\/stx)\/(\d.+)$/.exec(path)
+      if (exact) {
+        return Response.json(options.manifest?.(exact[2]!) ?? { name: '@stacksjs/stx', version: exact[2], dependencies: {
+          '@stacksjs/desktop': exact[2], '@stacksjs/sanitizer': exact[2], 'stx-router': exact[2], 'bun-plugin-stx': exact[2], 'bunfig': '^0.15.21',
+        } })
+      }
+      const versions = releases[path]
+      if (!versions)
+        return new Response('', { status: 404 })
+      return Response.json({ 'dist-tags': { latest: options.latest?.[path] ?? versions.at(-1) }, 'versions': Object.fromEntries(versions.map(version => [version, {}])) })
+    }) as typeof fetch
+    return { read, requested }
+  }
+
+  it('reads the requested STX manifest and preserves the paired compiler and component versions', async () => {
+    const { read, requested } = registry({ '@stacksjs/stx': ['0.2.682'], '@stacksjs/components': ['0.2.682'], 'bun-plugin-stx': ['0.2.682'] })
+    const pins = await resolvePublishedRuntimePins({ '@stacksjs/stx': '0.2.682', '@stacksjs/components': '0.2.682', 'bun-plugin-stx': '0.2.682' }, read)
+    expect(requested).toContain('@stacksjs/stx/0.2.682')
     expect(pins).toEqual({ '@stacksjs/stx': '0.2.682', '@stacksjs/components': '0.2.682', 'bun-plugin-stx': '0.2.682', '@stacksjs/desktop': '0.2.682', '@stacksjs/sanitizer': '0.2.682', 'stx-router': '0.2.682' })
+  })
+
+  it('pins the newest release the whole runtime cohort published, which is what the framework\'s ranges resolve to', async () => {
+    // The framework was tested on 0.2.908 and asks for `^0.2.908`; 0.2.912 is
+    // out for all three, 0.2.913 only for the runtime, 0.3.0 is another line.
+    const { read } = registry({
+      '@stacksjs/stx': ['0.2.908', '0.2.910', '0.2.912', '0.2.913', '0.3.0'],
+      '@stacksjs/components': ['0.2.908', '0.2.910', '0.2.912'],
+      'bun-plugin-stx': ['0.2.908', '0.2.912'],
+    }, { latest: { '@stacksjs/stx': '0.2.913' } })
+    const pins = await resolvePublishedRuntimePins({ '@stacksjs/stx': '0.2.908', '@stacksjs/components': '0.2.908', 'bun-plugin-stx': '0.2.908' }, read)
+
+    expect(pins).toMatchObject({ '@stacksjs/stx': '0.2.912', '@stacksjs/components': '0.2.912', 'bun-plugin-stx': '0.2.912', '@stacksjs/desktop': '0.2.912' })
+  })
+
+  it('never passes what a package calls its latest release', async () => {
+    const { read } = registry({ '@stacksjs/stx': ['0.2.908', '0.2.912'], 'bun-plugin-stx': ['0.2.908', '0.2.912'] }, { latest: { 'bun-plugin-stx': '0.2.908' } })
+    expect(await resolvePublishedRuntimePins({ '@stacksjs/stx': '0.2.908', 'bun-plugin-stx': '0.2.908' }, read)).toMatchObject({ '@stacksjs/stx': '0.2.908' })
   })
 
   it('refuses missing, mismatched or conflicting runtime metadata', async () => {
     const dependencies = { '@stacksjs/stx': '0.2.682', 'bun-plugin-stx': '0.2.682' }
-    for (const response of [
-      new Response('', { status: 404 }),
-      Response.json({ name: '@stacksjs/stx', version: '0.2.683' }),
-      Response.json({ name: 'another-package', version: '0.2.682' }),
-      Response.json({ name: '@stacksjs/stx', version: '0.2.682', dependencies: { 'bun-plugin-stx': '0.2.683' } }),
+    const releases = { '@stacksjs/stx': ['0.2.682'], 'bun-plugin-stx': ['0.2.682'] }
+    for (const { read } of [
+      registry({}),
+      registry(releases, { manifest: () => ({ name: '@stacksjs/stx', version: '0.2.683' }) }),
+      registry(releases, { manifest: () => ({ name: 'another-package', version: '0.2.682' }) }),
+      registry(releases, { manifest: () => ({ name: '@stacksjs/stx', version: '0.2.682', dependencies: { 'bun-plugin-stx': '0.2.683' } }) }),
     ]) {
-      await expect(resolvePublishedRuntimePins(dependencies, (async () => response) as typeof fetch)).rejects.toThrow()
+      await expect(resolvePublishedRuntimePins(dependencies, read)).rejects.toThrow()
     }
     expect(dependencies).toEqual({ '@stacksjs/stx': '0.2.682', 'bun-plugin-stx': '0.2.682' })
   })

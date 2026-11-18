@@ -296,12 +296,50 @@ export function publishedRuntimePins(dependencies: Record<string, string>): Reco
   return pins
 }
 
-/** Read the exact STX release's nested runtime pins before changing an app. */
+/**
+ * The newest release at or past `floor`, within its minor line, that every one
+ * of `names` has published.
+ *
+ * The framework's packages ask for the STX release they were tested against
+ * "or newer", so an install resolves each of them to the newest patch. An app
+ * that pins the tested release itself then holds a second, older copy at the
+ * top while fifteen framework packages nest the newer one: two runtimes that do
+ * not share what they register. Pinned to what the framework's ranges resolve
+ * to, the app and the framework install one copy.
+ */
+export async function newestRuntimeRelease(floor: string, names: string[], read: typeof fetch = fetch): Promise<string> {
+  const published = await Promise.all(names.map(async (name) => {
+    const response = await read(`https://registry.npmjs.org/${name.replace('/', '%2f')}`, { headers: { accept: 'application/vnd.npm.install-v1+json' } })
+    if (!response.ok)
+      throw new Error(`Could not list the published releases of ${name}.`)
+    const packument = await response.json() as { 'versions'?: Record<string, unknown>, 'dist-tags'?: Record<string, string> }
+    return { versions: new Set(Object.keys(packument.versions ?? {})), latest: packument['dist-tags']?.latest }
+  }))
+
+  const prerelease = floor.includes('-')
+  const candidates = [...published[0]?.versions ?? []]
+    .filter(version => Bun.semver.satisfies(version, `^${floor}`) && (prerelease || !version.includes('-')))
+    // Never past what a package calls its latest: a release still being promoted is not one yet.
+    .filter(version => published.every(({ latest }) => !latest || Bun.semver.order(version, latest) <= 0))
+    .sort((a, b) => Bun.semver.order(b, a))
+
+  return candidates.find(version => published.every(({ versions }) => versions.has(version))) ?? floor
+}
+
+/** Read the STX release's nested runtime pins before changing an app. */
 export async function resolvePublishedRuntimePins(dependencies: Record<string, string>, read: typeof fetch = fetch): Promise<Record<string, string>> {
   const pins = publishedRuntimePins(dependencies)
-  const version = pins['@stacksjs/stx']
-  if (!version)
+  const floor = pins['@stacksjs/stx']
+  if (!floor)
     return pins
+
+  // The cohort released with the runtime moves with it to the newest release
+  // they all published (see `newestRuntimeRelease`).
+  const cohort = Object.keys(pins).filter(name => pins[name] === floor)
+  const version = await newestRuntimeRelease(floor, cohort, read)
+  for (const name of cohort)
+    pins[name] = version
+
   const response = await read(`https://registry.npmjs.org/@stacksjs%2fstx/${version}`)
   if (!response.ok)
     throw new Error(`Could not resolve the runtime dependencies shipped by @stacksjs/stx@${version}.`)
