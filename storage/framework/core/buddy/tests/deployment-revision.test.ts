@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { assertCurrentDeploymentRevision, assertNotBehindLiveRelease, automatedDeploymentRevision, liveReleasesCommand } from '../src/deployment-revision'
+import { assertCurrentDeploymentRevision, assertNotBehindLiveRelease, automatedDeploymentRevision, liveReleasesCommand, SupersededDeploymentError } from '../src/deployment-revision'
 
 const directories: string[] = []
 afterEach(() => {
@@ -171,7 +171,8 @@ describe('automated production revision', () => {
     expect(() => assertNotBehindLiveRelease(check, [older.slice(0, 7)])).not.toThrow()
     expect(() => assertNotBehindLiveRelease(check, [ci.slice(0, 7)])).not.toThrow()
     expect(() => assertNotBehindLiveRelease(check, [side.slice(0, 7)])).toThrow('newer than this CI commit')
-    expect(() => assertNotBehindLiveRelease(check, [merge.slice(0, 7)])).toThrow('newer than this CI commit')
+    // Superseded, not failed: the run that refuses to roll back is not red.
+    expect(() => assertNotBehindLiveRelease(check, [merge.slice(0, 7)])).toThrow(SupersededDeploymentError)
     expect(git(['rev-parse', 'HEAD'], checkout)).toBe(ci)
   })
 

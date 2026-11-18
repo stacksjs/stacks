@@ -6,6 +6,22 @@ import { promisify } from 'node:util'
 
 const execute = promisify(execFile)
 
+/**
+ * The live release is newer than the commit this CI run would deploy.
+ *
+ * Not a failure: that commit's own CI deploys it, and refusing to roll
+ * production back is the deploy doing its job. It used to throw a plain error,
+ * so the CI run of an older commit (a release commit pushed moments before
+ * someone else's) went red, and the release gate that requires a green run
+ * refused to publish a release whose tests had all passed.
+ */
+export class SupersededDeploymentError extends Error {
+  constructor(readonly live: string) {
+    super(`Production already runs ${live}, which is newer than this CI commit; nothing was shipped. That commit's own run deploys it.`)
+    this.name = 'SupersededDeploymentError'
+  }
+}
+
 export interface AutomatedDeploymentRevision {
   ref: string
   sha: string
@@ -192,7 +208,7 @@ export function assertNotBehindLiveRelease(check: DeploymentRevisionCheck | unde
     if (!/^[a-f0-9]{7,64}$/.test(id))
       continue
     if (check.newer.some(sha => sha.startsWith(id)))
-      throw new Error(`Production already runs ${id}, which is newer than this CI commit; production deployment stopped. Deploy the current branch head.`)
+      throw new SupersededDeploymentError(id)
   }
 }
 

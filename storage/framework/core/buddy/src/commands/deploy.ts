@@ -22,7 +22,7 @@ import { getErrorMessage } from '@stacksjs/utils'
 import { withDeployNotification } from '../deploy-notify'
 import { deploymentIdentityConfig, withDeploymentIdentity } from '../deploy-identity'
 import type { DeploymentRevisionCheck } from '../deployment-revision'
-import { assertCurrentDeploymentRevision, assertNotBehindLiveRelease, automatedDeploymentRevision, liveReleasesCommand } from '../deployment-revision'
+import { assertCurrentDeploymentRevision, assertNotBehindLiveRelease, automatedDeploymentRevision, liveReleasesCommand, SupersededDeploymentError } from '../deployment-revision'
 import { dnsCredentialFix, envFileForEnvironment, resolveZoneNameservers } from '../dns-credentials'
 import { assertComputeResidency } from '@stacksjs/ts-cloud'
 import { resultFailed } from '../result'
@@ -2628,7 +2628,17 @@ async function assertNotBehindLiveBox(slug: string | undefined, where: string | 
     throw new Error('Cannot read the release production serves; production deployment stopped.')
   }
   const live = output.split('\n').map(line => line.trim()).filter(Boolean)
-  assertNotBehindLiveRelease(automatedRevisionCheck, live)
+  try {
+    assertNotBehindLiveRelease(automatedRevisionCheck, live)
+  }
+  catch (error) {
+    // Nothing has been shipped yet and no GitHub deployment opened: a newer
+    // live release means this run has nothing to do, which is not a failure.
+    if (!(error instanceof SupersededDeploymentError))
+      throw error
+    log.info(error.message)
+    process.exit(0)
+  }
   log.info(`Production serves ${live.join(', ') || 'no release yet'}; ${automatedRevisionCheck.revision.sha.slice(0, 7)} is newer, deploying it (${automatedRevisionCheck.newer.length} newer commit${automatedRevisionCheck.newer.length === 1 ? '' : 's'} still in CI).`)
 }
 
