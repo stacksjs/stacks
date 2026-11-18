@@ -8,13 +8,22 @@ import { MODEL_DEFINITION, toAttrs } from './define-model'
 import type { StacksModelDefinition } from './define-model'
 
 /** Explicit model registry: the compiled app never discovers source files at runtime. */
+/**
+ * What a native app hands this module of each of its models.
+ *
+ * A model call returns its value where it is written, and a write is a
+ * promise only on a model that declares something to wait for; every call
+ * below is awaited, which takes either. Typed `Promise<unknown>`, this
+ * rejected every model since the in-place API, and each native app's
+ * `createNativeModelApi({ models })` stopped compiling.
+ */
 export interface NativeModel {
   [MODEL_DEFINITION]: StacksModelDefinition
-  find: (id: number) => Promise<unknown>
-  create: (data: Record<string, unknown>) => Promise<unknown>
-  update: (id: number, data: Record<string, unknown>) => Promise<unknown>
-  destroy: (id: number) => Promise<unknown>
-  limit: (count: number) => { offset: (offset: number) => { get: () => Promise<unknown> } }
+  find: (id: number) => unknown
+  create: (data: Record<string, unknown>) => unknown
+  update: (id: number, data: Record<string, unknown>) => unknown
+  destroy: (id: number) => unknown
+  limit: (count: number) => { offset: (offset: number) => { get: () => unknown } }
 }
 
 /** Compare statements by shape, so whitespace does not decide whether one is skipped. */
