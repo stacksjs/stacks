@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { applyBumps, applyCraftFloor, applyRuntimePins, craftFloor, declaredCraftPackages, keepsNewerRelease, lockfileOnlyAddCommands, lockfileVersion, resolveCraftPins, baseVersion, frameworkPackageUpdateCommand, hasStacksDependency, installedStacksVersion, lockstepPackages, needsFrameworkInstall, publishedRuntimePins, resolvePublishedRuntimePins, standalonePackageUpdateCommand } from '../src/upgrade/packages'
+import { applyBumps, applyCraftFloor, applyRuntimePins, craftFloor, declaredCraftPackages, keepsNewerRelease, lockfileOnlyAddCommands, lockfileVersion, resolveCraftPins, baseVersion, frameworkPackageUpdateCommand, hasStacksDependency, installedStacksVersion, lockstepPackages, needsFrameworkInstall, publishedRuntimePins, resolvePublishedRuntimePins, splitRuntimeFromLock, standalonePackageUpdateCommand } from '../src/upgrade/packages'
 
 const temporaryProjects: string[] = []
 
@@ -495,5 +495,32 @@ describe('raised pins keep the app\'s bun.lock format', () => {
       expect(lockfileVersion(dir)).toBe(1)
     }
     finally { rmSync(dir, { recursive: true, force: true }) }
+  })
+})
+
+describe('one STX runtime after an upgrade', () => {
+  const entry = (name: string, version: string): unknown[] => [`${name}@${version}`, '', {}, 'sha512-x']
+
+  it('drops every entry of a runtime package the lock resolves twice, and nothing else', () => {
+    // The shape uplink was left in: a top-level copy another dependent's
+    // range still allowed, and the framework's newer one nested beneath it.
+    const lock = { packages: {
+      '@stacksjs/stx': entry('@stacksjs/stx', '0.2.798'),
+      '@stacksjs/actions/@stacksjs/stx': entry('@stacksjs/stx', '0.2.913'),
+      '@stacksjs/buddy/@stacksjs/stx': entry('@stacksjs/stx', '0.2.913'),
+      'bun-plugin-stx': entry('bun-plugin-stx', '0.2.913'),
+      '@stacksjs/actions': entry('@stacksjs/actions', '0.75.628'),
+    } }
+    expect(splitRuntimeFromLock(lock)).toEqual(['@stacksjs/stx'])
+    expect(Object.keys(lock.packages)).toEqual(['bun-plugin-stx', '@stacksjs/actions'])
+  })
+
+  it('leaves a lock with one version of each alone', () => {
+    const lock = { packages: {
+      '@stacksjs/stx': entry('@stacksjs/stx', '0.2.913'),
+      '@stacksjs/actions/@stacksjs/stx': entry('@stacksjs/stx', '0.2.913'),
+    } }
+    expect(splitRuntimeFromLock(lock)).toEqual([])
+    expect(Object.keys(lock.packages)).toHaveLength(2)
   })
 })

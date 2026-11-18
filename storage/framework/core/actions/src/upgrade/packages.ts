@@ -258,6 +258,63 @@ async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version:
 }
 
 const RUNTIME_PACKAGES = ['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx', '@stacksjs/desktop', '@stacksjs/sanitizer', 'stx-router'] as const
+
+/**
+ * The runtime packages a bun.lock resolves to more than one version, with the
+ * lock's entries for them removed.
+ *
+ * An upgrade moves the framework's packages, and they ask for the STX release
+ * they were tested against "or newer". A package the app does not declare
+ * stays wherever the old lock put it whenever some other dependent's range
+ * still allows that: bunpress's `^0.2.550` kept a top-level 0.2.798 while
+ * fifteen framework packages nested 0.2.913 beneath it, so the app ran two
+ * runtimes, which do not share what they register. Bun has no command that
+ * re-resolves a dependency the app does not declare; without its entries,
+ * the next install resolves one version that satisfies every dependent.
+ */
+export function splitRuntimeFromLock(lock: { packages?: Record<string, unknown> }): string[] {
+  const packages = lock.packages ?? {}
+  const entriesOf = (name: string): string[] => Object.keys(packages).filter(key => key === name || key.endsWith(`/${name}`))
+  const versionOf = (key: string): string | undefined => {
+    const entry = packages[key]
+    return Array.isArray(entry) && typeof entry[0] === 'string' ? entry[0].slice(entry[0].lastIndexOf('@') + 1) : undefined
+  }
+
+  const split = RUNTIME_PACKAGES.filter(name => new Set(entriesOf(name).map(versionOf)).size > 1)
+  for (const name of split) {
+    for (const key of entriesOf(name))
+      delete packages[key]
+  }
+  return split
+}
+
+/**
+ * Leave the project on one STX runtime (see `splitRuntimeFromLock`): when the
+ * lock holds two versions of a runtime package, drop them and install again.
+ * Returns the packages that were rejoined.
+ */
+async function installOneRuntime(projectRoot: string): Promise<string[]> {
+  const lockPath = join(projectRoot, 'bun.lock')
+  if (!existsSync(lockPath))
+    return []
+  const lock = Bun.JSONC.parse(readFileSync(lockPath, 'utf8')) as { packages?: Record<string, unknown> }
+  const split = splitRuntimeFromLock(lock)
+  if (split.length === 0)
+    return []
+
+  writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`)
+  const installed = await runCommand('bun install', { cwd: projectRoot })
+  if (installed.isErr)
+    throw new Error(`Re-resolving ${split.join(', ')} to one version failed: run \`bun install\` and re-run buddy upgrade.`)
+
+  // What a re-resolution cannot join is a dependency pinning a release the
+  // framework does not accept; that belongs to the dependency, not this app.
+  const after = Bun.JSONC.parse(readFileSync(lockPath, 'utf8')) as { packages?: Record<string, unknown> }
+  const still = splitRuntimeFromLock(structuredClone(after))
+  if (still.length > 0)
+    console.warn(`  ${still.join(', ')} still resolve to more than one version: a dependency pins an STX release outside the framework's range. \`bun why ${still[0]}\` names it.`)
+  return split.filter(name => !still.includes(name))
+}
 /** The three every framework release declares: the runtime, its components, its compiler. */
 const RUNTIME_COHORT = ['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx'] as const
 
@@ -831,6 +888,9 @@ catch (error) {
   const tsconfigChanges = [...migratePackageProjectTsconfig(projectRoot), ...migrateAppGatesUser(projectRoot)]
 
   await refreshPantryWorkspaceMetadata(projectRoot, Boolean(options.changedBeforeRestart || changes.length || manifestChanges.length || projectManifestChanges.length))
+  const rejoined = await installOneRuntime(projectRoot)
+  if (rejoined.length > 0)
+    console.log(`  One STX runtime: ${rejoined.join(', ')} had resolved to more than one version and now resolve to one.\n`)
   if (needsFrameworkInstall(projectRoot, target, installedPins))
     throw new Error(`The dependency refresh did not preserve stacks@${target} and its published cohort. Re-run buddy upgrade before committing the lockfiles.`)
 
