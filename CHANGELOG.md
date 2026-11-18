@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.624...v0.75.625)
+
+## 🐛 Bug Fixes
+
+- adopt safe cloud resource reconciliation ([3039b23](https://github.com/stacksjs/stacks/commit/3039b23)) _(by Chris Breuer)_
+- **upgrade**: accept the newer patch a declared caret range installs ([e4a3375](https://github.com/stacksjs/stacks/commit/e4a3375)) _(by Chris Breuer)_
+- **buddy**: make the global buddy hold up across every project on a machine ([076b96a](https://github.com/stacksjs/stacks/commit/076b96a)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.623...v0.75.624)
 
 ## ✨ Features
