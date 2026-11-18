@@ -16,6 +16,10 @@ const documents: Record<string, unknown> = {
   'https://registry.npmjs.org/craft-native/0.0.443': { name: 'craft-native', version: '0.0.443' },
   'https://registry.npmjs.org/@craft-native%2fios/0.0.443': { name: '@craft-native/ios', version: '0.0.443' },
   [`https://registry.npmjs.org/@stacksjs%2fstx/${stx}`]: { name: '@stacksjs/stx', version: stx, dependencies: {} },
+  // The runtime cohort's release lists: the upgrade pins the newest release
+  // all of it published, which here is the one the release names.
+  'https://registry.npmjs.org/@stacksjs%2fstx': { 'dist-tags': { latest: stx }, 'versions': { [stx]: {} } },
+  'https://registry.npmjs.org/@stacksjs%2fcomponents': { 'dist-tags': { latest: stx }, 'versions': { [stx]: {} } },
 }
 globalThis.fetch = (async (input: string | URL | Request) => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
