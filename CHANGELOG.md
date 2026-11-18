@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.632...v0.75.633)
+
+## 🐛 Bug Fixes
+
+- **router**: defer capture config loading in portable Actions ([312cc03](https://github.com/stacksjs/stacks/commit/312cc03)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- refresh native router test evidence count ([2172f3e](https://github.com/stacksjs/stacks/commit/2172f3e)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.631...v0.75.632)
 
 ## 🐛 Bug Fixes
