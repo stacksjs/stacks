@@ -13,6 +13,7 @@ import { installedDefaultsVersion } from '@stacksjs/path'
 import { runPostSyncAiRefresh, runPostSyncDatabaseTypesRefresh } from './framework-hooks'
 import {
   measureDefaultsDrift,
+  migrateAppGatesUser,
   migratePackageProjectManifest,
   migratePackageProjectTsconfig,
   summarizeStructureChanges,
@@ -827,7 +828,7 @@ catch (error) {
   const structureChanges = existsSync(join(defaultsPackageRoot, 'package.json'))
     ? syncPackageProjectFiles(projectRoot, defaultsPackageRoot)
     : []
-  const tsconfigChanges = migratePackageProjectTsconfig(projectRoot)
+  const tsconfigChanges = [...migratePackageProjectTsconfig(projectRoot), ...migrateAppGatesUser(projectRoot)]
 
   await refreshPantryWorkspaceMetadata(projectRoot, Boolean(options.changedBeforeRestart || changes.length || manifestChanges.length || projectManifestChanges.length))
   if (needsFrameworkInstall(projectRoot, target, installedPins))

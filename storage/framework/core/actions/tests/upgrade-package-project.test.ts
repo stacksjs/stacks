@@ -7,6 +7,7 @@ import {
   alignBunPins,
   detectProjectAiProviders,
   measureDefaultsDrift,
+  migrateAppGatesUser,
   migratePackageProjectManifest,
   migratePackageProjectTsconfig,
   raiseBunPins,
@@ -496,5 +497,52 @@ describe('vendoring the defaults alone', () => {
     expect(changes.every(change => change.path.startsWith('storage/framework/defaults/'))).toBe(true)
     expect(readFileSync(join(root, 'pantry.lock'), 'utf8')).toBe('the app\'s lock')
     expect(existsSync(join(root, 'buddy'))).toBe(false)
+  })
+})
+
+describe('app/Gates.ts moves to GateUser', () => {
+  // The gates as every app was scaffolded before stacksjs/stacks#3314.
+  const scaffolded = [
+    `import type { UserModel } from '@stacksjs/orm'`,
+    `import { defineGates } from '@stacksjs/auth'`,
+    ``,
+    `export default defineGates({`,
+    `  gates: {`,
+    `    'access-admin': (user: UserModel | null) => {`,
+    `      return user?.email?.endsWith('@stacksjs.com') ?? false`,
+    `    },`,
+    `    'edit-post': (user: UserModel, post: { userId: number }) => user.id === post.userId,`,
+    `  },`,
+    `})`,
+    ``,
+  ].join('\n')
+
+  it('rewrites the gates as scaffolded', () => {
+    write('app/Gates.ts', scaffolded)
+    expect(migrateAppGatesUser(root)).toEqual([{ path: 'app/Gates.ts', action: 'update' }])
+
+    const migrated = readFileSync(join(root, 'app/Gates.ts'), 'utf8')
+    expect(migrated).toStartWith(`import type { GateUser } from '@stacksjs/auth'\nimport { defineGates } from '@stacksjs/auth'\n`)
+    expect(migrated).toContain(`'access-admin': (user: GateUser | null) => {`)
+    expect(migrated).toContain(`'edit-post': (user: GateUser, post: { userId: number })`)
+    expect(migrated).not.toContain('UserModel')
+    // Done once.
+    expect(migrateAppGatesUser(root)).toEqual([])
+  })
+
+  it('leaves a file that uses UserModel for anything else to its author', () => {
+    const own = scaffolded.replace(`return user?.email`, `return (user as UserModel | null)?.email`)
+    write('app/Gates.ts', own)
+    expect(migrateAppGatesUser(root)).toEqual([])
+    expect(readFileSync(join(root, 'app/Gates.ts'), 'utf8')).toBe(own)
+  })
+
+  it('writes nothing in a dry run, and nothing where there is nothing to move', () => {
+    write('app/Gates.ts', scaffolded)
+    expect(migrateAppGatesUser(root, { dryRun: true })).toHaveLength(1)
+    expect(readFileSync(join(root, 'app/Gates.ts'), 'utf8')).toBe(scaffolded)
+
+    write('app/Gates.ts', scaffolded.replace(`import type { UserModel } from '@stacksjs/orm'`, `import type { GateUser } from '@stacksjs/auth'`).replaceAll('UserModel', 'GateUser'))
+    expect(migrateAppGatesUser(root)).toEqual([])
   })
 })

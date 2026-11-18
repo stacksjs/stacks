@@ -547,6 +547,49 @@ export function migratePackageProjectTsconfig(
   return [{ path: 'tsconfig.json', action: 'update' }]
 }
 
+/**
+ * Move an app's gates from the ORM's `UserModel` to `GateUser`.
+ *
+ * Gates take `GateUser` since stacksjs/stacks#3314: the user arrives as the
+ * User row from the router's request or as `request.user()`'s
+ * `AuthenticatedUser`, and the ORM's hand-written `UserModel` is neither. The
+ * `app/Gates.ts` every app was created with annotated `(user: UserModel |
+ * null)`, so after the change that file stopped compiling in every app that
+ * kept it: a callback has to accept every user it can be handed.
+ *
+ * Only the file as scaffolded is rewritten: `UserModel` imported from
+ * `@stacksjs/orm` and used nowhere but as a gate's user. A file that uses it
+ * for anything else is the app's own and is left for its author.
+ */
+export function migrateAppGatesUser(
+  projectRoot: string,
+  options: PackageProjectOptions = {},
+): ProjectStructureChange[] {
+  const path = join(projectRoot, 'app/Gates.ts')
+  if (!existsSync(path))
+    return []
+
+  const raw = readFileSync(path, 'utf8')
+  const ormImport = /^import type \{ UserModel \} from '@stacksjs\/orm'$/m
+  if (!ormImport.test(raw))
+    return []
+
+  // A gate's first parameter: `(user: UserModel | null)`, `(user: UserModel, post: Post)`.
+  const annotations = /(\(\s*\w+\s*:\s*)UserModel(\s*(?:\|\s*null\s*)?[,)])/g
+  const migrated = raw.replace(annotations, '$1GateUser$2')
+  if (/\bUserModel\b/.test(migrated.replace(ormImport, '')))
+    return []
+
+  const next = migrated.replace(ormImport, `import type { GateUser } from '@stacksjs/auth'`)
+  if (next === raw)
+    return []
+
+  if (!options.dryRun)
+    writeFileSync(path, next)
+
+  return [{ path: 'app/Gates.ts', action: 'update' }]
+}
+
 export type DetectedAiProvider = 'claude' | 'codex' | 'cursor' | 'copilot' | 'gemini'
 
 /**
