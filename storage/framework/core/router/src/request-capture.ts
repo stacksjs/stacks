@@ -1,5 +1,12 @@
-import { config } from '@stacksjs/config/runtime'
 import process from 'node:process'
+
+// Importing request helpers must also work in a copied native Action, without
+// reading the application's config files. Only the server's capture pipeline
+// needs this setting; resolve it when that pipeline actually runs.
+function captureSetting() {
+  const { config } = require('@stacksjs/config/runtime') as typeof import('@stacksjs/config/runtime')
+  return config.server?.captureRequests
+}
 
 export interface CapturedRequest {
   method: string
@@ -27,14 +34,14 @@ export function capturedRequestPath(url: string): string {
 }
 
 export function requestCaptureEnabled(): boolean {
-  const setting = config.server?.captureRequests
+  const setting = captureSetting()
   return process.env.STACKS_DASHBOARD_WORKER !== '1'
     && (setting === true || (typeof setting === 'object' && setting !== null && setting.enabled !== false))
 }
 
 function capturePathAllowed(path: string): boolean {
   if (/^\/(?:api\/dashboard(?:\/|$)|_stx(?:\/|$)|__deps(?:\/|$)|__hmr(?:\/|$)|favicon\.)/.test(path)) return false
-  const setting = config.server?.captureRequests
+  const setting = captureSetting()
   const exclusions = typeof setting === 'object' && setting !== null ? setting.exclude ?? [] : []
   return !exclusions.some(pattern => pattern.endsWith('/*')
     ? path === pattern.slice(0, -2) || path.startsWith(pattern.slice(0, -1))
