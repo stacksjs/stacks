@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.627...v0.75.628)
+
+## ✨ Features
+
+- **security**: drive the web firewall from security.waf ([4448892](https://github.com/stacksjs/stacks/commit/4448892)) _(by Chris Breuer)_ ([#3337](https://github.com/stacksjs/stacks/issues/3337))
+
+## 🐛 Bug Fixes
+
+- **upgrade**: move an app's gates to GateUser ([0722aa1](https://github.com/stacksjs/stacks/commit/0722aa1)) _(by Chris Breuer)_ ([#3314](https://github.com/stacksjs/stacks/issues/3314))
+- record the ai package's new dependencies and test counts ([694848c](https://github.com/stacksjs/stacks/commit/694848c)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.626...v0.75.627)
 
 ## 🐛 Bug Fixes
