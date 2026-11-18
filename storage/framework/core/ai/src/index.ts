@@ -40,6 +40,7 @@ export * from './personalization'
 // Model Context Protocol (MCP) client
 export * from './mcp'
 export * from './mcp-server'
+export * from './router-mcp'
 
 export * from './models'
 

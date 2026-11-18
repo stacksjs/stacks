@@ -532,6 +532,45 @@ JSON primitives only. String bounds count Unicode code points. Diagnostics and
 response-metadata callback failures cannot reject the protocol handler.
 
 
+## Generate MCP tools from router APIs
+
+For an existing API, use `mountRouterMCPServer` from
+`@stacksjs/ai/router-mcp` in `routes/api.ts`:
+
+```typescript
+import { mountRouterMCPServer } from '@stacksjs/ai/router-mcp'
+
+mountRouterMCPServer({
+  name: 'my-app', version: '1.0.0',
+  authenticate: request => authenticateIntegrationToken(request),
+})
+```
+
+The app supplies the integration-token check, returning a principal or 401/403
+Response. This mounts `/api/mcp`; the route file's prefix applies. It snapshots
+this router's registered `/api` CRUD endpoints on the first POST, including
+selected `useApi` models and user overrides. Calls re-enter the router with
+Authorization forwarded, preserving middleware, validation, authorization and
+ownership. Ambient cookies are not forwarded. The credential must satisfy the
+API's own guards too. Arguments are `{ path?, query?, body? }`; field validation
+remains in the API, and results are `{ status, body }`. Wildcard, optional and
+constrained path parameters are omitted. Restart to rediscover changed routes.
+
+Use `prefix` and `filter` to select routes, `configureTool(endpoint, tool)` to
+rename/describe/change schemas/set availability/replace execution (or return
+false), and `requestHeaders(context, endpoint)` for scoped API credentials.
+Retain generated `execute` to retain the router's checks. Custom `tools`,
+resources, prompts and every native server option can be supplied alongside
+generated tools. `path` changes the mount; `router` chooses an instance;
+`origin` supplies a canonical API URL context for in-process calls;
+`maxResponseBytes` bounds API replies (default 1 MiB).
+
+`createRouterMCPServer` returns an unmounted `{ handle }` for manual registration;
+the first request's endpoint path is excluded. Filter out additional aliases.
+See `docs/packages/ai.md` for the customization example and limitations.
+Tests: `core/ai/tests/router-mcp.test.ts` and
+`core/ai/tests/router-mcp-use-api.test.ts` (real generated CRUD over HTTP).
+
 ## Local CPU transcription
 
 `@stacksjs/ai/local-speech` exports `createLocalSpeechHandler` and
