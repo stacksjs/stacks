@@ -513,7 +513,7 @@
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/strings": "workspace:*",
-        "@stacksjs/ts-cloud": "0.16.144",
+        "@stacksjs/ts-cloud": "0.16.145",
         "@stacksjs/ts-xml": "^0.1.2",
       },
       "devDependencies": {
@@ -2275,8 +2275,6 @@
 
     "@node-saml/node-saml/@xmldom/xmldom": ["@xmldom/xmldom@0.8.15", "", {}, "sha512-/5NV/vDALVFDXgLmfsy9TRCBlKwO2LNBFzpzvb9iIj+jR+eSc6DLYYvVOdivT/jm7MtU6TebYuRmzEOI7w40UA=="],
 
-    "@stacksjs/cloud/@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.16.144", "", { "dependencies": { "@stacksjs/ts-xml": "^0.1.2", "@ts-cloud/aws-types": "0.16.144", "@ts-cloud/core": "0.16.144", "hash-wasm": "^4.12.0" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-rE1gUNJdEYv8IdVKPJugTxpwGIC5HKxs2yX2e9c4k5kxIgBVgFkVQOiX54d8YYvqKUoPk7iGGvoHZeXVkTSMRQ=="],
-
     "@stacksjs/stx/ts-broadcasting": ["ts-broadcasting@0.0.13", "", { "bin": { "broadcast": "./dist/bin/cli.js" } }, "sha512-F9amVHcLX3DzslD9HuFEZh8l0HnQR8e1yc1H/lo0TIsbw0EcZLg8UTbOGAipCywkdJtJrMvlm9ab/dhM9ugBmA=="],
 
     "body-parser/content-type": ["content-type@2.1.0", "", {}, "sha512-mj7UPXE0jaqaOsukNZRUEfEi2AcL7C/vwmwcHV0O97eO1E1pxBZuyjlZrx5seTaNBg1U6+o35wpa35Qfcc+7ag=="],
@@ -2296,9 +2294,5 @@
     "xml-encryption/xpath": ["xpath@0.0.32", "", {}, "sha512-rxMJhSIoiO8vXcWvSifKqhvV96GjiD5wYb8/QHdoRyQvraTpp4IEv944nhGausZZ3u7dhQXteZuZbaqfpB7uYw=="],
 
     "xml2js/xmlbuilder": ["xmlbuilder@11.0.1", "", {}, "sha512-fDlsI/kFEx7gLvbecc0/ohLG50fugQp8ryHzMTuW9vSa1GJ0XYWKnhsUx7oie3G98+r56aTQIUB4kht42R3JvA=="],
-
-    "@stacksjs/cloud/@stacksjs/ts-cloud/@ts-cloud/aws-types": ["@ts-cloud/aws-types@0.16.144", "", {}, "sha512-dRgooNcO7riw+Ys+UurjOfj58bdrFOsESruIkX06zr1YB5RAFyI+yIjrTTD2o9FhRgU1FwuK4cf3Y5zC2YYEEw=="],
-
-    "@stacksjs/cloud/@stacksjs/ts-cloud/@ts-cloud/core": ["@ts-cloud/core@0.16.144", "", { "dependencies": { "@ts-cloud/aws-types": "0.16.144" } }, "sha512-j5g6ZGFqK/GzzXAsAWPvhl2UJ+MMo9tYTWOuQ4Wjs+pacCDNMm23ypIDd/LH5ImT/FaN1D+SVBkkVuxDzvL2sg=="],
   }
 }
