@@ -46,6 +46,11 @@ dist*
 **/database/stacks.sqlite
 **/database/*.sqlite-wal
 **/database/*.sqlite-shm
+# The fast test reset (`truncateSqliteFast`) keeps a migrated copy beside the
+# database it restores from, with WAL sidecars of its own.
+**/database/*.sqlite.snapshot
+**/database/*.sqlite.snapshot-wal
+**/database/*.sqlite.snapshot-shm
 
 # OS files
 .DS_Store
