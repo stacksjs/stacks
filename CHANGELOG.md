@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.629...v0.75.630)
+
+## ✨ Features
+
+- **dashboard**: read and write the env files the app loads ([4fcc9bb](https://github.com/stacksjs/stacks/commit/4fcc9bb)) _(by glennmichael123)_ ([#3340](https://github.com/stacksjs/stacks/issues/3340))
+- **env**: export the env files autoLoadEnv reads ([d25b518](https://github.com/stacksjs/stacks/commit/d25b518)) _(by glennmichael123)_ ([#3340](https://github.com/stacksjs/stacks/issues/3340))
+
+## 🐛 Bug Fixes
+
+- **orm**: a native model's calls return values, not promises ([696c5cc](https://github.com/stacksjs/stacks/commit/696c5cc)) _(by Chris Breuer)_
+- **upgrade**: move a native app's exact framework pins ([488dd73](https://github.com/stacksjs/stacks/commit/488dd73)) _(by Chris Breuer)_
+- **dashboard**: mail settings save each value where the app reads it ([6695d2b](https://github.com/stacksjs/stacks/commit/6695d2b)) _(by glennmichael123)_ ([#3340](https://github.com/stacksjs/stacks/issues/3340))
+- **deps**: require bun-query-builder 0.6.4 ([40fe554](https://github.com/stacksjs/stacks/commit/40fe554)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- 779 default actions ([9433fa4](https://github.com/stacksjs/stacks/commit/9433fa4)) _(by Chris Breuer)_
+
+## ✅ Tests
+
+- **dashboard**: mail and general settings save to the project's files ([74352f9](https://github.com/stacksjs/stacks/commit/74352f9)) _(by glennmichael123)_ ([#3320](https://github.com/stacksjs/stacks/issues/3320))
+- **e2e**: run the dashboard in a scratch project that owns its files ([a96bef6](https://github.com/stacksjs/stacks/commit/a96bef6)) _(by glennmichael123)_ ([#3320](https://github.com/stacksjs/stacks/issues/3320))
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.628...v0.75.629)
 
 ## 🐛 Bug Fixes
