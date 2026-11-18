@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.628...v0.75.629)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: point config/buddy-bot.ts at @buddysh/buddy ([bf855ff](https://github.com/stacksjs/stacks/commit/bf855ff)) _(by Chris Breuer)_
+- **upgrade**: leave the app on one STX runtime ([27a3549](https://github.com/stacksjs/stacks/commit/27a3549)) _(by Chris Breuer)_
+- **orm**: validate and normalize instance update() and save() ([c954095](https://github.com/stacksjs/stacks/commit/c954095)) _(by Chris Breuer)_
+- **testing**: migrate test databases in buddy migrate's order, and fail loudly ([9752587](https://github.com/stacksjs/stacks/commit/9752587)) _(by Chris Breuer)_
+- **cloud**: adopt deployment start and gateway policy checks ([3cf38a0](https://github.com/stacksjs/stacks/commit/3cf38a0)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **ai**: refresh the native skill catalog for the new ORM test file ([28a97af](https://github.com/stacksjs/stacks/commit/28a97af)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **cloud**: synchronize pantry lock for published SDK ([14c7cb8](https://github.com/stacksjs/stacks/commit/14c7cb8)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.627...v0.75.628)
 
 ## ✨ Features
