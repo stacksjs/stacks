@@ -58,7 +58,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@dtsx/bun": "^0.11.54",
+    "@dtsx/bun": "^0.11.56",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*"
