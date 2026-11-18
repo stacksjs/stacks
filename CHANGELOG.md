@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.631...v0.75.632)
+
+## 🐛 Bug Fixes
+
+- **deploy**: a superseded CI deploy succeeds without shipping ([6438c42](https://github.com/stacksjs/stacks/commit/6438c42)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **models**: document precision and scale on number attributes (#3342) ([8000eab](https://github.com/stacksjs/stacks/commit/8000eab)) _(by Chris)_ ([#3342](https://github.com/stacksjs/stacks/issues/3342))
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.630...v0.75.631)
 
 ## ✨ Features
