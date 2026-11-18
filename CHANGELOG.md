@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.626...v0.75.627)
+
+## 🐛 Bug Fixes
+
+- unblock the release (unused deploy import, registry fixture for runtime releases) ([cb7ddfe](https://github.com/stacksjs/stacks/commit/cb7ddfe)) _(by Chris Breuer)_
+- **ai**: fetch image URLs as public URLs and confine image file paths ([457a00b](https://github.com/stacksjs/stacks/commit/457a00b)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **ai**: refresh the native skills catalog for the new ai test ([f27c86b](https://github.com/stacksjs/stacks/commit/f27c86b)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.625...v0.75.626)
 
 ## 🐛 Bug Fixes
