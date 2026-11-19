@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
+import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
 
@@ -30,6 +31,7 @@ export interface LighthouseOptions {
   onResult?: (result: LighthouseResult) => void | Promise<void>
 }
 export type LighthouseRunner = (args: string[], timeoutMs: number) => Promise<{ code: number, stderr: string }>
+export interface LighthouseCollectionFailure { url: string, device: LighthouseDevice, message: string }
 
 export function basicAuditOrigin(base: string, targets: string[]): string {
   const url = new URL(pageUrl(base))
@@ -77,7 +79,8 @@ export function lighthouseScores(report: any): Record<LighthouseCategory, number
 }
 
 const run: LighthouseRunner = async (args, timeoutMs) => {
-  const child = Bun.spawn(args, { stdout: 'ignore', stderr: 'pipe', timeout: timeoutMs, killSignal: 'SIGTERM' })
+  // The Lighthouse CLI is independent of the application's Bun preloads.
+  const child = Bun.spawn(args, { cwd: tmpdir(), stdout: 'ignore', stderr: 'pipe', timeout: timeoutMs, killSignal: 'SIGTERM' })
   const [code, stderr] = await Promise.all([child.exited, new Response(child.stderr).text()])
   return { code, stderr }
 }
@@ -96,7 +99,8 @@ export async function auditLighthouse(options: LighthouseOptions, runner: Lighth
   await mkdir(directory, { recursive: true })
   const devices: LighthouseDevice[] = device === 'both' ? ['mobile', 'desktop'] : [device]
   const results: LighthouseResult[] = []
-  const summary = (status: 'running' | 'complete' | 'failed', error?: string) => writeFile(join(directory, 'summary.json'), `${JSON.stringify({ checkedAt: new Date().toISOString(), lighthouse: '13.6.0', minimum, status, error, results }, null, 2)}\n`)
+  const failures: LighthouseCollectionFailure[] = []
+  const summary = (status: 'running' | 'complete' | 'failed', error?: string) => writeFile(join(directory, 'summary.json'), `${JSON.stringify({ checkedAt: new Date().toISOString(), lighthouse: '13.6.0', minimum, status, error, failures, results }, null, 2)}\n`)
   await summary('running')
   try {
     for (const url of urls) {
@@ -104,16 +108,26 @@ export async function auditLighthouse(options: LighthouseOptions, runner: Lighth
         const label = `${new URL(url).hostname}${new URL(url).pathname}`.replace(/[^a-z0-9-]+/gi, '-').slice(0, 100)
         const hash = createHash('sha256').update(url).digest('hex').slice(0, 12)
         const output = join(directory, `${label}-${hash}-${formFactor}`)
-        const outcome = await runner([process.execPath, 'x', '--bun', 'lighthouse@13.6.0', url, '--quiet',
+        const args = [process.execPath, 'x', '--bun', 'lighthouse@13.6.0', url, '--quiet',
           '--chrome-flags=--headless=new --no-sandbox --use-mock-keychain',
           `--only-categories=${lighthouseCategories.join(',')}`, '--output=json', '--output=html', `--output-path=${output}`,
           ...(formFactor === 'desktop' ? ['--preset=desktop'] : []),
           ...(options.chromePort ? [`--port=${options.chromePort}`] : []),
-        ], timeoutMs)
-        if (outcome.code !== 0) throw new Error(`Lighthouse failed on ${url} (${formFactor}): ${outcome.stderr.trim() || `exit ${outcome.code}`}`)
+        ]
         const json = `${output}.report.json`
-        const report = JSON.parse(await readFile(json, 'utf8'))
-        const scores = lighthouseScores(report)
+        let report
+        let scores
+        try {
+          const outcome = await runner(args, timeoutMs)
+          if (outcome.code !== 0) throw new Error(outcome.stderr.trim() || `exit ${outcome.code}`)
+          report = JSON.parse(await readFile(json, 'utf8'))
+          scores = lighthouseScores(report)
+        }
+        catch (error) {
+          failures.push({ url, device: formFactor, message: error instanceof Error ? error.message : String(error) })
+          await summary('running')
+          continue
+        }
         const metrics: Record<string, number> = {}
         for (const id of ['first-contentful-paint', 'largest-contentful-paint', 'speed-index', 'total-blocking-time', 'cumulative-layout-shift']) {
           const value = report.audits?.[id]?.numericValue
@@ -131,6 +145,10 @@ export async function auditLighthouse(options: LighthouseOptions, runner: Lighth
         await summary('running')
         await options.onResult?.(result)
       }
+    }
+    if (failures.length) {
+      const first = failures[0]!
+      throw new Error(`Lighthouse failed to collect ${failures.length} profile(s). First failure on ${first.url} (${first.device}): ${first.message}`)
     }
     await summary('complete')
   }

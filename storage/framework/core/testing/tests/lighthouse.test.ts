@@ -71,10 +71,16 @@ test('rejects invalid thresholds before invoking Lighthouse and surfaces failed 
   const directory = await mkdtemp(join(tmpdir(), 'stacks-lighthouse-'))
   try {
     await writeFile(join(directory, 'summary.json'), JSON.stringify({ status: 'complete', results: [{ passed: true }] }))
-    await expect(auditLighthouse({ urls: ['https://example.test'], outputDir: directory }, runner)).rejects.toThrow('Chrome unavailable')
+    await expect(auditLighthouse({ urls: ['https://example.test'], outputDir: directory }, async (args) => {
+      if (!args.includes('--preset=desktop')) return runner()
+      const output = args.find(arg => arg.startsWith('--output-path='))!.slice('--output-path='.length)
+      await writeFile(`${output}.report.json`, JSON.stringify({ categories }))
+      return { code: 0, stderr: '' }
+    })).rejects.toThrow('Chrome unavailable')
     const receipt = JSON.parse(await readFile(join(directory, 'summary.json'), 'utf8'))
     expect(receipt.status).toBe('failed')
-    expect(receipt.results).toEqual([])
+    expect(receipt.results.map((result: { device: string }) => result.device)).toEqual(['desktop'])
+    expect(receipt.failures).toEqual([{ url: 'https://example.test/', device: 'mobile', message: 'Chrome unavailable' }])
     expect(receipt.error).toContain('Chrome unavailable')
   }
   finally { await rm(directory, { recursive: true, force: true }) }
