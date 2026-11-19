@@ -10,6 +10,12 @@
 <script server>
 import { config } from '@stacksjs/config'
 
+interface InheritedContext {
+  pageTitle?: string
+  pageDescription?: string
+  canonicalPath?: string
+}
+
 const appName = config.app.name || 'My App'
 
 // APP_URL is often a bare host (`my-app.localhost`), which is not a valid
