@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import process from 'node:process'
 import type { PageAuditEvent } from '../src/browser'
-import { auditPage, Cdp, click, duplicateRequests, findChrome, formatPageAudit, launch, loadDuplicates, matchesUrlPattern, navigate, pageAuditClean, pausedRequestMatches, quietLiveReload, splitPageLoads, waitFor } from '../src/browser'
+import { auditPage, Cdp, click, duplicateRequests, findChrome, formatPageAudit, installBasicAuth, launch, loadDuplicates, matchesUrlPattern, navigate, pageAuditClean, pausedRequestMatches, quietLiveReload, splitPageLoads, waitFor } from '../src/browser'
 
 /** A socket double: records what the session sends and lets the test speak for Chrome. */
 class FakeSocket extends EventTarget {
@@ -263,6 +263,25 @@ const paused = (requestId: string, url: string, extra: Record<string, unknown> =
 const sentFor = (socket: FakeSocket, method: string) => socket.sent.filter(message => message.method === method)
 
 describe('Fetch interception', () => {
+  test('answers Basic auth only for the selected server and tries credentials once', async () => {
+    const { socket, cdp } = session()
+    answerAll(socket)
+    const origin = 'https://preview.test'
+    await installBasicAuth(cdp, origin, 'audit', 'fixture')
+    const challenge = { origin, scheme: 'basic', source: 'Server' }
+    const request = { url: origin + '/page' }
+    socket.emit({ method: 'Fetch.authRequired', params: { requestId: 'page', authChallenge: challenge, request } })
+    socket.emit({ method: 'Fetch.authRequired', params: { requestId: 'page', authChallenge: challenge, request } })
+    socket.emit({ method: 'Fetch.authRequired', params: { requestId: 'proxy', authChallenge: { ...challenge, source: 'Proxy' }, request } })
+    socket.emit({ method: 'Fetch.authRequired', params: { requestId: 'other', authChallenge: challenge, request: { url: 'https://other.test' } } })
+    expect(sentFor(socket, 'Fetch.continueWithAuth').map(command => command.params.authChallengeResponse)).toEqual([
+      { response: 'ProvideCredentials', username: 'audit', password: 'fixture' },
+      { response: 'CancelAuth' },
+      { response: 'CancelAuth' },
+      { response: 'CancelAuth' },
+    ])
+  })
+
   test('matches URL patterns the way Chrome does', () => {
     expect(matchesUrlPattern('*/_stx/hmr*', 'http://localhost:3000/_stx/hmr?v=1')).toBe(true)
     expect(matchesUrlPattern('*/_stx/hmr*', 'http://localhost:3000/api/health/metrics')).toBe(false)

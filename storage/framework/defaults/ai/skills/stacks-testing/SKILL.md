@@ -375,6 +375,11 @@ as failed, never as a passing score. Sitemap canonical hosts are mapped onto
 Chrome is not installed at a standard path. Reports retain real audits and use
 Lighthouse default throttling.
 
+For Basic-auth protected previews, pass `--basic-auth` and inject
+`STACKS_AUDIT_USERNAME` and `STACKS_AUDIT_PASSWORD` through the environment.
+Set `--base` to the protected HTTPS or loopback origin. The browser answers
+challenges for that origin and Lighthouse uses the isolated browser session.
+
 ## Configuration (bunfig.toml)
 
 ```toml

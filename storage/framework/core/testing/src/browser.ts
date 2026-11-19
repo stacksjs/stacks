@@ -897,6 +897,26 @@ export interface LaunchedChrome {
   chromePath: string
 }
 
+/** Answer a Basic challenge only for the chosen origin, without global headers. */
+export async function installBasicAuth(cdp: Cdp, origin: string, username: string, password: string): Promise<void> {
+  const attempted = new Set<string>()
+  cdp.on('Fetch.authRequired', (event) => {
+    const challenge = event.authChallenge
+    const allowed = challenge.source === 'Server' && challenge.scheme.toLowerCase() === 'basic'
+      && challenge.origin === origin && new URL(event.request.url).origin === origin
+      && !attempted.has(event.requestId)
+    if (allowed) attempted.add(event.requestId)
+    void cdp.send('Fetch.continueWithAuth', {
+      requestId: event.requestId,
+      authChallengeResponse: allowed ? { response: 'ProvideCredentials', username, password } : { response: 'CancelAuth' },
+    }).catch(() => {})
+  })
+  cdp.on('Fetch.requestPaused', ({ requestId }) => {
+    void cdp.send('Fetch.continueRequest', { requestId }).catch(() => {})
+  })
+  await cdp.send('Fetch.enable', { patterns: [{ urlPattern: `${origin}/*` }], handleAuthRequests: true })
+}
+
 /** stx's live-reload stream. */
 export const LIVE_RELOAD_PATTERNS: readonly string[] = ['*/_stx/hmr*']
 

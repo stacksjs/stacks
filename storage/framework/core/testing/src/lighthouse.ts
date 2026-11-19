@@ -15,6 +15,7 @@ export interface LighthouseResult {
   minimum: number
   passed: boolean
   findings: LighthouseFinding[]
+  metrics: Record<string, number>
   json: string
   html: string
 }
@@ -24,9 +25,20 @@ export interface LighthouseOptions {
   device?: LighthouseDevice | 'both'
   minimum?: number
   timeoutMs?: number
+  /** Port of an isolated, already authenticated Chrome instance. */
+  chromePort?: number
   onResult?: (result: LighthouseResult) => void | Promise<void>
 }
 export type LighthouseRunner = (args: string[], timeoutMs: number) => Promise<{ code: number, stderr: string }>
+
+export function basicAuditOrigin(base: string, targets: string[]): string {
+  const url = new URL(pageUrl(base))
+  const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+  if (url.protocol !== 'https:' && !loopback) throw new TypeError('Basic auth audits require HTTPS or loopback')
+  if (targets.some(target => new URL(target, base).origin !== url.origin))
+    throw new TypeError('Basic auth audit URLs must all share --base origin')
+  return url.origin
+}
 
 function pageUrl(value: string, base?: string): string {
   const url = new URL(value, base)
@@ -96,16 +108,23 @@ export async function auditLighthouse(options: LighthouseOptions, runner: Lighth
           '--chrome-flags=--headless=new --no-sandbox --use-mock-keychain',
           `--only-categories=${lighthouseCategories.join(',')}`, '--output=json', '--output=html', `--output-path=${output}`,
           ...(formFactor === 'desktop' ? ['--preset=desktop'] : []),
+          ...(options.chromePort ? [`--port=${options.chromePort}`] : []),
         ], timeoutMs)
         if (outcome.code !== 0) throw new Error(`Lighthouse failed on ${url} (${formFactor}): ${outcome.stderr.trim() || `exit ${outcome.code}`}`)
         const json = `${output}.report.json`
         const report = JSON.parse(await readFile(json, 'utf8'))
         const scores = lighthouseScores(report)
+        const metrics: Record<string, number> = {}
+        for (const id of ['first-contentful-paint', 'largest-contentful-paint', 'speed-index', 'total-blocking-time', 'cumulative-layout-shift']) {
+          const value = report.audits?.[id]?.numericValue
+          if (typeof value === 'number' && Number.isFinite(value)) metrics[id] = value
+        }
         const result: LighthouseResult = {
           url, finalUrl: report.finalDisplayedUrl || report.finalUrl || url, device: formFactor, scores, minimum,
           passed: lighthouseCategories.every(category => scores[category] >= minimum),
           findings: Object.entries(report.audits || {}).filter(([, audit]) => (audit as any).score !== null && typeof (audit as any).score === 'number' && (audit as any).score < 1)
             .map(([id, audit]) => ({ id, title: (audit as any).title, value: (audit as any).displayValue })),
+          metrics,
           json, html: `${output}.report.html`,
         }
         results.push(result)

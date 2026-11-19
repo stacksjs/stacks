@@ -256,16 +256,28 @@ export function test(buddy: CLI): void {
     .option('--lighthouse', 'Also measure Performance, Accessibility, Best Practices and SEO with Lighthouse', { default: false })
     .option('--sitemap <file>', 'Audit every page in a local sitemap on --base')
     .option('--device <device>', 'Lighthouse profile: mobile, desktop or both', { default: 'both' })
+    .option('--basic-auth', 'Authenticate on --base using STACKS_AUDIT_USERNAME and STACKS_AUDIT_PASSWORD', { default: false })
     .option('--min-score <score>', 'Required Lighthouse score in every category, from 0 to 100', { default: 100 })
     .option('--output <directory>', 'Directory for Lighthouse JSON, HTML and summary reports', { default: 'storage/framework/testing/lighthouse' })
     .example('buddy test:page-audit --url /,/dashboard --base http://localhost:3000')
     .example('buddy test:page-audit --url http://localhost:3000/pricing --json')
     .example('buddy test:page-audit --lighthouse --sitemap public/sitemap.xml --base http://localhost:3000 --min-score 100')
-    .action(async (options: { url?: string, base?: string, quietMs?: number | string, timeout?: number | string, mobile?: boolean, json?: boolean, lighthouse?: boolean, sitemap?: string, device?: string, minScore?: number | string, output?: string }) => {
-      const { auditLighthouse, formatLighthouseResult, lighthouseTargets } = await import('@stacksjs/testing/lighthouse')
+    .action(async (options: { url?: string, base?: string, quietMs?: number | string, timeout?: number | string, mobile?: boolean, json?: boolean, lighthouse?: boolean, sitemap?: string, device?: string, minScore?: number | string, output?: string, basicAuth?: boolean }) => {
+      const { auditLighthouse, basicAuditOrigin, formatLighthouseResult, lighthouseTargets } = await import('@stacksjs/testing/lighthouse')
+      const base = options.base || 'http://localhost:3000'
+      const username = process.env.STACKS_AUDIT_USERNAME
+      const password = process.env.STACKS_AUDIT_PASSWORD
       let targets: string[]
+      let authOrigin: string | undefined
       try {
         targets = await lighthouseTargets(options)
+        if (options.basicAuth) {
+          authOrigin = basicAuditOrigin(base, targets)
+          if (!username || !password) throw new TypeError('Set STACKS_AUDIT_USERNAME and STACKS_AUDIT_PASSWORD for --basic-auth')
+          // Chrome and Lighthouse only need Chrome's auth cache.
+          delete process.env.STACKS_AUDIT_USERNAME
+          delete process.env.STACKS_AUDIT_PASSWORD
+        }
         if (options.lighthouse) {
           if (!['mobile', 'desktop', 'both'].includes(options.device || 'both')) throw new TypeError('Choose mobile, desktop or both')
           const minimum = Number(options.minScore ?? 100)
@@ -276,27 +288,35 @@ export function test(buddy: CLI): void {
         await log.error(error instanceof Error ? error.message : String(error))
         process.exit(ExitCode.InvalidArgument)
       }
-      const { auditPage, formatPageAudit, launch, pageAuditClean } = await import('@stacksjs/testing/browser')
+      const { auditPage, formatPageAudit, installBasicAuth, launch, pageAuditClean } = await import('@stacksjs/testing/browser')
       const viewport = options.mobile ? { width: 390, height: 844, mobile: true, deviceScaleFactor: 2 } : { width: 1440, height: 900 }
-      const { cdp, close } = await launch({ viewport })
+      const { cdp, close, port } = await launch({ viewport, shared: authOrigin ? false : undefined })
       const reports = []
+      let lighthouse: Awaited<ReturnType<typeof auditLighthouse>> = []
       try {
+        if (authOrigin) await installBasicAuth(cdp, authOrigin, username!, password!)
         for (const target of targets) {
-          const url = new URL(target, options.base || 'http://localhost:3000').href
+          const url = new URL(target, base).href
           const report = await auditPage(url, { cdp, quietMs: Number(options.quietMs) || 1000, timeoutMs: Number(options.timeout) || 15000 })
           reports.push(report)
           if (!options.json) await log.info(formatPageAudit(report))
+        }
+        if (!authOrigin) await close()
+        if (options.lighthouse) {
+          // Keep the HTTP auth cache, but stop the audited page's timers and network activity.
+          if (authOrigin) await cdp.send('Page.navigate', { url: 'about:blank' })
+          lighthouse = await auditLighthouse({
+            urls: targets,
+            outputDir: options.output || projectPath('storage/framework/testing/lighthouse'),
+            device: options.device as 'mobile' | 'desktop' | 'both', minimum: Number(options.minScore ?? 100),
+            chromePort: authOrigin ? port : undefined,
+            onResult: result => { if (!options.json) process.stdout.write(`${formatLighthouseResult(result)}\n`) },
+          })
         }
       }
       finally {
         await close()
       }
-      const lighthouse = options.lighthouse ? await auditLighthouse({
-        urls: targets.map(target => new URL(target, options.base || 'http://localhost:3000').href),
-        outputDir: options.output || projectPath('storage/framework/testing/lighthouse'),
-        device: options.device as 'mobile' | 'desktop' | 'both', minimum: Number(options.minScore ?? 100),
-        onResult: result => { if (!options.json) process.stdout.write(`${formatLighthouseResult(result)}\n`) },
-      }) : []
       if (options.json) process.stdout.write(`${JSON.stringify(options.lighthouse ? { pages: reports, lighthouse } : reports, null, 2)}\n`)
       process.exit(reports.every(pageAuditClean) && lighthouse.every(result => result.passed) ? ExitCode.Success : ExitCode.FatalError)
     })

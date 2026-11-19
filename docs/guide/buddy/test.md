@@ -100,6 +100,9 @@ buddy test:page-audit --url http://localhost:3000/m --mobile --json > page-audit
 | `--timeout [ms]` | Give up waiting for a page to settle after this long (default 15000) |
 | `--mobile` | Audit at a 390px phone viewport |
 | `--json` | Print the reports as JSON |
+| `--lighthouse` | Run standard Lighthouse audits and save reports |
+| `--device` | Select mobile, desktop or both Lighthouse profiles |
+| `--basic-auth` | Read `STACKS_AUDIT_USERNAME` and `STACKS_AUDIT_PASSWORD` for the origin in `--base` |
 
 It exits 1 when any page has a duplicate, a failure or an error, or never
 settles. An API request is a same-origin path under `/api/` (event streams
@@ -109,6 +112,12 @@ where it landed (`/today -> /home: ...`). It drives the installed Chrome or Chro
 macOS it runs a private clone the Chrome updater leaves alone (see
 [Browser testing](/packages/testing#browser-testing)). To sign in first or audit
 from a test, call `auditPage()` from `@stacksjs/testing/browser`.
+
+For a Basic-auth protected preview, set the two credential variables in your
+shell or CI secret store and pass `--basic-auth`. Use an HTTPS or loopback
+origin in `--base`. Buddy answers the selected origin's browser challenge and
+reuses that isolated Chrome session for Lighthouse. The saved summary includes
+category scores and the timing of each scored performance metric.
 
 ## Examples
 

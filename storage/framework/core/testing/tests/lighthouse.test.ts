@@ -2,9 +2,16 @@ import { expect, test } from 'bun:test'
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { auditLighthouse, lighthouseScores, lighthouseTargets } from '../src/lighthouse'
+import { auditLighthouse, basicAuditOrigin, lighthouseScores, lighthouseTargets } from '../src/lighthouse'
 
 const categories = { performance: { score: 1 }, accessibility: { score: 1 }, 'best-practices': { score: 1 }, seo: { score: 1 } }
+
+test('protected audits scope credentials to one secure origin', () => {
+  expect(basicAuditOrigin('https://preview.test', ['/', 'https://preview.test/pricing'])).toBe('https://preview.test')
+  expect(basicAuditOrigin('http://localhost:3000', ['/'])).toBe('http://localhost:3000')
+  expect(() => basicAuditOrigin('http://preview.test', ['/'])).toThrow('require HTTPS')
+  expect(() => basicAuditOrigin('https://preview.test', ['/', 'https://other.test/'])).toThrow('share --base origin')
+})
 
 test('all four categories are required, including explicit zeroes and runtime failures', () => {
   expect(lighthouseScores({ categories })).toEqual({ performance: 100, accessibility: 100, 'best-practices': 100, seo: 100 })

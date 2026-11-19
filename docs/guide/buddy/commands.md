@@ -6286,6 +6286,7 @@ Loads pages in headless Chrome and reports duplicate API requests, failed reques
 | `--lighthouse` | Also measure Performance, Accessibility, Best Practices and SEO with Lighthouse | boolean, optional | `false` |
 | `--sitemap` | Audit every page in a local sitemap on --base | value, required | - |
 | `--device` | Lighthouse profile: mobile, desktop or both | value, required | `"both"` |
+| `--basic-auth` | Authenticate on --base using STACKS_AUDIT_USERNAME and STACKS_AUDIT_PASSWORD | boolean, optional | `false` |
 | `--min-score` | Required Lighthouse score in every category, from 0 to 100 | value, required | `100` |
 | `--output` | Directory for Lighthouse JSON, HTML and summary reports | value, required | `"storage/framework/testing/lighthouse"` |
 
