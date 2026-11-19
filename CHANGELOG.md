@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.633...v0.75.634)
+
+## 🐛 Bug Fixes
+
+- validate native workflow credentials before building ([5151b8a](https://github.com/stacksjs/stacks/commit/5151b8a)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.632...v0.75.633)
 
 ## 🐛 Bug Fixes
