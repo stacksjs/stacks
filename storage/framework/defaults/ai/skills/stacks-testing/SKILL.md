@@ -370,7 +370,8 @@ never settles. With `--lighthouse`, it also runs the standard mobile and desktop
 profiles and requires every category to meet `--min-score` (100 by default).
 `--device mobile|desktop|both` selects profiles; `--output` selects the directory
 for HTML, JSON and an incremental `summary.json`. A failed collection is recorded
-as failed, never as a passing score. Sitemap canonical hosts are mapped onto
+as failed, never as a passing score. When performance falls below the budget,
+the terminal reports the metric that cost the most points. Sitemap canonical hosts are mapped onto
 `--base` so a production sitemap can audit a local build. Set `CHROME_PATH` if
 Chrome is not installed at a standard path. Reports retain real audits and use
 Lighthouse default throttling.

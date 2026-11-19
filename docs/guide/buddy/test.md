@@ -118,6 +118,9 @@ shell or CI secret store and pass `--basic-auth`. Use an HTTPS or loopback
 origin in `--base`. Buddy answers the selected origin's browser challenge and
 reuses that isolated Chrome session for Lighthouse. The saved summary includes
 category scores and the timing of each scored performance metric.
+For a performance miss, the terminal line names the metric that cost the
+most points under Lighthouse's weights. The summary retains that metric and
+its measured value.
 When Chrome cannot collect a profile, Buddy records the error, continues
 through the remaining profiles and exits with failure.
 

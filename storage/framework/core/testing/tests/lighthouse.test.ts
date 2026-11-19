@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { auditLighthouse, basicAuditOrigin, lighthouseScores, lighthouseTargets } from '../src/lighthouse'
+import { auditLighthouse, basicAuditOrigin, formatLighthouseResult, lighthouseScores, lighthouseTargets } from '../src/lighthouse'
 
 const categories = { performance: { score: 1 }, accessibility: { score: 1 }, 'best-practices': { score: 1 }, seo: { score: 1 } }
 
@@ -82,6 +82,31 @@ test('rejects invalid thresholds before invoking Lighthouse and surfaces failed 
     expect(receipt.results.map((result: { device: string }) => result.device)).toEqual(['desktop'])
     expect(receipt.failures).toEqual([{ url: 'https://example.test/', device: 'mobile', message: 'Chrome unavailable' }])
     expect(receipt.error).toContain('Chrome unavailable')
+  }
+  finally { await rm(directory, { recursive: true, force: true }) }
+})
+
+test('reports the measured metric that cost the most performance points', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'stacks-lighthouse-'))
+  try {
+    const [result] = await auditLighthouse({ urls: ['https://example.test'], outputDir: directory, device: 'desktop' }, async (args) => {
+      const output = args.find(arg => arg.startsWith('--output-path='))!.slice('--output-path='.length)
+      await writeFile(`${output}.report.json`, JSON.stringify({
+        categories: {
+          ...categories,
+          performance: { score: .85, auditRefs: [{ id: 'speed-index', weight: 10 }, { id: 'cumulative-layout-shift', weight: 25 }, { id: 'first-contentful-paint', weight: 65 }, { id: 'diagnostic', weight: 0 }] },
+        },
+        audits: {
+          'speed-index': { score: .5, title: 'Speed Index', displayValue: '1.4 s' },
+          'cumulative-layout-shift': { score: .6, title: 'Cumulative Layout Shift', displayValue: '0.2' },
+          'first-contentful-paint': { score: 1, title: 'First Contentful Paint' },
+          'diagnostic': { score: 0, title: 'Unweighted finding' },
+        },
+      }))
+      return { code: 0, stderr: '' }
+    })
+    expect(result?.largestPerformanceLoss).toEqual({ id: 'cumulative-layout-shift', title: 'Cumulative Layout Shift', value: '0.2', pointsLost: 10 })
+    expect(formatLighthouseResult(result!)).toContain('Cumulative Layout Shift 0.2 cost 10.00 performance points')
   }
   finally { await rm(directory, { recursive: true, force: true }) }
 })

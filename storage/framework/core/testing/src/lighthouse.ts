@@ -8,6 +8,7 @@ export const lighthouseCategories = ['performance', 'accessibility', 'best-pract
 export type LighthouseCategory = typeof lighthouseCategories[number]
 export type LighthouseDevice = 'mobile' | 'desktop'
 export interface LighthouseFinding { id: string, title: string, value?: string }
+export interface LighthousePerformanceLoss extends LighthouseFinding { pointsLost: number }
 export interface LighthouseResult {
   url: string
   finalUrl: string
@@ -17,6 +18,7 @@ export interface LighthouseResult {
   passed: boolean
   findings: LighthouseFinding[]
   metrics: Record<string, number>
+  largestPerformanceLoss?: LighthousePerformanceLoss
   json: string
   html: string
 }
@@ -76,6 +78,25 @@ export function lighthouseScores(report: any): Record<LighthouseCategory, number
       throw new Error(`Lighthouse returned no valid ${category} score`)
     return [category, Math.round(value * 100)]
   })) as Record<LighthouseCategory, number>
+}
+
+/** Identify the measured metric with the largest penalty under Lighthouse's own weights. */
+function largestPerformanceLoss(report: any): LighthousePerformanceLoss | undefined {
+  const references = report.categories?.performance?.auditRefs
+  if (!Array.isArray(references)) return undefined
+  let totalWeight = 0
+  let largest: LighthousePerformanceLoss | undefined
+  for (const { id, weight } of references) {
+    const audit = report.audits?.[id]
+    const score = audit?.score
+    if (!Number.isFinite(weight) || weight <= 0 || !Number.isFinite(score) || score < 0 || score > 1) continue
+    totalWeight += weight
+    const loss = weight * (1 - score)
+    if (loss > (largest?.pointsLost ?? 0))
+      largest = { id, title: audit.title, value: audit.displayValue, pointsLost: loss }
+  }
+  if (largest) largest.pointsLost = 100 * largest.pointsLost / totalWeight
+  return largest
 }
 
 const run: LighthouseRunner = async (args, timeoutMs) => {
@@ -138,7 +159,7 @@ export async function auditLighthouse(options: LighthouseOptions, runner: Lighth
           passed: lighthouseCategories.every(category => scores[category] >= minimum),
           findings: Object.entries(report.audits || {}).filter(([, audit]) => (audit as any).score !== null && typeof (audit as any).score === 'number' && (audit as any).score < 1)
             .map(([id, audit]) => ({ id, title: (audit as any).title, value: (audit as any).displayValue })),
-          metrics,
+          metrics, largestPerformanceLoss: largestPerformanceLoss(report),
           json, html: `${output}.report.html`,
         }
         results.push(result)
@@ -160,5 +181,8 @@ export async function auditLighthouse(options: LighthouseOptions, runner: Lighth
 }
 
 export function formatLighthouseResult(result: LighthouseResult): string {
-  return `${result.passed ? 'PASS' : 'FAIL'} ${result.device} ${result.url}: ${lighthouseCategories.map(category => `${category} ${result.scores[category]}`).join(', ')}`
+  const scores = lighthouseCategories.map(category => `${category} ${result.scores[category]}`).join(', ')
+  const loss = result.scores.performance < result.minimum ? result.largestPerformanceLoss : undefined
+  const detail = loss ? ` | ${loss.title}${loss.value ? ` ${loss.value}` : ''} cost ${loss.pointsLost.toFixed(2)} performance points` : ''
+  return `${result.passed ? 'PASS' : 'FAIL'} ${result.device} ${result.url}: ${scores}${detail}`
 }
