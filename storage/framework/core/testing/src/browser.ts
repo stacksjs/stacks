@@ -1404,8 +1404,8 @@ export interface PageAuditOptions extends SettleOptions {
   viewport?: Viewport
   /**
    * Which same-origin requests count as API calls for duplicate detection.
-   * Default: paths under `/api/`, excluding event streams (paths ending in
-   * `/events`).
+   * Default: paths under `/api/`. Actual text/event-stream responses are
+   * excluded by MIME type, so JSON endpoints named `/events` still count.
    */
   isApiRequest?: (url: URL, method: string) => boolean
   /** Run before navigating: sign in, seed storage (`Page.addScriptToEvaluateOnNewDocument`), block a URL. */
@@ -1466,7 +1466,7 @@ export interface PageAuditReport {
   durationMs: number
 }
 
-const defaultIsApi = (url: URL): boolean => url.pathname.startsWith('/api/') && !url.pathname.endsWith('/events')
+const defaultIsApi = (url: URL): boolean => url.pathname.startsWith('/api/')
 
 /** Count how often each entry appears, keeping those seen more than once. */
 export function duplicateRequests(requests: readonly string[]): Record<string, number> {
@@ -1542,8 +1542,8 @@ export async function auditPage(url: string, options: PageAuditOptions = {}): Pr
   const started = Date.now()
   const origin = new URL(url).origin
   const isApi = options.isApiRequest ?? defaultIsApi
-  const apiRequests: string[] = []
   const events: PageAuditEvent[] = []
+  const apiEvents = new Map<string, PageAuditEvent>()
   const failed: string[] = []
   let launched: LaunchedChrome | null = null
   let cdp = options.cdp
@@ -1563,7 +1563,7 @@ export async function auditPage(url: string, options: PageAuditOptions = {}): Pr
     return {
       url,
       finalUrl,
-      apiRequests,
+      apiRequests: events.flatMap(event => event.type === 'request' ? [event.request] : []),
       duplicates: loadDuplicates(loads),
       loads,
       failed,
@@ -1584,12 +1584,18 @@ export async function auditPage(url: string, options: PageAuditOptions = {}): Pr
       const request = new URL(params.request.url)
       if (request.origin === origin && isApi(request, params.request.method)) {
         const entry = `${params.request.method} ${request.pathname}${request.search}`
-        apiRequests.push(entry)
-        events.push({ type: 'request', request: entry })
+        const event: PageAuditEvent = { type: 'request', request: entry }
+        events.push(event)
+        apiEvents.set(params.requestId, event)
       }
     }))
     removers.push(session.on('Network.responseReceived', (params) => {
       const response = new URL(params.response.url)
+      if (params.response.mimeType === 'text/event-stream') {
+        const event = apiEvents.get(params.requestId)
+        if (event) events.splice(events.indexOf(event), 1)
+        apiEvents.delete(params.requestId)
+      }
       if (response.origin === origin && params.response.status >= 400)
         failed.push(`${params.response.status} ${response.pathname}`)
     }))

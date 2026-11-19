@@ -476,6 +476,20 @@ describe('page loads', () => {
     expect(visit.duplicates).toEqual({ 'GET /api/me': 2, 'GET /api/feed': 2 })
   })
 
+  test('JSON events count as API calls while actual event streams do not', async () => {
+    const { cdp } = scriptedPage(url => [
+      { method: 'Page.frameNavigated', params: { frame: { id: 'main', url } } },
+      ...api('1', 'http://x/api/events'),
+      ...api('2', 'http://x/api/events'),
+      { method: 'Network.requestWillBeSent', params: { requestId: 'stream', request: { method: 'GET', url: 'http://x/api/notifications' } } },
+      { method: 'Network.responseReceived', params: { requestId: 'stream', response: { url: 'http://x/api/notifications', mimeType: 'text/event-stream', status: 200 } } },
+    ])
+    const report = await auditPage('http://x/races', { cdp, quietMs: 0 })
+    expect(report.apiRequests).toEqual(['GET /api/events', 'GET /api/events'])
+    expect(report.duplicates).toEqual({ 'GET /api/events': 2 })
+    expect(report.settled).toBe(true)
+  })
+
   test('a page that never settles names the requests it was waiting on', async () => {
     const { cdp } = scriptedPage(url => [
       { method: 'Page.frameNavigated', params: { frame: { id: 'main', url } } },
