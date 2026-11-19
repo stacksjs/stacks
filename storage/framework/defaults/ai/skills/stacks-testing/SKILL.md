@@ -350,6 +350,7 @@ bun run test:coverage         # with coverage
 bun run test:types            # type tests
 buddy test:page-audit --url /,/dashboard --base http://localhost:3000  # duplicate API requests, failures, console errors
 buddy test:page-audit --url http://localhost:3000/pricing --mobile --json
+buddy test:page-audit --lighthouse --sitemap public/sitemap.xml --base http://localhost:3000 --min-score 100
 ```
 
 Name a path to run only what is under it, file or directory, anywhere in the
@@ -365,7 +366,14 @@ root matches nothing and reports a clean run over no files, while
 you, so prefer it.
 
 `test:page-audit` exits 1 when any page has duplicates, failed same-origin requests or errors, or
-never settles.
+never settles. With `--lighthouse`, it also runs the standard mobile and desktop Lighthouse
+profiles and requires every category to meet `--min-score` (100 by default).
+`--device mobile|desktop|both` selects profiles; `--output` selects the directory
+for HTML, JSON and an incremental `summary.json`. A failed collection is recorded
+as failed, never as a passing score. Sitemap canonical hosts are mapped onto
+`--base` so a production sitemap can audit a local build. Set `CHROME_PATH` if
+Chrome is not installed at a standard path. Reports retain real audits and use
+Lighthouse default throttling.
 
 ## Configuration (bunfig.toml)
 

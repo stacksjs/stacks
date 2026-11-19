@@ -49,6 +49,29 @@ while background prefetches remain observable. This changes only readiness:
 HTTP failures, duplicate API calls, console errors and runtime failures still
 appear in audits and can fail `pageAuditClean`.
 
+## Lighthouse and page audits
+
+`buddy test:page-audit` checks browser errors, failed requests and duplicate API
+requests. Add `--lighthouse` to measure all four Lighthouse categories using the
+standard mobile and desktop profiles:
+
+```bash
+buddy test:page-audit --lighthouse --sitemap public/sitemap.xml --base http://localhost:3000
+buddy test:page-audit --lighthouse --url /,/pricing --base http://localhost:3000 --device mobile --min-score 100
+```
+
+Every category must reach `--min-score` (100 by default) for the command to pass.
+Sitemap canonical hosts map onto `--base`, allowing a local production build to
+use its published sitemap. `--output` selects the report directory. It contains
+HTML and JSON per URL and device plus an incremental `summary.json` that records
+collection failures. Runs are sequential to avoid competing for browser CPU.
+Set `CHROME_PATH` to select a nonstandard Chrome installation.
+
+Standalone tooling can import `auditLighthouse`, `lighthouseTargets` and
+`lighthouseScores` from `@stacksjs/testing/lighthouse`. Collection errors and
+missing categories throw instead of reporting a passing score. Lighthouse uses
+its standard throttling; the helper does not hide failed audits.
+
 ## Trusted browser clicks
 
 `click` from `@stacksjs/testing/browser` resolves a unique selector (optionally

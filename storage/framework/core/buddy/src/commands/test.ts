@@ -253,12 +253,27 @@ export function test(buddy: CLI): void {
     .option('--timeout [ms]', 'Give up waiting for a page to settle after this long', { default: 15000 })
     .option('--mobile', 'Audit at a 390px phone viewport instead of 1440px', { default: false })
     .option('--json', 'Print the reports as JSON', { default: false })
+    .option('--lighthouse', 'Also measure Performance, Accessibility, Best Practices and SEO with Lighthouse', { default: false })
+    .option('--sitemap <file>', 'Audit every page in a local sitemap on --base')
+    .option('--device <device>', 'Lighthouse profile: mobile, desktop or both', { default: 'both' })
+    .option('--min-score <score>', 'Required Lighthouse score in every category, from 0 to 100', { default: 100 })
+    .option('--output <directory>', 'Directory for Lighthouse JSON, HTML and summary reports', { default: 'storage/framework/testing/lighthouse' })
     .example('buddy test:page-audit --url /,/dashboard --base http://localhost:3000')
     .example('buddy test:page-audit --url http://localhost:3000/pricing --json')
-    .action(async (options: { url?: string, base?: string, quietMs?: number | string, timeout?: number | string, mobile?: boolean, json?: boolean }) => {
-      const targets = String(options.url ?? '').split(',').map(url => url.trim()).filter(Boolean)
-      if (!targets.length) {
-        await log.error('Pass the pages to audit with --url (comma-separated URLs or paths)')
+    .example('buddy test:page-audit --lighthouse --sitemap public/sitemap.xml --base http://localhost:3000 --min-score 100')
+    .action(async (options: { url?: string, base?: string, quietMs?: number | string, timeout?: number | string, mobile?: boolean, json?: boolean, lighthouse?: boolean, sitemap?: string, device?: string, minScore?: number | string, output?: string }) => {
+      const { auditLighthouse, formatLighthouseResult, lighthouseTargets } = await import('@stacksjs/testing/lighthouse')
+      let targets: string[]
+      try {
+        targets = await lighthouseTargets(options)
+        if (options.lighthouse) {
+          if (!['mobile', 'desktop', 'both'].includes(options.device || 'both')) throw new TypeError('Choose mobile, desktop or both')
+          const minimum = Number(options.minScore ?? 100)
+          if (!Number.isFinite(minimum) || minimum < 0 || minimum > 100) throw new TypeError('Minimum score must be between 0 and 100')
+        }
+      }
+      catch (error) {
+        await log.error(error instanceof Error ? error.message : String(error))
         process.exit(ExitCode.InvalidArgument)
       }
       const { auditPage, formatPageAudit, launch, pageAuditClean } = await import('@stacksjs/testing/browser')
@@ -276,8 +291,14 @@ export function test(buddy: CLI): void {
       finally {
         await close()
       }
-      if (options.json) process.stdout.write(`${JSON.stringify(reports, null, 2)}\n`)
-      process.exit(reports.every(pageAuditClean) ? ExitCode.Success : ExitCode.FatalError)
+      const lighthouse = options.lighthouse ? await auditLighthouse({
+        urls: targets.map(target => new URL(target, options.base || 'http://localhost:3000').href),
+        outputDir: options.output || projectPath('storage/framework/testing/lighthouse'),
+        device: options.device as 'mobile' | 'desktop' | 'both', minimum: Number(options.minScore ?? 100),
+        onResult: result => { if (!options.json) process.stdout.write(`${formatLighthouseResult(result)}\n`) },
+      }) : []
+      if (options.json) process.stdout.write(`${JSON.stringify(options.lighthouse ? { pages: reports, lighthouse } : reports, null, 2)}\n`)
+      process.exit(reports.every(pageAuditClean) && lighthouse.every(result => result.passed) ? ExitCode.Success : ExitCode.FatalError)
     })
 
   onUnknownSubcommand(buddy, "test")

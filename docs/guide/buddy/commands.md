@@ -6283,12 +6283,18 @@ Loads pages in headless Chrome and reports duplicate API requests, failed reques
 | `--timeout` | Give up waiting for a page to settle after this long | value, optional | `15000` |
 | `--mobile` | Audit at a 390px phone viewport instead of 1440px | boolean, optional | `false` |
 | `--json` | Print the reports as JSON | boolean, optional | `false` |
+| `--lighthouse` | Also measure Performance, Accessibility, Best Practices and SEO with Lighthouse | boolean, optional | `false` |
+| `--sitemap` | Audit every page in a local sitemap on --base | value, required | - |
+| `--device` | Lighthouse profile: mobile, desktop or both | value, required | `"both"` |
+| `--min-score` | Required Lighthouse score in every category, from 0 to 100 | value, required | `100` |
+| `--output` | Directory for Lighthouse JSON, HTML and summary reports | value, required | `"storage/framework/testing/lighthouse"` |
 
 Examples:
 
 ```bash
 buddy test:page-audit --url /,/dashboard --base http://localhost:3000
 buddy test:page-audit --url http://localhost:3000/pricing --json
+buddy test:page-audit --lighthouse --sitemap public/sitemap.xml --base http://localhost:3000 --min-score 100
 ```
 
 ### `test:types`
