@@ -9,6 +9,13 @@ export type LighthouseCategory = typeof lighthouseCategories[number]
 export type LighthouseDevice = 'mobile' | 'desktop'
 export interface LighthouseFinding { id: string, title: string, value?: string }
 export interface LighthousePerformanceLoss extends LighthouseFinding { pointsLost: number }
+const lcpTraceLabels = {
+  timeToFirstByte: 'first byte',
+  resourceLoadDelay: 'resource discovery',
+  resourceLoadDuration: 'resource download',
+  elementRenderDelay: 'element render',
+} as const
+type LighthouseLcpPhase = keyof typeof lcpTraceLabels
 export interface LighthouseResult {
   url: string
   finalUrl: string
@@ -19,6 +26,8 @@ export interface LighthouseResult {
   findings: LighthouseFinding[]
   metrics: Record<string, number>
   largestPerformanceLoss?: LighthousePerformanceLoss
+  /** Observed trace timings, in milliseconds. */
+  lcpTraceMs?: Partial<Record<LighthouseLcpPhase, number>>
   json: string
   html: string
 }
@@ -99,6 +108,21 @@ function largestPerformanceLoss(report: any): LighthousePerformanceLoss | undefi
   return largest
 }
 
+function lcpTraceMs(report: any): LighthouseResult['lcpTraceMs'] {
+  const phases = report.audits?.['lcp-breakdown-insight']?.details?.items?.[0]?.items
+  if (!Array.isArray(phases)) return undefined
+
+  const timings: NonNullable<LighthouseResult['lcpTraceMs']> = {}
+  for (const phase of phases) {
+    const name = phase?.subpart
+    const duration = phase?.duration
+    if (typeof name === 'string' && Object.hasOwn(lcpTraceLabels, name)
+      && typeof duration === 'number' && Number.isFinite(duration) && duration >= 0)
+      timings[name as LighthouseLcpPhase] = duration
+  }
+  return Object.keys(timings).length ? timings : undefined
+}
+
 const run: LighthouseRunner = async (args, timeoutMs) => {
   // The Lighthouse CLI is independent of the application's Bun preloads.
   const child = Bun.spawn(args, { cwd: tmpdir(), stdout: 'ignore', stderr: 'pipe', timeout: timeoutMs, killSignal: 'SIGTERM' })
@@ -159,7 +183,9 @@ export async function auditLighthouse(options: LighthouseOptions, runner: Lighth
           passed: lighthouseCategories.every(category => scores[category] >= minimum),
           findings: Object.entries(report.audits || {}).filter(([, audit]) => (audit as any).score !== null && typeof (audit as any).score === 'number' && (audit as any).score < 1)
             .map(([id, audit]) => ({ id, title: (audit as any).title, value: (audit as any).displayValue })),
-          metrics, largestPerformanceLoss: largestPerformanceLoss(report),
+          metrics,
+          largestPerformanceLoss: largestPerformanceLoss(report),
+          lcpTraceMs: lcpTraceMs(report),
           json, html: `${output}.report.html`,
         }
         results.push(result)
@@ -184,5 +210,9 @@ export function formatLighthouseResult(result: LighthouseResult): string {
   const scores = lighthouseCategories.map(category => `${category} ${result.scores[category]}`).join(', ')
   const loss = result.scores.performance < result.minimum ? result.largestPerformanceLoss : undefined
   const detail = loss ? ` | ${loss.title}${loss.value ? ` ${loss.value}` : ''} cost ${loss.pointsLost.toFixed(2)} performance points` : ''
-  return `${result.passed ? 'PASS' : 'FAIL'} ${result.device} ${result.url}: ${scores}${detail}`
+  const slowestPhase = loss?.id === 'largest-contentful-paint' && result.lcpTraceMs
+    ? Object.entries(result.lcpTraceMs).sort((a, b) => b[1] - a[1])[0]
+    : undefined
+  const trace = slowestPhase ? ` | LCP trace ${lcpTraceLabels[slowestPhase[0] as LighthouseLcpPhase]} ${Math.round(slowestPhase[1])} ms` : ''
+  return `${result.passed ? 'PASS' : 'FAIL'} ${result.device} ${result.url}: ${scores}${detail}${trace}`
 }

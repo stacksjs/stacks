@@ -106,7 +106,44 @@ test('reports the measured metric that cost the most performance points', async 
       return { code: 0, stderr: '' }
     })
     expect(result?.largestPerformanceLoss).toEqual({ id: 'cumulative-layout-shift', title: 'Cumulative Layout Shift', value: '0.2', pointsLost: 10 })
+    expect(result?.lcpTraceMs).toBeUndefined()
     expect(formatLighthouseResult(result!)).toContain('Cumulative Layout Shift 0.2 cost 10.00 performance points')
+  }
+  finally { await rm(directory, { recursive: true, force: true }) }
+})
+
+test('records observed LCP timings and identifies the slowest trace phase for an LCP miss', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'stacks-lighthouse-'))
+  try {
+    const [result] = await auditLighthouse({ urls: ['https://example.test'], outputDir: directory, device: 'mobile' }, async (args) => {
+      const output = args.find(arg => arg.startsWith('--output-path='))!.slice('--output-path='.length)
+      await writeFile(`${output}.report.json`, JSON.stringify({
+        categories: { ...categories, performance: { score: .96, auditRefs: [{ id: 'largest-contentful-paint', weight: 25 }] } },
+        audits: {
+          'largest-contentful-paint': { score: .84, title: 'Largest Contentful Paint', displayValue: '2.7 s' },
+          'lcp-breakdown-insight': {
+            details: { items: [{ items: [
+              { subpart: 'timeToFirstByte', duration: 380.01 },
+              { subpart: 'resourceLoadDelay', duration: 0 },
+              { subpart: 'resourceLoadDuration', duration: 716.42 },
+              { subpart: 'elementRenderDelay', duration: 30 },
+              { subpart: 'anotherPhase', duration: 1000 },
+              { subpart: 'resourceLoadDelay', duration: -1 },
+            ] }] },
+          },
+        },
+      }))
+      return { code: 0, stderr: '' }
+    })
+    expect(result?.lcpTraceMs).toEqual({
+      timeToFirstByte: 380.01,
+      resourceLoadDelay: 0,
+      resourceLoadDuration: 716.42,
+      elementRenderDelay: 30,
+    })
+    expect(formatLighthouseResult(result!)).toContain('LCP trace resource download 716 ms')
+    const receipt = JSON.parse(await readFile(join(directory, 'summary.json'), 'utf8'))
+    expect(receipt.results[0].lcpTraceMs).toEqual(result?.lcpTraceMs)
   }
   finally { await rm(directory, { recursive: true, force: true }) }
 })

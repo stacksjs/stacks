@@ -120,7 +120,10 @@ reuses that isolated Chrome session for Lighthouse. The saved summary includes
 category scores and the timing of each scored performance metric.
 For a performance miss, the terminal line names the metric that cost the
 most points under Lighthouse's weights. The summary retains that metric and
-its measured value.
+its measured value. It also records the observed Largest Contentful Paint trace
+timings for the first byte, resource discovery, download and render when
+available. When LCP costs the most points, Buddy prints the slowest trace phase
+alongside the scored metric.
 When Chrome cannot collect a profile, Buddy records the error, continues
 through the remaining profiles and exits with failure.
 
