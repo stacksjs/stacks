@@ -92,7 +92,7 @@ export function renderReviewOsWorkflow(config: WorkflowConfig): string {
     'runs-on': config.runners.ios, 'timeout-minutes': 90, environment: 'ios-testflight',
     reviewos: { ...jobPriority('ios'), secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.ios ?? [])] }, env: { ...config.env?.checks, ...config.env?.ios, ...secretEnv('checks') },
     steps: [...bootstrap(),
-      { name: 'Read the committed release identity', id: 'release', run: './buddy workflow:release-state', env: { WORKFLOW_UPLOAD_REQUESTED: "${{ inputs.upload && 'true' || 'false' }}" } },
+      { name: 'Read the committed release identity', id: 'release', run: './buddy workflow:release-state', env: { WORKFLOW_UPLOAD_REQUESTED: '${{ inputs.upload }}' } },
       { name: 'Validate native acceptance credentials', run: './buddy workflow:check-credentials native-accept', ...nativeSecrets('native-accept') },
       ...(config.release ? [{ name: 'Validate release credentials', if: upload, run: './buddy workflow:check-credentials native-release', ...(nativeReleaseSecretNames(config).length ? { env: Object.fromEntries(nativeReleaseSecretNames(config).map(name => [name, '${{ secrets.' + name + ' }}'])) } : {}) }] : []),
       { name: 'Build the simulator application', run: './buddy workflow:step native-build', ...nativeSecrets('native-build') },

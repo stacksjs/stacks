@@ -35,6 +35,8 @@ test('native release inputs are checked before building, with credentials confin
       stepSecrets: { 'native-accept': ['ATHLETE_FIXTURE'], 'native-sign': ['SIGNING_KEY'], 'native-verify': ['PREVIEW_USER', 'PREVIEW_PASSWORD'] },
     })) as any
     const native = workflow.jobs.native
+    const identity = native.steps.find((step: any) => step.id === 'release')
+    expect(identity.env.WORKFLOW_UPLOAD_REQUESTED).toBe('${{ inputs.upload }}')
     const acceptance = native.steps.findIndex((step: any) => step.run === './buddy workflow:check-credentials native-accept')
     const release = native.steps.findIndex((step: any) => step.run === './buddy workflow:check-credentials native-release')
     const build = native.steps.findIndex((step: any) => step.run === './buddy workflow:step native-build')
@@ -76,6 +78,10 @@ test('release upload uses the real tag and checkout, including detached CI check
   try {
     process.env.GITHUB_OUTPUT = join(root, 'step-output')
     process.env.GITHUB_REF = 'refs/heads/main'
+    process.env.WORKFLOW_UPLOAD_REQUESTED = 'false'
+    expect(await writeWorkflowReleaseState(root)).toBe(false)
+    expect(readFileSync(process.env.GITHUB_OUTPUT, 'utf8')).toBe('upload=false\n')
+    writeFileSync(process.env.GITHUB_OUTPUT, '')
     process.env.WORKFLOW_UPLOAD_REQUESTED = 'true'
     await expect(writeWorkflowReleaseState(root)).rejects.toThrow('release tag')
     git('tag', 'v1.0.0-build.35'); git('checkout', '--detach', 'HEAD')
