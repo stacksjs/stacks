@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: zig-utils/zig-waf
-          ref: 6c61dc692e381f8eb88ba7185d9d7c1885252c5f
+          ref: 9a8e74580d8498c3c7647ad6f1cb206c0fbbbd56
           path: .zig-waf
       - name: Set up Zig
         uses: mlugg/setup-zig@v2
