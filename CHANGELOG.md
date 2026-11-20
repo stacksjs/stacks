@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.637...v0.75.638)
+
+## 🐛 Bug Fixes
+
+- **buddy**: allow macOS notification dispatch time ([5d7d934](https://github.com/stacksjs/stacks/commit/5d7d934)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.636...v0.75.637)
 
 ## ✨ Features
