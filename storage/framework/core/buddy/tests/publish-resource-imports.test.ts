@@ -20,7 +20,7 @@ import { join } from 'node:path'
 // which discovers models under the CURRENT working directory. Importing it
 // after chdir'ing into the fixture makes the framework try to load the
 // half-published model and throw the very error the test is about to fix.
-import { carryRelativeImports } from '../src/commands/publish'
+import { carryRelativeImports, publishedPath } from '../src/commands/publish'
 
 const PUBLISH_COMMAND = join(import.meta.dir, '../src/commands/publish.ts')
 const DEFAULT_USER = join(import.meta.dir, '../../../defaults/app/Models/User.ts')
@@ -48,7 +48,7 @@ describe('publishing carries the modules a file imports', () => {
   })
 
   test('it recurses, so a dependency brings its own siblings', () => {
-    expect(source).toContain('carryRelativeImports(from, to, seen)')
+    expect(source).toContain('carryRelativeImports(from, to, seen, projectRoot)')
   })
 
   test('it refuses to write outside the project root', () => {
@@ -98,6 +98,49 @@ describe('carryRelativeImports, end to end', () => {
     }
     finally {
       process.chdir(cwd)
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+})
+
+// `publish:action LoginAction` has to land where the router reads it. The
+// default routes name `Actions/Auth/LoginAction`, and the router reads
+// `app/Actions/Auth/LoginAction.ts` before the default, so a copy written to
+// `app/Actions/LoginAction.ts` was never used and edits to it did nothing.
+describe('where a published default lands', () => {
+  const actions = join(import.meta.dir, '../../../defaults/app/Actions')
+  const login = join(actions, 'Auth/LoginAction.ts')
+
+  test('an action keeps the folders it sits in, so its route reaches the copy', () => {
+    expect(existsSync(login)).toBeTrue()
+    expect(publishedPath('action', actions, '/project/app/Actions/', login, 'LoginAction.ts'))
+      .toBe('/project/app/Actions/Auth/LoginAction.ts')
+  })
+
+  test('a model keeps the flat layout it has always been published to', () => {
+    expect(publishedPath('model', join(actions, '../Models'), '/project/app/Models', DEFAULT_USER, 'User.ts'))
+      .toBe('/project/app/Models/User.ts')
+  })
+})
+
+describe('carryRelativeImports, given the project root', () => {
+  test('writes inside that root, not the working directory', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-publish-root-'))
+    try {
+      const defaults = join(root, 'storage/framework/defaults/app')
+      mkdirSync(join(defaults, 'Actions/Auth'), { recursive: true })
+      mkdirSync(join(root, 'app/Actions/Auth'), { recursive: true })
+      writeFileSync(join(defaults, 'password-policy.ts'), 'export const PASSWORD_MIN_LENGTH = 8\n')
+      writeFileSync(join(defaults, 'Actions/Auth/LoginAction.ts'), 'import { PASSWORD_MIN_LENGTH } from \'../../password-policy\'\nexport default PASSWORD_MIN_LENGTH\n')
+
+      const target = join(root, 'app/Actions/Auth/LoginAction.ts')
+      await copyFile(join(defaults, 'Actions/Auth/LoginAction.ts'), target)
+      const carried = await carryRelativeImports(join(defaults, 'Actions/Auth/LoginAction.ts'), target, new Set(), root)
+
+      expect(carried.map(file => file.slice(file.indexOf('/app/')))).toEqual(['/app/password-policy.ts'])
+      expect((await import(target)).default).toBe(8)
+    }
+    finally {
       rmSync(root, { recursive: true, force: true })
     }
   })

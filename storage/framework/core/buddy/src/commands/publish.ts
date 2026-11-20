@@ -2,7 +2,7 @@ import type { CLI } from '@stacksjs/types'
 import { existsSync, lstatSync, mkdirSync, realpathSync, unlinkSync } from 'node:fs'
 import { cp, readdir, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import process from 'node:process'
 import { italic, log, onUnknownSubcommand } from "@stacksjs/cli"
 import { syncPackageProjectFiles, vendorDefaultsTree } from '@stacksjs/actions/upgrade/package-project'
@@ -397,7 +397,7 @@ async function publishResource(ctx: PublishContext): Promise<void> {
   const sourcePath = matches[0]
   if (!sourcePath)
     throw new Error(`Could not resolve default ${kind}: ${fileName}`)
-  const targetPath = `${userDir.replace(/\/$/, '')}/${fileName}`
+  const targetPath = publishedPath(kind, defaultsDir, userDir, sourcePath, fileName)
 
   if (existsSync(targetPath) && !force) {
     await log.error(`Already exists: ${italic(targetPath)}`)
@@ -415,6 +415,26 @@ async function publishResource(ctx: PublishContext): Promise<void> {
   log.success(`Published ${kind} ${italic(name)} → ${italic(targetPath.replace(`${process.cwd()}/`, ''))}`)
   for (const file of carried)
     log.info(`  + ${italic(file.replace(`${process.cwd()}/`, ''))} (imported by it)`)
+}
+
+/**
+ * Where the app's copy of a default goes.
+ *
+ * An action is addressed by its path: the default routes name
+ * `Actions/Auth/LoginAction`, and the router reads
+ * `app/Actions/Auth/LoginAction.ts` before the default. So its copy keeps the
+ * folders it sits in under the defaults tree. `publish:action LoginAction`
+ * used to write `app/Actions/LoginAction.ts`, a file no route reaches, so
+ * edits to it did nothing and nothing said so.
+ *
+ * Models, controllers and middleware keep the flat layout they have always
+ * been published to.
+ */
+export function publishedPath(kind: PublishContext['kind'], defaultsDir: string, userDir: string, sourcePath: string, fileName: string): string {
+  const base = userDir.replace(/\/$/, '')
+  return kind === 'action'
+    ? join(base, relative(defaultsDir, sourcePath))
+    : `${base}/${fileName}`
 }
 
 /**
@@ -472,7 +492,7 @@ async function publishStx(kind: StxResourceKind, name: string, force: boolean): 
  * Recurses, so a dependency's own siblings come too, and refuses to write
  * outside the project root.
  */
-export async function carryRelativeImports(sourcePath: string, targetPath: string, seen = new Set<string>()): Promise<string[]> {
+export async function carryRelativeImports(sourcePath: string, targetPath: string, seen = new Set<string>(), projectRoot: string = process.cwd()): Promise<string[]> {
   if (seen.has(sourcePath))
     return []
   seen.add(sourcePath)
@@ -485,7 +505,7 @@ export async function carryRelativeImports(sourcePath: string, targetPath: strin
   // a path built from the target string does not, so comparing the two rejects
   // writes that are perfectly inside the project - anywhere the project itself
   // sits under a symlink.
-  const root = realpathSync(process.cwd())
+  const root = realpathSync(projectRoot)
   const targetDir = realpathSync(dirname(targetPath))
 
   // `from './x'`, `from '../x'`, and the same inside `import type`.
@@ -517,7 +537,7 @@ export async function carryRelativeImports(sourcePath: string, targetPath: strin
         written.push(to)
       }
 
-      written.push(...await carryRelativeImports(from, to, seen))
+      written.push(...await carryRelativeImports(from, to, seen, projectRoot))
       break
     }
   }
