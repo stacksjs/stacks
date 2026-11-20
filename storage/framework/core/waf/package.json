@@ -1,0 +1,46 @@
+{
+  "name": "@stacksjs/waf",
+  "type": "module",
+  "sideEffects": false,
+  "version": "0.75.635",
+  "description": "zig-waf in process through bun:ffi: OWASP CRS inspection for Stacks apps that are not behind rpx.",
+  "author": "Chris Breuer <chris@stacksjs.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "storage/framework/core/waf"
+  },
+  "keywords": [
+    "waf",
+    "firewall",
+    "owasp",
+    "crs",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build.ts",
+    "test": "bun test ./tests",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@stacksjs/types": "workspace:*"
+  },
+  "devDependencies": {
+    "better-dx": "^0.2.39"
+  }
+}
