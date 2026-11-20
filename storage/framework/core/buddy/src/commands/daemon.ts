@@ -62,6 +62,8 @@ export function daemon(buddy: CLI): void {
       console.log(`  Generation  ${watched} watched, ${queued} queued${active ? `, running for ${active}` : ''}`)
       for (const failure of failures)
         console.log(`  ${failure.path}  ${failure.error}`)
+      for (const approval of running.generation.approvals ?? [])
+        console.log(`  Approval  ${approval.path}  ${approval.files} generated file${approval.files === 1 ? '' : 's'} awaiting review`)
     }
 
     if (running.dashboards.length === 0) {

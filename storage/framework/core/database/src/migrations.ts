@@ -5,6 +5,7 @@
  * powered by bun-query-builder.
  */
 
+import type { GenerationFileGuard } from '@stacksjs/path'
 import type { UnsafeRowsResult } from './utils'
 import type { Result } from '@stacksjs/error-handling'
 import type { IndexShape } from './index-shape'
@@ -2660,7 +2661,7 @@ function describeRenames(renames: readonly FrameworkRename[]): string {
  * against. Either way `plan` is the corrected plan, or undefined when there was
  * nothing to correct.
  */
-export function catchUpSnapshotFrameworkRenames(options: { persist: boolean }): { changes: string[], plan?: MigrationPlan } {
+export function catchUpSnapshotFrameworkRenames(options: { persist: boolean, guard?: GenerationFileGuard }): { changes: string[], plan?: MigrationPlan } {
   configureQueryBuilder()
   const dialect = getQbDialect()
   const stored = readStoredMigrationPlan(dialect)
@@ -2676,7 +2677,7 @@ export function catchUpSnapshotFrameworkRenames(options: { persist: boolean }): 
     return { changes }
 
   if (options.persist) {
-    saveMigrationSnapshot(plan, { dialect })
+    writeGenerationSnapshot(plan, dialect, options.guard)
     log.info(`[migration] Updated the model snapshot for framework renames (${describeRenames(renames)}): ${changes.join(', ')}`)
   }
   else {
@@ -2739,6 +2740,7 @@ export async function catchUpFrameworkRenames(options: { runner?: RenameSqlRunne
  * the "models are the source of truth" promise.
  */
 export interface GenerateMigrationsOptions {
+  guard?: GenerationFileGuard
   /** Refuse potentially destructive changes before persisting generated SQL. Default true. */
   allowDestructive?: boolean
   /** Register ignored generated SQL with Git as intent-to-add. Default true. */
@@ -2880,6 +2882,13 @@ function resolveSnapshotDir(): string {
 
 function snapshotPathFor(dialect: string): string {
   return join(resolveSnapshotDir(), `model-snapshot.${dialect}.json`)
+}
+
+function writeGenerationSnapshot(plan: MigrationPlan, dialect: MigrationPlan['dialect'], guard?: GenerationFileGuard): void {
+  const file = snapshotPathFor(dialect)
+  guard?.beforeWrite(file)
+  saveMigrationSnapshot(plan, { dialect })
+  guard?.afterWrite(file)
 }
 
 function readStoredMigrationPlan(dialect: string): MigrationPlan | undefined {
@@ -3143,7 +3152,7 @@ async function generateMigrationsForDialect(options: GenerateMigrationsOptions):
     }
     // Before the stored plan is read: a snapshot that predates a framework
     // rename would otherwise have the differ drop the renamed tables.
-    catchUpSnapshotFrameworkRenames({ persist: true })
+    catchUpSnapshotFrameworkRenames({ persist: true, guard: options.guard })
 
     const storedPlan = readStoredMigrationPlan(getQbDialect())
 
@@ -3286,7 +3295,7 @@ async function generateMigrationsForDialect(options: GenerateMigrationsOptions):
     }
 
     if (result.hasChanges || extensionStatements.length > 0) {
-      const written = persistGeneratedMigrations(sqlStatements, storedPlan, await claimedMigrationNames(migrationDirectory()))
+      const written = persistGeneratedMigrations(sqlStatements, storedPlan, await claimedMigrationNames(migrationDirectory()), options.guard)
       // Only announce when we actually wrote files. `hasChanges` can be
       // true while `written === 0` if the qb diff restated statements
       // already covered by committed migrations — that's a no-op from
@@ -3313,7 +3322,7 @@ async function generateMigrationsForDialect(options: GenerateMigrationsOptions):
     // removals can never be observed.
     const stablePlan = preserveMigrationPlanTableOrder(result.plan, storedPlan)
     if (!storedPlan || JSON.stringify(stablePlan) !== JSON.stringify(storedPlan))
-      saveMigrationSnapshot(stablePlan, { dialect: getQbDialect() })
+      writeGenerationSnapshot(stablePlan, getQbDialect(), options.guard)
     else
       log.debug('Model snapshot unchanged')
 
@@ -4803,7 +4812,7 @@ async function ledgerNamesForNumbering(timeoutMs = 5000): Promise<string[] | nul
  * or under one of their ordinals: the ledger keys on the filename alone, so a
  * reused name is a migration `migrate` silently skips.
  */
-export function persistGeneratedMigrations(sqlStatements: string[], previousPlan?: MigrationPlan, claimed: readonly string[] = []): number {
+export function persistGeneratedMigrations(sqlStatements: string[], previousPlan?: MigrationPlan, claimed: readonly string[] = [], guard?: GenerationFileGuard): number {
   if (!sqlStatements?.length)
     return 0
 
@@ -4865,7 +4874,9 @@ export function persistGeneratedMigrations(sqlStatements: string[], previousPlan
     // alongside the regenerated corpus (stacksjs/stacks#2234). The dedup above
     // compares normalized SQL statements, so a leading comment cannot match one.
     const content = `${GENERATED_MIGRATION_MARKER}\n${body}`
-    writeFileSync(filePath, getDialect() === 'postgres' ? normalizePostgresMigrationSql(content) : content)
+    guard?.beforeWrite(filePath)
+    writeFileSync(filePath, getDialect() === 'postgres' ? normalizePostgresMigrationSql(content) : content, { flag: 'wx' })
+    guard?.afterWrite(filePath)
     log.debug(`[migration] Wrote ${filename} (${fresh.length} stmt${fresh.length === 1 ? '' : 's'})`)
     taken.add(filename)
     written += 1

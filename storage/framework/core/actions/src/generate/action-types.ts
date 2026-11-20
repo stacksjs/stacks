@@ -19,10 +19,11 @@
  * with `typeof import(...)`.
  */
 
-import { existsSync } from 'node:fs'
+import type { GenerationFileGuard } from '@stacksjs/path'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { dirname } from 'node:path'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
-import { storage } from '@stacksjs/storage'
 
 /**
  * Every named route, as `name → path`.
@@ -92,7 +93,7 @@ async function collectRoutes(strict: boolean): Promise<CollectedRoutes> {
  * because one route file threw would be a much worse trade than an unchecked
  * `url()`.
  */
-export async function generateRouteNames(options: { strict?: boolean } = {}): Promise<void> {
+export async function generateRouteNames(options: { strict?: boolean, guard?: GenerationFileGuard } = {}): Promise<void> {
   log.info('Generating route names...')
 
   const { named: namedRoutes, redirects } = await collectRoutes(options.strict === true)
@@ -123,7 +124,11 @@ export const routeRedirects = {${redirectEntries ? `${redirectEntries}\n` : ''}}
 `
 
   const file = p.storagePath('framework/auto-imports/routes.ts')
-  if (await Bun.file(file).text().catch(() => undefined) !== contents)
-    await storage.writeFile(file, contents)
+  if (await Bun.file(file).text().catch(() => undefined) !== contents) {
+    mkdirSync(dirname(file), { recursive: true })
+    options.guard?.beforeWrite(file)
+    writeFileSync(file, contents)
+    options.guard?.afterWrite(file)
+  }
   log.debug(`[generate:types] Wrote ${Object.keys(namedRoutes).length} named routes`)
 }

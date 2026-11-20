@@ -17,6 +17,8 @@ const importFiles = [
 
 const typeFiles = ['storage/framework/auto-imports/routes.ts', 'database/types.d.ts']
 const migrationDirectories = ['database/migrations', 'storage/framework/database']
+const snapshotFiles = ['sqlite', 'mysql', 'postgres', 'singlestore', 'vitess']
+  .map(dialect => `storage/framework/database/model-snapshot.${dialect}.json`)
 
 export function gitCommand(root: string, args: string[], options?: Partial<SpawnSyncOptionsWithStringEncoding>): string {
   const result = spawnSync('git', ['--literal-pathspecs', ...args], {
@@ -55,22 +57,24 @@ export function generatedChanges(root: string, tasks: GenerationTask[], includeI
     ...(tasks.includes('types') ? typeFiles : []),
   ]
   const migrations = tasks.includes('migrations')
+  const writable = new Set([...files, ...(migrations ? snapshotFiles : [])])
   const scope = [...files, ...(migrations ? migrationDirectories : [])]
   const read = () => {
     const status = git(root, '--no-optional-locks', 'status', '--porcelain=v1', '-z', '--no-renames', '--untracked-files=all',
       ...(includeIgnored && migrations ? ['--ignored=traditional'] : []), '--', ...scope)
     return new Map(status.split('\0').filter(Boolean).map(entry => [entry.slice(3), entry.slice(0, 2)]))
   }
-  const eligible = (file: string, status: string) => {
+  const generatedSql = (file: string) => {
     const fullPath = join(root, file)
-    const snapshot = migrations && /^storage\/framework\/database\/model-snapshot\.(?:sqlite|mysql|postgres|singlestore|vitess)\.json$/.test(file)
-    const generatedSql = migrations && /^database\/migrations\/(?:[^/]+\/)?\d{10}-.+\.sql$/.test(file)
+    return migrations && /^database\/migrations\/(?:[^/]+\/)?\d{10}-.+\.sql$/.test(file)
       && isGeneratedMigration(dirname(fullPath), basename(fullPath))
-    if (status === '!!' ? !generatedSql : !files.includes(file) && !snapshot && !generatedSql)
-      return false
-    return (status === ' M' || status === '??' || status === '!!') && lstatSync(fullPath, { throwIfNoEntry: false })?.isFile() === true
   }
-  return { read, eligible }
+  const eligible = (file: string, status: string) => {
+    if (status === '!!' ? !generatedSql(file) : !writable.has(file) && !generatedSql(file))
+      return false
+    return (status === ' M' || status === '??' || status === '!!') && lstatSync(join(root, file), { throwIfNoEntry: false })?.isFile() === true
+  }
+  return { read, eligible, writable }
 }
 
 /** Commit only clean-before paths whose contents the requested generators own. */

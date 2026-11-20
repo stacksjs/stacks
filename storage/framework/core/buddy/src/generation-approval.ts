@@ -1,104 +1,123 @@
 import type { GenerationTask } from '@stacksjs/actions/daemon/generation-config'
-import { spawnSync } from 'node:child_process'
-import { createHash, randomUUID } from 'node:crypto'
-import { closeSync, existsSync, fsyncSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs'
-import { basename, dirname, join } from 'node:path'
+import type { GenerationFileGuard } from '@stacksjs/path'
+import { createHash } from 'node:crypto'
+import { closeSync, existsSync, fsyncSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { dirname, join, relative } from 'node:path'
+import { approvalPath, readApproval, writeApprovalState } from '@stacksjs/actions/daemon/approval-state'
 import { readGenerationConfig } from '@stacksjs/actions/daemon/generation-config'
-import { stacksHome } from '@stacksjs/path'
+import { acquireMigrationLock } from '@stacksjs/database/migration-lock'
 import { generatedChanges, generationRevision, git, gitCommand, gitRevision } from './generation-changes'
-
-interface Approval {
-  revision: string
-  files: Record<string, string>
-}
 
 const staleApproval = 'The proposal changed. Run buddy generate:project and review the current changes again.'
 const commitMessage = 'chore: regenerate Stacks artifacts'
 
-function approvalPath(root: string): string {
-  const project = createHash('sha256').update(realpathSync(root)).digest('hex')
-  return stacksHome(`buddy/approvals/${project}.json`)
-}
-
-function readApproval(path: string): Approval | undefined {
-  try {
-    return JSON.parse(readFileSync(path, 'utf8')) as Approval
-  }
-  catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
-      throw error
-  }
-}
-
-function fingerprint(root: string, file: string): string {
+function fingerprint(root: string, file: string): string | undefined {
   const path = join(root, file)
-  const stat = lstatSync(path)
+  const stat = lstatSync(path, { throwIfNoEntry: false })
+  if (!stat)
+    return
+  if (!stat.isFile())
+    return 'not a regular file'
   return createHash('sha256').update(`${stat.mode}:`).update(readFileSync(path)).digest('hex')
 }
 
-function notifyApproval(root: string, count: number): void {
-  if (process.platform !== 'darwin')
-    return
+function branchOf(revision?: string): string | undefined {
+  const branch = revision?.trim().split('\n')[1]
+  return branch?.startsWith('refs/heads/') ? branch : undefined
+}
 
-  const script = 'on run argv\ndisplay notification (item 1 of argv) with title "Buddy · Generated changes"\nend run'
-  const message = `${basename(root)} has ${count} generated ${count === 1 ? 'file' : 'files'} ready for review. Run ./buddy generate:review in the project.`
-  const result = spawnSync('/usr/bin/osascript', ['-e', script, '--', message], { encoding: 'utf8', timeout: 15000 })
-  if (result.status !== 0)
-    console.warn(`[buddy:notification] Could not submit the desktop alert. Run ./buddy generate:review in ${root}.`)
+/** Generation and approved commits share the proposal and its working-tree files. */
+export async function withApprovalLock<T>(root: string, run: () => T | Promise<T>): Promise<T> {
+  const path = approvalPath(root)
+  mkdirSync(dirname(path), { recursive: true, mode: 0o700 })
+  const lock = await acquireMigrationLock('sqlite', null, { sqliteLockPath: `${path}.lock` })
+  try {
+    return await run()
+  }
+  finally {
+    await lock.release()
+  }
 }
 
 export function prepareCommitApproval(
   root: string,
-  tasks: GenerationTask[],
+  task: GenerationTask,
   enabledTasks: GenerationTask[],
-  notify = notifyApproval,
-): (() => void) | undefined {
+): { guard: GenerationFileGuard, finish: (success: boolean) => void } | undefined {
   const revision = generationRevision(root)
-  if (!revision || !revision.includes('\nrefs/heads/'))
+  const branch = branchOf(revision)
+  if (!revision)
     return
 
   const path = approvalPath(root)
   const { read, eligible } = generatedChanges(root, enabledTasks, true)
-  const { eligible: selected } = generatedChanges(root, tasks, true)
+  const selected = generatedChanges(root, [task], true)
   const before = read()
   const previous = readApproval(path)
-  const owned = new Map(Object.entries(previous?.revision === revision ? previous.files : {}))
-  const carried = new Set([...owned].filter(([file, hash]) =>
-    before.has(file) && eligible(file, before.get(file)!) && fingerprint(root, file) === hash,
-  ).map(([file]) => file))
+  // An unrelated commit on the same branch invalidates consent, but it says
+  // nothing about whether Buddy still owns an unchanged working-tree file.
+  const sameBranch = branch !== undefined && branchOf(previous?.revision) === branch
+  const pending = new Map(Object.entries(sameBranch ? previous?.files ?? {} : {}))
+  const incomplete = new Map(Object.entries(sameBranch ? previous?.incomplete ?? {} : {}))
+  const expected = new Map([...selected.writable].map(file => [file, fingerprint(root, file)]))
+  const writes = new Map<string, string>()
 
-  return () => {
-    const current = readApproval(path)
-    if (gitRevision(root) !== revision || JSON.stringify(current) !== JSON.stringify(previous))
-      return
-
-    const files = new Map<string, string>()
-    for (const [file, status] of [...read()].sort(([a], [b]) => a.localeCompare(b))) {
-      if (!eligible(file, status) || (before.has(file) && !carried.has(file)))
-        continue
+  const guard: GenerationFileGuard = {
+    beforeWrite(path) {
+      const file = relative(root, path)
+      if (!selected.writable.has(file))
+        return // Migration SQL is append-only and created exclusively by the migration writer.
       const hash = fingerprint(root, file)
-      // A run can refresh a subset. Preserve other still-valid proposal entries.
-      if (owned.get(file) === hash || selected(file, status))
-        files.set(file, hash)
-    }
-    const proposal: Approval = { revision, files: Object.fromEntries(files) }
-    if (JSON.stringify(proposal) === JSON.stringify(previous) || (files.size === 0 && !previous))
-      return
-    if (files.size === 0) {
-      rmSync(path, { force: true })
-      return
-    }
+      const status = before.get(file)
+      const owned = hash !== undefined && (pending.get(file) === hash || incomplete.get(file) === hash || writes.get(file) === hash)
+      if (expected.get(file) !== hash || hash === 'not a regular file' || (status && !(owned && eligible(file, status)))) {
+        throw new Error(`Local edits in ${file}. Resolve them before Buddy regenerates this file.`)
+      }
+    },
+    afterWrite(path) {
+      const file = relative(root, path)
+      const hash = fingerprint(root, file)
+      if (hash && hash !== 'not a regular file') {
+        writes.set(file, hash)
+        expected.set(file, hash)
+      }
+    },
+  }
 
-    mkdirSync(dirname(path), { recursive: true, mode: 0o700 })
-    const temp = `${path}.${randomUUID()}`
-    try {
-      writeFileSync(temp, JSON.stringify(proposal), { flag: 'wx', mode: 0o600 })
-      renameSync(temp, path)
-    }
-    finally {
-      rmSync(temp, { force: true })
-    }
-    notify(root, files.size)
+  return {
+    guard,
+    finish(success) {
+      if (!branch || branchOf(gitRevision(root)) !== branch || JSON.stringify(readApproval(path)) !== JSON.stringify(previous))
+        return
+
+      const files: Record<string, string> = {}
+      const unfinished: Record<string, string> = {}
+      for (const [file, status] of [...read()].sort(([a], [b]) => a.localeCompare(b))) {
+        if (!eligible(file, status))
+          continue
+        const hash = fingerprint(root, file)
+        if (!hash || hash === 'not a regular file')
+          continue
+        if (writes.get(file) === hash || incomplete.get(file) === hash) {
+          if (success && selected.eligible(file, status))
+            files[file] = hash
+          else
+            unfinished[file] = hash
+        }
+        else if (pending.get(file) === hash) {
+          files[file] = hash
+        }
+      }
+
+      if (Object.keys(files).length + Object.keys(unfinished).length === 0) {
+        if (previous && sameBranch)
+          rmSync(path, { force: true })
+        return
+      }
+      const proposal = { revision, files, notify: true, ...(Object.keys(unfinished).length ? { incomplete: unfinished } : {}) }
+      if (JSON.stringify(proposal) !== JSON.stringify(previous))
+        writeApprovalState(path, proposal)
+    },
   }
 }
 
@@ -185,10 +204,14 @@ export async function reviewGeneratedCommit(
       return 'empty'
     if (!await review(diff))
       return 'pending'
-    const commit = commitReviewedTree(root, proposal.revision, files, tree, join(workspace, 'real-index'), validate)
-    if (JSON.stringify(readApproval(path)) === JSON.stringify(proposal))
-      rmSync(path, { force: true })
-    return commit
+    return await withApprovalLock(root, () => {
+      const commit = commitReviewedTree(root, proposal.revision, files, tree, join(workspace, 'real-index'), validate)
+      if (proposal.incomplete)
+        writeApprovalState(path, { ...proposal, revision: gitRevision(root), files: {} })
+      else
+        rmSync(path, { force: true })
+      return commit
+    })
   }
   finally {
     rmSync(workspace, { recursive: true, force: true })

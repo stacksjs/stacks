@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { readGenerationConfig } from '@stacksjs/actions/daemon/generation-config'
 import { prepareCommitApproval, reviewGeneratedCommit } from '../src/generation-approval'
 import { git } from '../src/generation-changes'
@@ -20,6 +20,13 @@ function write(file: string, content: string): void {
   const target = join(root, file)
   mkdirSync(dirname(target), { recursive: true })
   writeFileSync(target, content)
+}
+
+function writeGenerated(approval: NonNullable<ReturnType<typeof prepareCommitApproval>>, file: string, content: string): void {
+  const target = join(root, file)
+  approval.guard.beforeWrite(target)
+  write(file, content)
+  approval.guard.afterWrite(target)
 }
 
 beforeEach(() => {
@@ -59,20 +66,16 @@ test('notification only proposes clean-before generated paths and approval commi
   git(root, 'add', 'source.ts')
   write('source.ts', 'const unstaged = true\n')
   const index = git(root, 'diff', '--cached')
-  const notifications: number[] = []
-  const notify = (_root: string, count: number) => notifications.push(count)
-
-  const proposeImports = prepareCommitApproval(root, ['imports'], [...tasks], notify)
-  write(imports, 'export const newBarrel = true\n')
-  write(jobs, 'export const overwrittenPreexistingEdit = true\n')
-  proposeImports!()
-  const proposeMigrations = prepareCommitApproval(root, ['migrations'], [...tasks], notify)
-  write(migration, `${marker}CREATE TABLE sample (id INTEGER);\n`)
+  const proposeImports = prepareCommitApproval(root, 'imports', [...tasks])!
+  expect(() => proposeImports.guard.beforeWrite(join(root, jobs))).toThrow('Local edits')
+  writeGenerated(proposeImports, imports, 'export const newBarrel = true\n')
+  proposeImports.finish(true)
+  const proposeMigrations = prepareCommitApproval(root, 'migrations', [...tasks])!
+  writeGenerated(proposeMigrations, migration, `${marker}CREATE TABLE sample (id INTEGER);\n`)
   write(manual, 'CREATE TABLE manual (id INTEGER);\n')
-  proposeMigrations!()
-  const refresh = prepareCommitApproval(root, [...tasks], [...tasks], notify)
-  refresh!()
-  expect(notifications).toEqual([1, 2])
+  proposeMigrations.finish(true)
+  prepareCommitApproval(root, 'imports', [...tasks])!.finish(true)
+  expect(readFileSync(join(root, jobs), 'utf8')).toBe('export const preexistingEdit = true\n')
   expect(git(root, 'rev-parse', 'HEAD')).toBe(head)
   expect(git(root, 'diff', '--cached')).toBe(index)
 
@@ -103,9 +106,9 @@ test('notification only proposes clean-before generated paths and approval commi
 
 test('changes during review or disabling approval require fresh consent', async () => {
   const head = git(root, 'rev-parse', 'HEAD')
-  const propose = prepareCommitApproval(root, ['imports'], [...tasks], () => {})
-  write(imports, 'export const generated = true\n')
-  propose!()
+  const propose = prepareCommitApproval(root, 'imports', [...tasks])!
+  writeGenerated(propose, imports, 'export const generated = true\n')
+  propose.finish(true)
 
   await expect(reviewGeneratedCommit(root, async () => {
     write(imports, 'export const manualEditAfterReview = true\n')
@@ -115,17 +118,111 @@ test('changes during review or disabling approval require fresh consent', async 
   expect(git(root, 'diff', '--cached')).toBe('')
   expect(git(root, 'diff')).toContain('manualEditAfterReview')
 
-  const rerun = prepareCommitApproval(root, ['imports'], [...tasks], () => {})
-  rerun!()
+  prepareCommitApproval(root, 'imports', [...tasks])!.finish(true)
   expect(await reviewGeneratedCommit(root, async () => true)).toBe('empty')
 
   write(imports, 'export const previous = true\n')
-  const proposeAgain = prepareCommitApproval(root, ['imports'], [...tasks], () => {})
-  write(imports, 'export const regenerated = true\n')
-  proposeAgain!()
+  const proposeAgain = prepareCommitApproval(root, 'imports', [...tasks])!
+  writeGenerated(proposeAgain, imports, 'export const regenerated = true\n')
+  proposeAgain.finish(true)
   await expect(reviewGeneratedCommit(root, async () => {
     write('config/buddy.json', '{"generation":{"enabled":true}}')
     return true
   })).rejects.toThrow('The proposal changed')
   expect(git(root, 'rev-parse', 'HEAD')).toBe(head)
 })
+
+
+test('keeps unchanged proposals after an unrelated commit and rechecks the diff', async () => {
+  const proposal = prepareCommitApproval(root, 'imports', [...tasks])!
+  writeGenerated(proposal, imports, 'export const queued = true\n')
+  proposal.finish(true)
+
+  write('source.ts', 'export const unrelated = true\n')
+  git(root, 'add', 'source.ts')
+  git(root, 'commit', '-m', 'Edit source')
+  await expect(reviewGeneratedCommit(root, async () => false)).rejects.toThrow('The proposal changed')
+  prepareCommitApproval(root, 'imports', [...tasks])!.finish(true)
+
+  expect(await reviewGeneratedCommit(root, async diff => {
+    expect(diff).toContain('export const queued = true')
+    expect(diff).not.toContain('source.ts')
+    return false
+  })).toBe('pending')
+})
+
+test('retains successful artifacts and recovers partial writes on a successful retry', async () => {
+  const barrel = prepareCommitApproval(root, 'imports', [...tasks])!
+  writeGenerated(barrel, imports, 'export const ready = true\n')
+  barrel.finish(true)
+
+  const failedMigration = prepareCommitApproval(root, 'migrations', [...tasks])!
+  writeGenerated(failedMigration, migration, `${marker}CREATE TABLE sample (id INTEGER);\n`)
+  failedMigration.finish(false)
+
+  expect(await reviewGeneratedCommit(root, async diff => {
+    expect(diff).toContain(imports)
+    expect(diff).not.toContain(migration)
+    return true
+  })).toBe(git(root, 'rev-parse', 'HEAD').trim())
+  expect(git(root, 'show', '--format=', 'HEAD')).not.toContain(migration)
+
+  const retry = prepareCommitApproval(root, 'migrations', [...tasks])!
+  retry.finish(true)
+  expect(await reviewGeneratedCommit(root, async diff => {
+    expect(diff).toContain(migration)
+    expect(diff).not.toContain(imports)
+    return false
+  })).toBe('pending')
+})
+
+test('rejects edits made after preparation and before the generator writes', async () => {
+  const proposal = prepareCommitApproval(root, 'imports', [...tasks])!
+  write(imports, 'export const concurrentEdit = true\n')
+  expect(() => proposal.guard.beforeWrite(join(root, imports))).toThrow('Local edits')
+  proposal.finish(false)
+  expect(readFileSync(join(root, imports), 'utf8')).toBe('export const concurrentEdit = true\n')
+  expect(await reviewGeneratedCommit(root, async () => false)).toBe('empty')
+})
+
+test('the CLI protects edited barrels and keeps successful imports when migrations fail', async () => {
+  const framework = resolve(import.meta.dir, '../../../../..')
+  symlinkSync(join(framework, 'node_modules'), join(root, 'node_modules'), 'junction')
+  copyFileSync(join(framework, 'buddy'), join(root, 'buddy'))
+  write('package.json', '{"name":"buddy-approval-fixture","private":true}')
+  write('resources/functions/input.ts', 'export const guardedInput = true\n')
+  write('config/database.ts', "export default { default: 'sqlite' }\n")
+  const otherDialect = 'storage/framework/database/model-snapshot.postgres.json'
+  const head = git(root, 'rev-parse', 'HEAD')
+
+  const run = async (tasks: string) => {
+    const child = Bun.spawn(['sh', './buddy', 'generate:project', '--tasks', tasks], {
+      cwd: root,
+      env: { ...process.env, DB_CONNECTION: 'sqlite', LOG_LEVEL: 'warn' },
+      stderr: 'pipe',
+      stdout: 'pipe',
+    })
+    const [code, stdout, stderr] = await Promise.all([child.exited, child.stdout.text(), child.stderr.text()])
+    return { code, output: stdout + stderr }
+  }
+
+  const manualEdit = 'export const keepThis = true\n'
+  write(imports, manualEdit)
+  const blocked = await run('imports')
+  expect(blocked.code).not.toBe(0)
+  expect(blocked.output).toContain(`Local edits in ${imports}`)
+  expect(readFileSync(join(root, imports), 'utf8')).toBe(manualEdit)
+
+  write(imports, 'export const previous = true\n')
+  write(otherDialect, '{}\n')
+  const partial = await run('imports,migrations')
+  expect(partial.code).not.toBe(0)
+  expect(partial.output).toContain('Refusing to generate migrations')
+  expect(await reviewGeneratedCommit(root, async diff => {
+    expect(diff).toContain('guardedInput')
+    expect(diff).not.toContain(otherDialect)
+    return false
+  })).toBe('pending')
+  expect(git(root, 'rev-parse', 'HEAD')).toBe(head)
+  expect(git(root, 'diff', '--cached')).toBe('')
+}, 30_000)

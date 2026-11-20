@@ -15,6 +15,7 @@
  * model.
  */
 
+import type { GenerationFileGuard } from '@stacksjs/path'
 import type { Attribute, Model } from '@stacksjs/types'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
@@ -66,6 +67,7 @@ function booleanType(dialect: Dialect): string {
 }
 
 export interface GenerateSchemaOptions {
+  guard?: GenerationFileGuard
   modelsDir?: string
   defaultsDir?: string
   outFile?: string
@@ -707,7 +709,9 @@ export async function buildDatabaseSchema(options: GenerateSchemaOptions = {}): 
     && await Bun.file(outFile).text().catch(() => undefined) !== content) {
     const dir = path.dirname(outFile)
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    options.guard?.beforeWrite(outFile)
     fs.writeFileSync(outFile, content, 'utf-8')
+    options.guard?.afterWrite(outFile)
     log.success(`[generate:db-types] wrote ${tables.length} table(s) to ${outFile}`)
   }
 

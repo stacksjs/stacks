@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { isProcessAlive, registerProject } from '@stacksjs/path'
+import { ApprovalNotifications } from '../src/daemon/approval-notifications'
+import { approvalPath, writeApprovalState } from '../src/daemon/approval-state'
 import { daemonStatus, openProjectDashboard, readDaemonState, startDaemon, stopDaemon } from '../src/daemon/client'
 import { machineEnvironment } from '../src/daemon/environment'
 import { DAEMON_PROTOCOL, daemonSocket, daemonStateFile } from '../src/daemon/paths'
@@ -32,9 +34,9 @@ afterEach(async () => {
   rmSync(home, { recursive: true, force: true })
 })
 
-async function until(condition: () => boolean, ms = 10_000): Promise<boolean> {
+async function until(condition: () => boolean | Promise<boolean>, ms = 10_000): Promise<boolean> {
   const deadline = Date.now() + ms
-  while (!condition() && Date.now() < deadline)
+  while (!await condition() && Date.now() < deadline)
     await Bun.sleep(25)
   return condition()
 }
@@ -108,9 +110,13 @@ describe('the background daemon', () => {
     }
     const entries = () => existsSync(audit) ? readFileSync(audit, 'utf8').trim().split('\n') : []
     const first = makeProject('shop', '1')
+    writeFileSync(join(first, 'config/buddy.json'), '{"generation":{"enabled":true,"commitApproval":true}}')
+    const proposal = approvalPath(first)
+    writeApprovalState(proposal, { revision: 'head\nrefs/heads/main\n', files: { 'database/types.d.ts': 'hash' } })
     registerProject(first)
     const { status } = await startDaemon()
     expect(status.generation?.watched).toBe(1)
+    expect(status.generation?.approvals).toEqual([{ path: realpathSync(first), files: 1 }])
 
     const second = makeProject('blog', '2')
     registerProject(second)
@@ -136,7 +142,69 @@ describe('the background daemon', () => {
     writeFileSync(join(second, 'storage/framework/auto-imports/functions.ts'), 'export {}')
     await Bun.sleep(1_100)
     expect(entries()).toHaveLength(8)
+    rmSync(proposal)
+    expect(await until(async () => (await daemonStatus())?.generation?.approvals.length === 0)).toBe(true)
   }, 20_000)
+})
+
+describe('approval notifications', () => {
+  it('keeps proposals visible, retries a failed submission after a restart and deduplicates delivery', async () => {
+    const root = join(home, 'shop')
+    mkdirSync(root)
+    const path = approvalPath(root)
+    const proposal = { revision: 'head\nrefs/heads/main\n', files: { 'database/types.d.ts': 'hash' }, notify: true }
+    writeApprovalState(path, proposal)
+
+    let attempts = 0
+    const messages: string[] = []
+    const sender = async () => {
+      if (++attempts === 1)
+        throw new Error('notification service unavailable')
+    }
+    const first = new ApprovalNotifications(message => messages.push(message), sender, () => 250)
+    first.start()
+    try {
+      first.setProject(root, true)
+      first.setGenerating(root)
+      expect(first.status()).toEqual([{ path: root, files: 1 }])
+      expect(await until(() => existsSync(`${path}.delivery`))).toBe(true)
+      expect(messages[0]).toContain('Buddy will retry')
+    }
+    finally {
+      await first.stop()
+    }
+
+    const second = new ApprovalNotifications(() => {}, sender)
+    second.start()
+    try {
+      second.setGenerating(root)
+      second.setProject(root, true)
+      expect(second.status()).toEqual([{ path: root, files: 1 }])
+      expect(attempts).toBe(1)
+      second.setGenerating()
+      expect(await until(() => attempts === 2)).toBe(true)
+      expect(await until(() => !JSON.parse(readFileSync(`${path}.delivery`, 'utf8')).retryAt)).toBe(true)
+      writeApprovalState(path, { ...proposal, incomplete: { 'unused.txt': 'hash' } })
+      await Bun.sleep(100)
+      expect(attempts).toBe(2)
+    }
+    finally {
+      await second.stop()
+    }
+
+    const third = new ApprovalNotifications(() => {}, sender)
+    third.start()
+    try {
+      third.setProject(root, true)
+      expect(third.status()).toEqual([{ path: root, files: 1 }])
+      expect(attempts).toBe(2)
+      writeApprovalState(path, { ...proposal, files: { 'database/types.d.ts': 'different hash' } })
+      expect(await until(() => attempts === 3)).toBe(true)
+    }
+    finally {
+      await third.stop()
+    }
+  })
 })
 
 describe('the environment the daemon keeps', () => {

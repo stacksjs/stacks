@@ -169,7 +169,11 @@ Set `autoCommit` to `true` to commit clean-before generated paths under the proj
 
 Set `generation.commitApproval` to `true` with `generation.autoCommit` set to `false` to receive a macOS notification when Buddy has generated changes ready for review. Approval takes precedence if both settings are enabled. Run `buddy generate:review` in the project, or `buddy generate:review --project <name>` from another directory.
 
-Buddy shows the diff and waits for an explicit yes in an interactive terminal. It commits the reviewed tree locally, using your Git identity and signing settings. This approval path uses Git's commit plumbing, so it does not run the usual `git commit` hooks. It includes newly written migrations with Buddy's generated marker, even if a Git ignore rule covers SQL. Previously edited files and unrelated staged changes stay out of the commit. A proposal becomes stale if its files or Git revision change before approval.
+Use `buddy daemon:status` to find projects with pending reviews. The daemon retries failed macOS alert submissions independently of generation.
+
+Buddy shows the diff and waits for an explicit yes in an interactive terminal. It commits the reviewed tree locally, using your Git identity and signing settings. This approval path uses Git's commit plumbing, so it does not run the usual `git commit` hooks. It includes newly written migrations with Buddy's generated marker, even if a Git ignore rule covers SQL.
+
+With approval enabled, Buddy protects local edits to the generated files it manages and reports conflicts during generation. Successful generators can leave reviewable changes even when another generator fails. After an unrelated commit on the same branch, run `buddy generate:project` to refresh the pending diff before approving it. Buddy carries forward files it can still verify from its previous run.
 
 ## Related
 

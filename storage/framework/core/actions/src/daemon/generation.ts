@@ -4,6 +4,7 @@ import { accessSync, constants, existsSync, lstatSync, mkdirSync, watch } from '
 import { dirname, extname, join } from 'node:path'
 import process from 'node:process'
 import { listProjects, projectCliEntry, stacksHome } from '@stacksjs/path'
+import { ApprovalNotifications } from './approval-notifications'
 import { machineEnvironment } from './environment'
 import { generationConfigPath, generationTasks, readGenerationConfig } from './generation-config'
 
@@ -60,6 +61,7 @@ export interface GenerationStatus {
   queued: number
   running: string | null
   failures: Array<{ path: string, error: string }>
+  approvals: Array<{ path: string, files: number }>
 }
 
 function brief(error: unknown): string {
@@ -134,10 +136,14 @@ export class GenerationSupervisor {
   private registryTimer?: ReturnType<typeof setTimeout>
   private closed = false
   private watched = 0
+  private approvals: ApprovalNotifications
 
-  constructor(private log: (line: string) => void, private onChange: () => void) {}
+  constructor(private log: (line: string) => void, private onChange: () => void) {
+    this.approvals = new ApprovalNotifications(log)
+  }
 
   start(): void {
+    this.approvals.start()
     const dir = stacksHome('projects')
     mkdirSync(dir, { recursive: true })
     this.registry = watch(dir, (_, file) => {
@@ -159,6 +165,7 @@ export class GenerationSupervisor {
       watched: this.watched,
       queued: [...this.projects.values()].filter(project => project.pending.size > 0).length,
       running: this.active?.project.root ?? null,
+      approvals: this.approvals.status(),
       failures: [...this.projects.values()].flatMap(project => {
         const error = project.configError ?? project.error
         return error ? [{ path: project.root, error }] : []
@@ -192,8 +199,11 @@ export class GenerationSupervisor {
   private configure(project: ProjectWatch): void {
     const previous = project.entry
     let optedIn = false
+    let approval = false
     try {
-      optedIn = readGenerationConfig(project.root) !== null
+      const config = readGenerationConfig(project.root)
+      optedIn = config !== null
+      approval = config?.commitApproval === true
       project.entry = optedIn ? generationEntry(project.root) : undefined
       const error = optedIn && !project.entry ? 'Update the project Stacks runtime to enable background generation.' : undefined
       if (error && error !== project.configError)
@@ -205,6 +215,7 @@ export class GenerationSupervisor {
       project.configError = brief(error)
       this.log(`generation config for ${project.root}: ${project.configError}`)
     }
+    this.approvals.setProject(project.root, !!project.entry && approval)
 
     if (!previous && project.entry)
       this.watched++
@@ -310,6 +321,7 @@ export class GenerationSupervisor {
 
       try {
         const child = launch(project.root, project.entry, tasks)
+        this.approvals.setGenerating(project.root)
         const timeout = setTimeout(() => killWorker(child), WORKER_TIMEOUT_MS)
         const done = Promise.all([child.exited, workerErrors(child.stderr)]).then(([code, stderr]) => {
           const lines = stderr.split('\n')
@@ -329,6 +341,7 @@ export class GenerationSupervisor {
         }).finally(() => {
           clearTimeout(timeout)
           this.active = undefined
+          this.approvals.setGenerating()
           this.pump()
         })
         this.active = { project, child, done }
@@ -342,6 +355,7 @@ export class GenerationSupervisor {
   }
 
   private remove(project: ProjectWatch): void {
+    this.approvals.setProject(project.root, false)
     for (const entry of project.watchers.values())
       entry.watcher.close()
     if (project.entry)
@@ -357,9 +371,11 @@ export class GenerationSupervisor {
     for (const project of this.projects.values())
       this.remove(project)
     this.projects.clear()
+    const notifications = this.approvals.stop()
     if (this.active) {
       killWorker(this.active.child)
       await this.active.done
     }
+    await notifications
   }
 }

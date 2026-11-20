@@ -104,6 +104,9 @@ Set `generation.commitApproval: true` to require explicit approval and receive a
 macOS notification when generated files are ready. `buddy generate:review`
 shows the proposed diff and asks before making a local commit. This setting
 takes precedence over `generation.autoCommit`.
+`buddy daemon:status` lists pending reviews even when a desktop alert is
+missed. Approval-enabled generation protects local edits to its artifacts
+and retains successful outputs when another generator fails.
 
 ## Architecture
 
