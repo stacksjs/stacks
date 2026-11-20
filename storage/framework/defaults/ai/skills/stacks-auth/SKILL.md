@@ -21,6 +21,32 @@ The `@stacksjs/auth` package provides comprehensive authentication and authoriza
 - Middleware aliases: `app/Middleware.ts`
 - Auth types: `storage/framework/core/types/src/auth.ts`
 
+## Changing the sign-in flow: `buddy make:auth`
+
+Login, registration, two-factor sign-in, logout and password reset already run
+from the framework defaults: `defaults/routes/auth.ts` serves them, and nothing
+has to be copied for them to work. `buddy make:auth` is for changing them. It
+copies the files that make up the flow to the paths the framework reads before
+its own:
+
+- pages: `resources/views/login.stx`, `register.stx`, `forgot-password.stx`,
+  `password/reset/[token].stx`;
+- the components they render, under `resources/components/Dashboard/Auth/`.
+  Each page is a thin wrapper: `LoginDashboard` signs in and redirects, `Login`
+  is the form, `AuthCard` the shared card. Change the form in `Login.stx`;
+- the actions the default routes name, under `app/Actions/Auth/` and
+  `app/Actions/Password/`, plus `app/password-policy.ts`, which they import.
+
+The routes are not copied: user routes load first and the router reads an
+action from `app/Actions` before the default, so the default routes already run
+the copies. A file the app has is kept unless `--force` is passed, so running it
+again only fills in what is missing. `--api` copies the actions only, and
+`--dry-run` lists the files. It regenerates the action registry, so the router
+does not warn that the registry is stale. A copied file no longer receives
+framework updates from `buddy upgrade`; copy one file at a time with
+`buddy publish:view`, `publish:component` or `publish:action` when that is all
+you need.
+
 ## Source Files
 
 ```

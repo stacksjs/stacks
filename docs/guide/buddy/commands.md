@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **413 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **414 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -50,7 +50,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `link` | 1 |
 | `lint` | 1 |
 | `mail` | 32 |
-| `make` | 20 |
+| `make` | 21 |
 | `marketing` | 2 |
 | `migrate` | 6 |
 | `monitoring` | 2 |
@@ -3922,6 +3922,30 @@ Create a new action
 | `--with-validation` | Generate a stub that calls validate() | boolean, optional | `false` |
 | `--with-auth` | Generate a stub that requires an authenticated user | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `make:auth`
+
+Copy the sign-in pages and actions into your app so you can change them
+
+- Usage: `$ buddy make:auth`
+- Namespace: `make`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--api` | Copy the actions only, for an app with its own front end | boolean, optional | `false` |
+| `-f`, `--force` | Overwrite the copies your app already has | boolean, optional | `false` |
+| `--dry-run` | List the files it would copy, and copy nothing | boolean, optional | `false` |
+| `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy make:auth
+buddy make:auth --api  // actions only, no pages
+```
 
 ### `make:certificate`
 

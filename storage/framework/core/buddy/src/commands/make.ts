@@ -27,7 +27,9 @@ import {
 import { intro, italic, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { log } from '@stacksjs/logging'
 
+import { path } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { makeAuth } from '../make-auth'
 
 export function make(buddy: CLI): void {
   const descriptions = {
@@ -45,6 +47,7 @@ export function make(buddy: CLI): void {
     factory: 'Create a new factory',
     notification: 'Create a new notification',
     mail: 'Create a new Mailable + companion stx template',
+    auth: 'Copy the sign-in pages and actions into your app so you can change them',
     policy: 'Create a new authorization policy',
     resource: 'Create a new API resource',
     name: 'The name of the action',
@@ -448,6 +451,67 @@ export function make(buddy: CLI): void {
       }
 
       await createModel(options)
+    })
+
+  buddy
+    .command('make:auth', descriptions.auth)
+    .option('--api', 'Copy the actions only, for an app with its own front end', { default: false })
+    .option('-f, --force', 'Overwrite the copies your app already has', { default: false })
+    .option('--dry-run', 'List the files it would copy, and copy nothing', { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy make:auth')
+    .example('buddy make:auth --api  // actions only, no pages')
+    .action(async (options: { api?: boolean, force?: boolean, dryRun?: boolean }) => {
+      log.debug('Running `buddy make:auth` ...', options)
+
+      const dryRun = options.dryRun === true
+      const result = await makeAuth({
+        projectRoot: path.projectPath(),
+        defaultsRoot: path.frameworkPath('defaults'),
+        api: options.api === true,
+        force: options.force === true,
+        dryRun,
+      })
+
+      if (result.written.length > 0) {
+        console.log(dryRun ? `Would copy ${result.written.length} files into your app:` : `✓ Copied ${result.written.length} files into your app:`)
+        for (const file of result.written)
+          console.log(`    ${file}`)
+        for (const file of result.carried)
+          console.log(`    ${file} (imported by them)`)
+      }
+      if (result.kept.length > 0) {
+        console.log(`Kept ${result.kept.length} files your app already has (--force overwrites them):`)
+        for (const file of result.kept)
+          console.log(`    ${file}`)
+      }
+      if (result.missing.length > 0) {
+        console.log(`This version of the framework does not ship ${result.missing.length} of them:`)
+        for (const file of result.missing)
+          console.log(`    ${file}`)
+      }
+
+      if (dryRun) {
+        console.log('  Dry run: nothing was written.')
+        process.exit(ExitCode.Success)
+      }
+
+      if (result.written.length > 0) {
+        // The action registry maps each action name to a file. Until it is
+        // regenerated it still names the framework's copies, and the router
+        // warns on every request that it is stale (stacksjs/stacks#2947).
+        const { generateAutoImportFiles } = await import('@stacksjs/server')
+        await generateAutoImportFiles()
+
+        console.log('  The auth routes now run these copies. `buddy upgrade` no longer updates them.')
+      }
+
+      console.log('')
+      console.log('Next:')
+      console.log('  ./buddy migrate    creates the users, password reset and token tables if they are missing')
+      console.log('  ./buddy dev        then open /login')
+      process.exit(ExitCode.Success)
     })
 
   buddy

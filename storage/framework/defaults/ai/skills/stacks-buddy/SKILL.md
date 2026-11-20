@@ -334,6 +334,10 @@ buddy make:job [name]         # create background job
   -c/--class                  # class-based job
   -t/--tries [n]              # retry attempts (default: 3)
   -b/--backoff [n]            # backoff delay in seconds (default: 3)
+buddy make:auth               # copy the sign-in pages, components and actions into the app
+  --api                       # actions only, no pages or components
+  -f/--force                  # overwrite the copies the app already has
+  --dry-run                   # list the files, copy nothing
 buddy make:lang [name]        # create i18n language file
 buddy make:migration [name]   # create database migration
 buddy make:model [name]       # create data model

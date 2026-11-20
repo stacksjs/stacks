@@ -472,7 +472,7 @@ template engine, not buddy - see stacksjs/stacks#2081.) Run `buddy list` for eve
 - `buddy migrate [--diff|--auth]`, `buddy migrate:fresh [--seed]`, `buddy seed`, `buddy generate:migrations`
 
 **Scaffold (`make:*`)**
-- `make:model`, `make:migration`, `make:action`, `make:component`, `make:view` (`make:page`), `make:job`, `make:middleware`, `make:notification`, `make:policy`, `make:resource`, `make:command`, `make:factory`, `make:function`, `make:lang`, `make:database`, `make:queue-table`, `make:stack`, `make:certificate`
+- `make:model`, `make:migration`, `make:action`, `make:component`, `make:view` (`make:page`), `make:auth`, `make:job`, `make:middleware`, `make:notification`, `make:policy`, `make:resource`, `make:command`, `make:factory`, `make:function`, `make:lang`, `make:database`, `make:queue-table`, `make:stack`, `make:certificate`
 
 **Quality & test**
 - `buddy lint [--fix]` / `buddy lint:fix` / `buddy format[:check]` (pickier)
