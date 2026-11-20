@@ -312,9 +312,17 @@ export class GenerationSupervisor {
         const child = launch(project.root, project.entry, tasks)
         const timeout = setTimeout(() => killWorker(child), WORKER_TIMEOUT_MS)
         const done = Promise.all([child.exited, workerErrors(child.stderr)]).then(([code, stderr]) => {
-          project.error = code === 0 ? undefined : stderr.split('\n').at(-1) || `Generator exited with status ${code}.`
-          if (code !== 0 && !this.closed)
+          const lines = stderr.split('\n')
+          project.error = code === 0 ? undefined : lines.at(-1) || `Generator exited with status ${code}.`
+          if (this.closed)
+            return
+          if (code !== 0)
             this.log(`generation failed for ${project.root}: ${stderr || project.error}`)
+          else {
+            const notification = lines.find(line => line.startsWith('[buddy:notification] '))
+            if (notification)
+              this.log(notification)
+          }
         }).catch((error) => {
           project.error = brief(error)
           this.log(`generation failed for ${project.root}: ${project.error}`)

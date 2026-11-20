@@ -42,9 +42,9 @@ function notifyApproval(root: string, count: number): void {
 
   const script = 'on run argv\ndisplay notification (item 1 of argv) with title "Buddy · Generated changes"\nend run'
   const message = `${basename(root)} has ${count} generated ${count === 1 ? 'file' : 'files'} ready for review. Run ./buddy generate:review in the project.`
-  const result = spawnSync('/usr/bin/osascript', ['-e', script, message], { encoding: 'utf8', timeout: 5000 })
+  const result = spawnSync('/usr/bin/osascript', ['-e', script, '--', message], { encoding: 'utf8', timeout: 15000 })
   if (result.status !== 0)
-    console.warn(`Buddy could not deliver the desktop notification. Run ./buddy generate:review in ${root}.`)
+    console.warn(`[buddy:notification] Could not submit the desktop alert. Run ./buddy generate:review in ${root}.`)
 }
 
 export function prepareCommitApproval(
