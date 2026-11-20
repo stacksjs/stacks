@@ -49,5 +49,6 @@ export default defineMiddleware({
   'verified': 'EnsureEmailIsVerified',
   'csrf': 'Csrf',
   'compress': 'Compress',
+  'waf': 'Waf',
   // Add more middleware aliases here
 })

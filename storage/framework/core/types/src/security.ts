@@ -115,6 +115,14 @@ export interface WafSecurityOptions {
   exclusions?: WafRuleExclusion[]
   /** Ship audit events to Guardian. Typically read from GUARDIAN_INGEST_URL / GUARDIAN_INGEST_TOKEN. */
   forward?: { url: string, token: string, intervalSeconds?: number }
+  /**
+   * SecLang rule files for the in-process `waf` middleware, in load order: an OWASP CRS checkout's
+   * `crs-setup.conf` then its `rules/*.conf`, or your own. zig-waf bundles no rules, so the
+   * middleware refuses to start without them. Relative paths resolve from the project root.
+   */
+  rules?: string[]
+  /** zig-waf's shared library for the `waf` middleware (`libzig-waf.dylib` / `.so`). Falls back to `ZIG_WAF_LIBRARY`. */
+  library?: string
 }
 
 export interface SecurityOptions {
