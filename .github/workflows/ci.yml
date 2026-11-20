@@ -29,6 +29,62 @@ env:
   BUN_VERSION: '1.4.4'
 
 jobs:
+  # The in-process WAF (@stacksjs/waf) against the real engine. Its engine
+  # tests skip without zig-waf's shared library, so this job builds one from a
+  # pinned zig-waf commit, the same way zig-waf's own release does, and runs
+  # them with ZIG_WAF_LIBRARY set (stacksjs/stacks#3338).
+  waf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Checkout zig-waf
+        uses: actions/checkout@v6
+        with:
+          repository: zig-utils/zig-waf
+          ref: 6c61dc692e381f8eb88ba7185d9d7c1885252c5f
+          path: .zig-waf
+      - name: Set up Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.17.0-dev.1441+d5181a9c9
+      - name: Install zig-waf's native libraries
+        working-directory: .zig-waf
+        env:
+          PANTRY_VERSION: 0.11.212
+        run: |
+          curl -fsSL https://pantry.dev | bash
+          ~/.local/bin/pantry install --no-save openldap.org/liblmdb@0.9.35
+          ~/.local/bin/pantry install --no-save gnome.org/libxml2@2.13.9
+      - name: Build zig-waf's shared library
+        working-directory: .zig-waf
+        run: zig build -Doptimize=ReleaseFast
+      - name: Set up the declared Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - name: Install the committed dependency graph
+        run: bun install --frozen-lockfile
+      - name: Build framework runtime packages
+        run: |
+          stacks_subpath_targets=$(bun .github/scripts/subpath-packages.ts --runtime)
+          for pkg in $stacks_subpath_targets; do
+            (cd "storage/framework/core/$pkg" && bun run build)
+          done
+      - name: Inspect requests through zig-waf
+        env:
+          ZIG_WAF_LIBRARY: ${{ github.workspace }}/.zig-waf/zig-out/lib/libzig-waf.so
+        run: |
+          # The engine tests skip when the library is missing; fail instead.
+          test -f "$ZIG_WAF_LIBRARY"
+          bun test ./storage/framework/core/waf/tests ./tests/unit/waf-middleware.test.ts
+      - name: Measure the added latency
+        env:
+          ZIG_WAF_LIBRARY: ${{ github.workspace }}/.zig-waf/zig-out/lib/libzig-waf.so
+        working-directory: storage/framework/core/waf
+        run: bun bench/latency.ts
+
   browser-device-scale:
     runs-on: ubuntu-latest
     timeout-minutes: 8
