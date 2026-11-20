@@ -16,6 +16,26 @@ import { runTool } from './run-tool'
  */
 export function docs(buddy: CLI): void {
   buddy
+    .command('docs:stories', 'Record browser and native user stories with video, scene screenshots and docs')
+    .option('--config <path>', 'Story configuration path', { default: 'config/stories.ts' })
+    .option('--out <directory>', 'Generated documentation and media directory')
+    .option('--only <ids>', 'Comma-separated story ids')
+    .option('--list', 'Validate and list stories without starting drivers', { default: false })
+    .option('--check', 'Verify complete recordings, configuration and artifact hashes', { default: false })
+    .option('--json', 'Print the story report as JSON', { default: false })
+    .example('buddy docs:stories')
+    .example('buddy docs:stories --only checkout-ios,checkout-android')
+    .example('buddy docs:stories --check')
+    .action(async (options: { config?: string, out?: string, only?: string, list?: boolean, check?: boolean, json?: boolean }) => {
+      const { recordStories } = await import('@stacksjs/docs/stories')
+      const report = await recordStories({ config: options.config, outDir: options.out, only: options.only?.split(',').map(value => value.trim()).filter(Boolean), list: options.list, check: options.check, onProgress: result => { if (!options.json) console.log(`${result.status} ${result.id} (${result.platform})`) } })
+      if (options.json) console.log(JSON.stringify(report, null, 2))
+      else if (options.list) for (const story of report.inventory) console.log(`${story.id} (${story.platform}): ${story.scenes.map(scene => scene.id).join(', ')}`)
+      else console.log(`Story documentation: ${report.outDir}/index.md`)
+      if (!options.list && report.results.some(result => result.status !== 'passed')) process.exitCode = 1
+    })
+
+  buddy
     .command('docs:screenshots', 'Capture and verify an explicit UI inventory with Bun WebView')
     .option('--config <path>', 'Screenshot configuration path', { default: 'config/screenshots.ts' })
     .option('--out <directory>', 'Override the output directory')

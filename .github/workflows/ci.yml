@@ -31,7 +31,7 @@ env:
 jobs:
   browser-device-scale:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -58,6 +58,12 @@ jobs:
         env:
           STACKS_BROWSER_TESTS: '1'
         run: bun test ./storage/framework/core/docs/tests/screenshots.test.ts ./storage/framework/core/docs/tests/screenshot-models.test.ts
+      - name: Install story video encoder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Verify story videos and generated documentation through Buddy
+        run: bun test ./storage/framework/core/docs/tests/stories.test.ts
       - name: Verify repeated mid-gesture rejection and cleanup
         env:
           STACKS_BROWSER_TESTS: '1'

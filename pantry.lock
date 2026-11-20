@@ -726,7 +726,9 @@
         "@stacksjs/config": "workspace:*",
         "@stacksjs/orm": "workspace:*",
         "@stacksjs/path": "workspace:*",
-        "@stacksjs/stx": "^0.2.908"
+        "@stacksjs/stx": "^0.2.908",
+        "@stacksjs/testing": "workspace:*",
+        "craft-native": ">=0.0.499"
       },
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",

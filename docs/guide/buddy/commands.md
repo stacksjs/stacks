@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **412 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **413 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -30,7 +30,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `desktop` | 8 |
 | `dev` | 8 |
 | `dns` | 3 |
-| `docs` | 19 |
+| `docs` | 20 |
 | `domains` | 3 |
 | `email` | 7 |
 | `env` | 7 |
@@ -1911,6 +1911,32 @@ Verify no NEW documented import fails to compile
 - Namespace: `docs`
 - Aliases: none
 - Arguments: none
+
+### `docs:stories`
+
+Record browser and native user stories with video, scene screenshots and docs
+
+- Usage: `$ buddy docs:stories`
+- Namespace: `docs`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--config` | Story configuration path | value, required | `"config/stories.ts"` |
+| `--out` | Generated documentation and media directory | value, required | - |
+| `--only` | Comma-separated story ids | value, required | - |
+| `--list` | Validate and list stories without starting drivers | boolean, optional | `false` |
+| `--check` | Verify complete recordings, configuration and artifact hashes | boolean, optional | `false` |
+| `--json` | Print the story report as JSON | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy docs:stories
+buddy docs:stories --only checkout-ios,checkout-android
+buddy docs:stories --check
+```
 
 ### `docs:style-guide`
 

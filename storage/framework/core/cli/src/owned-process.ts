@@ -8,7 +8,7 @@ export interface OwnedProcessOptions {
   ownerRuntime?: string
   cwd?: string
   env?: Record<string, string | undefined>
-  stdin?: 'ignore' | Blob
+  stdin?: 'ignore' | 'pipe' | Blob
   stdout?: 'pipe' | 'inherit' | 'ignore' | number
   stderr?: 'pipe' | 'inherit' | 'ignore' | number
   stopGraceMs?: number
@@ -25,6 +25,7 @@ export interface OwnedProcess {
   readonly exited: Promise<OwnedProcessExit>
   readonly stdout: ReadableStream<Uint8Array> | null
   readonly stderr: ReadableStream<Uint8Array> | null
+  readonly stdin: import('bun').FileSink | null
   stop: () => Promise<void>
 }
 
@@ -270,6 +271,7 @@ process.send({ type: 'ready' })
     pid: child.pid, started, exited,
     stdout: child.stdout instanceof ReadableStream ? child.stdout : null,
     stderr: child.stderr instanceof ReadableStream ? child.stderr : null,
+    stdin: child.stdin && typeof child.stdin !== 'number' ? child.stdin : null,
     stop,
   }
 }

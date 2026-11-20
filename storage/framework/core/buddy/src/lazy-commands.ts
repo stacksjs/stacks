@@ -249,6 +249,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   // Docs freshness (framework-repo tooling; registrar in commands/docs.ts,
   // tooling under commands/docs/).
   'docs:screenshots': { path: './commands/docs.ts', load: () => import('./commands/docs.ts'), exportName: 'docs' },
+  'docs:stories': { path: './commands/docs.ts', load: () => import('./commands/docs.ts'), exportName: 'docs' },
   'docs:style-guide': { path: './commands/docs.ts', load: () => import('./commands/docs.ts'), exportName: 'docs' },
   'docs:style-guide:check': { path: './commands/docs.ts', load: () => import('./commands/docs.ts'), exportName: 'docs' },
   'docs:buddy': { path: './commands/docs.ts', load: () => import('./commands/docs.ts'), exportName: 'docs' },
