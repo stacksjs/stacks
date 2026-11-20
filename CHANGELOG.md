@@ -1,5 +1,50 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.635...v0.75.636)
+
+## ✨ Features
+
+- **buddy**: generate artifacts across registered projects ([f9ad5b0](https://github.com/stacksjs/stacks/commit/f9ad5b0)) _(by Chris Breuer)_
+- **security**: a waf middleware for apps not behind rpx ([93a1d1f](https://github.com/stacksjs/stacks/commit/93a1d1f)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338))
+- **waf**: inspect a request in process with a Waf ([a1e8023](https://github.com/stacksjs/stacks/commit/a1e8023)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338))
+- **waf**: bind zig-waf's C ABI through bun:ffi ([9805d07](https://github.com/stacksjs/stacks/commit/9805d07)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338))
+- **router**: peerSocket names the client's port as well as its address ([f826fa5](https://github.com/stacksjs/stacks/commit/f826fa5)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338))
+- **buddy**: make:auth copies the sign-in flow into the app ([4e07142](https://github.com/stacksjs/stacks/commit/4e07142)) _(by glennmichael123)_ ([#3345](https://github.com/stacksjs/stacks/issues/3345))
+
+## 🐛 Bug Fixes
+
+- **waf**: map @stacksjs/waf in every workspace tsconfig ([3afb044](https://github.com/stacksjs/stacks/commit/3afb044)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338))
+- **security**: the waf middleware leaves the body for the action ([209f46d](https://github.com/stacksjs/stacks/commit/209f46d)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338))
+- **waf**: load a CRS checkout's data files and let PUT, PATCH and DELETE through ([f2c1e82](https://github.com/stacksjs/stacks/commit/f2c1e82)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338))
+- **router**: merge app middleware aliases over the framework's own map ([445b87d](https://github.com/stacksjs/stacks/commit/445b87d)) _(by glennmichael123)_ ([#3347](https://github.com/stacksjs/stacks/issues/3347))
+- **testing**: open Chrome's DevTools socket without compression ([2f2c698](https://github.com/stacksjs/stacks/commit/2f2c698)) _(by glennmichael123)_ ([#3344](https://github.com/stacksjs/stacks/issues/3344), [oven-sh/bun#48524](https://github.com/oven-sh/bun/issues/48524))
+- **docs**: count only the migrations that ship ([74f6704](https://github.com/stacksjs/stacks/commit/74f6704)) _(by glennmichael123)_ ([#3346](https://github.com/stacksjs/stacks/issues/3346))
+- **buddy**: publish:action keeps the folder an action sits in ([7fef683](https://github.com/stacksjs/stacks/commit/7fef683)) _(by glennmichael123)_ ([#3345](https://github.com/stacksjs/stacks/issues/3345))
+
+## 📝 Documentation
+
+- **waf**: latency before and after zig-waf's allocator fix ([94dcffd](https://github.com/stacksjs/stacks/commit/94dcffd)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338), [zig-utils/zig-waf#84](https://github.com/zig-utils/zig-waf/issues/84), [zig-utils/zig-waf#83](https://github.com/zig-utils/zig-waf/issues/83))
+- **testing**: uncompressed CDP sockets do not avoid the Bun frame bug ([fc5e930](https://github.com/stacksjs/stacks/commit/fc5e930)) _(by glennmichael123)_ ([#3344](https://github.com/stacksjs/stacks/issues/3344), [oven-sh/bun#48524](https://github.com/oven-sh/bun/issues/48524))
+
+## ✅ Tests
+
+- **waf**: a CRS checkout loads as CRS lays it out ([6108ebc](https://github.com/stacksjs/stacks/commit/6108ebc)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338))
+- **security**: run the waf middleware against zig-waf in CI ([86f1a90](https://github.com/stacksjs/stacks/commit/86f1a90)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338))
+- **waf**: a CRS-detected SQL injection, logged and then refused ([f91fe93](https://github.com/stacksjs/stacks/commit/f91fe93)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338), [zig-utils/zig-waf#82](https://github.com/zig-utils/zig-waf/issues/82))
+
+## 💚 Continuous Integration
+
+- **waf**: build zig-waf at its malloc allocator change ([db91ce7](https://github.com/stacksjs/stacks/commit/db91ce7)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338), [zig-utils/zig-waf#84](https://github.com/zig-utils/zig-waf/issues/84))
+
+## 🔧 Chores
+
+- **waf**: register @stacksjs/waf as a framework package ([a73a953](https://github.com/stacksjs/stacks/commit/a73a953)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338))
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.634...v0.75.635)
 
 ## ✨ Features
