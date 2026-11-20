@@ -124,7 +124,9 @@ class Cdp {
 
   static connect(wsUrl: string, timeoutMs = 10_000): Promise<Cdp> {
     return new Promise((resolve, reject) => {
-      const ws = new WebSocket(wsUrl)
+      // Uncompressed: loopback gains nothing from permessage-deflate, and
+      // Bun's client can fail a valid compressed stream (oven-sh/bun#48524).
+      const ws = new WebSocket(wsUrl, { perMessageDeflate: false })
       const t = setTimeout(() => reject(new Error('CDP connect timeout')), timeoutMs)
       ws.addEventListener('open', () => { clearTimeout(t); resolve(new Cdp(ws)) })
       ws.addEventListener('error', e => { clearTimeout(t); reject(e) })

@@ -680,9 +680,22 @@ export class Cdp {
   }
 }
 
+/**
+ * Bun's WebSocket constructor, which takes options. bun-types steps aside for
+ * the DOM declaration whenever lib.dom is loaded, as it is here, and the DOM
+ * one only knows a protocol list.
+ */
+type BunWebSocketConstructor = new (url: string | URL, options?: Bun.WebSocketOptions) => WebSocket
+
 /** Open a session on a DevTools WebSocket URL (`ws://127.0.0.1:9222/devtools/page/...`). */
 export async function connect(url: string, options: CdpOptions = {}): Promise<Cdp> {
-  const socket = new WebSocket(url)
+  // No permessage-deflate. This socket is loopback, where compression costs
+  // CPU on both ends and saves nothing, which is why Puppeteer and Playwright
+  // open DevTools with it off too. Offered, Chrome accepts it with context
+  // takeover, and Bun's client then fails a valid stream with "Invalid
+  // compressed data" when a split frame meets a promise continuation
+  // (oven-sh/bun#48524), dropping the connection mid-test (stacksjs/stacks#3344).
+  const socket = new (WebSocket as BunWebSocketConstructor)(url, { perMessageDeflate: false })
   await new Promise<void>((resolve, reject) => {
     const finish = (error?: Error) => {
       clearTimeout(timer)
