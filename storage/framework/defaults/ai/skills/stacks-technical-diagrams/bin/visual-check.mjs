@@ -1400,8 +1400,7 @@ class PipeCdp {
       this.readPipe = { readable: true, readableEnded: false, destroyed: false };
       this.writePipe = { writable: true, writableEnded: false, destroyed: false, writableLength: 0 };
       this.socketPromise = Promise.resolve(socketUrl).then(url => new Promise((resolve, reject) => {
-        // Uncompressed: loopback gains nothing from permessage-deflate, and
-        // Bun's client can fail a valid compressed stream (oven-sh/bun#48524).
+        // Uncompressed: loopback gains nothing from permessage-deflate.
         const socket = new WebSocket(url, { perMessageDeflate: false });
         socket.addEventListener('open', () => resolve(socket), { once: true });
         socket.addEventListener('message', event => this.consume(String(event.data) + '\0'));

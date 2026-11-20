@@ -691,10 +691,10 @@ type BunWebSocketConstructor = new (url: string | URL, options?: Bun.WebSocketOp
 export async function connect(url: string, options: CdpOptions = {}): Promise<Cdp> {
   // No permessage-deflate. This socket is loopback, where compression costs
   // CPU on both ends and saves nothing, which is why Puppeteer and Playwright
-  // open DevTools with it off too. Offered, Chrome accepts it with context
-  // takeover, and Bun's client then fails a valid stream with "Invalid
-  // compressed data" when a split frame meets a promise continuation
-  // (oven-sh/bun#48524), dropping the connection mid-test (stacksjs/stacks#3344).
+  // open DevTools with it off too. It does not avoid oven-sh/bun#48524: Bun's
+  // client misreads frames after a split frame meets a promise continuation
+  // with or without compression, and that still drops the connection now and
+  // then (stacksjs/stacks#3344).
   const socket = new (WebSocket as BunWebSocketConstructor)(url, { perMessageDeflate: false })
   await new Promise<void>((resolve, reject) => {
     const finish = (error?: Error) => {

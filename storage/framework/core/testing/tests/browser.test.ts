@@ -612,9 +612,8 @@ describe.skipIf(!realChrome)('a real Chrome', () => {
   afterAll(() => server?.stop(true))
 
   test('the DevTools socket is not compressed', async () => {
-    // Offered compression, Chrome takes it, and Bun's client can then fail a
-    // valid stream with "Invalid compressed data" (oven-sh/bun#48524,
-    // stacksjs/stacks#3344). Loopback gains nothing from it anyway.
+    // Loopback gains nothing from compression, so it is not offered. This is
+    // not the fix for stacksjs/stacks#3344: that is oven-sh/bun#48524.
     const { cdp, close } = await launch()
     try {
       expect((cdp as unknown as { socket: WebSocket }).socket.extensions).toBe('')
