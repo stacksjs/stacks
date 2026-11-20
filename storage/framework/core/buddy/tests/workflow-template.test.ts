@@ -35,7 +35,7 @@ test('normal Stacks checks, deployment and downloaded native acceptance share an
   const download = workflow.jobs.native.steps.find((step: any) => step.name === 'Download the published application')
   expect(download.with.path).toBe(config.native.downloadDirectory)
   const publication = workflow.jobs.native.steps.find((step: any) => step.name === 'Publish the simulator application')
-  expect(publication.with.name).toBe('native-simulator-${{ github.run_id }}-${{ github.run_attempt }}')
+  expect(publication.with.name).toBe('native-simulator-${{ github.run_id }}-${{ github.run_attempt }}-${{ reviewos.job_attempt }}')
   expect(download.with.name).toBe(publication.with.name)
   expect(workflow.jobs.deploy.if).toContain("github.ref == 'refs/heads/main'")
   expect(workflow.jobs.deploy.if).toContain("github.event_name != 'pull_request'")
@@ -47,6 +47,14 @@ test('workflow generation refuses incomplete native or unsafe secret and runner 
   expect(() => renderReviewOsWorkflow({ ...config, runners: { checks: [] } })).toThrow()
   expect(() => renderReviewOsWorkflow({ ...config, secrets: { checks: ['bad name'] } })).toThrow()
   for (const downloadDirectory of ['../outside', 'C:/outside', '\\outside']) expect(() => renderReviewOsWorkflow({ ...config, native: { ...config.native, downloadDirectory } })).toThrow()
+})
+
+test('native failure evidence retains the independent producing job attempt', () => {
+  const workflow = Bun.YAML.parse(renderReviewOsWorkflow({ ...config, native: { ...config.native, evidence: ['storage/native/acceptance/result.json'] } })) as any
+  const evidence = workflow.jobs.native.steps.find((step: any) => step.name === 'Preserve acceptance and release receipts')
+  expect(evidence.if).toBe('always()')
+  expect(evidence.with.name).toBe('native-evidence-${{ github.run_id }}-${{ github.run_attempt }}-${{ reviewos.job_attempt }}')
+  expect(evidence.with.path).toBe('storage/native/acceptance/result.json')
 })
 
 test('native build and downloaded acceptance receive only their declared credentials', () => {
