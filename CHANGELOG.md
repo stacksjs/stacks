@@ -1,5 +1,63 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.634...v0.75.635)
+
+## ✨ Features
+
+- **docs**: record browser and native user stories ([1f11053](https://github.com/stacksjs/stacks/commit/1f11053)) _(by Chris Breuer)_
+- **testing**: report Lighthouse LCP trace timings ([0fc6f88](https://github.com/stacksjs/stacks/commit/0fc6f88)) _(by Chris Breuer)_
+- **testing**: report the largest Lighthouse performance loss ([e901c1c](https://github.com/stacksjs/stacks/commit/e901c1c)) _(by Chris Breuer)_
+- **testing**: audit protected previews with Buddy and Lighthouse ([3b946ff](https://github.com/stacksjs/stacks/commit/3b946ff)) _(by Chris Breuer)_
+- **testing**: add Lighthouse profiles to native page audits ([024975c](https://github.com/stacksjs/stacks/commit/024975c)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **workflow**: retain artifacts from each job attempt ([a0314a3](https://github.com/stacksjs/stacks/commit/a0314a3)) _(by Chris Breuer)_
+- **image**: install ts-images and ts-svg from npm, not registry.pantry.dev ([66f469a](https://github.com/stacksjs/stacks/commit/66f469a)) _(by glennmichael123)_ ([#3343](https://github.com/stacksjs/stacks/issues/3343))
+- **workflows**: preserve explicit false upload input ([cebbbb7](https://github.com/stacksjs/stacks/commit/cebbbb7)) _(by Chris Breuer)_
+- **testing**: keep Lighthouse evidence when a profile cannot load ([03495da](https://github.com/stacksjs/stacks/commit/03495da)) _(by Chris Breuer)_
+- **testing**: identify event streams by MIME type in page audits ([a28771b](https://github.com/stacksjs/stacks/commit/a28771b)) _(by Chris Breuer)_
+- **scaffold**: type inherited page metadata in the shared head ([c1c3f34](https://github.com/stacksjs/stacks/commit/c1c3f34)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- refresh catalog for story recording tests ([08faa31](https://github.com/stacksjs/stacks/commit/08faa31)) _(by Chris Breuer)_
+- **skills**: count the Lighthouse tests in the native catalog ([ea1df69](https://github.com/stacksjs/stacks/commit/ea1df69)) _(by glennmichael123)_
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.634...v0.75.635)
+
+## ✨ Features
+
+- **docs**: record browser and native user stories ([1f11053](https://github.com/stacksjs/stacks/commit/1f11053)) _(by Chris Breuer)_
+- **testing**: report Lighthouse LCP trace timings ([0fc6f88](https://github.com/stacksjs/stacks/commit/0fc6f88)) _(by Chris Breuer)_
+- **testing**: report the largest Lighthouse performance loss ([e901c1c](https://github.com/stacksjs/stacks/commit/e901c1c)) _(by Chris Breuer)_
+- **testing**: audit protected previews with Buddy and Lighthouse ([3b946ff](https://github.com/stacksjs/stacks/commit/3b946ff)) _(by Chris Breuer)_
+- **testing**: add Lighthouse profiles to native page audits ([024975c](https://github.com/stacksjs/stacks/commit/024975c)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **workflow**: retain artifacts from each job attempt ([a0314a3](https://github.com/stacksjs/stacks/commit/a0314a3)) _(by Chris Breuer)_
+- **image**: install ts-images and ts-svg from npm, not registry.pantry.dev ([66f469a](https://github.com/stacksjs/stacks/commit/66f469a)) _(by glennmichael123)_ ([#3343](https://github.com/stacksjs/stacks/issues/3343))
+- **workflows**: preserve explicit false upload input ([cebbbb7](https://github.com/stacksjs/stacks/commit/cebbbb7)) _(by Chris Breuer)_
+- **testing**: keep Lighthouse evidence when a profile cannot load ([03495da](https://github.com/stacksjs/stacks/commit/03495da)) _(by Chris Breuer)_
+- **testing**: identify event streams by MIME type in page audits ([a28771b](https://github.com/stacksjs/stacks/commit/a28771b)) _(by Chris Breuer)_
+- **scaffold**: type inherited page metadata in the shared head ([c1c3f34](https://github.com/stacksjs/stacks/commit/c1c3f34)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- refresh catalog for story recording tests ([08faa31](https://github.com/stacksjs/stacks/commit/08faa31)) _(by Chris Breuer)_
+- **skills**: count the Lighthouse tests in the native catalog ([ea1df69](https://github.com/stacksjs/stacks/commit/ea1df69)) _(by glennmichael123)_
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.633...v0.75.634)
 
 ## 🐛 Bug Fixes
