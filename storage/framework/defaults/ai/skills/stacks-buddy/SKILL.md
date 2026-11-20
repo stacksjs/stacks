@@ -100,6 +100,11 @@ code and exits when it has no dashboards or active generation watches. Reach it 
 `openProjectDashboard()` / `daemonStatus()` in `@stacksjs/actions/daemon/client`,
 which start it when it is not running.
 
+Set `generation.commitApproval: true` to require explicit approval and receive a
+macOS notification when generated files are ready. `buddy generate:review`
+shows the proposed diff and asks before making a local commit. This setting
+takes precedence over `generation.autoCommit`.
+
 ## Architecture
 
 ### Lazy Loading System

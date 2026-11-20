@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **415 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **416 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -40,7 +40,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `forms` | 2 |
 | `gdpr` | 5 |
 | `general` | 54 |
-| `generate` | 19 |
+| `generate` | 20 |
 | `hq` | 3 |
 | `inspire` | 1 |
 | `integrations` | 1 |
@@ -3017,6 +3017,19 @@ Refresh the generated files enabled in config/buddy.json
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--tasks` | Comma-separated generators to run: imports,migrations,types | value, required | `"imports,migrations,types"` |
+
+### `generate:review`
+
+Review Buddy’s generated changes and approve a local commit
+
+- Usage: `$ buddy generate:review`
+- Namespace: `generate`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `-p`, `--project` | Target a specific project | value, optional | `false` |
 
 ### `generate:types`
 

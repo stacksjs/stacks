@@ -8,6 +8,7 @@ export type GenerationTask = typeof generationTasks[number]
 export interface ProjectGenerationConfig {
   tasks: GenerationTask[]
   autoCommit: boolean
+  commitApproval: boolean
 }
 
 /** Read project policy without loading its Bun config, environment or code. */
@@ -23,11 +24,12 @@ export function readGenerationConfig(root: string): ProjectGenerationConfig | nu
   }
 
   const { generation } = JSON.parse(content) as {
-    generation?: { enabled?: boolean, autoCommit?: boolean, imports?: boolean, migrations?: boolean, types?: boolean }
+    generation?: { enabled?: boolean, autoCommit?: boolean, commitApproval?: boolean, imports?: boolean, migrations?: boolean, types?: boolean }
   }
   if (generation?.enabled !== true)
     return null
 
   const tasks = generationTasks.filter(task => generation[task] !== false)
-  return tasks.length ? { tasks, autoCommit: generation.autoCommit === true } : null
+  const commitApproval = generation.commitApproval === true
+  return tasks.length ? { tasks, autoCommit: generation.autoCommit === true && !commitApproval, commitApproval } : null
 }

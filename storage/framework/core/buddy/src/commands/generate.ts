@@ -15,7 +15,7 @@ import {
   invoke as startGenerationProcess,
   watchTypes,
 } from '@stacksjs/actions'
-import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
+import { confirmOrNull, intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { reportFailure, resultFailed } from '../result'
@@ -358,6 +358,30 @@ export function generate(buddy: CLI): void {
       const { generateProject } = await import('../project-generation')
       try {
         await generateProject(projectPath(), options.tasks)
+      }
+      catch (error) {
+        reportFailure({ error })
+      }
+    })
+
+  buddy
+    .command('generate:review', 'Review Buddy’s generated changes and approve a local commit')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .action(async () => {
+      const { reviewGeneratedCommit } = await import('../generation-approval')
+      try {
+        const result = await reviewGeneratedCommit(projectPath(), async (diff) => {
+          process.stdout.write(diff)
+          const approved = await confirmOrNull({ message: 'Commit these generated changes locally?', initial: false })
+          process.stdin.pause()
+          return approved === true
+        })
+        if (result === 'empty')
+          log.info('There are no generated changes awaiting approval.')
+        else if (result === 'pending')
+          log.info('Generated changes are still awaiting approval.')
+        else
+          log.success(`Committed generated changes as ${result.slice(0, 12)}.`)
       }
       catch (error) {
         reportFailure({ error })

@@ -165,6 +165,12 @@ Each generator is enabled by default after opt-in. Set its key to `false` to dis
 
 Set `autoCommit` to `true` to commit clean-before generated paths under the project's usual Git identity and hooks. Unrelated staged changes stay staged. Review the generated files with the model or source changes when you leave this setting at its default of `false`.
 
+### Approve generated commits
+
+Set `generation.commitApproval` to `true` with `generation.autoCommit` set to `false` to receive a macOS notification when Buddy has generated changes ready for review. Approval takes precedence if both settings are enabled. Run `buddy generate:review` in the project, or `buddy generate:review --project <name>` from another directory.
+
+Buddy shows the diff and waits for an explicit yes in an interactive terminal. It commits the reviewed tree locally, using your Git identity and signing settings. This approval path uses Git's commit plumbing, so it does not run the usual `git commit` hooks. It includes newly written migrations with Buddy's generated marker, even if a Git ignore rule covers SQL. Previously edited files and unrelated staged changes stay out of the commit. A proposal becomes stale if its files or Git revision change before approval.
+
 ## Related
 
 - [Dev command](/guide/buddy/dev) - development servers
