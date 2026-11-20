@@ -49,21 +49,26 @@ them, with a warning, when it is not.
 
 ## Added latency
 
-`bun bench/latency.ts` times `Waf.inspect` per request. On an Apple M-series
-Mac (Bun 1.4.3, zig-waf built `ReleaseFast`), with the test fixture's two CRS
-rules (942100 and 949110), 20,000 requests each:
+`bun bench/latency.ts [rule files]` times `Waf.inspect` per request through
+`bun:ffi`. Measured on an Apple M-series Mac (Bun 1.4.3, zig-waf `ReleaseFast`),
+p50 per request, before and after zig-utils/zig-waf#84, which makes the C ABI
+allocate through malloc instead of a page per allocation (#82):
 
-| Request | p50 | p99 | mean |
+| Rules | Request | zig-waf 6c61dc6 | with #84 |
 | --- | --- | --- | --- |
-| GET, clean | 207 us | 2.0 ms | 393 us |
-| GET, SQL injection | 341 us | 2.2 ms | 440 us |
-| POST, 1 KB form | 195 us | 1.1 ms | 234 us |
+| test fixture (CRS 942100 + 949110), 20,000 runs | GET, clean | 252 us | 13 us |
+| | GET, SQL injection | 438 us | 17 us |
+| | POST, 1 KB form | 245 us | 16 us |
+| full CRS 4 (55b09f5), paranoia level 1, 300 runs | GET, clean | 26.5 ms | 9.6 ms |
+| | GET, SQL injection | 18.8 ms | 11.1 ms |
+| | POST, 1 KB form | 42.3 ms | 37.5 ms |
 
-Almost all of that is phase-1 evaluation inside the engine: a rule that fires
-costs about 100 us even when it does nothing (zig-utils/zig-waf#82), and the
-generated setup and the fixture fire several. A full CRS fires dozens per
-request: a run against CRS at paranoia level 1 on Apple Silicon measured about
-11-12 ms per request. Expect that until zig-waf#82 is fixed, and measure with
-your own rules:
-`bun bench/latency.ts crs-setup.conf rules/*.conf`. The CI job `waf` prints the
-same table for Linux.
+The full-CRS cost that remains is mostly zig-waf compiling every `@rx` and `@pm`
+operator again on every request (zig-utils/zig-waf#83), which is why the body
+rules barely moved. Measure with your own rules (a full CRS needs a smaller run):
+
+```sh
+BENCH_ITERATIONS=300 bun bench/latency.ts crs-setup.conf rules/*.conf
+```
+
+The CI job `waf` prints the fixture table for Linux.

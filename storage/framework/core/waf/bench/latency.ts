@@ -34,8 +34,10 @@ const scenarios = {
   'POST, 1 KB form': { ...connection, method: 'POST', uri: '/contact', headers: [...headers, ['content-type', 'application/x-www-form-urlencoded']] as [string, string][], body: form },
 }
 
-const ITERATIONS = 20_000
-const WARMUP = 2_000
+// A full CRS costs milliseconds per request, so it takes a smaller run:
+// BENCH_ITERATIONS=500 bun bench/latency.ts crs-setup.conf rules/*.conf
+const ITERATIONS = Number(process.env.BENCH_ITERATIONS) || 20_000
+const WARMUP = Math.max(10, Math.floor(ITERATIONS / 10))
 
 console.log(`zig-waf in process, ${files.length} rule file(s), ${ITERATIONS} requests each, Bun ${Bun.version} on ${process.platform}-${process.arch}`)
 console.log('scenario              p50 (us)   p99 (us)   mean (us)')
