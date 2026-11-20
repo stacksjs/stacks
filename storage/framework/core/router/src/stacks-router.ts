@@ -259,27 +259,36 @@ function resolveDefaultsPath(rel: string): string {
     }
   }
 
-  const vendored = storagePath(`framework/defaults/${rel}`)
-  let resolved: string
-  if (existsSync(vendored)) {
-    resolved = vendored
-  }
-  else {
-    if (__defaultsPkgRoot === undefined) {
-      try {
-        const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
-        __defaultsPkgRoot = pkgJson.slice(0, pkgJson.lastIndexOf('/'))
-      }
-      catch {
-        __defaultsPkgRoot = null
-      }
-    }
-    resolved = __defaultsPkgRoot ? `${__defaultsPkgRoot}/${rel}` : vendored
-  }
-
+  const resolved = frameworkDefaultsPath(rel)
   const cache = __defaultsPathCache ??= new Map()
   cache.set(rel, resolved)
   return resolved
+}
+
+/**
+ * The framework's own copy of a defaults file, never the app's published one:
+ * the vendored tree, else the installed `@stacksjs/defaults` package.
+ *
+ * For a file the app's copy is merged over rather than replacing. The
+ * middleware aliases are one: `app/Middleware.ts` is merged over the
+ * framework's map, so reading the app's copy for both halves dropped every
+ * alias the framework added after the app wrote its map.
+ */
+function frameworkDefaultsPath(rel: string): string {
+  const vendored = storagePath(`framework/defaults/${rel}`)
+  if (existsSync(vendored))
+    return vendored
+
+  if (__defaultsPkgRoot === undefined) {
+    try {
+      const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
+      __defaultsPkgRoot = pkgJson.slice(0, pkgJson.lastIndexOf('/'))
+    }
+    catch {
+      __defaultsPkgRoot = null
+    }
+  }
+  return __defaultsPkgRoot ? `${__defaultsPkgRoot}/${rel}` : vendored
 }
 
 const NATIVE_ROUTE_PARAM = /^\{[A-Z_$][\w$]*\}$/i
@@ -1473,7 +1482,7 @@ async function getMiddlewareAliases(): Promise<Record<string, string>> {
     const merged: Record<string, string> = {}
 
     for (const load of [
-      () => import(resolveDefaultsPath('app/Middleware.ts')),
+      () => import(frameworkDefaultsPath('app/Middleware.ts')),
       () => import(appPath('Middleware.ts')),
     ]) {
       try {
