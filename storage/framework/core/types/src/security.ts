@@ -123,6 +123,10 @@ export interface WafSecurityOptions {
   rules?: string[]
   /** zig-waf's shared library for the `waf` middleware (`libzig-waf.dylib` / `.so`). Falls back to `ZIG_WAF_LIBRARY`. */
   library?: string
+  /** Where the rules' `.data` files are. Defaults to the last rule file's directory (a CRS checkout's `rules/`). */
+  dataDir?: string
+  /** HTTP methods the `waf` middleware lets through. @default ['GET', 'HEAD', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'] */
+  allowedMethods?: string[]
 }
 
 export interface SecurityOptions {

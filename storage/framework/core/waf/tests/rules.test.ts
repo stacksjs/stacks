@@ -16,8 +16,24 @@ describe('renderWafRules', () => {
     expect(text.indexOf('blocking_paranoia_level')).toBeLessThan(text.indexOf('# rules from /crs/rules/a.conf'))
   })
 
-  test('data files resolve next to the first rule file', () => {
-    expect(renderWafRules({ rules: ['/crs/crs-setup.conf', '/crs/rules/b.conf'] }, read).dataDir).toBe('/crs')
+  test('data files resolve next to the rule files, not crs-setup.conf one level up', () => {
+    expect(renderWafRules({ rules: ['/crs/crs-setup.conf', '/crs/rules/b.conf'] }, read).dataDir).toBe('/crs/rules')
+  })
+
+  test('an explicit dataDir wins', () => {
+    expect(renderWafRules({ rules: ['/crs/crs-setup.conf', '/crs/rules/b.conf'], dataDir: '/data' }, read).dataDir).toBe('/data')
+  })
+
+  test('allows the methods a Stacks API uses, ahead of the rules', () => {
+    const { text } = renderWafRules({ rules: ['/crs/rules/a.conf'] }, read)
+    expect(text).toContain("setvar:'tx.allowed_methods=GET HEAD POST OPTIONS PUT PATCH DELETE'")
+    expect(text.indexOf('tx.allowed_methods')).toBeLessThan(text.indexOf('# rules from'))
+  })
+
+  test('allowed methods can be narrowed, and a malformed one is dropped', () => {
+    const { text, warnings } = renderWafRules({ rules: ['/a.conf'], allowedMethods: ['GET', 'POST', "PUT'"] }, read)
+    expect(text).toContain("setvar:'tx.allowed_methods=GET POST'")
+    expect(warnings).toEqual(['Allowed method "PUT\'" was dropped: a method is upper-case letters only.'])
   })
 
   test('an unscoped exclusion follows the rules it removes; a path-scoped one precedes them', () => {

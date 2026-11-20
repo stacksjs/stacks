@@ -21,11 +21,26 @@ export interface WafRuleSettings {
   exclusions?: WafRuleExclusion[]
   /** SecLang files, in load order: CRS's `crs-setup.conf` then `rules/*.conf`, or your own. */
   rules?: string[]
+  /**
+   * Where `@pmFromFile` / `@ipMatchFromFile` data files are. Defaults to the
+   * last rule file's directory: in a CRS checkout that is `rules/`, where the
+   * `.data` files sit, while the first file (`crs-setup.conf`) is one level up.
+   */
+  dataDir?: string
+  /**
+   * HTTP methods CRS lets through (rule 911100). CRS's own default is
+   * GET HEAD POST OPTIONS, which refuses every PUT, PATCH and DELETE, so a
+   * Stacks API's update and destroy routes would be blocked.
+   */
+  allowedMethods?: string[]
 }
+
+/** The methods a Stacks API uses, on top of CRS's default. */
+export const DEFAULT_ALLOWED_METHODS = ['GET', 'HEAD', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE']
 
 export interface RenderedRules {
   text: string
-  /** Where `@pmFromFile` / `@ipMatchFromFile` data files resolve: the first rule file's directory. */
+  /** Where `@pmFromFile` / `@ipMatchFromFile` data files resolve. */
   dataDir: string
   warnings: string[]
 }
@@ -44,6 +59,9 @@ export function renderWafRules(settings: WafRuleSettings, read: (path: string) =
     'SecRequestBodyAccess On',
     `SecAction "id:${IDS.setup},phase:1,pass,nolog,t:none,setvar:tx.blocking_paranoia_level=${settings.paranoiaLevel ?? 1},setvar:tx.paranoia_level=${settings.paranoiaLevel ?? 1}"`,
     `SecAction "id:${IDS.setup + 1},phase:1,pass,nolog,t:none,setvar:tx.inbound_anomaly_score_threshold=${settings.inboundThreshold ?? 5},setvar:tx.outbound_anomaly_score_threshold=${settings.outboundThreshold ?? 4}"`,
+    // CRS sets allowed_methods only when nothing did before it (REQUEST-901),
+    // so this, ahead of the rule files, is what rule 911100 checks against.
+    `SecAction "id:${IDS.setup + 2},phase:1,pass,nolog,t:none,setvar:'tx.allowed_methods=${methods(settings.allowedMethods, warnings)}'"`,
   ]
 
   let bypassId = IDS.bypass
@@ -73,7 +91,18 @@ export function renderWafRules(settings: WafRuleSettings, read: (path: string) =
   for (const id of removeAfter)
     lines.push(`SecRuleRemoveById ${id}`)
 
-  return { text: `${lines.join('\n')}\n`, dataDir: dirname(files[0]!), warnings }
+  return { text: `${lines.join('\n')}\n`, dataDir: settings.dataDir ?? dirname(files.at(-1)!), warnings }
+}
+
+/** The allowed methods as one space-separated token list; a method that is not a token is dropped. */
+function methods(configured: string[] | undefined, warnings: string[]): string {
+  const valid = (configured ?? DEFAULT_ALLOWED_METHODS).filter((method) => {
+    if (/^[A-Z]+$/.test(method))
+      return true
+    warnings.push(`Allowed method "${method}" was dropped: a method is upper-case letters only.`)
+    return false
+  })
+  return valid.join(' ')
 }
 
 /** A value inside a double-quoted SecLang argument: no quote or newline may end it early. */
