@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.636...v0.75.637)
+
+## ✨ Features
+
+- **buddy**: request desktop approval for generated commits ([abe8ac1](https://github.com/stacksjs/stacks/commit/abe8ac1)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- refresh native Buddy test inventory ([71d9060](https://github.com/stacksjs/stacks/commit/71d9060)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.635...v0.75.636)
 
 ## ✨ Features
