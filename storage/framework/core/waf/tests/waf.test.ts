@@ -63,3 +63,33 @@ describe.skipIf(!library)('the in-process WAF, against zig-waf', () => {
     expect(decision.matched).toBeFalse()
   })
 })
+
+describe.skipIf(!library)('a CRS checkout, laid out as CRS ships it', () => {
+  const root = join(import.meta.dir, 'fixtures/crs-layout')
+  const crs = [join(root, 'crs-setup.conf'), join(root, 'rules/rules.conf')]
+  const opened: Waf[] = []
+  afterAll(() => opened.forEach(instance => instance.close()))
+  const blocking = (): Waf => {
+    const instance = new Waf({ library, rules: crs, mode: 'blocking' })
+    opened.push(instance)
+    return instance
+  }
+  const request = (method: string, userAgent = 'Mozilla/5.0') => ({
+    clientAddress: '203.0.113.7', clientPort: 51234, serverAddress: '127.0.0.1', serverPort: 3008,
+    method, uri: '/api/posts/1', headers: [['host', 'app.test'], ['user-agent', userAgent]] as [string, string][],
+  })
+
+  test('loads, with the .data files found next to the rules rather than crs-setup.conf', () => {
+    expect(blocking().inspect(request('GET', 'sqlmap/1.7')).enforced).toBeTrue()
+  })
+
+  test('lets the methods a Stacks API uses through: PUT, PATCH and DELETE', () => {
+    const waf = blocking()
+    for (const method of ['PUT', 'PATCH', 'DELETE'])
+      expect({ method, decision: waf.inspect(request(method)) }).toEqual({ method, decision: { matched: false, enforced: false } })
+  })
+
+  test('still refuses a method outside them', () => {
+    expect(blocking().inspect(request('TRACE')).enforced).toBeTrue()
+  })
+})
