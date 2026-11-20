@@ -134,6 +134,9 @@ export { rateLimit, rateLimitStatus, clearRateLimit, resetRateLimiters } from '.
 // `clientAddress` here shadows bun-router's (re-exported above) with one that
 // reads `config.security.trustedProxies`.
 export { cacheRedisConnection, clientAddress, fallbackStorage, rateLimitScale, resetSharedRateLimitStorage, scaledLimit, sharedRateLimitStorage, trustedProxies, useRateLimitStorage } from './security-settings'
+// `registerPeerSource` here shadows bun-router's with one that also records
+// the socket's port, for `peerSocket` (the web application firewall's REMOTE_PORT).
+export { peerSocket, registerPeerSource } from './peer-socket'
 
 // Export path-param sanitization helper (stacksjs/stacks#1870 R-12).
 // Defense-in-depth for actions that interpolate route params into

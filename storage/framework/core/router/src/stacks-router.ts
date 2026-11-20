@@ -19,6 +19,7 @@ import type { Middleware } from './middleware'
 // (stacksjs/stacks#1863 T-3).
 import './request-augmentation'
 import { flushRequestCaptures, observeHttpRequest, requestCaptureEnabled } from './request-capture'
+import { registerPeerSource } from './peer-socket'
 import process from 'node:process'
 import { Buffer } from 'node:buffer'
 import { existsSync, lstatSync, statSync } from 'node:fs'
@@ -6137,9 +6138,13 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       else
         secureNativeRouteRouters.delete(bunRouter)
 
-      return bunRouter.serve(nativeRoutes === options.nativeRoutes
+      const server = await bunRouter.serve(nativeRoutes === options.nativeRoutes
         ? options
         : { ...options, nativeRoutes })
+      // bun-router registers the server for the peer's address; this records it
+      // for the peer's port as well (see peer-socket.ts).
+      registerPeerSource(server)
+      return server
     },
 
     // Handle a request directly
