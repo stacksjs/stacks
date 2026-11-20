@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.638...v0.75.639)
+
+## 🐛 Bug Fixes
+
+- **buddy**: preserve generated edits and recover approvals ([5726bf6](https://github.com/stacksjs/stacks/commit/5726bf6)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.637...v0.75.638)
 
 ## 🐛 Bug Fixes
