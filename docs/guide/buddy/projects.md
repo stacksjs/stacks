@@ -129,15 +129,41 @@ The top of the dashboard sidebar shows the project you are looking at. Click it 
 
 ## Buddy in the background
 
-Opening a dashboard from the switcher or with `buddy dashboard` uses a small background process that starts dashboards on request. You never have to start it: whatever needs it starts it, and it stops by itself when it has no dashboards left to look after.
+One background Buddy process manages dashboards and generation for registered projects. It starts when you open a dashboard or run `buddy daemon:start`. It stays running while any opted-in project needs watching.
 
 ```bash
-buddy daemon            # is it running, and what is it running
-buddy daemon:stop       # stop it and the dashboards it started
-buddy daemon:logs       # what it has been doing
+buddy daemon:start
+buddy daemon:status --json
+buddy daemon:logs
+buddy daemon:stop
 ```
 
-It is built to cost nothing when idle: it loads no project code, polls nothing, and holds about 25 MB while it runs. It listens on a socket file in `~/.stacks/buddy/` that only your user can open, not on a network port.
+The daemon watches the project registry and source directories with native filesystem events. It coalesces saves and runs one generator at a time, using the Stacks runtime installed in each project. Its socket under `~/.stacks/buddy/` is accessible to your user.
+
+### Keep generated files current
+
+Add this to `config/buddy.json` in each project you want Buddy to watch.
+
+```json
+{
+  "generation": {
+    "enabled": true,
+    "autoCommit": false
+  }
+}
+```
+
+Run `buddy projects:scan ~/Code` to discover existing projects and `buddy daemon:start` to watch them. Additions to the registry and edits to the policy take effect while the daemon is running. Run `buddy generate:project` for a one-off refresh under the same policy.
+
+| Setting | Generated files |
+| --- | --- |
+| `imports` | Function and model barrels, action and job registries, and auto-import declarations |
+| `migrations` | Model-derived SQL and snapshots for the configured dialect and existing sibling corpora |
+| `types` | Named routes, redirects, and database type declarations |
+
+Each generator is enabled by default after opt-in. Set its key to `false` to disable it. Background generation writes files for review and leaves potentially destructive migration changes to an explicit `buddy generate:migrations`.
+
+Set `autoCommit` to `true` to commit clean-before generated paths under the project's usual Git identity and hooks. Unrelated staged changes stay staged. Review the generated files with the model or source changes when you leave this setting at its default of `false`.
 
 ## Related
 

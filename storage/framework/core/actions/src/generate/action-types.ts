@@ -49,7 +49,7 @@ interface CollectedRoutes {
   redirects: Array<{ path: string, to: string, status: number }>
 }
 
-async function collectRoutes(): Promise<CollectedRoutes> {
+async function collectRoutes(strict: boolean): Promise<CollectedRoutes> {
   const registryFile = p.appPath('Routes.ts')
   if (!existsSync(registryFile))
     return { named: {}, redirects: [] }
@@ -62,6 +62,8 @@ async function collectRoutes(): Promise<CollectedRoutes> {
     return { named: listNamedRoutes(), redirects }
   }
   catch (error) {
+    if (strict)
+      throw error
     log.debug('[generate:types] Could not load routes for named-route types', { error })
     return { named: {}, redirects: [] }
   }
@@ -90,10 +92,10 @@ async function collectRoutes(): Promise<CollectedRoutes> {
  * because one route file threw would be a much worse trade than an unchecked
  * `url()`.
  */
-export async function generateRouteNames(): Promise<void> {
+export async function generateRouteNames(options: { strict?: boolean } = {}): Promise<void> {
   log.info('Generating route names...')
 
-  const { named: namedRoutes, redirects } = await collectRoutes()
+  const { named: namedRoutes, redirects } = await collectRoutes(options.strict === true)
 
   const entries = Object.entries(namedRoutes)
     .sort(([left], [right]) => left.localeCompare(right))
@@ -120,6 +122,8 @@ export const routeNames = {${entries ? `${entries}\n` : ''}} as const
 export const routeRedirects = {${redirectEntries ? `${redirectEntries}\n` : ''}} as const
 `
 
-  await storage.writeFile(p.storagePath('framework/auto-imports/routes.ts'), contents)
+  const file = p.storagePath('framework/auto-imports/routes.ts')
+  if (await Bun.file(file).text().catch(() => undefined) !== contents)
+    await storage.writeFile(file, contents)
   log.debug(`[generate:types] Wrote ${Object.keys(namedRoutes).length} named routes`)
 }

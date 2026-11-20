@@ -211,6 +211,15 @@ function packageModelDirs(): string[] {
  * next door, for the same reason.
  */
 async function writeGeneratedFile(outputPath: string, contents: string): Promise<void> {
+  try {
+    if (readFileSync(outputPath, 'utf8') === contents)
+      return
+  }
+  catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
+      throw error
+  }
+
   const temp = `${outputPath}.${process.pid}.tmp`
   try {
     await Bun.write(temp, contents)
@@ -1178,7 +1187,7 @@ export async function generateServerAutoImportTypes(): Promise<void> {
   for (const exp of valueExports)
     globals[exp.name] = true
 
-  await Bun.write(
+  await writeGeneratedFile(
     path.storagePath('framework/server-auto-imports.json'),
     `${JSON.stringify({ globals: Object.fromEntries(Object.keys(globals).sort().map(k => [k, true])) }, null, 2)}\n`,
   )
@@ -1339,10 +1348,10 @@ export async function pruneBrowserAutoImportTypes(): Promise<string[]> {
   if (pruned === source)
     return removed
 
-  await Bun.write(outputPath, pruned)
+  await writeGeneratedFile(outputPath, pruned)
 
   const globals = [...pruned.matchAll(/^ {2}const (\w+):/gm)].map(match => match[1]!).sort()
-  await Bun.write(
+  await writeGeneratedFile(
     path.storagePath('framework/browser-auto-imports.json'),
     `${JSON.stringify({ globals: Object.fromEntries(globals.map(name => [name, true])) }, null, 2)}\n`,
   )

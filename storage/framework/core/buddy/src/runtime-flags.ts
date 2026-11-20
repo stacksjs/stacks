@@ -20,7 +20,7 @@
  *
  * No imports: the build reads this too.
  */
-export const ISOLATED_RUNTIME_FLAGS = ['--config=/dev/null', '--no-install'] as const
+export const ISOLATED_RUNTIME_FLAGS = ['--config=/dev/null', '--no-install', '--no-env-file'] as const
 
 /** `env -S` splits the line into arguments, on macOS and on Linux alike. */
 export const CLI_SHEBANG = `#!/usr/bin/env -S bun ${ISOLATED_RUNTIME_FLAGS.join(' ')}`

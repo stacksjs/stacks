@@ -150,8 +150,8 @@ describe('which project a command runs for', () => {
   })
 
   it('publishes an executable that starts Bun isolated', () => {
-    expect(CLI_SHEBANG).toBe('#!/usr/bin/env -S bun --config=/dev/null --no-install')
-    expect(isIsolatedRuntime(['--config=/dev/null', '--no-install', '--smol'])).toBe(true)
+    expect(CLI_SHEBANG).toBe('#!/usr/bin/env -S bun --config=/dev/null --no-install --no-env-file')
+    expect(isIsolatedRuntime([...ISOLATED_RUNTIME_FLAGS, '--smol'])).toBe(true)
     expect(isIsolatedRuntime(['--no-install'])).toBe(false)
   })
 

@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **414 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **415 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -40,7 +40,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `forms` | 2 |
 | `gdpr` | 5 |
 | `general` | 54 |
-| `generate` | 18 |
+| `generate` | 19 |
 | `hq` | 3 |
 | `inspire` | 1 |
 | `integrations` | 1 |
@@ -1159,7 +1159,7 @@ Show whether buddy is running in the background and what it is running
 
 ### `daemon:stop`
 
-Stop the background buddy and the dashboards it started
+Stop background generation and the dashboards buddy started
 
 - Usage: `$ buddy daemon:stop`
 - Namespace: `daemon`
@@ -3004,6 +3004,19 @@ Generate the pantry configuration file
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `generate:project`
+
+Refresh the generated files enabled in config/buddy.json
+
+- Usage: `$ buddy generate:project`
+- Namespace: `generate`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--tasks` | Comma-separated generators to run: imports,migrations,types | value, required | `"imports,migrations,types"` |
 
 ### `generate:types`
 

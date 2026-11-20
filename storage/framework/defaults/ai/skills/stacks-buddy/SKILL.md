@@ -74,8 +74,8 @@ buddy dashboard [project]      # open a project's dashboard, started in the back
   --stop                       # stop that project's background dashboard
 
 buddy daemon                   # is buddy running in the background, and what is it running
-buddy daemon:start             # start it (nothing requires this; it starts on demand)
-buddy daemon:stop              # stop it and the dashboards it started
+buddy daemon:start             # start it to watch opted-in projects
+buddy daemon:stop              # stop generation and its dashboards
 buddy daemon:restart
 buddy daemon:logs              # --lines <count>
 ```
@@ -90,10 +90,13 @@ projects. `findStacksProjects()` in `@stacksjs/utils` is the disk scan behind
 `projects:scan` and nothing else should need it.
 
 The daemon (`core/actions/src/daemon/`) starts a project's dashboard through
-that project's own `./buddy dev:dashboard`, on a port reserved for that project
-(3900 upwards, the same one every time), with no native window and an idle
-limit. It listens on a unix socket in `~/.stacks/buddy/`, loads no project
-code, polls nothing, and exits once it has no dashboards left. Reach it through
+that project's own `./buddy dev:dashboard`, on a port reserved for that project.
+It also watches registered projects with `generation.enabled: true` in
+`config/buddy.json`, debounces native source events, and starts one project-local
+`generate:project` worker at a time for barrels, migrations, and declarations.
+The policy supports individual `imports`, `migrations`, and `types` switches
+and `generation.autoCommit` defaults to false. The daemon loads no project
+code and exits when it has no dashboards or active generation watches. Reach it through
 `openProjectDashboard()` / `daemonStatus()` in `@stacksjs/actions/daemon/client`,
 which start it when it is not running.
 

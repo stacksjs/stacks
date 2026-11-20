@@ -2739,6 +2739,10 @@ export async function catchUpFrameworkRenames(options: { runner?: RenameSqlRunne
  * the "models are the source of truth" promise.
  */
 export interface GenerateMigrationsOptions {
+  /** Refuse potentially destructive changes before persisting generated SQL. Default true. */
+  allowDestructive?: boolean
+  /** Register ignored generated SQL with Git as intent-to-add. Default true. */
+  trackIgnored?: boolean
   /**
    * Emit data-preserving `RENAME COLUMN` for unambiguous detected renames
    * (default true). False forces literal DROP + ADD. Falls back to the
@@ -2827,10 +2831,14 @@ async function pendingMigrationOperationsForDialect(options: GenerateMigrationsO
   const corrected = fromDb ? undefined : catchUpSnapshotFrameworkRenames({ persist: false }).plan
   if (corrected && result.plan)
     result.operations = generateDiffOperations(corrected, result.plan, { applyRenames, dryRun: true }).operations
+  return relevantMigrationOperations(result.operations ?? [], protectedTables)
+}
+
+async function relevantMigrationOperations(source: MigrationOperation[], protectedTables: string[]): Promise<MigrationOperation[]> {
   // Tables the auth layer creates itself are never generated, so they are
   // never pending either (see `withoutRuntimeOwnedTableSql`).
   const authOwned = new Set(AUTH_TABLES)
-  let operations = (result.operations ?? []).filter((op: MigrationOperation) => !authOwned.has(op.table.toLowerCase()))
+  let operations = source.filter(op => !authOwned.has(op.table.toLowerCase()))
   // Protected tables are never dropped (see `withoutProtectedTableDropSql`),
   // so they must not appear in the confirmation gate either — sixty phantom
   // drops would train the user to approve a prompt that is, on any other run,
@@ -2990,15 +2998,31 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
   // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
   await ensureDatabaseConfigLoaded()
 
-  if (!options.dialect || options.dialect === attachedDriver())
-    return generateMigrationsForDialect(options)
+  // Manual commands, dev and the machine watcher all share the corpus and
+  // snapshots, even when no database server is reachable.
+  let lock: Awaited<ReturnType<typeof acquireMigrationLock>>
+  try {
+    const runtime = path.frameworkRuntimePath()
+    mkdirSync(runtime, { recursive: true })
+    lock = await acquireMigrationLock('sqlite', null, { sqliteLockPath: join(runtime, 'generate-migrations.lock') })
+  }
+  catch (error) {
+    return err(handleError(`Could not lock migration generation: ${error instanceof Error ? error.message : String(error)}`, error))
+  }
+  try {
+    if (!options.dialect || options.dialect === attachedDriver())
+      return await generateMigrationsForDialect(options)
 
-  if (!(MIGRATION_DIALECTS as readonly string[]).includes(options.dialect))
-    return err(new Error(`Unknown migration dialect "${options.dialect}". Use one of: ${MIGRATION_DIALECTS.join(', ')}.`))
-  if (resolveGenerateOptions(options).fromDb)
-    return err(new Error(`--from-db diffs against the attached ${attachedDriver()} database, so it cannot generate ${options.dialect} migrations.`))
+    if (!(MIGRATION_DIALECTS as readonly string[]).includes(options.dialect))
+      return err(new Error(`Unknown migration dialect "${options.dialect}". Use one of: ${MIGRATION_DIALECTS.join(', ')}.`))
+    if (resolveGenerateOptions(options).fromDb)
+      return err(new Error(`--from-db diffs against the attached ${attachedDriver()} database, so it cannot generate ${options.dialect} migrations.`))
 
-  return withGenerationDialect(options.dialect, () => generateMigrationsForDialect(options))
+    return await withGenerationDialect(options.dialect, () => generateMigrationsForDialect(options))
+  }
+  finally {
+    await lock.release()
+  }
 }
 
 /** Run `work` against the attached dialect, even inside an override. */
@@ -3125,7 +3149,8 @@ async function generateMigrationsForDialect(options: GenerateMigrationsOptions):
 
     const { modelsDir, skip, excludedTables, protectedTables } = prepareMigrationModelsDir()
     if (skip) {
-      trackIgnoredGeneratedMigrations(migrationDirectory())
+      if (options.trackIgnored !== false)
+        trackIgnoredGeneratedMigrations(migrationDirectory())
       log.debug('No app/Models directory found; using committed framework migrations')
       return ok('Migrations generated')
     }
@@ -3164,6 +3189,13 @@ async function generateMigrationsForDialect(options: GenerateMigrationsOptions):
       fromDb,
       ...(full ? { full: true } : {}),
     })
+
+    if (options.allowDestructive === false) {
+      const operations = await relevantMigrationOperations(result.operations ?? [], protectedTables)
+      const destructive = operations.find(operation => operation.destructive)
+      if (destructive)
+        return err(new Error(`Potentially destructive change to ${destructive.table}. Review it with buddy generate:migrations.`))
+    }
 
     // Never write a migration that drops a framework-managed column: those are
     // guaranteed by runtime ALTERs (ensureUsersAuthColumns / ensureUuidColumns),
@@ -3268,7 +3300,8 @@ async function generateMigrationsForDialect(options: GenerateMigrationsOptions):
       log.debug('No changes detected')
     }
 
-    trackIgnoredGeneratedMigrations(migrationDirectory())
+    if (options.trackIgnored !== false)
+      trackIgnoredGeneratedMigrations(migrationDirectory())
 
     const outOfScope = resolveModelSources()?.outOfScopeRelations ?? []
     if (outOfScope.length > 0)

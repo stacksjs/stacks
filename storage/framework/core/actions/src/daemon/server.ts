@@ -1,9 +1,11 @@
+import type { GenerationStatus } from './generation'
 import type { DashboardLaunch, DashboardProcess, DashboardSnapshot, OpenedDashboard } from './supervisor'
 import { accessSync, chmodSync, closeSync, constants, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
 import { isProcessAlive, isProjectRoot, projectCliEntry, readProjectService, registerProject, reserveProjectPort } from '@stacksjs/path'
 import { machineEnvironment } from './environment'
+import { GenerationSupervisor } from './generation'
 import { portAnswers, portIsFree } from './net'
 import { DAEMON_IDLE_EXIT_MS, DAEMON_PROTOCOL, daemonDir, daemonSocket, daemonStateFile, dashboardLogFile } from './paths'
 import { DashboardError, DashboardSupervisor } from './supervisor'
@@ -21,13 +23,9 @@ import { DashboardError, DashboardSupervisor } from './supervisor'
  * - It loads the path helpers and nothing else. No CLI, no config, no ORM, no
  *   project: it never imports a project's code, it starts that project's own
  *   `buddy` in a process of its own.
- * - It polls nothing. It is woken by a request on its socket or by a
- *   dashboard exiting, and between those it has no timer running but the one
- *   that ends it.
- * - It does not outstay its use. Dashboards it started stop themselves when
- *   nobody has looked at them for a while, and with none left the daemon stops
- *   too. The next thing that needs it starts it again in a fraction of a
- *   second, so there is no login item and nothing to remember to quit.
+ * - It polls nothing. Socket requests, dashboard exits and native filesystem
+ *   events wake it. Generation workers exit once they finish.
+ * - With no opted-in projects or active dashboards it stops after idling.
  *
  * Its door is a unix socket in the user's own `~/.stacks`, not a port: no web
  * page can reach it, and no other user on the machine can open it.
@@ -44,6 +42,7 @@ export interface DaemonState {
 
 export interface DaemonStatus extends DaemonState {
   dashboards: DashboardSnapshot[]
+  generation?: GenerationStatus
 }
 
 function log(message: string): void {
@@ -197,6 +196,7 @@ export async function runDaemon(options: DaemonOptions = {}): Promise<void> {
     idleExitMs: dashboardIdleExitMs,
     onChange: () => restIfIdle(),
   })
+  const generation = new GenerationSupervisor(log, restIfIdle)
 
   /**
    * (Re)start the one timer the daemon has. It only runs while there is
@@ -207,11 +207,11 @@ export async function runDaemon(options: DaemonOptions = {}): Promise<void> {
       clearTimeout(idleTimer)
     idleTimer = undefined
 
-    if (stopping || idleExitMs <= 0 || supervisor.size > 0)
+    if (stopping || idleExitMs <= 0 || supervisor.size > 0 || generation.size > 0)
       return
 
     idleTimer = setTimeout(() => {
-      if (supervisor.size === 0)
+      if (supervisor.size === 0 && generation.size === 0)
         void shutdown('nothing left to look after')
     }, idleExitMs)
   }
@@ -224,7 +224,7 @@ export async function runDaemon(options: DaemonOptions = {}): Promise<void> {
       clearTimeout(idleTimer)
 
     log(`stopping: ${reason}`)
-    await supervisor.stopAll()
+    await Promise.all([supervisor.stopAll(), generation.stop()])
     await server.stop(true)
     rmSync(socket, { force: true })
     // Only this daemon's own lock: a replacement may already hold the file.
@@ -288,7 +288,7 @@ export async function runDaemon(options: DaemonOptions = {}): Promise<void> {
 
       try {
         if (pathname === '/status')
-          return Response.json({ ...state, dashboards: supervisor.list() } satisfies DaemonStatus)
+          return Response.json({ ...state, dashboards: supervisor.list(), generation: generation.status() } satisfies DaemonStatus)
 
         if (request.method !== 'POST')
           return Response.json({ error: 'Not found' }, { status: 404 })
@@ -322,6 +322,12 @@ export async function runDaemon(options: DaemonOptions = {}): Promise<void> {
   process.on('SIGINT', () => void shutdown('SIGINT'))
 
   log(`listening on ${socket} (pid ${process.pid})`)
+  try {
+    generation.start()
+  }
+  catch (error) {
+    log(`could not start project generation: ${error}`)
+  }
   restIfIdle()
   await done
 }

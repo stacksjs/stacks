@@ -71,6 +71,8 @@ export interface GenerateSchemaOptions {
   outFile?: string
   /** Print the would-be file content instead of writing. */
   dryRun?: boolean
+  /** Keep the previous declaration when a model or SQL source cannot be read. */
+  strict?: boolean
   /**
    * Which shape to write: an app's `DatabaseSchema` augmentation, or the
    * framework's own `FrameworkSchema`.
@@ -701,7 +703,8 @@ export async function buildDatabaseSchema(options: GenerateSchemaOptions = {}): 
   const body = tables.map(t => renderTableEntry(t.table, t.columns, indent)).join('\n')
   const content = `${headerFor(target)}${body}\n${footerFor(target)}`
 
-  if (!options.dryRun) {
+  if (!options.dryRun && (!options.strict || errors.length === 0)
+    && await Bun.file(outFile).text().catch(() => undefined) !== content) {
     const dir = path.dirname(outFile)
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
     fs.writeFileSync(outFile, content, 'utf-8')

@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { existsSync, mkdtempSync, rmSync, statSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { isProcessAlive } from '@stacksjs/path'
+import { isProcessAlive, registerProject } from '@stacksjs/path'
 import { daemonStatus, openProjectDashboard, readDaemonState, startDaemon, stopDaemon } from '../src/daemon/client'
 import { machineEnvironment } from '../src/daemon/environment'
 import { DAEMON_PROTOCOL, daemonSocket, daemonStateFile } from '../src/daemon/paths'
@@ -85,6 +85,58 @@ describe('the background daemon', () => {
     // Asking was enough to bring the daemon up.
     expect(await daemonStatus()).not.toBeNull()
   }, 30_000)
+
+  it('watches newly registered projects with their own runtime and batches source edits', async () => {
+    const audit = join(home, 'generation.log')
+    const makeProject = (name: string, version: string) => {
+      const root = join(home, name)
+      const cli = join(root, 'node_modules/@stacksjs/buddy/dist')
+      for (const dir of [cli, join(root, 'config'), join(root, 'resources'), join(root, 'storage/framework/auto-imports')])
+        mkdirSync(dir, { recursive: true })
+      writeFileSync(join(root, 'package.json'), JSON.stringify({ name }))
+      writeFileSync(join(root, 'config/app.ts'), 'export default {}')
+      writeFileSync(join(root, 'config/buddy.json'), '{"generation":{"enabled":true}}')
+      writeFileSync(join(cli, 'project-generation.js'), '')
+      writeFileSync(join(cli, 'cli.js'), `
+        import { appendFileSync } from 'node:fs'
+        const mark = value => appendFileSync(${JSON.stringify(audit)}, value + '\\n')
+        mark('start ${version} ' + process.argv.slice(2).join(' '))
+        await Bun.sleep(150)
+        mark('end ${version}')
+      `)
+      return root
+    }
+    const entries = () => existsSync(audit) ? readFileSync(audit, 'utf8').trim().split('\n') : []
+    const first = makeProject('shop', '1')
+    registerProject(first)
+    const { status } = await startDaemon()
+    expect(status.generation?.watched).toBe(1)
+
+    const second = makeProject('blog', '2')
+    registerProject(second)
+    expect(await until(() => entries().length === 4)).toBe(true)
+    expect(entries()).toEqual([
+      'start 1 generate:project --tasks imports,migrations,types', 'end 1',
+      'start 2 generate:project --tasks imports,migrations,types', 'end 2',
+    ])
+
+    const helpers = join(second, 'resources/functions')
+    mkdirSync(helpers)
+    for (let index = 0; index < 8; index++)
+      writeFileSync(join(helpers, `helper-${index}.ts`), 'export const helper = 1\n')
+    expect(await until(() => entries().length === 6)).toBe(true)
+
+    const file = join(helpers, 'helper-0.ts')
+    writeFileSync(`${file}.tmp`, 'export const renamed = 1\n')
+    renameSync(`${file}.tmp`, file)
+    expect(await until(() => entries().length === 8)).toBe(true)
+    expect(entries().slice(-2)).toEqual(['start 2 generate:project --tasks imports', 'end 2'])
+    expect((await daemonStatus())?.generation).toMatchObject({ watched: 2, queued: 0, failures: [] })
+
+    writeFileSync(join(second, 'storage/framework/auto-imports/functions.ts'), 'export {}')
+    await Bun.sleep(1_100)
+    expect(entries()).toHaveLength(8)
+  }, 20_000)
 })
 
 describe('the environment the daemon keeps', () => {

@@ -352,6 +352,19 @@ export function generate(buddy: CLI): void {
     })
 
   buddy
+    .command('generate:project', 'Refresh the generated files enabled in config/buddy.json')
+    .option('--tasks <tasks>', 'Comma-separated generators to run: imports,migrations,types', { default: 'imports,migrations,types' })
+    .action(async (options: { tasks: string }) => {
+      const { generateProject } = await import('../project-generation')
+      try {
+        await generateProject(projectPath(), options.tasks)
+      }
+      catch (error) {
+        reportFailure({ error })
+      }
+    })
+
+  buddy
     .command('generate:core-symlink', 'Symlink `.framework` -> storage/framework. A shortcut for core developers.')
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:core-symlink` ...', options)

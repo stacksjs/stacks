@@ -34,7 +34,7 @@ export function daemon(buddy: CLI): void {
   const descriptions = {
     status: 'Show whether buddy is running in the background and what it is running',
     start: 'Start buddy in the background',
-    stop: 'Stop the background buddy and the dashboards it started',
+    stop: 'Stop background generation and the dashboards buddy started',
     restart: 'Restart the background buddy',
     logs: 'Print the background buddy\'s log',
     json: 'Print the status as JSON',
@@ -57,8 +57,15 @@ export function daemon(buddy: CLI): void {
     const memory = memoryMb(running.pid)
     console.log(`${green('●')} buddy is running in the background ${dim(`(pid ${running.pid}, up ${uptime(running.startedAt)}${memory ? `, ${memory} MB` : ''})`)}`)
 
+    if (running.generation) {
+      const { watched, queued, running: active, failures } = running.generation
+      console.log(`  Generation  ${watched} watched, ${queued} queued${active ? `, running for ${active}` : ''}`)
+      for (const failure of failures)
+        console.log(`  ${failure.path}  ${failure.error}`)
+    }
+
     if (running.dashboards.length === 0) {
-      console.log(dim('  No dashboards running. It stops by itself after a while with none.'))
+      console.log(dim('  No dashboards running.'))
       return
     }
 
