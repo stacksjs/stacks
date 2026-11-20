@@ -86,6 +86,24 @@ describe('countFiles', () => {
     }
   })
 
+  it('counts only the top level when asked, as the migration count does', () => {
+    // A Postgres checkout gets database/migrations/postgres/ from `buddy
+    // migrate`: untracked, not ignored, and not what ships. Counted, it read
+    // 307 for 256 and the check was always red there (stacksjs/stacks#3346).
+    const dir = mkdtempSync(join(tmpdir(), 'agent-counts-'))
+    try {
+      writeFileSync(join(dir, 'shipped.txt'), '')
+      mkdirSync(join(dir, 'postgres'))
+      writeFileSync(join(dir, 'postgres', 'generated.txt'), '')
+
+      expect(countFiles(relative(root, dir), '.txt', { recursive: false })).toBe(1)
+      expect(countFiles(relative(root, dir), '.txt')).toBe(2)
+    }
+    finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
   it('falls back to the plain walk when git cannot answer', () => {
     // A vendored copy of the framework inside a consumer app is not a git
     // repository at all. Counting nothing there would be worse than counting

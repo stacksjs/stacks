@@ -79,7 +79,7 @@ function ignoredPaths(paths: string[]): Set<string> {
 }
 
 /** Every file with `extension` under `dir`, ignoring barrels. Repo-relative. */
-function walkFiles(dir: string, extension: string): string[] {
+function walkFiles(dir: string, extension: string, recursive = true): string[] {
   let entries: string[]
   try {
     entries = readdirSync(abs(dir))
@@ -91,7 +91,7 @@ function walkFiles(dir: string, extension: string): string[] {
   return entries.flatMap((entry) => {
     const full = join(abs(dir), entry)
     if (statSync(full).isDirectory())
-      return walkFiles(join(dir, entry), extension)
+      return recursive ? walkFiles(join(dir, entry), extension) : []
     if (!entry.endsWith(extension) || entry === 'index.ts')
       return []
     return [join(dir, entry)]
@@ -99,8 +99,8 @@ function walkFiles(dir: string, extension: string): string[] {
 }
 
 /** Every file with `extension` under `dir` that git would carry, ignoring barrels. */
-export function countFiles(dir: string, extension: string): number {
-  const files = walkFiles(dir, extension)
+export function countFiles(dir: string, extension: string, options: { recursive?: boolean } = {}): number {
+  const files = walkFiles(dir, extension, options.recursive ?? true)
   const ignored = ignoredPaths(files)
   return files.filter(file => !ignored.has(file)).length
 }
@@ -178,7 +178,12 @@ const CLAIMS: Claim[] = [
   },
   {
     what: 'migrations',
-    measure: () => countFiles('database/migrations', '.sql'),
+    // The migrations that ship are the ones directly in database/migrations.
+    // `buddy migrate` on Postgres generates its own set into
+    // database/migrations/postgres/, which is untracked and not ignored, so a
+    // recursive count read 307 for 256 on any Postgres checkout: the check was
+    // always red there, which hid real mismatches (stacksjs/stacks#3346).
+    measure: () => countFiles('database/migrations', '.sql', { recursive: false }),
     sites: [
       { file: AGENTS, pattern: /(\d+) migrations ship for/ },
       { file: `${SKILLS}/stacks-migrations/SKILL.md`, pattern: /(\d+) built-in migration files/ },
