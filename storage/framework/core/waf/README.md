@@ -33,6 +33,14 @@ const decision = waf.inspect({
 - **The library is named, never searched for**: `library`, then
   `ZIG_WAF_LIBRARY`. It is `lib/libzig-waf.{dylib,so}` in a zig-waf release, or
   `zig-out/lib/` after `zig build`.
+- **Data files** (`@pmFromFile`) resolve from `dataDir`, by default the last
+  rule file's directory: a CRS checkout's `rules/`, where its `.data` files are.
+- **Methods.** CRS allows only GET, HEAD, POST and OPTIONS by default, which
+  would refuse a Stacks API's PUT, PATCH and DELETE routes. The generated setup
+  adds them; `allowedMethods` narrows or widens the list.
+- **Bodies.** At most `maxBodyBytes` (default 128 KB) is read. Blocking refuses a
+  larger body with 413, since past that point the rules see nothing. Detection
+  inspects its start and logs the rest as unseen.
 - **Detection by default.** Nothing switches to `blocking` by itself; read the
   detection log first.
 
@@ -53,7 +61,9 @@ rules (942100 and 949110), 20,000 requests each:
 
 Almost all of that is phase-1 evaluation inside the engine: a rule that fires
 costs about 100 us even when it does nothing (zig-utils/zig-waf#82), and the
-generated setup and the fixture fire three. A full CRS fires dozens per request,
-so expect milliseconds until that is fixed, and measure with your own rules:
+generated setup and the fixture fire several. A full CRS fires dozens per
+request: a run against CRS at paranoia level 1 on Apple Silicon measured about
+11-12 ms per request. Expect that until zig-waf#82 is fixed, and measure with
+your own rules:
 `bun bench/latency.ts crs-setup.conf rules/*.conf`. The CI job `waf` prints the
 same table for Linux.

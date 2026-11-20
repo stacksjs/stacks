@@ -204,10 +204,14 @@ import { eraseSubject, exportSubjectData, pruneRetainedData } from '@stacksjs/or
   `crs-setup.conf` then `rules/*.conf`; zig-waf ships none, so it refuses to start without them),
   and `library`, the path to zig-waf's shared library (or `ZIG_WAF_LIBRARY`; it is in `lib/` of a
   zig-waf release or `zig-out/lib/` after `zig build`). Detection mode logs a match and lets the
-  request through; blocking refuses it with the rule's status. In blocking mode a WAF that cannot
+  request through; blocking refuses it with the rule's status. `dataDir` (default: the last rule
+  file's directory, a CRS checkout's `rules/`) is where `.data` files resolve, and `allowedMethods`
+  defaults to CRS's GET HEAD POST OPTIONS plus PUT, PATCH and DELETE, which CRS alone would refuse.
+  At most `maxBodyBytes` of a body is read; blocking refuses a larger one with 413. In blocking mode a WAF that cannot
   start answers 503 instead of letting everything through; in detection mode it logs and passes. A
   request built in-process has no socket and is not inspected. It costs about 0.2 ms per request
-  with a two-rule set and more with full CRS (zig-utils/zig-waf#82); see `core/waf/README.md`.
+  with a two-rule set and about 11-12 ms with full CRS until zig-utils/zig-waf#82 is fixed; see
+  `core/waf/README.md`.
 - The firewall rate limit is per-minute per-IP at the WAF (`firewall.rateLimitPerMinute`)
 - Application rate limits (`.rateLimit()`, `rateLimit()`, the login lockout) share the Redis cache when it is configured and count per process otherwise; see `stacks-router`
 

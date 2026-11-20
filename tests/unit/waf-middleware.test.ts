@@ -26,7 +26,9 @@ beforeAll(() => {
     async fetch(req) {
       try {
         const decision = await inspectWithWaf(req, settings)
-        return Response.json({ decision })
+        // What the action behind the middleware would read next.
+        const body = req.method === 'GET' || req.method === 'HEAD' ? undefined : (await req.text()).length
+        return Response.json({ decision, body })
       }
       catch (error) {
         if (error instanceof HttpError)
@@ -69,6 +71,49 @@ describe.skipIf(!library)('the waf middleware, against zig-waf', () => {
     const response = await call('/search?q=hello')
     expect(response.status).toBe(200)
     expect((await response.json()).decision).toEqual({ matched: false, enforced: false })
+  })
+})
+
+describe.skipIf(!library)('the waf middleware and the request body', () => {
+  test('leaves a form body for the action to read', async () => {
+    settings = { mode: 'detection', library, rules }
+    const form = 'email=person%40example.com&name=Pat'
+    const response = await call('/contact', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: form })
+    expect(await response.json()).toEqual({ decision: { matched: false, enforced: false }, body: form.length })
+  })
+
+  test('leaves a multipart body for the action to read', async () => {
+    settings = { mode: 'detection', library, rules }
+    const data = new FormData()
+    data.append('name', 'Pat')
+    data.append('file', new Blob(['hello']), 'hello.txt')
+    const response = await call('/upload', { method: 'POST', body: data })
+    expect((await response.json()).body).toBeGreaterThan(0)
+  })
+
+  test('blocking refuses a body larger than maxBodyBytes, declared up front', async () => {
+    settings = { mode: 'blocking', library, rules, maxBodyBytes: 64 }
+    const response = await call('/contact', { method: 'POST', headers: { 'content-type': 'text/plain' }, body: 'x'.repeat(65) })
+    expect(response.status).toBe(413)
+  })
+
+  test('blocking refuses one that grows past it without declaring a length', async () => {
+    settings = { mode: 'blocking', library, rules, maxBodyBytes: 64 }
+    const stream = new ReadableStream({
+      start(controller) {
+        for (let i = 0; i < 10; i++) controller.enqueue(new TextEncoder().encode('x'.repeat(16)))
+        controller.close()
+      },
+    })
+    const response = await call('/contact', { method: 'POST', headers: { 'content-type': 'text/plain' }, body: stream, duplex: 'half' } as RequestInit)
+    expect(response.status).toBe(413)
+  })
+
+  test('detection inspects the first maxBodyBytes of a larger body and lets it through whole', async () => {
+    settings = { mode: 'detection', library, rules, maxBodyBytes: 64 }
+    const response = await call('/contact', { method: 'POST', headers: { 'content-type': 'text/plain' }, body: 'x'.repeat(200) })
+    expect(response.status).toBe(200)
+    expect((await response.json()).body).toBe(200)
   })
 })
 
