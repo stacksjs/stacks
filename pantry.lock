@@ -119,6 +119,7 @@
         "@stacksjs/utils": "0.75.635",
         "@stacksjs/validation": "0.75.635",
         "@stacksjs/video": "0.75.635",
+        "@stacksjs/waf": "0.75.635",
         "@stacksjs/whois": "0.75.635",
         "bun-query-builder": "^0.6.4"
       },
@@ -1547,6 +1548,16 @@
         "@ts-videos/webm": "^0.1.2",
         "ts-video-player": "^0.1.3",
         "ts-videos": "^0.1.2"
+      },
+      "devDependencies": {
+        "better-dx": "^0.2.39"
+      }
+    },
+    "storage/framework/core/waf": {
+      "name": "@stacksjs/waf",
+      "version": "0.75.635",
+      "dependencies": {
+        "@stacksjs/types": "workspace:*"
       },
       "devDependencies": {
         "better-dx": "^0.2.39"

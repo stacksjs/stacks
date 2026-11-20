@@ -109,6 +109,7 @@
         "@stacksjs/utils": "0.75.635",
         "@stacksjs/validation": "0.75.635",
         "@stacksjs/video": "0.75.635",
+        "@stacksjs/waf": "0.75.635",
         "@stacksjs/whois": "0.75.635",
         "bun-query-builder": "^0.6.4",
       },
@@ -1584,6 +1585,16 @@
         "better-dx": "^0.2.39",
       },
     },
+    "storage/framework/core/waf": {
+      "name": "@stacksjs/waf",
+      "version": "0.75.635",
+      "dependencies": {
+        "@stacksjs/types": "workspace:*",
+      },
+      "devDependencies": {
+        "better-dx": "^0.2.39",
+      },
+    },
     "storage/framework/core/whois": {
       "name": "@stacksjs/whois",
       "version": "0.75.635",
@@ -1910,6 +1921,8 @@
     "@stacksjs/validation": ["@stacksjs/validation@workspace:storage/framework/core/validation"],
 
     "@stacksjs/video": ["@stacksjs/video@workspace:storage/framework/core/video"],
+
+    "@stacksjs/waf": ["@stacksjs/waf@workspace:storage/framework/core/waf"],
 
     "@stacksjs/whois": ["@stacksjs/whois@workspace:storage/framework/core/whois"],
 

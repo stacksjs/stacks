@@ -16,6 +16,7 @@ const PACKAGE_SKILLS: Record<string, string> = {
   github: 'stacks-git',
   'model-meta': 'stacks-models',
   tinker: 'stacks-repl',
+  waf: 'stacks-security',
 }
 
 interface PackageEntry {

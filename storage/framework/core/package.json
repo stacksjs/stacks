@@ -414,7 +414,8 @@
     "bun-query-builder": "^0.6.4",
     "@stacksjs/desktop-build": "0.75.635",
     "@stacksjs/support": "0.75.635",
-    "@stacksjs/telephony": "0.75.635"
+    "@stacksjs/telephony": "0.75.635",
+    "@stacksjs/waf": "0.75.635"
   },
   "devDependencies": {
     "better-dx": "^0.2.39"
