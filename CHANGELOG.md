@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.647...v0.75.648)
+
+## 🐛 Bug Fixes
+
+- preserve input outlines when masking captured values ([62139d5](https://github.com/stacksjs/stacks/commit/62139d5)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.646...v0.75.647)
 
 ## ✅ Tests
