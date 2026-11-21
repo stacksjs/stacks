@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.642...v0.75.643)
+
+## 🐛 Bug Fixes
+
+- reuse the ReviewOS workflow checkout ([9f4adc7](https://github.com/stacksjs/stacks/commit/9f4adc7)) _(by Chris Breuer)_
+- shorten temporary Chrome profile paths ([eb418f9](https://github.com/stacksjs/stacks/commit/eb418f9)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.641...v0.75.642)
 
 ## 🐛 Bug Fixes
