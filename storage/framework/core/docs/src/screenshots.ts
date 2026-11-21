@@ -345,7 +345,11 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
       const runtime = import.meta.path.startsWith('/$bunfs/') ? Bun.which('bun') : process.execPath
       if (!runtime) throw new Error('An installed Bun is required for screenshot workers')
       const entry = import.meta.path.startsWith('/$bunfs/') ? Bun.resolveSync('@stacksjs/docs/screenshots', root) : import.meta.path
-      const worker = spawnOwnedProcess([runtime, '--no-env-file', `--config=${join(temporary, 'bunfig.toml')}`, entry, '--worker', configFile, profile, JSON.stringify({ ...options, root, staging: temporary }), resultFile], { ownerRuntime: runtime, cwd: root, env: process.env, stdin: 'ignore', stdout: 'ignore', stderr: 'ignore', ipc: (message) => {
+      // Bun's Chrome backend creates a profile under the worker's temp root.
+      // Keep it with the rest of this capture so it is retired after the worker exits.
+      const workerTemp = await mkdtemp(join(temporary, 'browser-'))
+      const env = { ...process.env, TMPDIR: workerTemp, TMP: workerTemp, TEMP: workerTemp }
+      const worker = spawnOwnedProcess([runtime, '--no-env-file', `--config=${join(temporary, 'bunfig.toml')}`, entry, '--worker', configFile, profile, JSON.stringify({ ...options, root, staging: temporary }), resultFile], { ownerRuntime: runtime, cwd: root, env, stdin: 'ignore', stdout: 'ignore', stderr: 'ignore', ipc: (message) => {
         const progress = message as { type?: string, result?: ScreenshotResult }
         if (progress?.type === 'screenshot-result' && progress.result) options.onProgress?.(progress.result)
       } })
