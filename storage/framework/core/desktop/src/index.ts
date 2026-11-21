@@ -138,13 +138,10 @@ export interface DesktopLauncherCompileOptions {
   entry: string
   outfile: string
   minify?: boolean
-  /**
-   * Ship the launcher as precompiled bytecode (default). A launcher's first
-   * job is to start the window, and parsing its bundle was most of that:
-   * Browser's agent reached its host in 379 ms as source and 146 ms as
-   * bytecode. The executable grows by roughly a quarter.
-   */
+  /** Opt in to a larger executable with precompiled JavaScript for faster startup. */
   bytecode?: boolean
+  /** A prebuilt Bun executable to use instead of the build tool's own runtime. */
+  runtimeExecutable?: string
 }
 
 /**
@@ -164,8 +161,9 @@ export function desktopLauncherCompileArgs(options: DesktopLauncherCompileOption
     'build',
     '--compile',
     ...(options.minify === false ? [] : ['--minify']),
-    // Bytecode for an ES module needs the output format named; launchers use top-level await.
-    ...(options.bytecode === false ? [] : ['--bytecode', '--format=esm']),
+    '--format=esm',
+    ...(options.bytecode ? ['--bytecode'] : []),
+    ...(options.runtimeExecutable ? ['--compile-executable-path', options.runtimeExecutable] : []),
     '--no-compile-autoload-bunfig',
     '--no-compile-autoload-dotenv',
     options.entry,

@@ -93,10 +93,10 @@ describe('targets', () => {
     expect(() => parseDesktopTargets('solaris-sparc')).toThrow('Unknown desktop target "solaris-sparc"')
   })
 
-  test('Bun cross-compiles other targets, without bytecode from this machine\'s engine', () => {
+  test('Bun compiles compact agents on this machine and for other targets', () => {
     expect(bunCompileTarget('win32-x64')).toBe('bun-windows-x64')
     const own = webviewCompileArgs({ entry: 'e.ts', outfile: 'out', target: 'darwin-arm64', host: 'darwin-arm64' })
-    expect(own).toContain('--bytecode')
+    expect(own).not.toContain('--bytecode')
     expect(own.some(arg => arg.startsWith('--target'))).toBe(false)
     const cross = webviewCompileArgs({ entry: 'e.ts', outfile: 'out.exe', target: 'win32-x64', host: 'darwin-arm64' })
     expect(cross).toContain('--target=bun-windows-x64')

@@ -304,7 +304,7 @@ export async function prepareMacosAgent(config: ResolvedMacosDesktop, prepared: 
   const middleware = config.agent.appRoutes === false ? {} : macosAgentMiddlewareFiles(prepared.root)
   writeFileSync(entry, renderAgentEntry({ agentEntry, routes, actions, middleware }))
   const launcher = join(work, `${config.executable}-agent`)
-  const compile = Bun.spawnSync(['bun', ...desktopLauncherCompileArgs({ entry, outfile: launcher })], { cwd: prepared.root, stdout: 'pipe', stderr: 'pipe' })
+  const compile = Bun.spawnSync(['bun', ...desktopLauncherCompileArgs({ entry, outfile: launcher, runtimeExecutable: process.env.DESKTOP_BUN_EXECUTABLE })], { cwd: prepared.root, stdout: 'pipe', stderr: 'pipe' })
   if (compile.exitCode !== 0)
     throw new Error(`Compiling the agent launcher failed:\n${compile.stderr.toString().trim() || compile.stdout.toString().trim()}`)
   return {

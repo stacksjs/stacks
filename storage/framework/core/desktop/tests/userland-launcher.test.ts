@@ -96,7 +96,7 @@ describe('desktopLauncherCompileArgs', () => {
 
   // Launchers ship as bytecode, which for an ES module only builds with the
   // format named. Top-level await and an import are what a launcher has.
-  test('compiles a launcher to bytecode by default, and it runs', async () => {
+  test('compiles a compact launcher by default, and it runs', async () => {
     const { desktopLauncherCompileArgs } = await import('../src/index')
     const root = project(false)
     writeFileSync(join(root, 'greeting.ts'), 'export const greeting = (name: string) => `ran:${name}`\n')
@@ -104,7 +104,7 @@ describe('desktopLauncherCompileArgs', () => {
     writeFileSync(entry, 'import { greeting } from "./greeting"\nconsole.log(greeting(await Promise.resolve("bytecode")))\n')
 
     const args = desktopLauncherCompileArgs({ entry, outfile: join(root, 'launcher-bin') })
-    expect(args).toContain('--bytecode')
+    expect(args).not.toContain('--bytecode')
     expect(args).toContain('--format=esm')
     const build = Bun.spawnSync([process.execPath, ...args])
     expect(build.stderr.toString()).toBe('')
@@ -112,13 +112,13 @@ describe('desktopLauncherCompileArgs', () => {
     const run = Bun.spawnSync([join(root, 'launcher-bin')], { env: { PATH: process.env.PATH, HOME: process.env.HOME } })
     expect(run.stdout.toString().trim()).toBe('ran:bytecode')
 
-    const source = desktopLauncherCompileArgs({ entry, outfile: join(root, 'source-bin'), bytecode: false })
-    expect(source).not.toContain('--bytecode')
-    expect(Bun.spawnSync([process.execPath, ...source]).exitCode).toBe(0)
+    const bytecode = desktopLauncherCompileArgs({ entry, outfile: join(root, 'bytecode-bin'), bytecode: true })
+    expect(bytecode).toContain('--bytecode')
+    expect(Bun.spawnSync([process.execPath, ...bytecode]).exitCode).toBe(0)
   }, 60_000)
 
   // The framework's own launcher compiles the same way.
-  test('the framework launcher builds as bytecode', async () => {
+  test('the compact framework launcher builds', async () => {
     const { desktopLauncherCompileArgs, resolveDesktopLauncher } = await import('../src/index')
     const root = project(false)
     const build = Bun.spawnSync([process.execPath, ...desktopLauncherCompileArgs({ entry: resolveDesktopLauncher(root), outfile: join(root, 'launcher-bin') })])

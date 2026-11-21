@@ -4,7 +4,7 @@ import type { WebviewAppManifest } from './webview-launcher'
 import { chmodSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import process from 'node:process'
-import { codesignArgs, plistValue, renderInfoPlist } from './index'
+import { codesignArgs, desktopLauncherCompileArgs, plistValue, renderInfoPlist } from './index'
 import { loadDesktopConfig } from './macos-app'
 import { makeIcns, runBundleCommand } from './macos-bundle'
 import { desktopUpdatesProblems } from './update-signing'
@@ -102,26 +102,16 @@ export function bunCompileTarget(target: DesktopTargetName): string {
   return `bun-${platform === 'win32' ? 'windows' : platform}-${architecture}`
 }
 
-/**
- * The `bun build` arguments for an agent executable. Another machine's target
- * is cross-compiled by Bun, which downloads that target's runtime; bytecode is
- * left out there, because it is produced by the build machine's engine.
- */
+/** Build the same compact agent on the host and when cross-compiling. */
 export function webviewCompileArgs(options: { entry: string, outfile: string, target: DesktopTargetName, host?: DesktopTargetName, minify?: boolean }): string[] {
   const cross = options.target !== (options.host ?? hostDesktopTarget())
+  const [command, ...args] = desktopLauncherCompileArgs(options)
   return [
-    'build',
-    '--compile',
-    ...(options.minify === false ? [] : ['--minify']),
-    ...(cross ? [`--target=${bunCompileTarget(options.target)}`] : ['--bytecode', '--format=esm']),
-    // A shipped executable must not pick up the bunfig or .env of whatever directory it is started in.
-    '--no-compile-autoload-bunfig',
-    '--no-compile-autoload-dotenv',
+    command!,
+    ...(cross ? [`--target=${bunCompileTarget(options.target)}`] : []),
     // No console window behind the app on Windows.
     ...(options.target.startsWith('win32-') ? ['--windows-hide-console'] : []),
-    options.entry,
-    '--outfile',
-    options.outfile,
+    ...args,
   ]
 }
 

@@ -137,12 +137,11 @@ Write `app/Desktop/launcher.ts` and `build:desktop` compiles that instead, the
 same way anything under `app/` overrides its framework default. `DESKTOP_URL`
 and `APP_URL` then become optional, because the launcher decides what to open.
 
-Every launcher, the framework's or yours, compiles through
-`desktopLauncherCompileArgs()` to bytecode as an ES module: parsing the bundle
-was most of a launcher's start (Browser's agent reached its window host in
-379 ms as source, 146 ms as bytecode), for an executable about a quarter
-larger. Pass `bytecode: false` only to compare. Compile any helper binary of
-your own with the same function rather than hand-written `bun build` flags.
+Buddy builds a compact executable through `desktopLauncherCompileArgs()`
+with minified JavaScript and one Bun runtime. The helper accepts
+`bytecode: true` for a caller explicitly trading installed size for startup
+time. Compile helpers with the same build options, or use subcommands to keep
+one Bun executable in the app.
 
 ```ts
 // app/Desktop/launcher.ts - compiled to Contents/MacOS/<AppName>
@@ -173,6 +172,37 @@ Two things follow from declaring your own launcher:
 `build:dmg` also narrows App Transport Security for these bundles: an exception
 for `127.0.0.1` rather than `NSAllowsArbitraryLoads`, which would additionally
 permit every unencrypted host on the internet.
+
+### Building a local launcher
+
+Declare the installed identity and packaged inputs for an
+`app/Desktop/launcher.ts` project in `config/desktop.ts`:
+
+```ts
+import type { DesktopConfig } from '@stacksjs/types'
+
+export default {
+  launcher: {
+    appName: 'Library',
+    bundleId: 'org.example.library',
+    views: { routes: ['/app'], clientScripts: 'resources/scripts' },
+    sqliteMigrations: true,
+    appStore: { networkServer: true, userSelectedFiles: true },
+  },
+} satisfies DesktopConfig
+```
+
+`buddy build` compiles the executable, prerenders the declared routes, bundles
+local assets, and stages fresh migrations inside the payload. On macOS it
+also makes the `.app` and `.dmg`. Store packaging uses
+`buddy desktop:apple:package` with Craft's App Store host and the launcher as
+its inherited helper. The network server entitlement is for a launcher that
+actually listens for the window's local requests.
+
+`DESKTOP_BUN_EXECUTABLE` selects the runtime embedded by Bun's compiler.
+For App Store distribution, preflight rejects executables dynamically linked
+to Apple's system ICU library. Use a runtime linked to upstream ICU. The
+regular development build can continue to use the installed Bun.
 
 ### Info.plist entries
 

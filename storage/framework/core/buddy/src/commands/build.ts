@@ -1,4 +1,5 @@
 import type { BuildOptions, CLI, DmgOptions } from '@stacksjs/types'
+import { existsSync } from 'node:fs'
 import process from 'node:process'
 import { intro, log, multiselect, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
@@ -14,6 +15,26 @@ let _runAction: typeof import('@stacksjs/actions/run-action').runAction | undefi
 async function runAction(...args: Parameters<typeof import('@stacksjs/actions/run-action').runAction>): ReturnType<typeof import('@stacksjs/actions/run-action').runAction> {
   if (!_runAction) _runAction = (await import('@stacksjs/actions/run-action')).runAction
   return _runAction(...args)
+}
+
+interface DesktopBuildTarget {
+  action: Action
+  packageLauncher?: boolean
+}
+
+async function configuredDesktopAction(native = false): Promise<DesktopBuildTarget | undefined> {
+  if (!existsSync(projectPath('config/desktop.ts'))) return
+  const { loadDesktopConfig } = await import('@stacksjs/desktop-build')
+  const config = await loadDesktopConfig(projectPath())
+  if (config?.webview && !native) return { action: Action.BuildDesktopWebview }
+  if (config?.macos) return { action: Action.BuildDesktopMacos }
+  if (config?.launcher) return { action: Action.BuildDesktop, packageLauncher: process.platform === 'darwin' }
+}
+
+async function runDesktopBuild(target: DesktopBuildTarget, options: BuildOptions): Promise<boolean> {
+  if (!await runBuildAction(target.action, 'desktop application', options))
+    return false
+  return !target.packageLauncher || await runBuildAction(Action.BuildDmg, 'macOS installer', options)
 }
 
 export function build(buddy: CLI): void {
@@ -69,6 +90,9 @@ export function build(buddy: CLI): void {
         options.android = true
         options.ios = true
       }
+
+      const defaultDesktop = hasNoOptions(options) ? await configuredDesktopAction() : undefined
+      if (defaultDesktop) options.desktop = true
 
       if (hasNoOptions(options)) {
         // Bare `buddy build`: ask interactively when a TTY is available.
@@ -133,8 +157,10 @@ export function build(buddy: CLI): void {
         succeeded = (await runBuildAction(Action.BuildFunctionLib, 'function library', options)) && succeeded
       if (options.libs)
         succeeded = (await runBuildAction(Action.BuildLibs, 'library packages', options)) && succeeded
-      if (options.desktop)
-        succeeded = (await runBuildAction(Action.BuildDesktop, 'desktop application', options)) && succeeded
+      if (options.desktop) {
+        const target = defaultDesktop ?? await configuredDesktopAction() ?? { action: Action.BuildDesktop }
+        succeeded = (await runDesktopBuild(target, options)) && succeeded
+      }
       if (options.android)
         succeeded = (await runBuildAction(Action.BuildAndroid, 'Android application', options)) && succeeded
       if (options.ios)
@@ -314,15 +340,14 @@ export function build(buddy: CLI): void {
       // `webview` in config/desktop.ts is a web view window on a local agent, on
       // every platform; `macos` is the AppKit app (no web view); a project with
       // neither keeps the older Craft web-view build.
-      const { hasMacosDesktop, hasWebviewDesktop } = await import('@stacksjs/desktop-build')
-      const webview = !options.native && await hasWebviewDesktop(projectPath())
-      if (webview) {
+      const target = await configuredDesktopAction(options.native) ?? { action: Action.BuildDesktop }
+      if (target.action === Action.BuildDesktopWebview) {
         if (options.target) process.env.DESKTOP_TARGETS = options.target
         if (options.package) process.env.DESKTOP_PACKAGE = '1'
         if (options.import) process.env.DESKTOP_IMPORT = options.import
         if (options.identity) process.env.DESKTOP_SIGNING_IDENTITY = options.identity
       }
-      const result = await runAction(webview ? Action.BuildDesktopWebview : (await hasMacosDesktop(projectPath())) ? Action.BuildDesktopMacos : Action.BuildDesktop, options)
+      const result = await runAction(target.action, options)
 
       if (resultFailed(result)) {
         await outro(
@@ -332,6 +357,8 @@ export function build(buddy: CLI): void {
         )
         process.exit(ExitCode.FatalError)
       }
+      if (target.packageLauncher && !await runBuildAction(Action.BuildDmg, 'macOS installer', options))
+        process.exit(ExitCode.FatalError)
 
       console.log('')
       await outro('Exited', { startTime: perf, useSeconds: true })

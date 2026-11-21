@@ -4,7 +4,7 @@ import { basename, join } from 'node:path'
 import process from 'node:process'
 import { log, parseOptions, runCommand } from '@stacksjs/cli'
 import { appPath, projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
-import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, looksLikeBunExecutable, renderInfoPlist, resolveDmgPackaging } from '@stacksjs/desktop-build'
+import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, looksLikeBunExecutable, loadDesktopConfig, renderInfoPlist, resolveDmgPackaging } from '@stacksjs/desktop-build'
 import { imageDmg, notarizeAndStaple, notaryArguments } from './notarize'
 import { runBuildStep } from './run-build-step'
 
@@ -66,10 +66,12 @@ if (!existsSync(manifestPath))
 
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
   title?: string
+  bundleId?: string
   url?: string
   launcher?: 'framework' | 'userland'
 }
 const ownsLauncher = manifest.launcher === 'userland'
+const local = (await loadDesktopConfig(projectPath()))?.launcher
 
 /**
  * The version this application declares for itself.
@@ -97,7 +99,7 @@ function declaredProjectVersion(): unknown {
 // lives in @stacksjs/desktop-build so it can be asserted without a build.
 const { appName, bundleId, version, volumeName, signingIdentity, notary } = resolveDmgPackaging({
   flags: parseOptions(),
-  env: process.env,
+  env: { ...process.env, DESKTOP_BUNDLE_ID: process.env.DESKTOP_BUNDLE_ID ?? manifest.bundleId },
   manifestTitle: manifest.title,
   declaredVersion: declaredProjectVersion(),
 })
@@ -200,6 +202,9 @@ if (duplication)
 const userlandResources = appPath('Desktop/Resources')
 if (existsSync(userlandResources))
   cpSync(userlandResources, resourcesDir, { recursive: true })
+const generatedResources = join(desktopDist, 'resources')
+if (existsSync(generatedResources))
+  cpSync(generatedResources, resourcesDir, { recursive: true })
 
 /** Build an .icns from a square PNG, if one is available. */
 async function buildIcon(): Promise<string | undefined> {
@@ -316,6 +321,12 @@ if (notaryAuth && !signingIdentity)
 if (notaryAuth)
   await notarizeAndStaple(appDir, basename(appDir), notaryAuth, scratch)
 
+if (manifest.bundleId) {
+  const builtApp = join(desktopDist, `${appName}.app`)
+  rmSync(builtApp, { recursive: true, force: true })
+  await runBuildStep(['ditto', appDir, builtApp], { cwd: projectPath(), describe: 'Staging the desktop application' })
+}
+
 const dmgPath = join(outputDir, `${appName}-${version}.dmg`)
 
 // NOT `appName`. That named the volume after the app and put the app inside it,
@@ -328,12 +339,22 @@ if (volumeName === appName) {
 
 // The staging folder goes after imaging, ahead of notarization, which can
 // take minutes; the exit handler above removes it again harmlessly.
-await imageDmg({ staging, volumeName, dmgPath, signingIdentity })
+await imageDmg({
+  staging, volumeName, dmgPath, signingIdentity,
+  ...(local?.dmg ? { layout: { ...local.dmg, background: projectPath(local.dmg.background), appName: basename(appDir), iconFile: iconFile ? join(resourcesDir, 'AppIcon.icns') : undefined }, root: projectPath() } : {}),
+})
 rmSync(staging, { recursive: true, force: true })
 
 if (notaryAuth) {
   await notarizeAndStaple(dmgPath, 'the DMG', notaryAuth, scratch)
   log.success('Notarized and stapled')
+}
+
+if (local?.githubUpdates) {
+  const { generateUpdateManifest } = await import('craft-native')
+  const url = new URL(`https://github.com/${local.githubUpdates}/releases/download/v${version}/${encodeURIComponent(basename(dmgPath))}`)
+  const update = generateUpdateManifest({ version, platforms: { darwin: { path: dmgPath, url: url.href } } })
+  writeFileSync(join(outputDir, 'update.json'), `${JSON.stringify(update, null, 2)}\n`)
 }
 
 log.success(`Built ${dmgPath}`)

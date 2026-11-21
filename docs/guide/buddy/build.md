@@ -111,7 +111,9 @@ buddy prod:cli
 
 ### Desktop Application
 
-Build the desktop application with the Craft runtime and compiled Stacks launcher:
+A project with a desktop target in `config/desktop.ts` builds it with `buddy build`.
+Use `buddy build:desktop` to select the target explicitly. Buddy compiles the
+launcher once with minified JavaScript for a smaller installed app.
 
 ```bash
 buddy build:desktop

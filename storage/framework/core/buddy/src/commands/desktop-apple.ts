@@ -1,8 +1,9 @@
-import type { CLI } from '@stacksjs/types'
+import type { CLI, DesktopLauncherConfig } from '@stacksjs/types'
 import { createHash } from 'node:crypto'
 import {
   chmodSync,
   copyFileSync,
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -12,7 +13,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { basename, join, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import type { ResolvedMacosDesktop } from '@stacksjs/desktop-build'
@@ -289,7 +290,7 @@ export function storeRejectionFindings(paths: readonly string[], executable = 's
   return findings
 }
 
-export function renderInfoPlist(config: AppleDesktopConfig, executable = 'stacks-desktop'): string {
+export function renderInfoPlist(config: AppleDesktopConfig, executable = 'stacks-desktop', extra = ''): string {
   const iconEntry = config.icon
     ? '\n  <key>CFBundleIconFile</key>\n  <string>AppIcon</string>'
     : ''
@@ -318,13 +319,15 @@ export function renderInfoPlist(config: AppleDesktopConfig, executable = 'stacks
   <key>LSMinimumSystemVersion</key>
   <string>${xml(config.minimumMacos)}</string>${iconEntry}
   <key>NSHighResolutionCapable</key>
-  <true/>
+  <true/>${extra}
 </dict>
 </plist>
 `
 }
 
-export function renderAppEntitlements(config: AppleDesktopConfig): string {
+export function renderAppEntitlements(config: AppleDesktopConfig, local?: DesktopLauncherConfig['appStore']): string {
+  const networkServer = local?.networkServer ? '\n  <key>com.apple.security.network.server</key>\n  <true/>' : ''
+  const fileAccess = local?.userSelectedFiles ? '\n  <key>com.apple.security.files.user-selected.read-write</key>\n  <true/>' : ''
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -336,7 +339,7 @@ export function renderAppEntitlements(config: AppleDesktopConfig): string {
   <key>com.apple.security.app-sandbox</key>
   <true/>
   <key>com.apple.security.network.client</key>
-  <true/>
+  <true/>${networkServer}${fileAccess}
 </dict>
 </plist>
 `
@@ -750,7 +753,11 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
   if (errors.length) throw new Error(errors.join('\n'))
 
   if (native) return packageNativeApple(config, native)
+  const { loadDesktopConfig } = await import('@stacksjs/desktop-build')
+  const local = (await loadDesktopConfig(projectPath()))?.launcher?.appStore
+  if (local && config.universal) throw new Error('The local App Store host supports one target architecture per build')
   if (!skipBuild) await buildDesktop()
+  if (local) return packageLocalLauncher(config, local)
 
   const desktopDist = storagePath('framework/desktop-dist')
   let launcher = join(desktopDist, 'stacks-desktop')
@@ -834,16 +841,7 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
   command(['codesign', '--verify', '--deep', '--strict', '--verbose=2', appPath])
   command(['codesign', '-d', '--entitlements', '-', '--xml', appPath])
 
-  // Before the installer is built and long before an upload. App Review answers
-  // hours or days later and names a rule rather than a file, so every one of
-  // these is far cheaper to find here (stacksjs/stacks#2199).
-  const findings = storeRejectionFindings(bundleFiles(appPath))
-  if (findings.length > 0) {
-    throw new Error(
-      `The app bundle would be rejected by App Review:\n${findings.map(finding => `  - ${finding}`).join('\n')}`,
-    )
-  }
-
+  await verifyStoreBundle(appPath, 'stacks-desktop')
   return finishPackage(config, appPath, appleDir, {
     architectures,
     craft: {
@@ -853,6 +851,80 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
       ...(craftSlices && { slices: { arm64: sha256(craftSlices.arm64), x64: sha256(craftSlices.x64) } }),
     },
   })
+}
+
+async function packageLocalLauncher(config: AppleDesktopConfig, local: NonNullable<DesktopLauncherConfig['appStore']>): Promise<string> {
+  const { renderUserlandPlistEntries, resolveCraftExecutable } = await import('@stacksjs/desktop-build')
+  const desktopDist = storagePath('framework/desktop-dist')
+  const executable = config.appName
+  const backend = 'craft-backend'
+  const runtime = local.runtime ? projectPath(local.runtime) : join(dirname(resolveCraftExecutable()), 'craft-app-store')
+  const probe = Bun.spawnSync([runtime, '--distribution'], { stdout: 'pipe', stderr: 'pipe' })
+  if (probe.exitCode !== 0 || probe.stdout.toString().trim() !== 'app-store')
+    throw new Error(`Expected Craft's App Store runtime at ${runtime}`)
+
+  const appleDir = join(desktopDist, 'apple')
+  const app = join(appleDir, `${config.appName}.app`)
+  const contents = join(app, 'Contents')
+  const macOS = join(contents, 'MacOS')
+  const resources = join(contents, 'Resources')
+  rmSync(appleDir, { recursive: true, force: true })
+  mkdirSync(macOS, { recursive: true })
+  mkdirSync(resources, { recursive: true })
+
+  const launcher = join(desktopDist, 'stacks-desktop')
+  for (const [source, name] of [[runtime, executable], [launcher, backend]] as const) {
+    const target = join(macOS, name)
+    copyFileSync(source, target)
+    chmodSync(target, 0o755)
+  }
+  for (const source of [projectPath('app/Desktop/Resources'), join(desktopDist, 'resources')]) {
+    if (existsSync(source)) cpSync(source, resources, { recursive: true })
+  }
+  if (config.icon) copyFileSync(resolve(config.icon), join(resources, 'AppIcon.icns'))
+  writeFileSync(join(resources, 'craft.json'), JSON.stringify({
+    title: executable, appName: executable, width: 1400, height: 900, titlebarHidden: true, backend: { executable: backend },
+  }))
+  const profile = join(contents, 'embedded.provisionprofile')
+  copyFileSync(config.provisioningProfile, profile)
+  chmodSync(profile, 0o644)
+
+  const declared = projectPath('app/Desktop/Info.plist.json')
+  const declaredInfo: Record<string, unknown> = existsSync(declared) ? JSON.parse(readFileSync(declared, 'utf8')) : {}
+  for (const key of ['CFBundlePackageType', 'CFBundleInfoDictionaryVersion', 'CFBundleIconFile', 'LSApplicationCategoryType', 'LSMinimumSystemVersion', 'NSHighResolutionCapable'])
+    delete declaredInfo[key]
+  const extra = renderUserlandPlistEntries(declaredInfo).xml
+  const plist = join(contents, 'Info.plist')
+  const appEntitlements = join(appleDir, 'app.entitlements')
+  const helperEntitlements = join(appleDir, 'helper.entitlements')
+  writeFileSync(plist, renderInfoPlist(config, executable, extra))
+  writeFileSync(appEntitlements, renderAppEntitlements(config, local))
+  writeFileSync(helperEntitlements, renderHelperEntitlements())
+  command(['plutil', '-lint', plist, appEntitlements, helperEntitlements])
+  for (const args of signingPlan({
+    identity: config.appSigningIdentity, appPath: app, helperPath: join(macOS, backend), appEntitlements, helperEntitlements, keychain: config.keychain,
+  })) command(args)
+  command(['codesign', '--verify', '--deep', '--strict', app])
+  await verifyStoreBundle(app, executable)
+  return finishPackage(config, app, appleDir, {
+    architectures: [process.arch === 'x64' ? 'x86_64' : process.arch],
+    craft: { kind: 'app-store-host', sha256: sha256(runtime) },
+  })
+}
+
+async function verifyStoreBundle(app: string, executable: string): Promise<void> {
+  const { bundleDirectoryFor } = await import('@stacksjs/desktop-build')
+  const files = bundleFiles(app)
+  const findings = storeRejectionFindings(files, executable)
+  for (const file of files) {
+    const path = join(app, file)
+    if (bundleDirectoryFor(path) !== 'MacOS') continue
+    const deps = Bun.spawnSync(['/usr/bin/otool', '-L', path], { stdout: 'pipe', stderr: 'pipe' })
+    if (deps.exitCode !== 0) throw new Error(`Could not inspect the Mach-O dependencies of ${file}`)
+    if (/^\s+\/usr\/lib\/libicucore(?:\.[^\s]+)?\.dylib\s/m.test(deps.stdout.toString()))
+      findings.push(`${file} links Apple's system ICU library, which App Review flagged. Build with a Bun runtime linked to upstream ICU.`)
+  }
+  if (findings.length) throw new Error(`The app bundle failed Store preflight:\n${findings.map(finding => `  - ${finding}`).join('\n')}`)
 }
 
 /**
@@ -882,9 +954,7 @@ async function packageNativeApple(config: AppleDesktopConfig, native: ResolvedMa
   })
   for (const note of assembled.notes) await log.warn(note)
   command(['codesign', '-d', '--entitlements', '-', '--xml', assembled.appPath])
-  const findings = storeRejectionFindings(bundleFiles(assembled.appPath), store.executable)
-  if (findings.length > 0)
-    throw new Error(`The app bundle would be rejected by App Review:\n${findings.map(finding => `  - ${finding}`).join('\n')}`)
+  await verifyStoreBundle(assembled.appPath, store.executable)
   return finishPackage(config, assembled.appPath, appleDir, {
     architectures: [process.arch === 'x64' ? 'x86_64' : process.arch],
     craft: { kind: 'native-appkit', hostKey: prepared.hostKey, sha256: sha256(prepared.host) },

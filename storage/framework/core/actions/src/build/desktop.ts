@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { corePath, projectPath, storagePath } from '@stacksjs/path'
-import { assertDesktopReleaseChannel, desktopLauncherCompileArgs, hasUserlandDesktopLauncher, resolveCraftExecutable, resolveDesktopLauncher } from '@stacksjs/desktop-build'
+import { assertDesktopReleaseChannel, desktopLauncherCompileArgs, hasUserlandDesktopLauncher, loadDesktopConfig, resolveCraftExecutable, resolveDesktopLauncher } from '@stacksjs/desktop-build'
 import { runBuildStep } from './run-build-step'
 
 const outputDir = storagePath('framework/desktop-dist')
@@ -19,6 +19,9 @@ const support = assertDesktopReleaseChannel(releaseChannel)
 // runs. Demanding a URL up front is only meaningful for the framework launcher,
 // which has nothing else to go on.
 const ownsLauncher = hasUserlandDesktopLauncher(projectPath())
+const local = (await loadDesktopConfig(projectPath()))?.launcher
+if (local && !ownsLauncher)
+  throw new Error('desktop.launcher requires app/Desktop/launcher.ts')
 
 if (!appUrl && !ownsLauncher) {
   throw new Error(
@@ -46,6 +49,11 @@ if (existsSync(outputDir))
   rmSync(outputDir, { recursive: true })
 mkdirSync(outputDir, { recursive: true })
 
+if (local?.views || local?.sqliteMigrations || local?.resources) {
+  const { stageLauncherResources } = await import('./desktop-launcher-resources')
+  await stageLauncherResources(projectPath(), join(outputDir, 'resources'), local)
+}
+
 // Rebuild the desktop package only when its source is present — inside this
 // monorepo. A consumer app installs it prebuilt and has no `src` to compile.
 const desktopSource = corePath('desktop')
@@ -61,11 +69,6 @@ if (existsSync(join(desktopSource, 'package.json')) && existsSync(join(desktopSo
 // its whole route tree and the worker subcommand producing identical output.
 // The framework already minifies the server build and buddy's own binary.
 //
-// Not `--bytecode`, which sounds like it belongs here and does the opposite:
-// it adds back the same 6.9 MB, trading size for startup time. Anyone reaching
-// for "make it smaller" would plausibly enable both and end up where they
-// started.
-//
 // `DESKTOP_MINIFY=false` opts out. Minification renames functions and classes,
 // and a launcher can pull in arbitrary application code — anything reading
 // `fn.name`, or keying on a constructor name, breaks in a way that only shows
@@ -74,7 +77,7 @@ if (existsSync(join(desktopSource, 'package.json')) && existsSync(join(desktopSo
 const minify = process.env.DESKTOP_MINIFY !== 'false'
 const launcherEntry = resolveDesktopLauncher(projectPath())
 await runBuildStep(
-  ['bun', ...desktopLauncherCompileArgs({ entry: launcherEntry, outfile: join(outputDir, launcherName), minify })],
+  ['bun', ...desktopLauncherCompileArgs({ entry: launcherEntry, outfile: join(outputDir, launcherName), minify, runtimeExecutable: process.env.DESKTOP_BUN_EXECUTABLE })],
   { cwd: projectPath(), describe: 'Compiling the desktop launcher' },
 )
 
@@ -86,7 +89,8 @@ if (process.platform !== 'win32') {
 
 writeFileSync(join(outputDir, 'desktop.json'), `${JSON.stringify({
   url: url ? url.toString().replace(/\/$/, '') : '',
-  title: process.env.APP_NAME || 'Stacks',
+  title: local?.appName ?? process.env.APP_NAME ?? 'Stacks',
+  bundleId: local?.bundleId,
   width: 1400,
   height: 900,
   darkMode: false,

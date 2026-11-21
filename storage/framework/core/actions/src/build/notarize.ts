@@ -2,6 +2,7 @@ import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } fr
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
+import type { DesktopLauncherConfig } from '@stacksjs/types'
 import type { NotaryCredentials } from '@stacksjs/desktop-build'
 import { log, runCommand } from '@stacksjs/cli'
 import { notarizationOutcome, notarytoolAuthArgs } from '@stacksjs/desktop-build'
@@ -57,17 +58,52 @@ export async function notarizeAndStaple(target: string, what: string, auth: stri
  * `/Applications` link every macOS DMG is expected to have, and sign the image:
  * Gatekeeper checks the DMG a person opens before it ever looks at the app.
  */
-export async function imageDmg(options: { staging: string, volumeName: string, dmgPath: string, signingIdentity?: string }): Promise<void> {
-  symlinkSync('/Applications', join(options.staging, 'Applications'))
-  const created = await runCommand([
-    'hdiutil', 'create',
-    '-volname', options.volumeName,
-    '-srcfolder', options.staging,
-    '-ov', '-format', 'UDZO',
-    options.dmgPath,
-  ], { cwd: options.staging })
-  if (created.isErr)
-    throw new Error(`hdiutil failed to create ${options.dmgPath}`)
+export async function imageDmg(options: {
+  staging: string
+  volumeName: string
+  dmgPath: string
+  signingIdentity?: string
+  root?: string
+  layout?: NonNullable<DesktopLauncherConfig['dmg']> & { appName: string, iconFile?: string }
+}): Promise<void> {
+  const { layout } = options
+  if (layout) {
+    const root = options.root ?? process.cwd()
+    await runBuildStep(['pantry', 'install', 'github.com/create-dmg/create-dmg@1.2.3', '--no-save'], {
+      cwd: root, describe: 'Installing the disk image builder',
+    })
+    const lookup = Bun.spawnSync(['pantry', 'which', '--resolve', join(root, 'pantry/.bin/create-dmg')], { cwd: root, stdout: 'pipe', stderr: 'pipe' })
+    const executable = lookup.stdout.toString().trim()
+    if (lookup.exitCode !== 0 || !executable)
+      throw new Error(`Pantry could not locate create-dmg: ${lookup.stderr.toString().trim()}`)
+    await runBuildStep([
+      executable,
+      '--volname', options.volumeName,
+      ...(layout.iconFile ? ['--volicon', layout.iconFile] : []),
+      '--background', layout.background,
+      '--window-size', String(layout.width), String(layout.height),
+      '--icon-size', String(layout.iconSize),
+      '--text-size', '13',
+      '--icon', layout.appName, ...layout.appPosition.map(String),
+      '--hide-extension', layout.appName,
+      '--app-drop-link', ...layout.applicationsPosition.map(String),
+      '--format', layout.format ?? 'UDZO',
+      '--filesystem', 'HFS+',
+      options.dmgPath, options.staging,
+    ], { cwd: root, describe: 'Packaging the styled disk image' })
+  }
+  else {
+    symlinkSync('/Applications', join(options.staging, 'Applications'))
+    const created = await runCommand([
+      'hdiutil', 'create',
+      '-volname', options.volumeName,
+      '-srcfolder', options.staging,
+      '-ov', '-format', 'UDZO',
+      options.dmgPath,
+    ], { cwd: options.staging })
+    if (created.isErr)
+      throw new Error(`hdiutil failed to create ${options.dmgPath}`)
+  }
 
   if (options.signingIdentity) {
     await runBuildStep(['codesign', '--force', '--timestamp', '--sign', options.signingIdentity, options.dmgPath], {

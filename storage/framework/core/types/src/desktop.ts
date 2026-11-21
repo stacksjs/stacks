@@ -28,6 +28,8 @@ import type { MobilePrivacyManifest } from './mobile'
  */
 export interface DesktopConfig {
   macos?: MacosDesktopConfig
+  /** Package a local app with the conventional app/Desktop/launcher.ts entry. */
+  launcher?: DesktopLauncherConfig
   /**
    * A web view window on a local agent, the same on macOS, Windows and Linux:
    * the app's executable is a compiled Bun agent on 127.0.0.1 that serves the
@@ -52,6 +54,45 @@ export interface DesktopConfig {
    * `--native` picks the AppKit one.
    */
   webview?: WebviewDesktopConfig
+}
+
+/** Bundled inputs for the project-owned launcher. */
+export interface DesktopLauncherConfig {
+  appName: string
+  bundleId: string
+  views?: {
+    /** URL prefixes to ship, such as ['/app']. Their referenced assets are included. */
+    routes: string[]
+    /** Project-relative directory of browser TypeScript entry points. */
+    clientScripts?: string
+    /** Build-time values used by the desktop templates. */
+    env?: Record<string, string>
+  }
+  /** Generate SQLite migrations from the app models and ship them under Resources/migrations. */
+  sqliteMigrations?: boolean
+  /** Additional named files in the app's Resources directory. */
+  resources?: Record<string, string>
+  /** Native installer artwork and positions, in Finder points. */
+  dmg?: {
+    background: string
+    width: number
+    height: number
+    iconSize: number
+    appPosition: [x: number, y: number]
+    applicationsPosition: [x: number, y: number]
+    format?: 'UDZO' | 'ULMO'
+  }
+  /** Generate the Craft updater's update.json for the direct GitHub release. */
+  githubUpdates?: string
+  /** Run the project's launcher as the backend of Craft's sandboxed Store host. */
+  appStore?: {
+    /** A custom Store runtime. Default: craft-app-store alongside the project's Craft runtime. */
+    runtime?: string
+    /** The bundled backend listens on 127.0.0.1 for the app's web view. */
+    networkServer?: boolean
+    /** Let the user choose files or folders for reading and writing. */
+    userSelectedFiles?: boolean
+  }
 }
 
 /** A build target: a Node platform id and architecture, as `process.platform`-`process.arch`. */
