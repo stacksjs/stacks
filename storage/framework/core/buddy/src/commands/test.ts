@@ -290,7 +290,9 @@ export function test(buddy: CLI): void {
       }
       const { auditPage, formatPageAudit, installBasicAuth, launch, pageAuditClean } = await import('@stacksjs/testing/browser')
       const viewport = options.mobile ? { width: 390, height: 844, mobile: true, deviceScaleFactor: 2 } : { width: 1440, height: 900 }
-      const { cdp, close, port } = await launch({ viewport, shared: authOrigin ? false : undefined })
+      // This one-shot command exits immediately. Await disposal of its Chrome
+      // profile instead of leaving the shared browser's reuse timer pending.
+      const { cdp, close, port } = await launch({ viewport, shared: false })
       const reports = []
       let lighthouse: Awaited<ReturnType<typeof auditLighthouse>> = []
       try {
