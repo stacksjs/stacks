@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.639...v0.75.640)
+
+## 🐛 Bug Fixes
+
+- **docs**: configure browser stories before the first navigation ([df7b046](https://github.com/stacksjs/stacks/commit/df7b046)) _(by Chris Breuer)_
+- isolate Lighthouse installations for each Buddy audit ([702eb3b](https://github.com/stacksjs/stacks/commit/702eb3b)) _(by Chris Breuer)_
+- **ci**: verify cloud production tests and refresh generated references ([9ba0022](https://github.com/stacksjs/stacks/commit/9ba0022)) _(by Chris Breuer)_
+- **cloud**: verify Restic file restores during database drills ([18d6671](https://github.com/stacksjs/stacks/commit/18d6671)) _(by Chris Breuer)_
+- **cloud**: keep large Vitess restore drills within budget ([c0c8f01](https://github.com/stacksjs/stacks/commit/c0c8f01)) _(by Chris Breuer)_
+- **buddy**: clean up browser profiles after page audits ([33561ae](https://github.com/stacksjs/stacks/commit/33561ae)) _(by Chris Breuer)_
+- **cloud**: migrate production host maintenance to Bun ([b0ebc1c](https://github.com/stacksjs/stacks/commit/b0ebc1c)) _(by Chris Breuer)_
+
+## ♻️ Code Refactoring
+
+- consolidate framework configuration and host backups ([1281f57](https://github.com/stacksjs/stacks/commit/1281f57)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.638...v0.75.639)
 
 ## 🐛 Bug Fixes
