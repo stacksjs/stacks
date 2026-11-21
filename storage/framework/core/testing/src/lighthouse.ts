@@ -1,9 +1,10 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
 
+const lighthouseVersion = '13.6.0'
 export const lighthouseCategories = ['performance', 'accessibility', 'best-practices', 'seo'] as const
 export type LighthouseCategory = typeof lighthouseCategories[number]
 export type LighthouseDevice = 'mobile' | 'desktop'
@@ -123,15 +124,17 @@ function lcpTraceMs(report: any): LighthouseResult['lcpTraceMs'] {
   return Object.keys(timings).length ? timings : undefined
 }
 
-const run: LighthouseRunner = async (args, timeoutMs) => {
-  // The Lighthouse CLI is independent of the application's Bun preloads.
-  const child = Bun.spawn(args, { cwd: tmpdir(), stdout: 'ignore', stderr: 'pipe', timeout: timeoutMs, killSignal: 'SIGTERM' })
+async function run(args: string[], timeoutMs: number, cwd: string) {
+  const child = Bun.spawn(args, {
+    cwd,
+    stdout: 'ignore', stderr: 'pipe', timeout: timeoutMs, killSignal: 'SIGTERM',
+  })
   const [code, stderr] = await Promise.all([child.exited, new Response(child.stderr).text()])
   return { code, stderr }
 }
 
 /** Run the standard Lighthouse mobile/desktop profiles sequentially to avoid CPU contention. */
-export async function auditLighthouse(options: LighthouseOptions, runner: LighthouseRunner = run): Promise<LighthouseResult[]> {
+export async function auditLighthouse(options: LighthouseOptions, runner?: LighthouseRunner): Promise<LighthouseResult[]> {
   const minimum = options.minimum ?? 100
   const device = options.device || 'both'
   if (!Number.isFinite(minimum) || minimum < 0 || minimum > 100) throw new TypeError('Minimum score must be between 0 and 100')
@@ -145,15 +148,27 @@ export async function auditLighthouse(options: LighthouseOptions, runner: Lighth
   const devices: LighthouseDevice[] = device === 'both' ? ['mobile', 'desktop'] : [device]
   const results: LighthouseResult[] = []
   const failures: LighthouseCollectionFailure[] = []
-  const summary = (status: 'running' | 'complete' | 'failed', error?: string) => writeFile(join(directory, 'summary.json'), `${JSON.stringify({ checkedAt: new Date().toISOString(), lighthouse: '13.6.0', minimum, status, error, failures, results }, null, 2)}\n`)
+  const summary = (status: 'running' | 'complete' | 'failed', error?: string) => writeFile(join(directory, 'summary.json'), `${JSON.stringify({ checkedAt: new Date().toISOString(), lighthouse: lighthouseVersion, minimum, status, error, failures, results }, null, 2)}\n`)
   await summary('running')
+  let toolDirectory: string | undefined
   try {
+    let command = [process.execPath, 'x', '--bun', `lighthouse@${lighthouseVersion}`]
+    let execute = runner
+    if (!execute) {
+      // Install once so another BunX process cannot replace dependencies mid-sweep.
+      const cwd = toolDirectory = await mkdtemp(join(tmpdir(), 'stacks-lighthouse-'))
+      await writeFile(join(cwd, 'package.json'), JSON.stringify({ private: true, dependencies: { lighthouse: lighthouseVersion } }))
+      const install = await run([process.execPath, 'install', '--ignore-scripts', '--no-progress', '--prefer-offline', '--backend=copyfile'], timeoutMs, cwd)
+      if (install.code !== 0) throw new Error(`Could not install Lighthouse ${lighthouseVersion}: ${install.stderr.trim() || `exit ${install.code}`}`)
+      command = [process.execPath, join(cwd, 'node_modules/lighthouse/cli/index.js')]
+      execute = (args, timeout) => run(args, timeout, cwd)
+    }
     for (const url of urls) {
       for (const formFactor of devices) {
         const label = `${new URL(url).hostname}${new URL(url).pathname}`.replace(/[^a-z0-9-]+/gi, '-').slice(0, 100)
         const hash = createHash('sha256').update(url).digest('hex').slice(0, 12)
         const output = join(directory, `${label}-${hash}-${formFactor}`)
-        const args = [process.execPath, 'x', '--bun', 'lighthouse@13.6.0', url, '--quiet',
+        const args = [...command, url, '--quiet',
           '--chrome-flags=--headless=new --no-sandbox --use-mock-keychain',
           `--only-categories=${lighthouseCategories.join(',')}`, '--output=json', '--output=html', `--output-path=${output}`,
           ...(formFactor === 'desktop' ? ['--preset=desktop'] : []),
@@ -163,7 +178,7 @@ export async function auditLighthouse(options: LighthouseOptions, runner: Lighth
         let report
         let scores
         try {
-          const outcome = await runner(args, timeoutMs)
+          const outcome = await execute(args, timeoutMs)
           if (outcome.code !== 0) throw new Error(outcome.stderr.trim() || `exit ${outcome.code}`)
           report = JSON.parse(await readFile(json, 'utf8'))
           scores = lighthouseScores(report)
@@ -202,6 +217,9 @@ export async function auditLighthouse(options: LighthouseOptions, runner: Lighth
   catch (error) {
     await summary('failed', error instanceof Error ? error.message : String(error))
     throw error
+  }
+  finally {
+    if (toolDirectory) await rm(toolDirectory, { recursive: true, force: true })
   }
   return results
 }
