@@ -73,8 +73,8 @@
     "@stacksjs/socials": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/ts-auth": "^0.4.7",
-    "ts-qr-codes": "^0.1.8",
-    "oauth4webapi": "^3.8.8",
+    "ts-qr-codes": "^0.1.9",
+    "oauth4webapi": "^3.8.9",
     "@node-saml/node-saml": "^5.2.0",
     "@xmldom/xmldom": "^0.9.12",
     "xml-crypto": "^6.4.0"
