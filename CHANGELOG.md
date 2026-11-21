@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.648...v0.75.649)
+
+## ✨ Features
+
+- **desktop**: configure App Store launcher metadata and local sandbox checks ([a7e397e](https://github.com/stacksjs/stacks/commit/a7e397e)) _(by Chris Breuer)_
+- **desktop**: build compact local apps and installers declaratively ([f34b170](https://github.com/stacksjs/stacks/commit/f34b170)) _(by Chris Breuer)_
+- add per-project off-host recovery point monitoring ([e178b72](https://github.com/stacksjs/stacks/commit/e178b72)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- use the project cloud CLI for Buddy rollback ([9e7a64d](https://github.com/stacksjs/stacks/commit/9e7a64d)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **desktop**: document the launcher sandbox check option ([9347e14](https://github.com/stacksjs/stacks/commit/9347e14)) _(by Chris Breuer)_
+- **desktop**: regenerate the native skill catalog ([01b468a](https://github.com/stacksjs/stacks/commit/01b468a)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.647...v0.75.648)
 
 ## 🐛 Bug Fixes
