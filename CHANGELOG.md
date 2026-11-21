@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.649...v0.75.650)
+
+## 🐛 Bug Fixes
+
+- **desktop**: verify styled installers and report artifact sizes ([e953f10](https://github.com/stacksjs/stacks/commit/e953f10)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.648...v0.75.649)
 
 ## ✨ Features
