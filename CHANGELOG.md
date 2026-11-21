@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.646...v0.75.647)
+
+## ✅ Tests
+
+- verify dashboard edit links use the configured key ([9a5da32](https://github.com/stacksjs/stacks/commit/9a5da32)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.645...v0.75.646)
 
 ## ✨ Features
