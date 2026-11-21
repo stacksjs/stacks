@@ -10,6 +10,12 @@ export type LighthouseCategory = typeof lighthouseCategories[number]
 export type LighthouseDevice = 'mobile' | 'desktop'
 export interface LighthouseFinding { id: string, title: string, value?: string }
 export interface LighthousePerformanceLoss extends LighthouseFinding { pointsLost: number }
+export interface LighthouseMainThread {
+  /** A CPU calibration score collected by Lighthouse on the audit host. */
+  benchmarkIndex?: number
+  /** Longest main-thread task in the report's selected throttling mode. */
+  longestTaskMs?: number
+}
 const lcpTraceLabels = {
   timeToFirstByte: 'first byte',
   resourceLoadDelay: 'resource discovery',
@@ -29,6 +35,7 @@ export interface LighthouseResult {
   largestPerformanceLoss?: LighthousePerformanceLoss
   /** Observed trace timings, in milliseconds. */
   lcpTraceMs?: Partial<Record<LighthouseLcpPhase, number>>
+  mainThread?: LighthouseMainThread
   json: string
   html: string
 }
@@ -124,6 +131,23 @@ function lcpTraceMs(report: any): LighthouseResult['lcpTraceMs'] {
   return Object.keys(timings).length ? timings : undefined
 }
 
+function mainThreadDiagnostics(report: any): LighthouseMainThread | undefined {
+  const diagnostics: LighthouseMainThread = {}
+  const benchmarkIndex = report.environment?.benchmarkIndex
+  if (typeof benchmarkIndex === 'number' && Number.isFinite(benchmarkIndex) && benchmarkIndex > 0)
+    diagnostics.benchmarkIndex = benchmarkIndex
+
+  const tasks = report.audits?.['long-tasks']?.details?.items
+  if (Array.isArray(tasks)) {
+    for (const task of tasks) {
+      const duration = task?.duration
+      if (typeof duration === 'number' && Number.isFinite(duration) && duration > (diagnostics.longestTaskMs ?? 0))
+        diagnostics.longestTaskMs = duration
+    }
+  }
+  return Object.keys(diagnostics).length ? diagnostics : undefined
+}
+
 async function run(args: string[], timeoutMs: number, cwd: string) {
   const child = Bun.spawn(args, {
     cwd,
@@ -201,6 +225,7 @@ export async function auditLighthouse(options: LighthouseOptions, runner?: Light
           metrics,
           largestPerformanceLoss: largestPerformanceLoss(report),
           lcpTraceMs: lcpTraceMs(report),
+          mainThread: mainThreadDiagnostics(report),
           json, html: `${output}.report.html`,
         }
         results.push(result)
@@ -232,5 +257,8 @@ export function formatLighthouseResult(result: LighthouseResult): string {
     ? Object.entries(result.lcpTraceMs).sort((a, b) => b[1] - a[1])[0]
     : undefined
   const trace = slowestPhase ? ` | LCP trace ${lcpTraceLabels[slowestPhase[0] as LighthouseLcpPhase]} ${Math.round(slowestPhase[1])} ms` : ''
-  return `${result.passed ? 'PASS' : 'FAIL'} ${result.device} ${result.url}: ${scores}${detail}${trace}`
+  const mainThread = loss?.id === 'total-blocking-time' ? result.mainThread : undefined
+  const task = mainThread?.longestTaskMs ? ` | Longest main-thread task ${Math.round(mainThread.longestTaskMs)} ms` : ''
+  const benchmark = mainThread?.benchmarkIndex ? ` | Host CPU benchmark ${Math.round(mainThread.benchmarkIndex)}` : ''
+  return `${result.passed ? 'PASS' : 'FAIL'} ${result.device} ${result.url}: ${scores}${detail}${trace}${task}${benchmark}`
 }

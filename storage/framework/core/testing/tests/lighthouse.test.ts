@@ -147,3 +147,30 @@ test('records observed LCP timings and identifies the slowest trace phase for an
   }
   finally { await rm(directory, { recursive: true, force: true }) }
 })
+
+test('reports main-thread evidence for a Total Blocking Time miss without copying task URLs', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'stacks-lighthouse-'))
+  try {
+    const [result] = await auditLighthouse({ urls: ['https://example.test'], outputDir: directory, device: 'mobile' }, async (args) => {
+      const output = args.find(arg => arg.startsWith('--output-path='))!.slice('--output-path='.length)
+      await writeFile(`${output}.report.json`, JSON.stringify({
+        categories: {
+          ...categories,
+          performance: { score: .85, auditRefs: [{ id: 'total-blocking-time', weight: 30 }] },
+        },
+        environment: { benchmarkIndex: 745 },
+        audits: {
+          'total-blocking-time': { score: .5, title: 'Total Blocking Time', displayValue: '410 ms' },
+          'long-tasks': { details: { items: [{ duration: 84 }, { duration: 295.12, url: 'https://example.test/private.js?token=fixture' }, { duration: '900' }] } },
+        },
+      }))
+      return { code: 0, stderr: '' }
+    })
+    expect(result?.mainThread).toEqual({ benchmarkIndex: 745, longestTaskMs: 295.12 })
+    expect(formatLighthouseResult(result!)).toContain('Longest main-thread task 295 ms | Host CPU benchmark 745')
+    const summary = await readFile(join(directory, 'summary.json'), 'utf8')
+    expect(JSON.parse(summary).results[0].mainThread).toEqual(result?.mainThread)
+    expect(summary).not.toContain('private.js')
+  }
+  finally { await rm(directory, { recursive: true, force: true }) }
+})
