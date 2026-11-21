@@ -34,6 +34,7 @@ interface ColumnMeta {
 
 interface ResponseShape {
   modelName: string
+  primaryKey?: string
   modelLabel?: string
   tableName: string
   rows: Array<Record<string, unknown>>
@@ -82,7 +83,12 @@ const modelName = state('')
 // The class name, for the one message that tells a developer what was looked for.
 const modelClass = state('')
 const tableName = state('')
+const primaryKey = state('id')
 const rows = state<Array<Record<string, unknown>>>([])
+function rowId(row: Record<string, unknown>): string {
+  return String(row[primaryKey()] ?? '')
+}
+
 const anonymizedIds = state<string[]>([])
 // Columns that hold another model's id, and what those records are called.
 const relations = state<Record<string, ModelRelationTarget>>({})
@@ -144,7 +150,7 @@ const actionErrors = state<Record<string, string[]>>({})
 const bulkActions = derived(() => modelBulkActions(actions()))
 // A tick box is only drawn when there is something to do with a tick.
 const selectable = derived(() => migrated() && (bulkActions().length > 0 || writeCapabilities().destroy))
-const allSelected = derived(() => rows().length > 0 && rows().every(row => selected().includes(String(row.id))))
+const allSelected = derived(() => rows().length > 0 && rows().every(row => selected().includes(rowId(row))))
 const selectionLabel = derived(() => `${selected().length} selected`)
 const bulkBusy = derived(() => bulkProgress() !== null)
 const bulkProgressLabel = derived(() => {
@@ -210,7 +216,7 @@ const deleteDescription = derived(() => {
   const row = confirmingDelete()
   if (!row)
     return ''
-  return modelDeleteWarning(`Row ${row.id}`, writeCapabilities().anonymize)
+  return modelDeleteWarning(`Row ${rowId(row)}`, writeCapabilities().anonymize)
 })
 
 // While a query is in flight the rows already there stay, dimmed and out of
@@ -352,6 +358,7 @@ async function load() {
     modelName.set(data.modelLabel ?? data.modelName ?? '')
     modelClass.set(data.modelName ?? '')
     tableName.set(data.tableName ?? '')
+    primaryKey.set(data.primaryKey ?? 'id')
     rows.set(data.rows ?? [])
     anonymizedIds.set((data.anonymizedIds ?? []).map(String))
     anonymizedColumns.set(data.anonymizedColumns ?? [])
@@ -447,17 +454,17 @@ function onPerPageChange() {
 // An anonymized account keeps its eye and loses its pencil and trash: there
 // is nothing left to edit, and deleting it again changes nothing.
 function isAnonymized(row: Record<string, unknown>): boolean {
-  return anonymizedIds().includes(String(row.id))
+  return anonymizedIds().includes(rowId(row))
 }
 
 // The eye and the pencil each open a page of the record's own, which comes
 // back to this list wherever it is hosted.
 function startEdit(row: Record<string, unknown>) {
-  navigate(modelRecordEditHref(slug(), String(row.id), { from: home() || undefined }))
+  navigate(modelRecordEditHref(slug(), rowId(row), { from: home() || undefined }))
 }
 
 function startView(row: Record<string, unknown>) {
-  navigate(modelRecordHref(slug(), String(row.id), home() || undefined))
+  navigate(modelRecordHref(slug(), rowId(row), home() || undefined))
 }
 
 // Creating has a page of its own too.
@@ -472,13 +479,13 @@ function openInvite(): void {
 
 /** The model's own actions this row is offered in a list. */
 function actionsFor(row: Record<string, unknown>): ModelCustomAction[] {
-  return modelActionsFor(actions(), rowActions(), String(row.id), 'row')
+  return modelActionsFor(actions(), rowActions(), rowId(row), 'row')
 }
 
 /** The name of the action running on this row, if one is. */
 function runningOn(row: Record<string, unknown>): string {
   const current = runningAction()
-  return current && current.id === String(row.id) ? current.name : ''
+  return current && current.id === rowId(row) ? current.name : ''
 }
 
 function openActionForm(action: ModelCustomAction, row: Record<string, unknown> | null): void {
@@ -501,8 +508,8 @@ function startAction(payload: { action: ModelCustomAction, record: Record<string
 async function runAction(action: ModelCustomAction, row: Record<string, unknown>, input: Record<string, unknown> = {}): Promise<void> {
   if (runningAction())
     return
-  runningAction.set({ name: action.name, id: String(row.id) })
-  const result = await runModelAction(slug(), String(row.id), action.name, input)
+  runningAction.set({ name: action.name, id: rowId(row) })
+  const result = await runModelAction(slug(), rowId(row), action.name, input)
   runningAction.set(null)
   confirmingAction.set(null)
   // A refusal of what was typed is answered where it was typed.
@@ -531,16 +538,16 @@ function confirmAction(): void {
 }
 
 function isSelected(row: Record<string, unknown>): boolean {
-  return selected().includes(String(row.id))
+  return selected().includes(rowId(row))
 }
 
 function toggleSelected(row: Record<string, unknown>): void {
-  const id = String(row.id)
+  const id = rowId(row)
   selected.set(isSelected(row) ? selected().filter(candidate => candidate !== id) : [...selected(), id])
 }
 
 function toggleAllSelected(): void {
-  selected.set(allSelected() ? [] : rows().map(row => String(row.id)))
+  selected.set(allSelected() ? [] : rows().map(row => rowId(row)))
 }
 
 /** The selected rows an action is for: the server has said which rows it applies to. */
@@ -622,8 +629,8 @@ async function confirmDelete() {
   if (!row) return
   saving.set(true)
   try {
-    const outcome = await deleteModelRecord(slug(), String(row.id))
-    const notice = modelDeleteNotice(`${modelName()} ${row.id}`, outcome)
+    const outcome = await deleteModelRecord(slug(), rowId(row))
+    const notice = modelDeleteNotice(`${modelName()} ${rowId(row)}`, outcome)
     pushToast('success', notice.title, { detail: notice.detail })
     confirmingDelete.set(null)
     // Deleting the last row of the final page would strand the viewer on an
@@ -841,7 +848,7 @@ onDestroy(() => {
             <td :if="selectable()" class="pl-3 pr-1 py-2 w-8">
               <input
                 type="checkbox"
-                :aria-label="'Select ' + modelName() + ' ' + row.id"
+                :aria-label="'Select ' + modelName() + ' ' + rowId(row)"
                 :checked="isSelected(row)"
                 :disabled="bulkBusy()"
                 class="block h-4 w-4 text-blue-600 border-neutral-300 rounded"

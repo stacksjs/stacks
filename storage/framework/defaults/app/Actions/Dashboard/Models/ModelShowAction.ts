@@ -57,6 +57,7 @@ interface ResponseShape {
   /** The model's name as a person reads it: "Social Post" for `SocialPost`. */
   modelLabel: string
   tableName: string
+  primaryKey: string
   rows: Array<Record<string, unknown>>
   columns: string[]
   displayColumns: string[]
@@ -188,6 +189,9 @@ export default new Action({
     const requestedSort = queryValue(request, 'sort').trim()
     const dir: 'asc' | 'desc' = queryValue(request, 'dir') === 'asc' ? 'asc' : 'desc'
     const q = queryValue(request, 'q').trim()
+    const record = queryValue(request, 'record')
+    if (record.length > 512)
+      return routerResponse.json({ message: 'The record key is too long.' }, 422)
     let filters: Record<string, ModelFilterValue>
     try {
       filters = parseFilters(queryValue(request, 'filters') || null)
@@ -202,6 +206,7 @@ export default new Action({
       modelName,
       modelLabel: humanizeIdentifier(modelName),
       tableName,
+      primaryKey: 'id',
       rows: [],
       columns: [],
       displayColumns: [],
@@ -247,7 +252,10 @@ export default new Action({
 
     try {
       response.tableName = String(Model.table || tableName)
-      const probe = await Model.orderByDesc('id').take(1).get() as Array<Record<string, unknown>>
+      const schemaColumns = modelSchemaColumns(Model)
+      const primaryKey = schemaColumns[0] || 'id'
+      response.primaryKey = primaryKey
+      const probe = await Model.orderByDesc(primaryKey).take(1).get() as Array<Record<string, unknown>>
       const first = Array.isArray(probe) ? probe[0] : undefined
       const shape = first && typeof first === 'object'
         ? ((first as { attributes?: Record<string, unknown> }).attributes ?? first)
@@ -255,9 +263,11 @@ export default new Action({
       const hiddenColumns = hiddenModelColumns(Model)
       response.columns = Object.keys(shape).filter(k => typeof k === 'string' && !k.startsWith('_') && !hiddenColumns.has(k))
       if (response.columns.length === 0)
-        response.columns = modelSchemaColumns(Model).filter(column => !hiddenColumns.has(column))
+        response.columns = schemaColumns.filter(column => !hiddenColumns.has(column))
 
       const allowed = new Set(response.columns)
+      if (record && (!allowed.has(primaryKey) || (primaryKey === 'id' && !/^\d+$/.test(record))))
+        return routerResponse.json({ message: 'Record not found.' }, 404)
       const unknownFilter = Object.keys(filters).find(column => !isSafeColumn(column, allowed))
       if (unknownFilter)
         return routerResponse.json({ message: `Unknown model filter column "${unknownFilter}".` }, 422)
@@ -266,7 +276,7 @@ export default new Action({
 
       const sort = isSafeColumn(requestedSort, allowed)
         ? requestedSort
-        : (allowed.has('id') ? 'id' : (response.columns[0] ?? ''))
+        : primaryKey
       response.sort = sort
       const searchColumns = searchColumnsFor(allowed, first)
 
@@ -289,6 +299,8 @@ export default new Action({
 
       const build = () => {
         let chain = applyModelFilters(Model.query() as any, filters, offered.filters).query as any
+        if (record)
+          chain = chain.where(primaryKey, record)
         if (q && searchColumns.length > 0) {
           // Lowercased on both sides, so the search ignores case on every
           // dialect. A model query's whereLike is a plain LIKE, which is
@@ -335,7 +347,7 @@ export default new Action({
           console.warn(`[dashboard/api] ModelShowAction: could not tell which ${modelName} rows are anonymized:`, error)
           return [] as boolean[]
         })
-        response.anonymizedIds = response.rows.filter((_row, index) => erased[index] === true).map(row => row.id as number | string)
+        response.anonymizedIds = response.rows.filter((_row, index) => erased[index] === true).map(row => row[primaryKey] as number | string)
         if (response.anonymizedIds.length > 0) {
           const personal = await personalColumns(modelName).catch(() => [] as string[])
           response.anonymizedColumns = personal.filter(column => response.columns.includes(column))
@@ -350,7 +362,9 @@ export default new Action({
       return dashboardOperationalError(error, `${modelName} records could not be loaded.`, 'ModelShowAction.query')
     }
 
-    response.writeCapabilities = modelWriteCapabilities(Model)
+    // The mutating dashboard routes still require a numeric id.
+    if (response.primaryKey === 'id')
+      response.writeCapabilities = modelWriteCapabilities(Model)
     response.writable = Object.values(response.writeCapabilities).some(Boolean)
     // A relation is only worth a picker when the dashboard can list the model
     // it points at. One whose feature is off, or that is kept out of the
@@ -412,11 +426,11 @@ export default new Action({
     // The model's own actions, and the rows each is for. Decided here, where
     // the whole row is, so the page never has to be sent the rule. An erased
     // account is offered none: there is nobody left to act on.
-    const actions = await modelActions(Model, modelName)
+    const actions = response.primaryKey === 'id' ? await modelActions(Model, modelName) : []
     response.actions = actions.map(publicModelAction)
     const erased = new Set((response.anonymizedIds ?? []).map(String))
     for (const [index, row] of stored.entries()) {
-      const id = String(response.rows[index]?.id ?? '')
+      const id = String(response.rows[index]?.[response.primaryKey] ?? '')
       const offered = id && !erased.has(id) ? actions.filter(action => modelActionApplies(action, row)).map(action => action.name) : []
       if (offered.length > 0)
         response.rowActions[id] = offered

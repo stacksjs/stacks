@@ -326,6 +326,19 @@ describe('dashboard-utils', () => {
       expect(models[0]?.dashboard?.label).toBe('Project users')
     })
 
+    it('honors an app opt-in for a name omitted from the built-in sidebar', async () => {
+      const user = join(testDir, 'user')
+      const defaults = join(testDir, 'default')
+      mkdirSync(user, { recursive: true })
+      mkdirSync(defaults, { recursive: true })
+      writeFileSync(join(user, 'FailedJob.ts'), "export default { dashboard: { label: 'Failed jobs', highlight: 0 } }")
+      writeFileSync(join(defaults, 'Request.ts'), "export default { dashboard: { highlight: true } }")
+
+      const models = await discoverModels(user, defaults)
+      expect(models.map(model => model.name)).toEqual(['FailedJob'])
+      expect(models[0]?.dashboard?.label).toBe('Failed jobs')
+    })
+
     it('should handle empty directories', async () => {
       const dir1 = join(testDir, 'empty1')
       const dir2 = join(testDir, 'empty2')

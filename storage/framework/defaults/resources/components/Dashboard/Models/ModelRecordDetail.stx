@@ -76,7 +76,10 @@ async function loadRecord(): Promise<void> {
     // For a component the app placed on this page: it follows the record.
     modelPageStore.showRecord(slug(), recordId(), loaded)
     // Not awaited, and a page whose panels cannot be read is still the record's page.
-    void fetchModelRelated(slug(), recordId()).then(panels => related.set(panels)).catch(() => related.set([]))
+    if ((loaded.primaryKey ?? 'id') === 'id')
+      void fetchModelRelated(slug(), recordId()).then(panels => related.set(panels)).catch(() => related.set([]))
+    else
+      related.set([])
   }
   catch (error) {
     record.set(null)

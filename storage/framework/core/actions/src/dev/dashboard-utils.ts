@@ -64,6 +64,10 @@ export const iconMap: Record<string, string> = {
 // Models excluded from sidebar (already have dedicated pages)
 export const excludeModels = new Set(['activity', 'request', 'error', 'failedjob'])
 
+function optedInToDashboard(dashboard: DashboardModelOptions | undefined): boolean {
+  return dashboard?.enabled === true || dashboard?.highlight === true || typeof dashboard?.highlight === 'number'
+}
+
 // Models that have dedicated dashboard pages
 export const dedicatedPages = new Set(['user', 'team', 'subscriber', 'post', 'page', 'product', 'order', 'customer', 'payment', 'coupon', 'discount', 'post-purchase-offer', 'category', 'tag', 'comment', 'author', 'notification', 'job', 'campaign', 'review', 'gift-card'])
 
@@ -220,11 +224,13 @@ export async function scanModelsDir(
     if (file.includes('README') || file.includes('.d.ts')) continue
     const name = file.replace(/\.ts$/, '').split('/').pop() || ''
     const nameLower = name.toLowerCase()
-    if (name && !seenNames.has(nameLower) && !excludeModels.has(nameLower)) {
+    const excluded = excludeModels.has(nameLower)
+    if (name && !seenNames.has(nameLower) && (!excluded || defaultCategory === 'userland')) {
       seenNames.add(nameLower)
       const id = modelNameToId(name)
       const absolutePath = path.resolve(dir, file)
       const dashboard = await readModelDashboardConfig(absolutePath)
+      if (excluded && !optedInToDashboard(dashboard)) continue
       models.push({
         name,
         icon: dashboard?.icon ?? getModelIcon(name),
@@ -257,8 +263,10 @@ export async function discoverProjectModels(): Promise<DiscoveredModel[]> {
   // the migration generator's staging directory, which a generate running
   // beside it may be reading.
   for (const model of listModelSources() ?? []) {
-    if (excludeModels.has(model.name.toLowerCase())) continue
+    const excluded = excludeModels.has(model.name.toLowerCase())
+    if (excluded && model.origin !== 'user') continue
     const dashboard = await readModelDashboardConfig(model.file)
+    if (excluded && !optedInToDashboard(dashboard)) continue
     models.push({
       name: model.name,
       id: modelNameToId(model.name),

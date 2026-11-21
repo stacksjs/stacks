@@ -65,6 +65,7 @@ export interface ModelColumn {
 
 export interface ModelRecord {
   modelName: string
+  primaryKey?: string
   /** The model's table, e.g. `product_categories`. Names the list in the breadcrumb. */
   tableName?: string
   row: Record<string, unknown>
@@ -86,6 +87,7 @@ export interface ModelRecord {
 
 interface ModelShowResponse {
   modelName?: string
+  primaryKey?: string
   modelLabel?: string
   tableName?: string
   createFields?: ModelCreateField[]
@@ -191,16 +193,18 @@ export async function fetchModelCreateForm(slug: string): Promise<ModelCreateFor
 
 /** Every stored column of one record, with what an edit may change. */
 export async function fetchModelRecord(slug: string, id: string | number): Promise<ModelRecord> {
-  const filters = encodeURIComponent(JSON.stringify({ id: String(id) }))
-  const data = await dashboardApi<ModelShowResponse>(`${modelPath(slug)}?perPage=1&filters=${filters}`)
+  const params = new URLSearchParams({ per_page: '1', record: String(id) })
+  const data = await dashboardApi<ModelShowResponse>(`${modelPath(slug)}?${params}`)
   if (data.error)
     throw new Error(data.error)
-  const row = data.rows?.find(candidate => String(candidate.id) === String(id))
+  const primaryKey = data.primaryKey ?? 'id'
+  const row = data.rows?.find(candidate => String(candidate[primaryKey]) === String(id))
   if (!row)
     throw new Error(`${data.modelName || 'Record'} ${id} was not found.`)
   return {
     // What the pages call the model: "Social Post", not the class name.
     modelName: data.modelLabel || data.modelName || 'Record',
+    primaryKey,
     tableName: data.tableName,
     row,
     columns: data.columnMeta ?? [],
@@ -385,7 +389,7 @@ export function modelRecordTitle(record: ModelRecord): string {
     if (typeof value === 'string' && value.trim())
       return value
   }
-  return `${record.modelName} ${text(record.row.id)}`
+  return `${record.modelName} ${text(record.row[record.primaryKey ?? 'id'])}`
 }
 
 /** The record's own page. `from` is the list to go back to, when it is not the model's own. */
