@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.644...v0.75.645)
+
+## ✨ Features
+
+- **buddy**: add a native macOS menu bar app ([7a43edd](https://github.com/stacksjs/stacks/commit/7a43edd)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.643...v0.75.644)
 
 ## ✨ Features
