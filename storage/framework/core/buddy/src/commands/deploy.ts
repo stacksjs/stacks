@@ -5,7 +5,7 @@ import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import process from 'node:process'
 import { missingQueueWorkerProblem } from '../deploy-queue-worker'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { runAction } from '@stacksjs/actions/run-action'
 import { assertPublicationAllowed } from '@stacksjs/actions/publication-preflight'
 import { runBeforeDeployHook } from '@stacksjs/actions/deploy/hooks'
@@ -93,8 +93,15 @@ export function versionAtLeast(a: string, b: string): boolean {
   return true
 }
 
-export function resolveTsCloudCliPath(tsCloudEntry = import.meta.resolve('@stacksjs/ts-cloud')): string {
-  return resolve(dirname(new URL(tsCloudEntry).pathname), 'bin/cli.js')
+export function resolveTsCloudCliPath(tsCloudEntry?: string, projectRoot = p.projectPath()): string {
+  const projectModule = tsCloudEntry ? undefined : resolveProjectTsCloudModule(projectRoot)
+  if (projectModule) {
+    const projectCli = resolve(dirname(projectModule), 'bin/cli.js')
+    if (existsSync(projectCli)) return projectCli
+  }
+
+  const bundledModule = fileURLToPath(tsCloudEntry ?? import.meta.resolve('@stacksjs/ts-cloud'))
+  return resolve(dirname(bundledModule), 'bin/cli.js')
 }
 
 export async function runDeployRollback(

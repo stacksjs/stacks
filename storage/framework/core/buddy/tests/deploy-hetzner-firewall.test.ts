@@ -21,6 +21,7 @@ import {
   loadTsCloudDeployApi,
   reconcilePartialDeployManagementDashboards,
   resolveProjectTsCloudModule,
+  resolveTsCloudCliPath,
   resolvePersistedAttachTargetBox,
   scrubLoopbackSitePortsForFirewall,
   shouldInjectManagementDashboard,
@@ -222,18 +223,21 @@ describe('attached compute state', () => {
 })
 
 describe('loadTsCloudDeployApi', () => {
-  it('resolves the application dependency before a nested Buddy copy', () => {
+  it('resolves the application dependency for deploy and rollback before a nested Buddy copy', () => {
     const fixtureDir = mkdtempSync(join(tmpdir(), 'ts-cloud-project-'))
     const packageDir = join(fixtureDir, 'node_modules', '@stacksjs', 'ts-cloud')
     const modulePath = join(packageDir, 'dist', 'index.js')
-    mkdirSync(join(packageDir, 'dist'), { recursive: true })
+    const cliPath = join(packageDir, 'dist', 'bin', 'cli.js')
+    mkdirSync(join(packageDir, 'dist', 'bin'), { recursive: true })
     writeFileSync(join(packageDir, 'package.json'), JSON.stringify({
       exports: { '.': { import: './dist/index.js' } },
     }))
     writeFileSync(modulePath, 'export function createCloudDriver() {}')
+    writeFileSync(cliPath, '')
 
     try {
       expect(resolveProjectTsCloudModule(fixtureDir)).toBe(modulePath)
+      expect(resolveTsCloudCliPath(undefined, fixtureDir)).toBe(cliPath)
     }
     finally {
       rmSync(fixtureDir, { force: true, recursive: true })
