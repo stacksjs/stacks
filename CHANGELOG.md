@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.645...v0.75.646)
+
+## ✨ Features
+
+- **buddy**: add Pantry and system monitors to the tray ([aaf8e9f](https://github.com/stacksjs/stacks/commit/aaf8e9f)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- clean isolated test homes after Bun runs ([b8cfae3](https://github.com/stacksjs/stacks/commit/b8cfae3)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.644...v0.75.645)
 
 ## ✨ Features
