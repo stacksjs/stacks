@@ -40,7 +40,8 @@ describe('dashboard model data integrity contract', () => {
   test('projects hidden model attributes out before rows are serialized', () => {
     expect(showSource).toContain('const hiddenColumns = hiddenModelColumns(Model)')
     expect(showSource).toContain('!hiddenColumns.has(k)')
-    expect(showSource).toContain('modelSchemaColumns(Model).filter(column => !hiddenColumns.has(column))')
+    expect(showSource).toContain('const schemaColumns = modelSchemaColumns(Model)')
+    expect(showSource).toContain('schemaColumns.filter(column => !hiddenColumns.has(column))')
     expect(showSource).not.toContain('for (const col of response.displayColumns)')
   })
 })

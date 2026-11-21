@@ -147,8 +147,10 @@ describe('dashboard row actions', () => {
     expect(records).toContain('navigate(modelRecordHref(MODEL, payload.row.id, HOME))')
     expect(records).toContain('navigate(modelRecordEditHref(MODEL, payload.row.id, { from: HOME }))')
     // From the model's list, to the same two pages, back to wherever it is hosted.
-    expect(browser).toContain('navigate(modelRecordHref(slug(), String(row.id), home() || undefined))')
-    expect(browser).toContain('navigate(modelRecordEditHref(slug(), String(row.id), { from: home() || undefined }))')
+    expect(browser).toContain("primaryKey.set(data.primaryKey ?? 'id')")
+    expect(browser).toContain("return String(row[primaryKey()] ?? '')")
+    expect(browser).toContain('navigate(modelRecordHref(slug(), rowId(row), home() || undefined))')
+    expect(browser).toContain('navigate(modelRecordEditHref(slug(), rowId(row), { from: home() || undefined }))')
     expect(hosted).toContain(':home="\'/data/\' + pageMode()"')
     // From the record page, Edit comes back to it.
     expect(detail).toContain(`via: 'view'`)

@@ -320,10 +320,10 @@ describe('the pages', () => {
     expect(page).toContain(':description="confirmingAction()?.confirm || \'\'"')
 
     const list = readFileSync(`${components}/ModelRecordsDashboard.stx`, 'utf8')
-    expect(list).toContain('return modelActionsFor(actions(), rowActions(), String(row.id), \'row\')')
+    expect(list).toContain('return modelActionsFor(actions(), rowActions(), rowId(row), \'row\')')
     expect(list).toContain(':actions="actionsFor(row)"')
     expect(list).toContain('@action="startAction"')
-    expect(list).toContain('const result = await runModelAction(slug(), String(row.id), action.name, input)')
+    expect(list).toContain('const result = await runModelAction(slug(), rowId(row), action.name, input)')
 
     // The loop is on a wrapper: on the button itself, inside a component
     // drawn once per row, the icon's class came out empty.

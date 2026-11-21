@@ -215,7 +215,7 @@ describe('the list', () => {
     // filter boxes under the headings, to keep in step.
     expect((list.match(/:if="selectable\(\)"/g) || []).length).toBe(2)
     expect(list).toContain('aria-label="Select every row on this page"')
-    expect(list).toContain(':aria-label="\'Select \' + modelName() + \' \' + row.id"')
+    expect(list).toContain(':aria-label="\'Select \' + modelName() + \' \' + rowId(row)"')
   })
 
   it('a selection is the rows on screen: it is dropped when they are read again', () => {

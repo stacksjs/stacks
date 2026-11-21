@@ -20,8 +20,8 @@ describe('a delete that may anonymize says so', () => {
     expect(page).toContain(':description="modelDeleteWarning(title() || modelName(), Boolean(record()?.writeCapabilities.anonymize))"')
     expect(page).toContain('const outcome = await deleteModelRecord(slug(), recordId())')
     const browser = source(`${components}/Models/ModelRecordsDashboard.stx`)
-    expect(browser).toContain('return modelDeleteWarning(`Row ${row.id}`, writeCapabilities().anonymize)')
-    expect(browser).toContain('const outcome = await deleteModelRecord(slug(), String(row.id))')
+    expect(browser).toContain('return modelDeleteWarning(`Row ${rowId(row)}`, writeCapabilities().anonymize)')
+    expect(browser).toContain('const outcome = await deleteModelRecord(slug(), rowId(row))')
   })
 })
 
