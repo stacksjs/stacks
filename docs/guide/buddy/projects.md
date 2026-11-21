@@ -127,6 +127,12 @@ The top of the dashboard sidebar shows the project you are looking at. Click it 
 
 "Add a project" at the bottom of the menu takes the path of a project that is not on the list yet.
 
+## Buddy in the macOS menu bar
+
+With Craft installed, run `buddy tray` from any directory. Click the Buddy menu-bar icon to check what the daemon is watching, find a registered project, or open its dashboard. Buddy uses Craft’s native popover and supports the system’s light and dark appearance.
+
+When generated changes await approval, **Review** opens the project’s review command in Terminal. Read the diff and respond to the confirmation there. The menu includes **Start daemon** when Buddy is offline. **Quit Buddy** closes the menu-bar app while the daemon continues watching projects.
+
 ## Buddy in the background
 
 One background Buddy process manages dashboards and generation for registered projects. It starts when you open a dashboard or run `buddy daemon:start`. It stays running while any opted-in project needs watching.

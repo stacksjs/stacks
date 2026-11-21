@@ -1,0 +1,207 @@
+<script client>
+type Project = { id: string, name: string, path: string, pending: number, issue: string }
+type Snapshot = { online: boolean, watched: number, running: boolean, failed: number, projects: Project[] }
+
+const snapshot = state<Snapshot | null>(null)
+const filter = state('')
+const busy = state('')
+const notice = state('')
+const unavailable = state(false)
+const pending = derived(() => snapshot()?.projects.filter(project => project.pending > 0) ?? [])
+const recent = derived(() => {
+  const search = filter().trim().toLowerCase()
+  const projects = snapshot()?.projects ?? []
+  return search
+    ? projects.filter(project => project.name.toLowerCase().includes(search) || project.path.toLowerCase().includes(search))
+    : projects.slice(0, 6)
+})
+const session = globalThis.location.hash.slice(1)
+const desktop = globalThis.craft
+let refreshing = false
+
+async function call(path: string, body?: object) {
+  const response = await fetch(path, {
+    method: body ? 'POST' : 'GET',
+    headers: { authorization: `Bearer ${session}`, ...(body ? { 'content-type': 'application/json' } : {}) },
+    body: body && JSON.stringify(body),
+  })
+  const result = await response.json()
+  if (!response.ok) throw new Error(result.error)
+  return result
+}
+
+async function refreshStatus() {
+  if (refreshing) return
+  refreshing = true
+  try {
+    snapshot.set(await call('/api/status'))
+    unavailable.set(false)
+  }
+  catch {
+    unavailable.set(true)
+  }
+  finally {
+    refreshing = false
+  }
+}
+
+async function perform(action: string, project?: string) {
+  if (busy()) return
+  busy.set(project || action)
+  notice.set('')
+  try {
+    await call('/api/action', { action, project })
+    if (action === 'review') notice.set('Review opened in Terminal.')
+    await refreshStatus()
+  }
+  catch (error) {
+    notice.set(error instanceof Error ? error.message : 'Buddy could not complete this action.')
+  }
+  finally {
+    busy.set('')
+  }
+}
+
+const { pause, resume } = useInterval(() => void refreshStatus(), 5_000, { immediate: !desktop, whileVisible: true })
+const stopFocus = useEventListener(desktop ? 'craft:window:focus' : 'focus', () => {
+  resume()
+  void refreshStatus()
+})
+const stopBlur = useEventListener('craft:window:blur', pause)
+const stopKeys = useEventListener('keydown', (event) => {
+  if (event.key === 'Escape') void Promise.resolve(desktop?.window?.hide?.()).catch(() => {})
+})
+onMount(() => {
+  if (desktop) pause()
+  void refreshStatus()
+  const tray = desktop?.tray
+  void Promise.resolve(tray?.setTooltip?.('Buddy')).catch(() => {})
+  void Promise.resolve(tray?.setIcon?.('terminal.fill')).catch(() => {})
+})
+onDestroy(() => {
+  pause()
+  stopFocus()
+  stopBlur()
+  stopKeys()
+})
+</script>
+
+<style>
+  :root {
+    color-scheme: light dark;
+    font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --ink: light-dark(#1e2026, #f1f0f5);
+    --secondary: light-dark(#555965, #aaaab5);
+    --surface: light-dark(#ffffffc2, #25252bd4);
+    --line: light-dark(#15172519, #ffffff20);
+    --accent: light-dark(#164bc3, #b3c9ff);
+    --accent-surface: light-dark(#e4ecff, #253759);
+  }
+  html, body { margin: 0; min-height: 100%; background: transparent; color: var(--ink); }
+  body { font-size: 13px; }
+  button, input { font: inherit; }
+  button { color: inherit; cursor: pointer; }
+  button:disabled { cursor: default; opacity: .65; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  h1, h2, p { margin: 0; }
+  .tray { height: 100dvh; }
+  .secondary { color: var(--secondary); }
+  .line { border-color: var(--line); }
+  .surface { background: var(--surface); }
+  .accent { color: var(--accent); background: var(--accent-surface); }
+  .plain { border: 0; background: transparent; }
+  .plain:hover { background: var(--line); }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .online { color: light-dark(#207442, #8bdfa9); }
+  .issue { color: light-dark(#875115, #f0bd83); }
+  .search { color: inherit; }
+</style>
+
+<main class="flex flex-col tray">
+  <header class="flex gap-3 items-center justify-between shrink-0 px-4 py-3 border-b line">
+    <div class="flex gap-3 items-center">
+      <span class="flex items-center justify-center h-9 w-9 font-bold font-mono accent rounded-xl" aria-hidden="true">›_</span>
+      <div>
+        <h1 class="font-semibold leading-tight text-base">Buddy</h1>
+        <p class="flex gap-1.5 items-center text-xs secondary">
+          @if(unavailable())
+            <span>Connection unavailable</span>
+          @elseif(snapshot()?.online)
+            <span class="online status-dot" aria-hidden="true"></span>
+            <span>{{ snapshot()?.running ? 'Generating' : 'Daemon running' }} · {{ snapshot()?.watched }} watched</span>
+          @elseif(snapshot())
+            <span class="status-dot" aria-hidden="true"></span>
+            <span>Daemon stopped</span>
+          @else
+            <span>Connecting…</span>
+          @endif
+        </p>
+      </div>
+    </div>
+    <button class="px-2 py-1 text-xs rounded-lg plain secondary" type="button" @click="refreshStatus()">Refresh</button>
+  </header>
+
+  <div class="overflow-y-auto flex-1 px-4 py-3 min-h-0">
+    @if(unavailable())
+      <p class="py-3 secondary" role="status">Buddy’s local connection was interrupted. Refresh to reconnect.</p>
+    @elseif(snapshot())
+      @if(!snapshot()?.online)
+        <button type="button" class="mb-3 px-3 py-2 font-medium accent rounded-lg plain" :disabled="busy() !== ''" @click="perform('start')">Start daemon</button>
+      @endif
+      <section aria-labelledby="pending-heading" class="mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <h2 id="pending-heading" class="font-semibold text-sm">Pending approvals</h2>
+          @if(pending().length)
+            <span class="px-2 py-0.5 font-semibold text-xs accent rounded-full">{{ pending().length }}</span>
+          @endif
+        </div>
+        @if(pending().length)
+          <ul class="m-0 p-0 list-none border divide-y rounded-xl line surface">
+            @foreach(pending() as project)
+              <li class="flex gap-3 items-center justify-between px-3 py-2">
+                <div class="min-w-0">
+                  <p class="font-medium truncate" :title="project.path">{{ project.name }}</p>
+                  <p class="text-xs secondary">{{ project.pending }} generated {{ project.pending === 1 ? 'file' : 'files' }}</p>
+                </div>
+                <button type="button" class="shrink-0 px-2.5 py-1 font-medium text-xs accent border-0 rounded-md" :disabled="busy() !== ''" @click="perform('review', project.id)">Review</button>
+              </li>
+            @endforeach
+          </ul>
+        @else
+          <p class="px-3 py-2.5 border rounded-xl line secondary surface">You’re caught up.</p>
+        @endif
+      </section>
+
+      <section aria-labelledby="projects-heading">
+        <h2 id="projects-heading" class="mb-2 font-semibold text-sm">{{ filter() ? 'Matching projects' : 'Recent projects' }}</h2>
+        @if(snapshot()?.projects.length > 6)
+          <input type="search" aria-label="Find a project" placeholder="Find a project" class="mb-2 px-2.5 py-1.5 w-full border rounded-lg line search surface" :value="filter()" @input="filter.set($event.target.value)" />
+        @endif
+        @if(recent().length)
+          <ul class="m-0 p-0 list-none border rounded-xl line surface">
+            @foreach(recent() as project)
+              <li class="flex gap-3 items-center justify-between px-3 py-1.5 border-b last:border-b-0 line">
+                <div class="min-w-0">
+                  <p class="truncate" :title="project.path">{{ project.name }}</p>
+                  @if(project.issue)
+                    <p class="text-xs truncate issue" :title="project.issue">{{ project.issue }}</p>
+                  @endif
+                </div>
+                <button type="button" class="shrink-0 px-2 py-1 text-xs rounded-md plain secondary" :disabled="busy() !== ''" @click="perform('dashboard', project.id)">Dashboard ↗</button>
+              </li>
+            @endforeach
+          </ul>
+        @else
+          <p class="secondary">{{ filter() ? 'No projects match your search.' : 'Run Buddy in a Stacks project to add it here.' }}</p>
+        @endif
+      </section>
+    @else
+      <p class="py-3 secondary" role="status">Loading projects…</p>
+    @endif
+  </div>
+
+  <footer class="flex gap-3 items-center justify-between shrink-0 px-4 py-2 border-t line">
+    <p class="min-w-0 text-xs secondary" role="status">{{ notice() || (snapshot()?.failed ? snapshot()?.failed + (snapshot()?.failed === 1 ? ' generation issue' : ' generation issues') : '') }}</p>
+    <button type="button" class="shrink-0 px-2 py-1 text-xs rounded-md plain secondary" :disabled="busy() !== ''" @click="perform('quit')">Quit Buddy</button>
+  </footer>
+</main>

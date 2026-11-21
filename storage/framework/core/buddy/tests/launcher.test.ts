@@ -258,7 +258,7 @@ describe('machine commands', () => {
   it('run where they are typed and are never handed to a project', () => {
     const shop = makeProject('shop', { installed: true, shim: true })
 
-    for (const command of ['projects', 'projects:scan', 'cd', 'daemon', 'daemon:status', 'dashboard', 'new', 'create'])
+    for (const command of ['projects', 'projects:scan', 'cd', 'daemon', 'daemon:status', 'dashboard', 'tray', 'new', 'create'])
       expect(plan([command], join(shop, 'app')), command).toEqual({ kind: 'run', root: shop, args: [command] })
   })
 

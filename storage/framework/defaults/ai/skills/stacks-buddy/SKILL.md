@@ -57,7 +57,7 @@ config.
 
 Machine-level commands are never handed to a project and run from any
 directory: `new`, `create`, `projects`, `projects:*`, `cd`, `daemon`,
-`daemon:*`, `dashboard`.
+`daemon:*`, `dashboard`, `tray`.
 
 ```bash
 buddy projects                 # the projects on this machine, most recently used first
@@ -72,6 +72,7 @@ buddy cd <name>                # print a project's path (--eval for a shell func
 buddy dashboard [project]      # open a project's dashboard, started in the background if needed
   --no-open                    # print the address without opening a browser
   --stop                       # stop that project's background dashboard
+buddy tray                     # native macOS menu-bar app (requires Craft)
 
 buddy daemon                   # is buddy running in the background, and what is it running
 buddy daemon:start             # start it to watch opted-in projects
@@ -107,6 +108,11 @@ takes precedence over `generation.autoCommit`.
 `buddy daemon:status` lists pending reviews even when a desktop alert is
 missed. Approval-enabled generation protects local edits to its artifacts
 and retains successful outputs when another generator fails.
+
+`buddy tray` uses a Craft popover and an stx view for machine-wide generation
+status, project dashboards, and pending reviews. The tray connects to the
+existing daemon and opens the project’s `generate:review` in Terminal. It
+uses a private loopback server and quitting it leaves the daemon running.
 
 ## Architecture
 

@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **416 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **417 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -39,7 +39,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `format` | 1 |
 | `forms` | 2 |
 | `gdpr` | 5 |
-| `general` | 54 |
+| `general` | 55 |
 | `generate` | 20 |
 | `hq` | 3 |
 | `inspire` | 1 |
@@ -6439,6 +6439,15 @@ Interactive REPL with Stacks framework preloaded
 | `--serve` | Speak the frame protocol on stdio (JSON requests in, frames out) for tools that drive a session | boolean, optional | `false` |
 | `--bare` | Do not boot the app: a plain Bun session | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `tray`
+
+Open the Buddy menu-bar app for your Stacks projects
+
+- Usage: `$ buddy tray`
+- Namespace: none
+- Aliases: none
+- Arguments: none
 
 ### `types:fix`
 

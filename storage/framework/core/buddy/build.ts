@@ -22,6 +22,15 @@ await transpilePackage({
   external: frameworkExternal(['ts-security-crypto', 'bun-query-builder']),
 })
 
+// The per-file transpiler strips import attributes. Bundle the tray module so
+// the stx template is embedded as text for both packages and compiled CLIs.
+await Bun.build({
+  entrypoints: ['./src/tray/run.ts'],
+  outdir: './dist/tray',
+  target: 'bun',
+  external: frameworkExternal(['./api']),
+})
+
 // Update the package.json workspace:* references to the specific version
 const packageJsonPath = './package.json'
 const packageJson = await Bun.file(packageJsonPath).json()

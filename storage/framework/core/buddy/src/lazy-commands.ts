@@ -182,6 +182,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'unlink:core': { path: './commands/link.ts', load: () => import('./commands/link.ts'), exportName: 'link' },
   'prepublish': { path: './commands/prepublish.ts', load: () => import('./commands/prepublish.ts'), exportName: 'prepublish' },
   'projects': { path: './commands/projects.ts', load: () => import('./commands/projects.ts'), exportName: 'projects' },
+  'tray': { path: './commands/tray.ts', load: () => import('./commands/tray.ts'), exportName: 'tray' },
   'publish': { path: './commands/publish.ts', load: () => import('./commands/publish.ts'), exportName: 'publish' },
   'publish:model': { path: './commands/publish.ts', load: () => import('./commands/publish.ts'), exportName: 'publish' },
   'publish:controller': { path: './commands/publish.ts', load: () => import('./commands/publish.ts'), exportName: 'publish' },

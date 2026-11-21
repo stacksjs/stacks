@@ -1,7 +1,22 @@
 import { describe, expect, test } from 'bun:test'
 import { buildTrayMenu } from '../../../defaults/resources/functions/system-tray'
+import { craftDevCommand } from '../src'
 
 describe('system tray menu', () => {
+  test('opens an explicitly addressed native Craft popover', () => {
+    const url = 'http://127.0.0.1:8081/#tray-session'
+    expect(craftDevCommand(8081, {
+      craftBin: '/usr/bin/true',
+      url,
+      title: 'Buddy',
+      width: 376,
+      height: 488,
+      trayPopover: true,
+      hotReload: false,
+      devTools: false,
+    })).toEqual(['/usr/bin/true', url, '--title', 'Buddy', '--width', '376', '--height', '488', '--no-devtools', '--tray-popover'])
+  })
+
   test('includes every global shortcut', () => {
     const menu = buildTrayMenu(['/tmp/example'])
     const actions = menu.flatMap(item => item.action || [])

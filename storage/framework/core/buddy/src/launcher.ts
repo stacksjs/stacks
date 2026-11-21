@@ -36,7 +36,7 @@ import { isIsolatedRuntime, withoutIsolation } from './runtime-flags'
  * project's own `buddy`, which may be a release that predates them, and they
  * run from wherever they were typed.
  */
-const MACHINE_COMMANDS = ['new', 'create', 'projects', 'cd', 'daemon', 'dashboard']
+const MACHINE_COMMANDS = ['new', 'create', 'projects', 'cd', 'daemon', 'dashboard', 'tray']
 /** `dashboard:install` is a project's feature switch, so only these two have machine subcommands. */
 const MACHINE_COMMAND_GROUPS = ['projects:', 'daemon:']
 

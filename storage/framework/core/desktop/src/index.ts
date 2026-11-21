@@ -75,6 +75,7 @@ export interface OpenDevWindowOptions {
   systemTray?: boolean
   hideDockIcon?: boolean
   menubarOnly?: boolean
+  trayPopover?: boolean
 }
 
 export type CraftLauncher = (command: string[]) => void | Promise<void>
@@ -395,6 +396,7 @@ export function craftDevCommand(port: number, options: OpenDevWindowOptions = {}
   if (options.systemTray) command.push('--system-tray')
   if (options.hideDockIcon) command.push('--hide-dock-icon')
   if (options.menubarOnly) command.push('--menubar-only')
+  if (options.trayPopover) command.push('--tray-popover')
 
   return command
 }
