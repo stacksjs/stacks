@@ -1,5 +1,22 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.643...v0.75.644)
+
+## ✨ Features
+
+- explain Buddy audit blocking-time misses ([617c56d](https://github.com/stacksjs/stacks/commit/617c56d)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- reveal sidebar drag handles on interaction ([f3f080f](https://github.com/stacksjs/stacks/commit/f3f080f)) _(by Chris Breuer)_ ([#3353](https://github.com/stacksjs/stacks/issues/3353))
+- honor the production views listen host ([73a84fd](https://github.com/stacksjs/stacks/commit/73a84fd)) _(by Chris Breuer)_ ([#3352](https://github.com/stacksjs/stacks/issues/3352))
+- honor app model keys and visibility in the dashboard ([8537435](https://github.com/stacksjs/stacks/commit/8537435)) _(by Chris Breuer)_ ([#3351](https://github.com/stacksjs/stacks/issues/3351), [#3350](https://github.com/stacksjs/stacks/issues/3350))
+- restrict the developer dashboard to loopback ([1911ea1](https://github.com/stacksjs/stacks/commit/1911ea1)) _(by Chris Breuer)_ ([#3349](https://github.com/stacksjs/stacks/issues/3349), [stacksjs/stx#2206](https://github.com/stacksjs/stx/issues/2206))
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.642...v0.75.643)
 
 ## 🐛 Bug Fixes
