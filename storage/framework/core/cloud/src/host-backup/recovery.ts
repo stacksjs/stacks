@@ -34,7 +34,7 @@ export async function mysqlRecovery(dump: string, name: string, binary: string, 
     await command([server, '--no-defaults', '--initialize-insecure', '--user=root', `--datadir=${data}`])
     const child = Bun.spawn([server, '--no-defaults', '--user=root', `--datadir=${data}`, `--socket=${socket}`,
       `--pid-file=${join(scratch, 'mysql.pid')}`, '--skip-networking', '--mysqlx=0', '--skip-log-bin',
-      '--innodb-flush-log-at-trx-commit=2', '--innodb-buffer-pool-size=64M'], { stdout: 'ignore', stderr: 'ignore' })
+      '--innodb-flush-log-at-trx-commit=2', '--innodb-buffer-pool-size=256M'], { stdout: 'ignore', stderr: 'ignore' })
     try {
       const deadline = performance.now() + 60_000
       while (!existsSync(socket)) {
@@ -44,7 +44,11 @@ export async function mysqlRecovery(dump: string, name: string, binary: string, 
       }
       const args = [mysql, '--no-defaults', `--socket=${socket}`, '--user=root', '--binary-mode']
       await command([...args, '--execute', `CREATE DATABASE \`${database}\``])
-      await command([...args, database], { input: dump, timeoutMs: 3_600_000 })
+      // This server has a fresh data directory and listens only on the private
+      // scratch socket. Avoid redo writes while loading the full logical dump.
+      await command([...args, '--execute', 'ALTER INSTANCE DISABLE INNODB REDO_LOG'])
+      await command([...args, database], { input: dump, timeoutMs: 7_200_000 })
+      await command([...args, '--execute', 'ALTER INSTANCE ENABLE INNODB REDO_LOG'])
       await command([...args, '--execute', `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${database}'`])
     }
     finally {
