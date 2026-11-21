@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.640...v0.75.641)
+
+## 🐛 Bug Fixes
+
+- **docs**: retire screenshot worker browser profiles ([a3e3c0d](https://github.com/stacksjs/stacks/commit/a3e3c0d)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.639...v0.75.640)
 
 ## 🐛 Bug Fixes
