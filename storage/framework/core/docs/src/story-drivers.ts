@@ -81,7 +81,9 @@ export function browserStory(options: BrowserStoryOptions): StoryDriver<BrowserS
       // host never accepts input. Masks exist before app scripts and first paint.
       const overlay = `(() => {
         const start = () => {
-          const style = document.createElement('style'); style.textContent = ${JSON.stringify(`${masks.join(',')} { opacity: 0 !important; }`)}; document.documentElement.append(style);
+          const maskSheet = new CSSStyleSheet();
+          maskSheet.replaceSync(${JSON.stringify(`${masks.join(',')} { opacity: 0 !important; }`)});
+          document.adoptedStyleSheets = [...document.adoptedStyleSheets, maskSheet];
           const host = document.createElement('div'); host.id = ${JSON.stringify(name)};
           host.style.cssText='all:initial!important;position:fixed!important;inset:0!important;pointer-events:none!important;z-index:2147483647!important;';
           const shadow=host.attachShadow({mode:'closed'}); const dot=document.createElement('div');

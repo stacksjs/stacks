@@ -67,7 +67,7 @@ test.skipIf(!Bun.which('ffmpeg'))('Buddy records a real browser journey, publish
   finally { server.stop(true) }
 }, 120000)
 
-test.skipIf(!Bun.which('ffmpeg'))('a gated story authenticates before its first document and prepares the origin afterward', async () => {
+test.skipIf(!Bun.which('ffmpeg'))('a gated story authenticates and keeps field masks under a strict style policy', async () => {
   const root = await mkdtemp(join(tmpdir(), 'story-basic-auth-'))
   roots.push(root)
   const authorization = 'Basic ' + btoa('reader:story-fixture')
@@ -79,17 +79,22 @@ test.skipIf(!Bun.which('ffmpeg'))('a gated story authenticates before its first 
         return new Response(null, { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Story"' } })
       if (new URL(request.url).pathname === '/favicon.ico')
         return new Response(null, { status: 204 })
-      return new Response('<!doctype html><main><h1>Private preview</h1></main>', { headers: { 'Content-Type': 'text/html' } })
+      return new Response('<!doctype html><main><h1>Private preview</h1><input type="password" value="fixture"><input type="email" value="demo@example.test"></main>', {
+        headers: { 'Content-Type': 'text/html', 'Content-Security-Policy': "default-src 'self'; style-src 'self'" },
+      })
     },
   })
   try {
     const driver = browserStory({
       baseUrl: server.url.href,
+      masks: ['input[type="email"]'],
       async beforeNavigate(cdp) {
         await installBasicAuth(cdp, server.url.origin, 'reader', 'story-fixture')
       },
       async prepare({ cdp }) {
         expect(await cdp.evaluate('location.origin')).toBe(server.url.origin)
+        const opacity = await cdp.evaluate("Array.from(document.querySelectorAll('input'), input => getComputedStyle(input).opacity)")
+        expect(opacity).toEqual(['0', '0'])
         await cdp.evaluate("localStorage.setItem('prepared', 'yes')")
       },
     })
