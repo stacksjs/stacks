@@ -8,7 +8,7 @@ const code = state('')
 const codeError = derived(() => code() && !/^\d{6}$/.test(code()) ? 'Enter the 6-digit code from your authenticator app' : '')
 
 function submit(): void {
-  if (!/^\d{6}$/.test(code()))
+  if (isLoading() || !/^\d{6}$/.test(code()))
     return
   emit('submit', code())
 }
@@ -51,7 +51,8 @@ function submit(): void {
             :loading="isLoading()"
             :disabled="isLoading() || !/^\d{6}$/.test(code())"
           >
-            Verify and sign in
+            <span :if="isLoading()">Verifying…</span>
+            <span :if="!isLoading()">Verify and sign in</span>
           </Button>
           <Button type="button" variant="ghost" size="lg" fullWidth :disabled="isLoading()" @click="emit('restart')">
             Back to sign in

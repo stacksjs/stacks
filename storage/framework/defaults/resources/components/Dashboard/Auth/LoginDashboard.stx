@@ -18,8 +18,10 @@ function safeRedirect(): string {
 }
 
 async function handleLogin(credentials: AuthUser): Promise<void> {
+  if (isLoading()) return
   isLoading.set(true)
   error.set('')
+  let handedOff = false
 
   try {
     const result = await login(credentials)
@@ -34,19 +36,22 @@ async function handleLogin(credentials: AuthUser): Promise<void> {
       return
     }
 
-    navigate(safeRedirect())
+    navigate(safeRedirect(), { replace: true, reload: true })
+    handedOff = true
   }
   catch (err) {
     error.set(err instanceof Error ? err.message : 'An error occurred during login')
   }
   finally {
-    isLoading.set(false)
+    if (!handedOff) isLoading.set(false)
   }
 }
 
 async function handleTwoFactor(code: string): Promise<void> {
+  if (isLoading() || !challengeToken()) return
   isLoading.set(true)
   error.set('')
+  let handedOff = false
 
   try {
     const result = await verifyTwoFactorLogin(challengeToken(), code)
@@ -56,17 +61,19 @@ async function handleTwoFactor(code: string): Promise<void> {
       return
     }
 
-    navigate(safeRedirect())
+    navigate(safeRedirect(), { replace: true, reload: true })
+    handedOff = true
   }
   catch (err) {
     error.set(err instanceof Error ? err.message : 'Unable to verify the authentication code')
   }
   finally {
-    isLoading.set(false)
+    if (!handedOff) isLoading.set(false)
   }
 }
 
 function restartLogin(): void {
+  if (isLoading()) return
   challengeToken.set('')
   error.set('')
 }

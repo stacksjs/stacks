@@ -47,6 +47,7 @@ function validatePassword(): boolean {
 }
 
 function handleSubmit(): void {
+  if (isLoading()) return
   if (!validateEmail() || !validatePassword())
     return
 
@@ -119,7 +120,7 @@ function handleSubmit(): void {
         :loading="isLoading()"
         :disabled="isLoading() || !email() || !password()"
       >
-        <span :if="isLoading()">Signing in...</span>
+        <span :if="isLoading()">Signing in…</span>
         <span :if="!isLoading()">Sign in</span>
       </Button>
     </form>

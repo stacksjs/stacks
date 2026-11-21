@@ -41,6 +41,7 @@ function loginDashboardHarness(options: {
   verify: (challengeToken: string, code: string) => Promise<unknown>
   redirect?: string
   next?: string
+  navigate?: (target: string, options: unknown) => void
 }) {
   const source = componentSource('Auth/LoginDashboard.stx')
   const script = source.match(/<script client>([\s\S]*?)<\/script>/)?.[1]
@@ -68,7 +69,10 @@ function loginDashboardHarness(options: {
     () => ({ login: options.login, verifyTwoFactorLogin: options.verify }),
     () => ({ query: options.next ? { next: options.next } : { redirect: options.redirect ?? '/dashboard' } }),
     testSignal,
-    (target: string) => navigations.push(target),
+    (target: string, navigationOptions: unknown) => {
+      navigations.push(target)
+      options.navigate?.(target, navigationOptions)
+    },
     describeAuthError,
     isLoginResponse,
     isTwoFactorChallenge,
@@ -635,16 +639,47 @@ describe('dashboard native STX bindings', () => {
     expect(flow.challengeToken()).toBe('')
     expect(flow.navigations).toEqual([])
     expect(flow.error()).toBe('Invalid or expired login attempt. Please sign in again.')
-
-    await flow.handleLogin({ email: 'person@example.com', password: 'secret', remember: true })
-    verification = session
-    await flow.handleTwoFactor('123456')
-    expect(flow.navigations).toEqual(['/dashboard'])
+    expect(flow.isLoading()).toBe(false)
 
     await flow.handleLogin({ email: 'person@example.com', password: 'secret', remember: true })
     flow.restartLogin()
     expect(flow.challengeToken()).toBe('')
     expect(flow.error()).toBe('')
+
+    await flow.handleLogin({ email: 'person@example.com', password: 'secret', remember: true })
+    verification = session
+    await flow.handleTwoFactor('123456')
+    expect(flow.navigations).toEqual(['/dashboard'])
+    expect(flow.isLoading()).toBe(true)
+  })
+
+  test('dashboard login stays busy from the first submit until the next document opens', async () => {
+    const authentication = Promise.withResolvers<unknown>()
+    let requests = 0
+    const flow = loginDashboardHarness({
+      login: () => {
+        requests++
+        return authentication.promise
+      },
+      verify: async () => null,
+      navigate: (target, options) => {
+        expect(target).toBe('/dashboard')
+        expect(options).toEqual({ replace: true, reload: true })
+        expect(flow.isLoading()).toBe(true)
+      },
+    })
+    const credentials = { email: 'runner@example.test', password: 'synthetic-fixture' }
+    const first = flow.handleLogin(credentials)
+    await flow.handleLogin(credentials)
+    expect(requests).toBe(1)
+    expect(flow.isLoading()).toBe(true)
+    authentication.resolve({
+      token: 'fixture-token',
+      user: { id: 1, email: credentials.email, name: 'Fixture Runner' },
+    })
+    await first
+    expect(flow.navigations).toEqual(['/dashboard'])
+    expect(flow.isLoading()).toBe(true)
   })
 
   test('dashboard login normalizes an unsafe post-auth redirect', async () => {

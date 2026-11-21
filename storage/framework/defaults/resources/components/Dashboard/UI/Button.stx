@@ -57,7 +57,7 @@ const buttonClass = [
   'transition-all duration-150',
   'select-none',
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-0',
-  'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none aria-disabled:opacity-40 aria-disabled:cursor-not-allowed aria-disabled:pointer-events-none',
+  'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none aria-disabled:opacity-40 aria-disabled:cursor-not-allowed aria-disabled:pointer-events-none disabled:aria-busy:opacity-100 aria-disabled:aria-busy:opacity-100',
   'active:scale-[0.98]',
   interaction === 'toggle'
     ? 'aria-pressed:text-blue-700 dark:aria-pressed:text-blue-300 aria-pressed:bg-blue-50 dark:aria-pressed:bg-blue-950/40 aria-pressed:border-blue-200 dark:aria-pressed:border-blue-900'
@@ -124,7 +124,7 @@ const liveAriaExpanded = useReactiveProp('ariaExpanded', '')
       :tabindex="liveDisabled() || liveLoading() ? -1 : undefined"
     >
       <template :if="liveLoading()">
-        <span aria-hidden="true" class="animate-spin h-3.5 w-3.5 i-hugeicons-loading-03 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}"></span>
+        <span aria-hidden="true" class="shrink-0 h-3.5 w-3.5 motion-safe:animate-spin i-hugeicons-loading-03 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}"></span>
       </template>
       <slot />
     </a>
@@ -142,7 +142,7 @@ const liveAriaExpanded = useReactiveProp('ariaExpanded', '')
         :disabled="liveDisabled() || liveLoading()"
       >
         <template :if="liveLoading()">
-          <span aria-hidden="true" class="animate-spin h-3.5 w-3.5 i-hugeicons-loading-03 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}"></span>
+          <span aria-hidden="true" class="shrink-0 h-3.5 w-3.5 motion-safe:animate-spin i-hugeicons-loading-03 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}"></span>
         </template>
         <slot />
       </button>
@@ -160,7 +160,7 @@ const liveAriaExpanded = useReactiveProp('ariaExpanded', '')
         :disabled="liveDisabled() || liveLoading()"
       >
         <template :if="liveLoading()">
-          <span aria-hidden="true" class="animate-spin h-3.5 w-3.5 i-hugeicons-loading-03 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}"></span>
+          <span aria-hidden="true" class="shrink-0 h-3.5 w-3.5 motion-safe:animate-spin i-hugeicons-loading-03 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}"></span>
         </template>
         <slot />
       </button>
