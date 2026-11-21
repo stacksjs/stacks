@@ -86,6 +86,11 @@ export interface DesktopLauncherConfig {
   githubUpdates?: string
   /** Run the project's launcher as the backend of Craft's sandboxed Store host. */
   appStore?: {
+    teamId?: string
+    version?: string
+    minimumSystemVersion?: string
+    category?: string
+    icon?: string
     /** A custom Store runtime. Default: craft-app-store alongside the project's Craft runtime. */
     runtime?: string
     /** The bundled backend listens on 127.0.0.1 for the app's web view. */

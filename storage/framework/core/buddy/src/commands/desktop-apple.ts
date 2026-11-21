@@ -36,6 +36,7 @@ interface AppleDesktopOptions {
   apiKeyPath?: string
   icon?: string
   skipBuild?: boolean
+  sandboxCheck?: boolean
   validateOnly?: boolean
   packageOnly?: boolean
   plan?: boolean
@@ -121,7 +122,7 @@ function packageMetadata(): { name: string, version: string } {
  * needs the Apple variables for what is not secret: the name, bundle id, team,
  * version, category and icon.
  */
-export function resolveAppleDesktopConfig(options: AppleDesktopOptions = {}, native?: ResolvedMacosDesktop | null): AppleDesktopConfig {
+export function resolveAppleDesktopConfig(options: AppleDesktopOptions = {}, native?: ResolvedMacosDesktop | null, launcher?: DesktopLauncherConfig): AppleDesktopConfig {
   const metadata = packageMetadata()
   const provisioningProfile = options.provisioningProfile || env('APPLE_PROVISIONING_PROFILE')
   const apiKeyPath = options.apiKeyPath || env('APP_STORE_CONNECT_API_KEY_PATH')
@@ -129,20 +130,20 @@ export function resolveAppleDesktopConfig(options: AppleDesktopOptions = {}, nat
   const craftX64 = options.craftX64 || env('CRAFT_BIN_X64')
   const keychain = options.keychain || env('APPLE_KEYCHAIN')
   return {
-    appName: options.appName || env('APPLE_APP_NAME') || native?.appName || env('APP_NAME') || metadata.name,
-    bundleId: options.bundleId || env('APPLE_BUNDLE_ID') || native?.bundleId || '',
-    teamId: options.teamId || env('APPLE_TEAM_ID') || native?.teamId || '',
-    version: options.appVersion || env('APPLE_APP_VERSION') || native?.version || metadata.version,
+    appName: options.appName || env('APPLE_APP_NAME') || native?.appName || launcher?.appName || env('APP_NAME') || metadata.name,
+    bundleId: options.bundleId || env('APPLE_BUNDLE_ID') || native?.bundleId || launcher?.bundleId || '',
+    teamId: options.teamId || env('APPLE_TEAM_ID') || native?.teamId || launcher?.appStore?.teamId || '',
+    version: options.appVersion || env('APPLE_APP_VERSION') || native?.version || launcher?.appStore?.version || metadata.version,
     buildNumber: options.buildNumber || env('APPLE_BUILD_NUMBER') || (native ? native.buildNumber : '') || env('GITHUB_RUN_NUMBER') || String(Math.floor(Date.now() / 1000)),
-    minimumMacos: options.minimumMacos || env('APPLE_MINIMUM_MACOS') || native?.minimumSystemVersion || '13.0',
-    category: options.category || env('APPLE_APP_CATEGORY') || native?.category || 'public.app-category.productivity',
+    minimumMacos: options.minimumMacos || env('APPLE_MINIMUM_MACOS') || native?.minimumSystemVersion || launcher?.appStore?.minimumSystemVersion || '13.0',
+    category: options.category || env('APPLE_APP_CATEGORY') || native?.category || launcher?.appStore?.category || 'public.app-category.productivity',
     appSigningIdentity: options.appSigningIdentity || env('APPLE_APP_SIGNING_IDENTITY'),
     installerSigningIdentity: options.installerSigningIdentity || env('APPLE_INSTALLER_SIGNING_IDENTITY'),
     provisioningProfile: provisioningProfile ? resolve(provisioningProfile) : '',
     apiKeyId: options.apiKeyId || env('APP_STORE_CONNECT_API_KEY_ID'),
     apiIssuerId: options.apiIssuerId || env('APP_STORE_CONNECT_API_ISSUER_ID'),
     apiKeyPath: apiKeyPath ? resolve(apiKeyPath) : '',
-    icon: options.icon || env('APPLE_APP_ICON') || (native?.icon ? resolve(projectPath(), native.icon) : undefined),
+    icon: options.icon || env('APPLE_APP_ICON') || (native?.icon ? projectPath(native.icon) : launcher?.appStore?.icon ? projectPath(launcher.appStore.icon) : undefined),
     universal: Boolean(options.universal) || env('APPLE_UNIVERSAL') === 'true',
     craftArm64: craftArm64 ? resolve(craftArm64) : undefined,
     craftX64: craftX64 ? resolve(craftX64) : undefined,
@@ -325,17 +326,18 @@ export function renderInfoPlist(config: AppleDesktopConfig, executable = 'stacks
 `
 }
 
-export function renderAppEntitlements(config: AppleDesktopConfig, local?: DesktopLauncherConfig['appStore']): string {
+export function renderAppEntitlements(config: AppleDesktopConfig, local?: DesktopLauncherConfig['appStore'], sandboxCheck = false): string {
   const networkServer = local?.networkServer ? '\n  <key>com.apple.security.network.server</key>\n  <true/>' : ''
   const fileAccess = local?.userSelectedFiles ? '\n  <key>com.apple.security.files.user-selected.read-write</key>\n  <true/>' : ''
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
+  const identity = sandboxCheck ? '' : `
   <key>com.apple.application-identifier</key>
   <string>${xml(config.teamId)}.${xml(config.bundleId)}</string>
   <key>com.apple.developer.team-identifier</key>
-  <string>${xml(config.teamId)}</string>
+  <string>${xml(config.teamId)}</string>`
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>${identity}
   <key>com.apple.security.app-sandbox</key>
   <true/>
   <key>com.apple.security.network.client</key>
@@ -853,7 +855,7 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
   })
 }
 
-async function packageLocalLauncher(config: AppleDesktopConfig, local: NonNullable<DesktopLauncherConfig['appStore']>): Promise<string> {
+async function packageLocalLauncher(config: AppleDesktopConfig, local: NonNullable<DesktopLauncherConfig['appStore']>, sandboxCheck = false): Promise<string> {
   const { renderUserlandPlistEntries, resolveCraftExecutable } = await import('@stacksjs/desktop-build')
   const desktopDist = storagePath('framework/desktop-dist')
   const executable = config.appName
@@ -885,9 +887,11 @@ async function packageLocalLauncher(config: AppleDesktopConfig, local: NonNullab
   writeFileSync(join(resources, 'craft.json'), JSON.stringify({
     title: executable, appName: executable, width: 1400, height: 900, titlebarHidden: true, backend: { executable: backend },
   }))
-  const profile = join(contents, 'embedded.provisionprofile')
-  copyFileSync(config.provisioningProfile, profile)
-  chmodSync(profile, 0o644)
+  if (!sandboxCheck) {
+    const profile = join(contents, 'embedded.provisionprofile')
+    copyFileSync(config.provisioningProfile, profile)
+    chmodSync(profile, 0o644)
+  }
 
   const declared = projectPath('app/Desktop/Info.plist.json')
   const declaredInfo: Record<string, unknown> = existsSync(declared) ? JSON.parse(readFileSync(declared, 'utf8')) : {}
@@ -898,13 +902,14 @@ async function packageLocalLauncher(config: AppleDesktopConfig, local: NonNullab
   const appEntitlements = join(appleDir, 'app.entitlements')
   const helperEntitlements = join(appleDir, 'helper.entitlements')
   writeFileSync(plist, renderInfoPlist(config, executable, extra))
-  writeFileSync(appEntitlements, renderAppEntitlements(config, local))
+  writeFileSync(appEntitlements, renderAppEntitlements(config, local, sandboxCheck))
   writeFileSync(helperEntitlements, renderHelperEntitlements())
   command(['plutil', '-lint', plist, appEntitlements, helperEntitlements])
   for (const args of signingPlan({
-    identity: config.appSigningIdentity, appPath: app, helperPath: join(macOS, backend), appEntitlements, helperEntitlements, keychain: config.keychain,
+    identity: sandboxCheck ? '-' : config.appSigningIdentity, appPath: app, helperPath: join(macOS, backend), appEntitlements, helperEntitlements, keychain: config.keychain,
   })) command(args)
   command(['codesign', '--verify', '--deep', '--strict', app])
+  if (sandboxCheck) return app
   await verifyStoreBundle(app, executable)
   return finishPackage(config, app, appleDir, {
     architectures: [process.arch === 'x64' ? 'x86_64' : process.arch],
@@ -1246,10 +1251,21 @@ export function desktopApple(buddy: CLI): void {
     .option('--keychain <path>', 'Sign with identities from this keychain file only (or APPLE_KEYCHAIN)')
 
   addSharedOptions(buddy.command('desktop:apple:package', 'Build, sandbox, sign, and package a Mac App Store desktop app'))
+    .option('--sandbox-check', 'Make a locally signed sandboxed app for testing a configured launcher')
     .action(async (options: AppleDesktopOptions) => {
       try {
+        const { loadDesktopConfig } = await import('@stacksjs/desktop-build')
+        const launcher = (await loadDesktopConfig(projectPath()))?.launcher
         const native = await nativeAppleConfig()
-        const packagePath = await packageAppleDesktop(withKeychainIdentities(resolveAppleDesktopConfig(options, native)), Boolean(options.skipBuild), native)
+        const config = resolveAppleDesktopConfig(options, native, launcher)
+        if (options.sandboxCheck) {
+          if (native || !launcher?.appStore) throw new Error('--sandbox-check requires desktop.launcher.appStore')
+          if (!options.skipBuild) await buildDesktop()
+          const app = await packageLocalLauncher(config, launcher.appStore, true)
+          log.success(`Built sandboxed app ${app}`)
+          return
+        }
+        const packagePath = await packageAppleDesktop(withKeychainIdentities(config), Boolean(options.skipBuild), native)
         log.success(`Created signed Mac App Store package ${packagePath}`)
       }
       catch (error) {
