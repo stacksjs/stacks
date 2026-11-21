@@ -4,9 +4,14 @@ import { join, relative } from 'node:path'
 import process from 'node:process'
 
 export function setupTestEnvironment(): void {
+  const cleanup = initializeTestEnvironment()
+  if (cleanup) process.once('exit', cleanup)
+}
+
+function initializeTestEnvironment(): (() => void) | undefined {
   process.env.NODE_ENV = 'test'
   process.env.APP_ENV = 'test'
-  isolateStacksHome()
+  return isolateStacksHome()
 }
 
 /**
@@ -19,13 +24,16 @@ export function setupTestEnvironment(): void {
  * process a test starts inherits it. A run that names its own `STACKS_HOME`
  * keeps it.
  */
-function isolateStacksHome(): void {
+function isolateStacksHome(): (() => void) | undefined {
   if (process.env.STACKS_HOME)
     return
 
   const home = mkdtempSync(join(tmpdir(), 'stacks-home-'))
   process.env.STACKS_HOME = home
-  process.once('exit', () => rmSync(home, { recursive: true, force: true }))
+  return () => {
+    rmSync(home, { recursive: true, force: true })
+    if (process.env.STACKS_HOME === home) delete process.env.STACKS_HOME
+  }
 }
 
 /**
@@ -45,7 +53,12 @@ function isolateStacksHome(): void {
  * `tests/setup.ts` is the preload, so the boot has to tell them apart itself.
  */
 export async function bootTestEnvironment(): Promise<void> {
-  setupTestEnvironment()
+  const cleanup = initializeTestEnvironment()
+  if (cleanup) {
+    // Bun's test runner ends its preload or worker without emitting process exit.
+    const { afterAll } = await import('bun:test')
+    afterAll(cleanup)
+  }
 
   if (isFrameworkSuite())
     return

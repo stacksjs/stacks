@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { existsSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -33,4 +33,35 @@ describe('the machine state a test run sees', () => {
     const named = join(tmpdir(), 'named-stacks-home')
     expect((await inFreshProcess({ ...process.env, STACKS_HOME: named })).home).toBe(named)
   })
+
+  for (const flags of [[], ['--isolate'], ['--parallel=2']]) {
+    it(`removes the home when bun test finishes ${flags.join(' ') || 'normally'}`, async () => {
+      const root = mkdtempSync(join(tmpdir(), 'stacks-test-lifecycle-'))
+      try {
+        const files = join(root, 'storage/framework')
+        mkdirSync(files, { recursive: true })
+        writeFileSync(join(root, 'preload.ts'), `import { bootTestEnvironment } from ${JSON.stringify(feature)}; await bootTestEnvironment()`)
+        for (const file of ['first.test.ts', 'second.test.ts']) {
+          writeFileSync(join(files, file), `
+            import { expect, test } from 'bun:test'
+            import { existsSync } from 'node:fs'
+            test('the isolated home is available throughout the test', () => {
+              expect(process.env.STACKS_HOME).toBeTruthy()
+              expect(existsSync(process.env.STACKS_HOME!)).toBe(true)
+            })
+          `)
+        }
+        const { STACKS_HOME: _ignored, ...env } = process.env
+        const result = Bun.spawnSync([process.execPath, 'test', '--preload', './preload.ts', ...flags], {
+          cwd: root,
+          env: { ...env, TMPDIR: root },
+        })
+        expect(result.exitCode, result.stderr.toString()).toBe(0)
+        expect(readdirSync(root).filter(name => name.startsWith('stacks-home-'))).toEqual([])
+      }
+      finally {
+        rmSync(root, { recursive: true, force: true })
+      }
+    })
+  }
 })
