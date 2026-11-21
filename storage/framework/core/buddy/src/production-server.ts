@@ -125,8 +125,8 @@ export async function loadStxPartialsDir(cwd = process.cwd()): Promise<string | 
  * Renders the project's STX views (resources/views) via stx-serve and applies
  * the maintenance / coming-soon gate so `APP_COMING_SOON` (and `buddy down` /
  * `buddy coming-soon`) hold every request behind the holding page, with the
- * secret-URL + bypass-cookie escape hatch intact. Bun.serve binds 0.0.0.0 by
- * default, so the server is reachable on the host's public interface.
+ * secret-URL + bypass-cookie escape hatch intact. Configure HOST to set the
+ * views listener's bind address; otherwise STX keeps Bun's default.
  *
  * Same-origin `/api/**` requests (and any non-GET/HEAD verb) are
  * reverse-proxied to the API process — mirroring the dev views server — so
@@ -183,6 +183,7 @@ export async function startProductionServer(options?: { port?: string | number, 
   process.env.APP_ENV = process.env.APP_ENV || 'production'
 
   const port = Number(process.env.PORT) || 3000
+  const hostname = process.env.HOST?.trim() || undefined
 
   const { config, feature, overridesReady, resolveViewPatterns } = await import('@stacksjs/config')
   await overridesReady
@@ -366,6 +367,7 @@ export async function startProductionServer(options?: { port?: string | number, 
         ...serverRequestBodyOptions(config.server?.maxRequestBodySize),
         patterns: viewPatterns.patterns,
         exclude: viewPatterns.exclude,
+        hostname,
         port,
         // Never silently drift off the configured port: the reverse
         // proxy/gateway routes to exactly this port, so stx's fallback bind
