@@ -500,6 +500,10 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun .github/scripts/core-tests.ts "${{ matrix.shard }}"
 
+      - name: Cloud production tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && matrix.shard == 'core-2' }}
+        run: bun test ./cloud/production
+
       - name: Workspace recovery process-inspection integration
         if: ${{ !cancelled() && steps.install.outcome == 'success' && matrix.shard == 'buddy' }}
         run: |
