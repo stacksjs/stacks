@@ -251,7 +251,7 @@ export function createDashboardSidebarOrder(options: {
       order = acknowledged = parseSidebarOrder(result.order)
       scope = result.scope
       ready = true
-      message = result.warning || 'Drag grips to reorder. Arrow keys also work.'
+      message = result.warning || ''
       apply()
     }
     catch (error) { if (!destroyed) message = error instanceof Error ? error.message : 'Sidebar order could not be loaded.' }
