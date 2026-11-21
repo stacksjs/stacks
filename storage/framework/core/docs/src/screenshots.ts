@@ -4,6 +4,7 @@ import { lstat, mkdir, mkdtemp, readFile, rename, rm, stat } from 'node:fs/promi
 import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { captureMaskCss } from './capture-masks'
 import { discoverScreenshotModels, screenshotFixturePath, type ScreenshotFixtures, type ScreenshotModelOptions, type ScreenshotModelPlan } from './screenshot-models'
 export { discoverScreenshotModels, planScreenshotModels, screenshotFixturePath } from './screenshot-models'
 export type { ScreenshotFixtures, ScreenshotModel, ScreenshotModelOptions, ScreenshotModelPlan } from './screenshot-models'
@@ -246,7 +247,10 @@ async function captureProfile(configFile: string, profile: string, options: Scre
             phase = 'loading fonts and visible images'
             await view!.evaluate(`(async () => {
               const style = document.createElement('style'); style.textContent = '*{animation:none!important;transition:none!important;scroll-behavior:auto!important;caret-color:transparent!important}'; document.head.append(style);
-              for (const selector of ${JSON.stringify(['input[type="password"]', ...(page.masks ?? [])])}) for (const node of document.querySelectorAll(selector)) node.style.setProperty('visibility','hidden','important');
+              for (const selector of ${JSON.stringify(page.masks ?? [])}) document.querySelectorAll(selector);
+              const maskSheet = new CSSStyleSheet();
+              maskSheet.replaceSync(${JSON.stringify(captureMaskCss(page.masks ?? []))});
+              document.adoptedStyleSheets = [...document.adoptedStyleSheets, maskSheet];
               await document.fonts.ready;
               for (const image of document.images) { const box=image.getBoundingClientRect(); if(box.bottom>0 && box.top<innerHeight && !image.complete) await new Promise(resolve=>{image.addEventListener('load',resolve,{once:true});image.addEventListener('error',resolve,{once:true})}); }
               await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));

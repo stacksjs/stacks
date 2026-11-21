@@ -79,7 +79,7 @@ test.skipIf(!Bun.which('ffmpeg'))('a gated story authenticates and keeps field m
         return new Response(null, { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Story"' } })
       if (new URL(request.url).pathname === '/favicon.ico')
         return new Response(null, { status: 204 })
-      return new Response('<!doctype html><main><h1>Private preview</h1><input type="password" value="fixture"><input type="email" value="demo@example.test"></main>', {
+      return new Response('<!doctype html><main><h1>Private preview</h1><input type="password" value="fixture"><input type="email" value="demo@example.test"><mark>Private note</mark></main>', {
         headers: { 'Content-Type': 'text/html', 'Content-Security-Policy': "default-src 'self'; style-src 'self'" },
       })
     },
@@ -87,14 +87,18 @@ test.skipIf(!Bun.which('ffmpeg'))('a gated story authenticates and keeps field m
   try {
     const driver = browserStory({
       baseUrl: server.url.href,
-      masks: ['input[type="email"]'],
+      masks: ['input[type="email"]', 'mark'],
       async beforeNavigate(cdp) {
         await installBasicAuth(cdp, server.url.origin, 'reader', 'story-fixture')
       },
       async prepare({ cdp }) {
         expect(await cdp.evaluate('location.origin')).toBe(server.url.origin)
-        const opacity = await cdp.evaluate("Array.from(document.querySelectorAll('input'), input => getComputedStyle(input).opacity)")
-        expect(opacity).toEqual(['0', '0'])
+        const fields = await cdp.evaluate(`Array.from(document.querySelectorAll('input'), input => {
+          const style = getComputedStyle(input)
+          return { opacity: style.opacity, fill: style.webkitTextFillColor, border: parseFloat(style.borderTopWidth) > 0 }
+        })`)
+        expect(fields).toEqual(Array(2).fill({ opacity: '1', fill: 'rgba(0, 0, 0, 0)', border: true }))
+        expect(await cdp.evaluate("getComputedStyle(document.querySelector('mark')).opacity")).toBe('0')
         await cdp.evaluate("localStorage.setItem('prepared', 'yes')")
       },
     })

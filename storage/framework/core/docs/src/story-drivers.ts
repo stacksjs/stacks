@@ -5,6 +5,7 @@ import { click, launch, settle, waitFor } from '@stacksjs/testing/browser'
 import { randomUUID } from 'node:crypto'
 import { readFile, rm } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
+import { captureMaskCss } from './capture-masks'
 
 export interface BrowserStoryContext {
   cdp: Cdp
@@ -76,13 +77,13 @@ export function browserStory(options: BrowserStoryOptions): StoryDriver<BrowserS
     try {
       signal.throwIfAborted()
       const name = `stacks-story-${randomUUID()}`
-      const masks = ['input[type="password"]', ...(options.masks ?? [])]
+      const maskCss = captureMaskCss(options.masks ?? [])
       // A closed shadow root prevents page CSS from changing the pointer; the
       // host never accepts input. Masks exist before app scripts and first paint.
       const overlay = `(() => {
         const start = () => {
           const maskSheet = new CSSStyleSheet();
-          maskSheet.replaceSync(${JSON.stringify(`${masks.join(',')} { opacity: 0 !important; }`)});
+          maskSheet.replaceSync(${JSON.stringify(maskCss)});
           document.adoptedStyleSheets = [...document.adoptedStyleSheets, maskSheet];
           const host = document.createElement('div'); host.id = ${JSON.stringify(name)};
           host.style.cssText='all:initial!important;position:fixed!important;inset:0!important;pointer-events:none!important;z-index:2147483647!important;';
