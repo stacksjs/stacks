@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, test } from 'bun:test'
-import { mkdtemp, mkdir, readdir, rm } from 'node:fs/promises'
+import { lstat, mkdtemp, mkdir, readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { captureScreenshots, type ScreenshotConfig, validateScreenshotConfig } from '../src/screenshots'
@@ -115,21 +115,25 @@ test('refuses unowned image and manifest collisions before opening a browser', a
 
 test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' && !process.env.STACKS_BROWSER_TESTS))('refuses HTTP error pages and captures explicitly expected error states', async () => {
   const root = await fixture()
+  const outDir = join('pictures', 'nested-capture-directory'.repeat(7))
+  const tempRecord = join(root, 'worker-temp.txt')
   const server = Bun.serve({ port: 0, fetch(request) {
     const status = new URL(request.url).pathname === '/missing' ? 404 : 503
     return new Response('<title>Unavailable</title><main>This screen is deliberately unavailable.</main>', { status, headers: { 'Content-Type': 'text/html' } })
   } })
   try {
     await Bun.write(join(root, 'screens.ts'), `export default {
-      baseUrl:'http://127.0.0.1:${server.port}', outDir:'pictures', backend:'chrome', requireHttpStatus:true,
+      baseUrl:'http://127.0.0.1:${server.port}', outDir:${JSON.stringify(outDir)}, backend:'chrome', requireHttpStatus:true,
       viewports:[{name:'mobile',width:390,height:844}], pages:[
         {id:'missing',title:'Missing route',path:'/missing',description:'A broken route is not a successful screen.',waitFor:'main'},
         {id:'expected',title:'Reviewed missing state',path:'/missing',expectedStatus:404,description:'An intentional missing-state example.',waitFor:'main',ready:async ({httpStatus})=>{
           const { tmpdir } = await import('node:os')
           const { readdir } = await import('node:fs/promises')
           const temporary = tmpdir()
-          if (!temporary.startsWith(${JSON.stringify(join(root, 'pictures', '.stacks-screenshots-'))})) throw new Error('Browser files are outside the owned capture directory')
-          return httpStatus===404 && (await readdir(temporary)).some(name => name.endsWith('.bun-chrome'))
+          const ownsProfile = (await readdir(temporary)).some(name => name.endsWith('.bun-chrome'))
+          if (!ownsProfile) return false
+          await Bun.write(${JSON.stringify(tempRecord)}, temporary)
+          return httpStatus === 404
         }},
         {id:'wrong',title:'Wrong status',path:'/missing',expectedStatus:200,description:'An expected success must be an HTTP success.',waitFor:'main'},
         {id:'unavailable',title:'Unavailable service',path:'/unavailable',description:'An unavailable service must fail the capture.',waitFor:'main'}
@@ -141,8 +145,11 @@ test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' 
     expect(report.results[0]!.error).toContain('HTTP 404')
     expect(report.results[2]!.error).toContain('instead of 200')
     expect(report.results[3]!.error).toContain('HTTP 503')
-    expect(await Bun.file(join(root, 'pictures', report.results[1]!.file!)).exists()).toBe(true)
-    expect((await readdir(join(root, 'pictures'))).filter(name => name.startsWith('.stacks-screenshots-'))).toEqual([])
+    expect(await Bun.file(join(root, outDir, report.results[1]!.file!)).exists()).toBe(true)
+    expect((await readdir(join(root, outDir))).filter(name => name.startsWith('.stacks-screenshots-'))).toEqual([])
+    const workerTemp = await Bun.file(tempRecord).text()
+    expect(workerTemp).toMatch(/[/\\]stx-b-[^/\\]+$/)
+    await expect(lstat(workerTemp)).rejects.toMatchObject({ code: 'ENOENT' })
     const manifest = { ...report, generatorVersion: 'previous-sdk' }
     await Bun.write(join(root, 'pictures/manifest.json'), JSON.stringify(manifest))
     await expect(captureScreenshots({ root, config: 'screens.ts', check: true })).rejects.toThrow('capture again')

@@ -1,6 +1,7 @@
 /** Reproducible documentation screenshots, using Bun's native browser view. */
 import { createHash } from 'node:crypto'
 import { lstat, mkdir, mkdtemp, readFile, rename, rm, stat } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { discoverScreenshotModels, screenshotFixturePath, type ScreenshotFixtures, type ScreenshotModelOptions, type ScreenshotModelPlan } from './screenshot-models'
@@ -345,17 +346,20 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
       const runtime = import.meta.path.startsWith('/$bunfs/') ? Bun.which('bun') : process.execPath
       if (!runtime) throw new Error('An installed Bun is required for screenshot workers')
       const entry = import.meta.path.startsWith('/$bunfs/') ? Bun.resolveSync('@stacksjs/docs/screenshots', root) : import.meta.path
-      // Bun's Chrome backend creates a profile under the worker's temp root.
-      // Keep it with the rest of this capture so it is retired after the worker exits.
-      const workerTemp = await mkdtemp(join(temporary, 'browser-'))
+      // Chrome puts its profile and a Unix socket under the worker's temp
+      // root. A deep artifact directory can exceed the socket address limit.
+      const systemTemp = tmpdir()
+      const browserTempRoot = process.platform !== 'win32' && Buffer.byteLength(systemTemp) > 60 ? '/tmp' : systemTemp
+      const workerTemp = await mkdtemp(join(browserTempRoot, 'stx-b-'))
       const env = { ...process.env, TMPDIR: workerTemp, TMP: workerTemp, TEMP: workerTemp }
-      const worker = spawnOwnedProcess([runtime, '--no-env-file', `--config=${join(temporary, 'bunfig.toml')}`, entry, '--worker', configFile, profile, JSON.stringify({ ...options, root, staging: temporary }), resultFile], { ownerRuntime: runtime, cwd: root, env, stdin: 'ignore', stdout: 'ignore', stderr: 'ignore', ipc: (message) => {
-        const progress = message as { type?: string, result?: ScreenshotResult }
-        if (progress?.type === 'screenshot-result' && progress.result) options.onProgress?.(progress.result)
-      } })
+      let worker: ReturnType<typeof spawnOwnedProcess> | undefined
       let timer: ReturnType<typeof setTimeout> | undefined
       try {
-        const code = await Promise.race([worker.exited, new Promise<never>((_, reject) => { timer = setTimeout(() => { void worker.stop(); reject(new Error(`Screenshot worker timed out for ${profile}`)) }, count * ((config.timeoutMs ?? 30_000) + 2000) + 30_000) })])
+        const running = worker = spawnOwnedProcess([runtime, '--no-env-file', `--config=${join(temporary, 'bunfig.toml')}`, entry, '--worker', configFile, profile, JSON.stringify({ ...options, root, staging: temporary }), resultFile], { ownerRuntime: runtime, cwd: root, env, stdin: 'ignore', stdout: 'ignore', stderr: 'ignore', ipc: (message) => {
+          const progress = message as { type?: string, result?: ScreenshotResult }
+          if (progress?.type === 'screenshot-result' && progress.result) options.onProgress?.(progress.result)
+        } })
+        const code = await Promise.race([running.exited, new Promise<never>((_, reject) => { timer = setTimeout(() => { void running.stop(); reject(new Error(`Screenshot worker timed out for ${profile}`)) }, count * ((config.timeoutMs ?? 30_000) + 2000) + 30_000) })])
         if (code.code !== 0) throw new Error(`Screenshot worker failed for ${profile}`)
         report.results.push(...JSON.parse(await readFile(resultFile, 'utf8')) as ScreenshotResult[])
       }
@@ -365,7 +369,11 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
           report.results.push({ id: page.id, profile, viewport, title: page.title, description: page.description, path: new URL(typeof page.path === 'string' ? page.path : page.route!, config.baseUrl).pathname, status: 'failed', error: redacted(error, config) })
         }
       }
-      finally { if (timer) clearTimeout(timer); await worker.stop() }
+      finally {
+        if (timer) clearTimeout(timer)
+        await worker?.stop()
+        await rm(workerTemp, { recursive: true, force: true })
+      }
     }
     if (options.only?.length || options.viewports?.length) {
       try {
