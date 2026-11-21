@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.641...v0.75.642)
+
+## 🐛 Bug Fixes
+
+- mask story recordings under strict style policies ([ab42800](https://github.com/stacksjs/stacks/commit/ab42800)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.640...v0.75.641)
 
 ## 🐛 Bug Fixes
