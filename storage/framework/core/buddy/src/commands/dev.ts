@@ -854,7 +854,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   const frontendUrl = developmentUrl(frontendBaseUrl, entryPath)
   const apiUrl = displayedDomain ? `https://${displayedDomain}/api` : `http://localhost:${apiPort}`
   const docsUrl = displayedDomain ? `https://${displayedDomain}/docs` : `http://localhost:${docsPort}`
-  const dashboardUrl = dashboardDomain ? `https://${dashboardDomain}` : `http://localhost:${dashboardPort}`
+  const dashboardUrl = dashboardDomain ? `https://${dashboardDomain}` : `http://127.0.0.1:${dashboardPort}`
   // Signal subprocesses that the main dev server manages the reverse proxy,
   // so they don't start their own (which would conflict on port 443).
   // Suppress early ts-css/STX/auth config noise — `printDevEngineNotes()` prints after "ready in".
@@ -1215,7 +1215,7 @@ function printDevReadyBanner(input: {
   const feBaseUrl = useProxy ? frontendBaseUrl : `http://localhost:${frontendPort}`
   const apUrl = useProxy ? apiUrl : `http://localhost:${apiPort}`
   const dcUrl = useProxy ? docsUrl : `http://localhost:${docsPort}`
-  const dbUrl = useProxy ? dashboardUrl : `http://localhost:${dashboardPort}`
+  const dbUrl = useProxy ? dashboardUrl : `http://127.0.0.1:${dashboardPort}`
   const blogUrl = `${feBaseUrl}/blog`
 
   console.log()
@@ -1234,7 +1234,7 @@ function printDevReadyBanner(input: {
   if (useProxy) {
     console.log(`  ${dim('➜')}  ${dim('Direct')}:      ${dim(`${developmentUrl(`http://localhost:${frontendPort}`, entryPath)} (bypasses the proxy)`)}`)
     if (includeDashboard && dashboardDomain)
-      console.log(`  ${dim('➜')}  ${dim('Direct')}:      ${dim(`http://localhost:${dashboardPort} (dashboard, bypasses the proxy)`)}`)
+      console.log(`  ${dim('➜')}  ${dim('Direct')}:      ${dim(`http://127.0.0.1:${dashboardPort} (dashboard, bypasses the proxy)`)}`)
   }
   if (isComingSoonMode()) {
     console.log()
@@ -1245,7 +1245,7 @@ function printDevReadyBanner(input: {
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`${frontendBaseUrl}/api → localhost:${apiPort}`)}`)
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`${frontendBaseUrl}/docs → localhost:${docsPort}`)}`)
     if (includeDashboard)
-      console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${dashboardPort} → ${dashboardDomain}`)}`)
+      console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`127.0.0.1:${dashboardPort} → ${dashboardDomain}`)}`)
   }
   console.log()
 }
@@ -1795,7 +1795,7 @@ function buildRpxProxySpecs(input: {
       ],
     },
     ...(includeDashboard
-      ? [{ id: `${domain}-dashboard`, from: `localhost:${dashboardPort}`, to: dashboardDomain }]
+      ? [{ id: `${domain}-dashboard`, from: `127.0.0.1:${dashboardPort}`, to: dashboardDomain }]
       : []),
   ]
 }

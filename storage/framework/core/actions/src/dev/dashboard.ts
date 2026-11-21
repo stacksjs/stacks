@@ -67,9 +67,12 @@ const userDashboardPath = projectPath('resources/views/dashboard')
 const dashboardComponentsPath = defaultsPath('resources/components/Dashboard')
 const userDashboardComponentsPath = projectPath('resources/components/Dashboard')
 const preferredPort = Number(process.env.PORT_ADMIN) || 3002
+const dashboardHostname = '127.0.0.1'
+const dashboardListener = { hostname: dashboardHostname }
 // eslint-disable-next-line ts/no-top-level-await
 const dashboardPort = await findAvailablePort(preferredPort)
-const dashboardLocalUrl = `http://localhost:${dashboardPort}`
+const dashboardAddress = `${dashboardHostname}:${dashboardPort}`
+const dashboardLocalUrl = `http://${dashboardAddress}`
 
 // A dashboard the background daemon started stops itself once nobody has used
 // it for this long (see `createIdleExit`). One started in a terminal has no
@@ -466,6 +469,8 @@ async function startStxServer(): Promise<void> {
     root: projectPath('resources'),
     patterns: [userDashboardPath, dashboardPath],
     exclude: disabledFeatureViews(dashboardPath, feature),
+    // Local dashboard actions can run without an authenticated browser session.
+    ...dashboardListener,
     port: dashboardPort,
     // The app's dashboard components first, then the framework's, both ahead
     // of `@stacksjs/components` below: that library shares names with the
@@ -542,7 +547,11 @@ async function startStxServer(): Promise<void> {
     //      reaches the action). Without rule (3a), root-level routes that
     //      collide with a page — e.g. `route.health()` registering a
     //      `/health` LB-probe at root — would intercept the page.
-    onRequest: async (req: Request) => {
+    onRequest: async (req: Request, server) => {
+      const peer = server.requestIP(req)?.address
+      if (!peer || (peer !== '::1' && !/^(?:::ffff:)?127\./.test(peer)))
+        return new Response('Not found', { status: 404 })
+
       idleExit.touch()
       const url = new URL(req.url)
       const pathname = url.pathname
@@ -595,7 +604,7 @@ async function registerWithRpxDaemon(domainToServe: string): Promise<boolean> {
 
   await writeEntry({
     id: `${domainToServe}-dashboard`,
-    from: `localhost:${dashboardPort}`,
+    from: dashboardAddress,
     to: domainToServe,
     cwd: process.cwd(),
     createdAt: new Date().toISOString(),
@@ -638,7 +647,7 @@ async function startReverseProxy(): Promise<boolean> {
 
     await (await loadRpx()).startProxies({
       proxies: [
-        { from: `localhost:${dashboardPort}`, to: dashboardDomain, cleanUrls: false },
+        { from: dashboardAddress, to: dashboardDomain, cleanUrls: false },
       ],
       https: {
         basePath: sslBasePath,
@@ -797,7 +806,7 @@ if (verbose) {
   console.log(`  ${dim('➜')}  ${dim('URL')}:      ${dim(initialUrl)}`)
   if (dashboardDomain) {
     console.log(`  ${dim('➜')}  ${dim('SSL')}:      ${dim(sslBasePath)}`)
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:    ${dim(`localhost:${dashboardPort} → ${dashboardDomain}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:    ${dim(`${dashboardAddress} → ${dashboardDomain}`)}`)
   }
 
   if (bufferedLogs.length > 0) {

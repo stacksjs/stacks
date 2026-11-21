@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { networkInterfaces, tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
 
 test.each(['lazy', 'eager', 'stale', 'defaults'] as const)('dashboard boots globals for %s actions without weakening auth or CSRF', async (loading) => {
@@ -104,6 +104,14 @@ export default new Action({
       await Bun.sleep(100)
     }
     expect(ready).toBe(true)
+    const lanAddress = Object.values(networkInterfaces()).flat().find(address => address?.family === 'IPv4' && !address.internal)?.address
+    if (lanAddress) {
+      const remote = await fetch(`http://${lanAddress}:${port}/api/ready`, {
+        headers: { 'x-forwarded-for': '127.0.0.1' },
+        signal: AbortSignal.timeout(2000),
+      }).catch(() => null)
+      if (remote) expect(remote.status).toBe(404)
+    }
     // An app can skip framework routes and still open its developer dashboard.
     const definitions = await fetch(`${origin}/api/dashboard/jobs/definitions`)
     expect(definitions.status).toBe(200)
