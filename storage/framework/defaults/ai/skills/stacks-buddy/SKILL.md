@@ -113,6 +113,10 @@ and retains successful outputs when another generator fails.
 status, project dashboards, and pending reviews. The tray connects to the
 existing daemon and opens the project’s `generate:review` in Terminal. It
 uses a private loopback server and quitting it leaves the daemon running.
+The Overview pane samples CPU and memory while visible. The Pantry pane
+uses `ts-pantry/desktop` for installed inventory and package jobs, and
+`ts-pantry/catalog` for local catalog search. Pair with the user’s existing
+Pantry Desktop service and keep the connection credential in Keychain.
 
 ## Architecture
 

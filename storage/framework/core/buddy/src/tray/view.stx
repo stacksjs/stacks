@@ -1,12 +1,30 @@
 <script client>
 type Project = { id: string, name: string, path: string, pending: number, issue: string }
-type Snapshot = { online: boolean, watched: number, running: boolean, failed: number, projects: Project[] }
+type Snapshot = { online: boolean, watched: number, running: boolean, failed: number, projects: Project[], system: { cpu: number | null, memory: { used: number, total: number, raw: boolean } } }
+type Package = { name: string, version: string, managed?: boolean }
+type CatalogMatch = { name: string, domain: string }
+type PantryJob = { id: string, domain: string, operation?: string, status: string, error?: string }
+type PantryStatus = { state: 'offline' | 'pair' | 'ready', issue?: string, packages?: Package[], jobs?: PantryJob[], removal?: boolean }
 
 const snapshot = state<Snapshot | null>(null)
 const filter = state('')
 const busy = state('')
 const notice = state('')
 const unavailable = state(false)
+const pane = state<'overview' | 'pantry'>('overview')
+const pantry = state<PantryStatus | null>(null)
+const pairingCode = state('')
+const packageSearch = state('')
+const searched = state(false)
+const matches = state<CatalogMatch[]>([])
+const packageJobs = state<PantryJob[]>([])
+const removal = state('')
+const system = derived(() => snapshot()?.system)
+const installed = derived(() => {
+  const query = packageSearch().trim().toLowerCase()
+  return (pantry()?.packages ?? []).filter(item => item.name.toLowerCase().includes(query)).slice(0, 10)
+})
+const jobInProgress = derived(() => packageJobs().some(job => job.status === 'queued' || job.status === 'running'))
 const pending = derived(() => snapshot()?.projects.filter(project => project.pending > 0) ?? [])
 const recent = derived(() => {
   const search = filter().trim().toLowerCase()
@@ -15,14 +33,14 @@ const recent = derived(() => {
     ? projects.filter(project => project.name.toLowerCase().includes(search) || project.path.toLowerCase().includes(search))
     : projects.slice(0, 6)
 })
-const session = globalThis.location.hash.slice(1)
+const launch = globalThis.buddyTray
 const desktop = globalThis.craft
 let refreshing = false
 
 async function call(path: string, body?: object) {
-  const response = await fetch(path, {
+  const response = await fetch(launch ? new URL(path, launch.origin) : path, {
     method: body ? 'POST' : 'GET',
-    headers: { authorization: `Bearer ${session}`, ...(body ? { 'content-type': 'application/json' } : {}) },
+    headers: { authorization: `Bearer ${launch?.token ?? ''}`, ...(body ? { 'content-type': 'application/json' } : {}) },
     body: body && JSON.stringify(body),
   })
   const result = await response.json()
@@ -45,6 +63,83 @@ async function refreshStatus() {
   }
 }
 
+function gib(bytes: number) {
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(bytes / 1024 ** 3)
+}
+
+async function refreshPantry() {
+  try {
+    const status: PantryStatus = await call('/api/pantry')
+    pantry.set(status)
+    packageJobs.set(status.jobs ?? [])
+  }
+  catch (error) {
+    pantry.set({ state: 'offline', issue: error.message })
+  }
+}
+
+async function refreshActivePane() {
+  if (pane() === 'overview') return refreshStatus()
+  if (!jobInProgress()) return
+  try {
+    const jobs: PantryJob[] = await call('/api/pantry/jobs')
+    packageJobs.set(jobs)
+    if (!jobInProgress()) await refreshPantry()
+  }
+  catch (error) {
+    notice.set(error.message)
+  }
+}
+
+function openPane(next: 'overview' | 'pantry') {
+  pane.set(next)
+  notice.set('')
+  removal.set('')
+  void (next === 'overview' ? refreshStatus() : refreshPantry())
+}
+
+async function pantryAction(fields: object) {
+  if (busy()) return
+  busy.set('pantry')
+  notice.set('')
+  try {
+    await call('/api/action', fields)
+    pairingCode.set('')
+    removal.set('')
+    await refreshPantry()
+  }
+  catch (error) {
+    notice.set(error.message)
+  }
+  finally {
+    busy.set('')
+  }
+}
+
+function changePackage(action: string, domain: string) {
+  if (packageChanging(domain)) return
+  return pantryAction({ action, domain, requestId: crypto.randomUUID() })
+}
+
+function packageChanging(domain: string) {
+  return packageJobs().some(job => job.domain === domain && (job.status === 'queued' || job.status === 'running'))
+}
+
+async function searchCatalog() {
+  const query = packageSearch().trim()
+  if (query.length < 2) return
+  try {
+    const packages = await call(`/api/pantry/catalog?q=${encodeURIComponent(query)}`)
+    if (query === packageSearch().trim()) {
+      matches.set(packages)
+      searched.set(true)
+    }
+  }
+  catch (error) {
+    notice.set(error.message)
+  }
+}
+
 async function perform(action: string, project?: string) {
   if (busy()) return
   busy.set(project || action)
@@ -62,10 +157,10 @@ async function perform(action: string, project?: string) {
   }
 }
 
-const { pause, resume } = useInterval(() => void refreshStatus(), 5_000, { immediate: !desktop, whileVisible: true })
+const { pause, resume } = useInterval(() => void refreshActivePane(), 5_000, { immediate: !desktop, whileVisible: true })
 const stopFocus = useEventListener(desktop ? 'craft:window:focus' : 'focus', () => {
   resume()
-  void refreshStatus()
+  void (pane() === 'overview' ? refreshStatus() : refreshPantry())
 })
 const stopBlur = useEventListener('craft:window:blur', pause)
 const stopKeys = useEventListener('keydown', (event) => {
@@ -115,6 +210,11 @@ onDestroy(() => {
   .online { color: light-dark(#207442, #8bdfa9); }
   .issue { color: light-dark(#875115, #f0bd83); }
   .search { color: inherit; }
+  .tab { border: 0; }
+  .meter { display: block; appearance: none; width: 100%; height: 4px; border: 0; overflow: hidden; border-radius: 8px; }
+  .meter::-webkit-progress-bar { background: var(--accent-surface); }
+  .meter::-webkit-progress-value { background: var(--accent); border-radius: 8px; }
+  .meter::-moz-progress-bar { background: var(--accent); border-radius: 8px; }
 </style>
 
 <main class="flex flex-col tray">
@@ -138,13 +238,86 @@ onDestroy(() => {
         </p>
       </div>
     </div>
-    <button class="px-2 py-1 text-xs rounded-lg plain secondary" type="button" @click="refreshStatus()">Refresh</button>
+    <button class="px-2 py-1 text-xs rounded-lg plain secondary" type="button" @click="pane() === 'overview' ? refreshStatus() : refreshPantry()">Refresh</button>
   </header>
+  <nav aria-label="Buddy views" class="flex gap-2 px-4 py-2 border-b line">
+    <button type="button" class="px-3 py-1 font-medium text-xs rounded-md tab" :class="pane() === 'overview' ? 'accent' : 'plain secondary'" :aria-pressed="pane() === 'overview'" @click="openPane('overview')">Overview</button>
+    <button type="button" class="px-3 py-1 font-medium text-xs rounded-md tab" :class="pane() === 'pantry' ? 'accent' : 'plain secondary'" :aria-pressed="pane() === 'pantry'" @click="openPane('pantry')">Pantry</button>
+  </nav>
 
   <div class="overflow-y-auto flex-1 px-4 py-3 min-h-0">
+  @if(pane() === 'pantry')
+    @if(!pantry())
+      <p role="status" class="secondary">Connecting to Pantry…</p>
+    @elseif(pantry()?.state === 'offline')
+      <h2 class="mb-2 font-semibold text-sm">Pantry is unavailable</h2>
+      <p class="mb-2 secondary">{{ pantry()?.issue }}</p>
+      <p>Start Pantry Desktop in Terminal with <code>pantry desktop setup --yes</code>, then refresh.</p>
+    @elseif(pantry()?.state === 'pair')
+      <h2 class="mb-2 font-semibold text-sm">Connect Pantry</h2>
+      <p class="mb-2 secondary">Run <code>pantry desktop pair</code> in Terminal and enter the eight-digit code.</p>
+      <form class="flex gap-2" @submit.prevent="pantryAction({ action: 'pantry:pair', code: pairingCode() })">
+        <input class="flex-1 px-2 py-1 min-w-0 border rounded-lg line search surface" aria-label="Pairing code" inputmode="numeric" maxlength="8" :value="pairingCode()" @input="pairingCode.set($event.target.value)" />
+        <button class="px-3 py-1 font-medium accent rounded-md tab" :disabled="pairingCode().length !== 8 || busy() !== ''">Pair</button>
+      </form>
+    @else
+      <form class="flex gap-2 mb-3" @submit.prevent="searchCatalog()">
+        <input class="flex-1 px-2 py-1 min-w-0 border rounded-lg line search surface" type="search" aria-label="Find a Pantry package" placeholder="Find a package" :value="packageSearch()" @input="packageSearch.set($event.target.value); matches.set([]); searched.set(false)" />
+        <button class="px-3 py-1 font-medium accent rounded-md tab" :disabled="packageSearch().trim().length < 2">Find</button>
+      </form>
+      @if(searched())
+        <h2 class="mb-2 font-semibold text-sm">Catalog</h2>
+        @foreach(matches() as pkg)
+          <div class="flex gap-2 items-center justify-between px-2 py-1 border-b line">
+            <div class="min-w-0"><p class="truncate">{{ pkg.name }}</p><p class="text-xs truncate secondary">{{ pkg.domain }}</p></div>
+            <button type="button" class="shrink-0 px-2 py-1 text-xs accent rounded-md tab" :disabled="busy() !== '' || packageChanging(pkg.domain)" @click="changePackage('pantry:install', pkg.domain)">Install</button>
+          </div>
+        @endforeach
+        @if(!matches().length)
+          <p class="secondary">No catalog matches.</p>
+        @endif
+      @endif
+      @if(packageJobs().length)
+        <h2 class="mb-2 mt-3 font-semibold text-sm">Activity</h2>
+        @foreach(packageJobs().slice(0, 3) as job)
+          <p class="flex gap-2 justify-between text-xs secondary" :title="job.error || ''"><span class="truncate">{{ job.domain }}</span><span>{{ job.status }}</span></p>
+        @endforeach
+      @endif
+      <h2 class="mb-2 mt-3 font-semibold text-sm">Installed</h2>
+      @foreach(installed() as pkg)
+        <div class="flex gap-2 items-center justify-between px-2 py-1 border-b line">
+          <p class="min-w-0 truncate" :title="pkg.name">{{ pkg.name }} <span class="text-xs secondary">{{ pkg.version }}</span></p>
+          @if(pantry()?.removal && pkg.managed)
+            @if(removal() === pkg.name)
+              <button type="button" class="shrink-0 px-2 py-1 text-xs rounded-md plain" @click="removal.set('')">Cancel</button>
+              <button type="button" class="shrink-0 px-2 py-1 text-xs rounded-md issue plain" :disabled="busy() !== '' || packageChanging(pkg.name)" @click="changePackage('pantry:uninstall', pkg.name)">Confirm</button>
+            @else
+              <button type="button" class="shrink-0 px-2 py-1 text-xs rounded-md plain secondary" :aria-label="'Remove ' + pkg.name" @click="removal.set(pkg.name)">Remove</button>
+            @endif
+          @endif
+        </div>
+      @endforeach
+      @if(!installed().length)
+        <p class="secondary">No installed packages match.</p>
+      @endif
+      <button type="button" class="mt-3 px-2 py-1 text-xs rounded-md plain secondary" :disabled="busy() !== ''" @click="pantryAction({ action: 'pantry:disconnect' })">Disconnect Pantry</button>
+    @endif
+  @else
     @if(unavailable())
       <p class="py-3 secondary" role="status">Buddy’s local connection was interrupted. Refresh to reconnect.</p>
     @elseif(snapshot())
+      @if(system())
+        <section aria-label="System usage" class="grid gap-2 grid-cols-2 mb-3">
+          <div class="p-2 border rounded-xl line surface">
+            <p class="flex items-center justify-between mb-1"><span class="text-xs secondary">CPU</span><strong>{{ system()?.cpu == null ? '—' : system()?.cpu + '%' }}</strong></p>
+            <progress class="meter" aria-label="CPU utilization" max="100" :value="system()?.cpu ?? 0"></progress>
+          </div>
+          <div class="p-2 border rounded-xl line surface">
+            <p class="flex items-center justify-between mb-1" :title="system()?.memory.raw ? 'RAM in use, including cache' : 'Active, wired, and compressed memory'"><span class="text-xs secondary">RAM</span><strong>{{ gib(system()?.memory.used ?? 0) }} / {{ gib(system()?.memory.total ?? 0) }} GiB</strong></p>
+            <progress class="meter" aria-label="Memory in use" :max="system()?.memory.total" :value="system()?.memory.used"></progress>
+          </div>
+        </section>
+      @endif
       @if(!snapshot()?.online)
         <button type="button" class="mb-3 px-3 py-2 font-medium accent rounded-lg plain" :disabled="busy() !== ''" @click="perform('start')">Start daemon</button>
       @endif
@@ -198,6 +371,7 @@ onDestroy(() => {
     @else
       <p class="py-3 secondary" role="status">Loading projects…</p>
     @endif
+  @endif
   </div>
 
   <footer class="flex gap-3 items-center justify-between shrink-0 px-4 py-2 border-t line">

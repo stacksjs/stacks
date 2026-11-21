@@ -131,6 +131,8 @@ The top of the dashboard sidebar shows the project you are looking at. Click it 
 
 With Craft installed, run `buddy tray` from any directory. Click the Buddy menu-bar icon to check what the daemon is watching, find a registered project, or open its dashboard. Buddy uses Craft’s native popover and supports the system’s light and dark appearance.
 
+Overview shows CPU utilization and active, wired, and compressed RAM while the popover is open. The Pantry view shows installed packages, searches the local Pantry catalog, and follows install and removal jobs. Run `pantry desktop setup --yes` to enable the bridge, then pair in Buddy using the code from `pantry desktop pair`. Buddy stores its Pantry connection in the macOS Keychain. Pantry manages the packages in your user account and handles removal of the packages it owns.
+
 When generated changes await approval, **Review** opens the project’s review command in Terminal. Read the diff and respond to the confirmation there. The menu includes **Start daemon** when Buddy is offline. **Quit Buddy** closes the menu-bar app while the daemon continues watching projects.
 
 ## Buddy in the background

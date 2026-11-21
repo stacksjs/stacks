@@ -17,6 +17,11 @@ describe('system tray menu', () => {
     })).toEqual(['/usr/bin/true', url, '--title', 'Buddy', '--width', '376', '--height', '488', '--no-devtools', '--tray-popover'])
   })
 
+  test('loads a private HTML file without putting its content in Craft arguments', () => {
+    expect(craftDevCommand(8081, { craftBin: '/usr/bin/true', htmlFile: '/tmp/Buddy Tray/index.html', trayPopover: true }))
+      .toEqual(['/usr/bin/true', '--html-file', '/tmp/Buddy Tray/index.html', '--title', 'Stacks', '--width', '1400', '--height', '900', '--hot-reload', '--tray-popover'])
+  })
+
   test('includes every global shortcut', () => {
     const menu = buildTrayMenu(['/tmp/example'])
     const actions = menu.flatMap(item => item.action || [])

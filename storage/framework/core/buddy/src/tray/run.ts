@@ -1,6 +1,6 @@
 import type { RegisteredProject } from '@stacksjs/path'
 import { randomUUID } from 'node:crypto'
-import { accessSync, constants, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { accessSync, constants, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { daemonStatus, openProjectDashboard, startDaemon } from '@stacksjs/actions/daemon/client'
@@ -10,6 +10,8 @@ import { craftDevCommand, resolveCraftExecutable } from '@stacksjs/desktop-build
 import { isCompiledBinary, listProjects, projectCliEntry } from '@stacksjs/path'
 import { generateCss, renderTemplateString } from '@stacksjs/stx'
 import { createTrayApi } from './api'
+import { createTrayPantry } from './pantry'
+import { createSystemSampler } from './system'
 import view from './view.stx' with { type: 'text' }
 
 function shellArgument(value: string): string {
@@ -80,35 +82,34 @@ async function launchTray(craft: string): Promise<void> {
     dashboard: async ({ path }) => openMac((await openProjectDashboard(path)).url),
     review: openReview,
     quit: () => setTimeout(quit, 50),
-  })
+    system: createSystemSampler(),
+    pantry: createTrayPantry(),
+  }, 'http://localhost') // Craft uses this base origin for inline HTML.
   const server = Bun.serve({
     hostname: '127.0.0.1',
     port: 0,
     maxRequestBodySize: 4096,
     fetch(request, server) {
       const url = new URL(request.url)
-      if (url.pathname.startsWith('/api/'))
-        return api(request, server.url.origin)
-      if (url.pathname !== '/' || request.method !== 'GET')
-        return new Response('Not found', { status: 404 })
-      return new Response(document, {
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8',
-          'Content-Security-Policy': "default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
-          'Cache-Control': 'no-store',
-          'X-Content-Type-Options': 'nosniff',
-        },
-      })
+      return url.pathname.startsWith('/api/') ? api(request, server.url.origin) : new Response('Not found', { status: 404 })
     },
   })
   process.once('SIGINT', quit)
   process.once('SIGTERM', quit)
+  let directory: string | undefined
   try {
-    const url = new URL(server.url)
-    url.hash = token
+    directory = mkdtempSync(daemonDir('tray-window-'))
+    const htmlFile = join(directory, 'index.html')
+    const origin = server.url.origin
+    const policy = `default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' blob:; style-src 'unsafe-inline'; img-src data:; connect-src ${origin}; base-uri 'none'; form-action 'none'`
+    const launch = JSON.stringify({ origin, token })
+    const head = `<head><meta http-equiv="Content-Security-Policy" content="${policy}"><script>globalThis.buddyTray = ${launch}</script>`
+    // Other local users can see process arguments. Give Craft a private file
+    // instead of putting the capability in a URL on its command line.
+    writeFileSync(htmlFile, document.replace('<head>', head), { flag: 'wx', mode: 0o600 })
     const command = craftDevCommand(server.port!, {
       craftBin: craft,
-      url: url.href,
+      htmlFile,
       title: 'Buddy',
       width: 376,
       height: 488,
@@ -116,8 +117,7 @@ async function launchTray(craft: string): Promise<void> {
       hotReload: false,
       devTools: false,
     })
-    // Craft logs the launch URL, including its private fragment.
-    child = Bun.spawn(command, { stdin: 'ignore', stdout: 'ignore', stderr: 'ignore' })
+    child = Bun.spawn(command, { stdin: 'ignore', stdout: 'ignore', stderr: 'inherit' })
     const code = await child.exited
     if (code !== 0 && child.signalCode === null)
       throw new Error(`Craft exited with status ${code}. Use a Craft build with --tray-popover support.`)
@@ -126,6 +126,7 @@ async function launchTray(craft: string): Promise<void> {
     process.off('SIGINT', quit)
     process.off('SIGTERM', quit)
     await server.stop(true)
+    if (directory) rmSync(directory, { recursive: true, force: true })
   }
 }
 

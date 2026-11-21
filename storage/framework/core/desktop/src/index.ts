@@ -62,6 +62,7 @@ export interface Desktop {
 
 export interface OpenDevWindowOptions {
   url?: string
+  htmlFile?: string
   title?: string
   width?: number
   height?: number
@@ -381,7 +382,7 @@ export function resolveDevWindowUrl(port: number, options: OpenDevWindowOptions 
 export function craftDevCommand(port: number, options: OpenDevWindowOptions = {}): string[] {
   const command = [
     resolveCraftBinary(options.craftBin),
-    resolveDevWindowUrl(port, options),
+    ...(options.htmlFile ? ['--html-file', options.htmlFile] : [resolveDevWindowUrl(port, options)]),
     '--title',
     options.title || 'Stacks',
     '--width',
