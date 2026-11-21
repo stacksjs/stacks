@@ -289,8 +289,9 @@ so treat any page the window can navigate to as able to call those.
 ### Bun executables for the Mac App Store
 
 App Review can reject a compiled Bun helper that imports Apple's system ICU library.
-Buddy checks every Mach-O executable for that dependency before producing a Store
-installer. `DESKTOP_BUN_EXECUTABLE` sets the Bun runtime embedded by the launcher
+Buddy checks every Mach-O executable for that dependency and verifies that its
+deployment target is compatible with the app's declared minimum macOS version
+before producing a Store installer. `DESKTOP_BUN_EXECUTABLE` sets the Bun runtime embedded by the launcher
 and Buddy webview builders. For an stx native backend that uses Bun's own executable
 as the compile runtime, put the patched Bun build first on `PATH` when running Buddy.
 
@@ -317,8 +318,9 @@ git clone --depth 1 --branch bun-v1.4.4 https://github.com/oven-sh/bun.git
 cd bun
 git apply /absolute/path/to/bun-static-icu.patch
 BUN_TOOLCHAIN_LLVM=/absolute/path/to/llvm-23.1.1 RUSTUP_TOOLCHAIN=nightly-2026-09-15 \
-  bun scripts/build.ts --profile=release -j6
+  bun scripts/build.ts --profile=release --osxDeploymentTarget=13.0 -j6
 otool -L build/release/bun
+vtool -show-build build/release/bun
 build/release/bun -e 'console.log(process.versions.icu, new Intl.Collator("de").compare("ä", "z"))'
 ```
 

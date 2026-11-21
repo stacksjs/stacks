@@ -20,6 +20,7 @@ import {
   resolveAppleDesktopConfig,
   signingPlan,
   storeRejectionFindings,
+  unsupportedMacosTarget,
   validateAppleDesktopConfig,
   withApiKeyFile,
   withKeychainIdentities,
@@ -40,6 +41,19 @@ const config = {
   apiIssuerId: 'issuer-id',
   apiKeyPath: '/tmp/AuthKey_KEY123.p8',
 }
+
+describe('Mach-O deployment targets', () => {
+  it('checks every architecture against the advertised macOS minimum', () => {
+    expect(unsupportedMacosTarget('    minos 13.0\n    minos 27.0\n', '15.0')).toBe('27.0')
+    expect(unsupportedMacosTarget('    minos 15.0\n    minos 13.0\n', '15.0')).toBeUndefined()
+  })
+
+  it('checks older load commands and compares version components numerically', () => {
+    const legacy = '      cmd LC_VERSION_MIN_MACOSX\n  cmdsize 16\n  version 15.10\n      sdk 27.2\n'
+    expect(unsupportedMacosTarget(legacy, '15.9')).toBe('15.10')
+    expect(unsupportedMacosTarget(legacy, '15.10.0')).toBeUndefined()
+  })
+})
 
 describe('Mac App Store desktop automation', () => {
   test('renders escaped bundle metadata', () => {

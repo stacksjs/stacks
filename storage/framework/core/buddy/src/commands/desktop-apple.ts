@@ -843,7 +843,7 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
   command(['codesign', '--verify', '--deep', '--strict', '--verbose=2', appPath])
   command(['codesign', '-d', '--entitlements', '-', '--xml', appPath])
 
-  await verifyStoreBundle(appPath, 'stacks-desktop')
+  await verifyStoreBundle(appPath, 'stacks-desktop', config.minimumMacos)
   return finishPackage(config, appPath, appleDir, {
     architectures,
     craft: {
@@ -910,14 +910,27 @@ async function packageLocalLauncher(config: AppleDesktopConfig, local: NonNullab
   })) command(args)
   command(['codesign', '--verify', '--deep', '--strict', app])
   if (sandboxCheck) return app
-  await verifyStoreBundle(app, executable)
+  await verifyStoreBundle(app, executable, config.minimumMacos)
   return finishPackage(config, app, appleDir, {
     architectures: [process.arch === 'x64' ? 'x86_64' : process.arch],
     craft: { kind: 'app-store-host', sha256: sha256(runtime) },
   })
 }
 
-async function verifyStoreBundle(app: string, executable: string): Promise<void> {
+export function unsupportedMacosTarget(loadCommands: string, minimumMacos: string): string | undefined {
+  const declared = minimumMacos.split('.').map(Number)
+  const targets = loadCommands.matchAll(/^\s*(?:minos\s+|cmd LC_VERSION_MIN_MACOSX\s*\n\s*cmdsize \d+\s*\n\s*version\s+)(\d+(?:\.\d+){0,2})\s*$/gm)
+  for (const [, target] of targets) {
+    const components = target.split('.').map(Number)
+    for (let i = 0; i < Math.max(components.length, declared.length); i++) {
+      const difference = (components[i] ?? 0) - (declared[i] ?? 0)
+      if (difference > 0) return target
+      if (difference < 0) break
+    }
+  }
+}
+
+async function verifyStoreBundle(app: string, executable: string, minimumMacos: string): Promise<void> {
   const { bundleDirectoryFor } = await import('@stacksjs/desktop-build')
   const files = bundleFiles(app)
   const findings = storeRejectionFindings(files, executable)
@@ -928,6 +941,11 @@ async function verifyStoreBundle(app: string, executable: string): Promise<void>
     if (deps.exitCode !== 0) throw new Error(`Could not inspect the Mach-O dependencies of ${file}`)
     if (/^\s+\/usr\/lib\/libicucore(?:\.[^\s]+)?\.dylib\s/m.test(deps.stdout.toString()))
       findings.push(`${file} links Apple's system ICU library, which App Review flagged. Build with a Bun runtime linked to upstream ICU.`)
+    const commands = Bun.spawnSync(['/usr/bin/otool', '-l', path], { stdout: 'pipe', stderr: 'pipe' })
+    if (commands.exitCode !== 0) throw new Error(`Could not inspect the Mach-O deployment target of ${file}`)
+    const target = unsupportedMacosTarget(commands.stdout.toString(), minimumMacos)
+    if (target)
+      findings.push(`${file} requires macOS ${target}, later than the app's declared minimum macOS ${minimumMacos}.`)
   }
   if (findings.length) throw new Error(`The app bundle failed Store preflight:\n${findings.map(finding => `  - ${finding}`).join('\n')}`)
 }
@@ -959,7 +977,7 @@ async function packageNativeApple(config: AppleDesktopConfig, native: ResolvedMa
   })
   for (const note of assembled.notes) await log.warn(note)
   command(['codesign', '-d', '--entitlements', '-', '--xml', assembled.appPath])
-  await verifyStoreBundle(assembled.appPath, store.executable)
+  await verifyStoreBundle(assembled.appPath, store.executable, config.minimumMacos)
   return finishPackage(config, assembled.appPath, appleDir, {
     architectures: [process.arch === 'x64' ? 'x86_64' : process.arch],
     craft: { kind: 'native-appkit', hostKey: prepared.hostKey, sha256: sha256(prepared.host) },
