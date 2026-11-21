@@ -1,6 +1,7 @@
-import { dirname } from 'node:path'
+import { lstatSync, realpathSync, renameSync } from 'node:fs'
+import { dirname, isAbsolute, join, normalize, sep } from 'node:path'
 import process from 'node:process'
-import { command, envValues } from './io'
+import { command, envValues, withScratch } from './io'
 
 export interface ResticSnapshot {
   id: string
@@ -40,6 +41,23 @@ export class ResticArchive {
       output: destination,
       timeoutMs: 6 * 3_600_000,
       interruptOnTimeout: true,
+    })
+  }
+
+  async restoreVerifiedFile(snapshot: string, path: string, destination: string): Promise<void> {
+    if (!isAbsolute(path))
+      throw new Error('The Restic file path must be absolute')
+    const archivePath = normalize(path)
+    const include = archivePath.replace(/[\\*?()[\]{}]/g, '\\$&')
+    // Restic's file restore fetches the needed packs in parallel and verifies
+    // the extracted file. This avoids a stalled range read blocking the
+    // entire sequential dump stream during large database drills.
+    await withScratch(join(dirname(destination), '.restic-'), async (scratch) => {
+      await this.run('restore', snapshot, '--include', include, '--target', scratch, '--verify')
+      const restored = join(scratch, archivePath)
+      if (!lstatSync(restored, { throwIfNoEntry: false })?.isFile() || !realpathSync(restored).startsWith(realpathSync(scratch) + sep))
+        throw new Error('Restic did not restore the requested file')
+      renameSync(restored, destination)
     })
   }
 }

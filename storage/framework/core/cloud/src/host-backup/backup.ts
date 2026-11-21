@@ -68,7 +68,7 @@ async function mysqlDump(root: string, target: string, source: MysqlSource): Pro
   })
 }
 
-type Archive = Pick<ResticArchive, 'run' | 'restore' | 'snapshots'>
+type Archive = Pick<ResticArchive, 'run' | 'restore' | 'restoreVerifiedFile' | 'snapshots'>
 
 interface BackupOptions {
   check?: boolean
@@ -191,14 +191,14 @@ async function recoveryDrill(inventory: BackupInventory, archives: Record<string
       for (const database of postgres) {
         await withScratch(join(directory, 'host-drill-'), async (scratch) => {
           const dump = join(scratch, 'database.dump')
-          await archive.restore(snapshot.id, join(root, `${databaseName(database)}.dump`), dump)
+          await archive.restoreVerifiedFile(snapshot.id, join(root, `${databaseName(database)}.dump`), dump)
           await postgresRecovery(dump, directory)
         })
       }
       for (const { source, index } of mysql) {
         await withScratch(join(directory, 'host-drill-'), async (scratch) => {
           const dump = join(scratch, 'database.sql')
-          await archive.restore(snapshot.id, join(root, `mysql-${index}-${databaseName(source.database)}.sql`), dump)
+          await archive.restoreVerifiedFile(snapshot.id, join(root, `mysql-${index}-${databaseName(source.database)}.sql`), dump)
           await mysqlRecovery(dump, source.database, source.binary, directory)
         })
       }

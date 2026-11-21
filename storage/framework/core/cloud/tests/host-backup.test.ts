@@ -60,6 +60,12 @@ test.skipIf(!Bun.which('restic') || !Bun.which('sqlite3'))('backs up and restore
       first: { restore_verified: true },
       second: { restore_verified: true },
     })
+    const archive = new ResticArchive(repositories.first!, 'first')
+    const [snapshot] = await archive.snapshots('--tag', 'app-daily,project:fixture')
+    const target = join(root, 'verified.sqlite')
+    await archive.restoreVerifiedFile(snapshot!.id, join(root, 'stage/fixture/databases/0-source.sqlite'), target)
+    using recovered = new Database(target, { readonly: true })
+    expect(recovered.query('SELECT body FROM messages').get()).toEqual({ body: 'durable' })
   })
 }, 60_000)
 
@@ -103,6 +109,9 @@ test('retry backs up missing, stale and failed groups and verifies each provider
         return '{"message_type":"summary","snapshot_id":"new-id"}'
       },
       async restore(_snapshot: string, path: string, to: string) {
+        copyFileSync(path, to)
+      },
+      async restoreVerifiedFile(_snapshot: string, path: string, to: string) {
         copyFileSync(path, to)
       },
       async snapshots() {
