@@ -1426,6 +1426,7 @@ Build, sandbox, sign, and package a Mac App Store desktop app
 | `--craft-arm64` | Thin arm64 Craft runtime for --universal (or CRAFT_BIN_ARM64) | value, required | - |
 | `--craft-x64` | Thin x86_64 Craft runtime for --universal (or CRAFT_BIN_X64) | value, required | - |
 | `--keychain` | Sign with identities from this keychain file only (or APPLE_KEYCHAIN) | value, required | - |
+| `--sandbox-check` | Make a locally signed sandboxed app for testing a configured launcher | boolean, optional | - |
 
 ### `desktop:apple:provision`
 
