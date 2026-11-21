@@ -40,8 +40,5 @@
     "dev": "../../../../../buddy dev:components",
     "build": "bun build.ts",
     "prepublishOnly": "bun run build"
-  },
-  "devDependencies": {
-    "stacks": "workspace:*"
   }
 }

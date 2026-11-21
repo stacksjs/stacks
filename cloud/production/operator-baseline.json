@@ -1,0 +1,27 @@
+{
+  "host-backup.py": {
+    "target": "/usr/local/sbin/host-backup.py",
+    "baseline": "bb46505bf0c110c63d61322ceac394aa296a8cc61dbff6fcf8c978ca47274766",
+    "reviewed": "f5b58deb8ec490beb19ab3f57e2b26a7ea07b5338cf470219189978c2dab1f76"
+  },
+  "mail-backup.sh": {
+    "target": "/opt/mail/backup.sh",
+    "baseline": "3c90b0f04145e03adc6fc00129da45710da1b11e0c9dd7d917bf9a820588ec86",
+    "reviewed": "15a9d0262e0073bc968114f57cbdfb743fc81346252c89a441a3ba2092a0ca3f"
+  },
+  "mail-restic-backup": {
+    "target": "/usr/local/sbin/mail-restic-backup",
+    "baseline": "d2cfbab4e8de515b9564d2c3289a22b9b16b9021bc58942e271034eab5567599",
+    "reviewed": "00b99318b39b3ac51cc03425e09af3b3719949b9b85bf551c6179062301fbda1"
+  },
+  "mail-host-maintenance": {
+    "target": "/usr/local/sbin/mail-host-maintenance",
+    "baseline": "62843367c78a07ffbfbb4cf7e93f646a0fe495908bd64ab3c8ab990411080172",
+    "reviewed": "21e89b9dab64fe3a45c5c34c7defd49047ab4be645e73f6b28cbe509c8a8656f"
+  },
+  "configure-host-backup.py": {
+    "target": "/usr/local/sbin/configure-host-backup.py",
+    "baseline": "20f4d76e12f773850cec8f20905c089934b7ada7dfbd40f1ba75e9c0fc7a6f82",
+    "reviewed": "f45b9a74da6f1c91b2330507590ab537a3ee37de8b72b205e65c1f8e98b1a395"
+  }
+}

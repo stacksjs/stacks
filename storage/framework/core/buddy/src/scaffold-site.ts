@@ -104,11 +104,11 @@ export const SITE_ONLY_PATHS: readonly string[] = [
   'public/images/logos/visa.svgz',
 
   // The operations of the machine stacksjs.com runs on, and the framework's
-  // own release gate. `ops/production` backs up and restores that one host by
+  // own release gate. `cloud/production` backs up and restores that one host by
   // name. `.reviewos/workflows` runs `.github/scripts/source-release-evidence.ts`
   // on a self-hosted `stacks-release` runner, and `buddy new` replaces
   // `.github` with the app's own workflows, so the script is not even there.
-  'ops',
+  'cloud/production',
   '.reviewos',
 
   // The desktop-OS demo.
@@ -152,7 +152,8 @@ export function applyAppSiteTemplate(root: string): string[] {
     throw new Error(`No app site template at ${APP_SITE_TEMPLATE}`)
 
   const removed: string[] = []
-  for (const relative of SITE_ONLY_PATHS) {
+  // Older template refs stored the same shared-host assets at the root.
+  for (const relative of [...SITE_ONLY_PATHS, 'ops']) {
     const target = join(root, relative)
     if (!existsSync(target))
       continue
@@ -185,7 +186,7 @@ const KEPT_ROOTS = new Set(['resources', 'public'])
  *
  * `scaffold-site.test.ts` holds this against the repository: a top-level path
  * committed here later is either added to this list, because an app wants it,
- * or to one of the lists that remove it. `ops/` and `.reviewos/` reached every
+ * or to one of the lists that remove it. Host operations and `.reviewos/` reached every
  * new app because nothing asked that question.
  */
 export const APP_TOP_LEVEL: readonly string[] = [

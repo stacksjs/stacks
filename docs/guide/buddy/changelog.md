@@ -144,21 +144,19 @@ Breaking changes are highlighted prominently:
 
 ## Configuration
 
-Changelog generation can be configured in your project:
+Set project defaults in `config/changelog.ts`.
 
 ```typescript
-// config/changelog.ts
+import type { LogsmithOptions } from '@stacksjs/logsmith'
+
 export default {
-  // Sections to include
-  sections: ['Added', 'Fixed', 'Changed', 'Removed'],
-
-  // Skip certain types
-  skipTypes: ['chore', 'ci'],
-
-  // Custom header
-  header: '# Project Changelog\n\nAll notable changes are documented here.',
-}
+  repo: 'https://github.com/acme/example',
+  excludeCommitTypes: ['chore', 'ci'],
+} satisfies LogsmithOptions
 ```
+
+Explicit command options take precedence. Existing projects can still use
+their Logsmith config file.
 
 ## Workflow Integration
 

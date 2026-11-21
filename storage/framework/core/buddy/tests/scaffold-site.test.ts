@@ -12,7 +12,7 @@
 // matching `SITE_ONLY_PATHS` entry fails here rather than in someone's deploy.
 
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
-import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, relative } from 'node:path'
 import { FRAMEWORK_ONLY_PATHS } from '../src/scaffold-package-app'
@@ -39,7 +39,7 @@ let removed: string[]
 
 beforeAll(() => {
   app = mkdtempSync(join(tmpdir(), 'stacks-scaffold-site-'))
-  for (const dir of ['resources', 'public', 'docs', 'content', 'ops', '.reviewos', APP_SITE_TEMPLATE])
+  for (const dir of ['resources', 'public', 'docs', 'content', 'cloud/production', '.reviewos', APP_SITE_TEMPLATE])
     cpSync(join(REPO, dir), join(app, dir), { recursive: true })
 
   removed = applyAppSiteTemplate(app)
@@ -233,7 +233,7 @@ describe('the site-only list', () => {
 
 describe('the template\'s top level', () => {
   test('every committed path is kept on purpose or removed by a named step', () => {
-    // `ops/production` (the stacksjs.com host's backup operators) and
+    // `cloud/production` (the stacksjs.com host's backup operators) and
     // `.reviewos/` (the framework's release gate) shipped in every new app,
     // found scaffolding cursio: nothing listed what an app is meant to keep.
     const listed = Bun.spawnSync(['git', 'ls-tree', '--name-only', 'HEAD'], { cwd: REPO, stdout: 'pipe', stderr: 'pipe' })
@@ -271,8 +271,14 @@ describe('the template\'s top level', () => {
   })
 
   test('the framework host\'s operations and release gate do not ship', () => {
-    expect(existsSync(join(app, 'ops'))).toBe(false)
+    expect(existsSync(join(app, 'cloud/production'))).toBe(false)
     expect(existsSync(join(app, '.reviewos'))).toBe(false)
+  })
+
+  test('removes the legacy host operations directory from older templates', () => {
+    mkdirSync(join(app, 'ops/production'), { recursive: true })
+    expect(applyAppSiteTemplate(app)).toContain('ops')
+    expect(existsSync(join(app, 'ops'))).toBe(false)
   })
 })
 

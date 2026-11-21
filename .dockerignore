@@ -3,6 +3,8 @@
 .claude
 .idea
 .vscode
+.qb
+**/.qb
 node_modules
 pantry
 storage/logs

@@ -39,7 +39,7 @@ export const FRAMEWORK_ONLY_PATHS = [
   'bench',
   // Its only setting is `repo: stacksjs/stacks`, which pointed every app's
   // changelog links at the framework. logsmith reads the repo from git without it.
-  'logsmith.config.ts',
+  'config/changelog.ts',
   'storage/framework/tsconfig.framework.json',
   'storage/framework/tsconfig.defaults.json',
   'storage/framework/tsconfig.type-tests.json',
@@ -61,7 +61,7 @@ export const FRAMEWORK_ONLY_PATHS = [
 /** Remove {@link FRAMEWORK_ONLY_PATHS}; returns the ones that were there. */
 export function pruneFrameworkOnlyFiles(root: string): string[] {
   const removed: string[] = []
-  for (const path of FRAMEWORK_ONLY_PATHS) {
+  for (const path of [...FRAMEWORK_ONLY_PATHS, 'logsmith.config.ts']) {
     const full = join(root, path)
     if (!existsSync(full))
       continue

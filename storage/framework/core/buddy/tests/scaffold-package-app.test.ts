@@ -14,6 +14,7 @@ import {
   defaultsSpecifier,
   FRAMEWORK_ONLY_PATHS,
   ignoreDefaults,
+  pruneFrameworkOnlyFiles,
   rewriteDefaultsImports,
   rewriteCoreContentPaths,
   rewriteDefaultsModulePaths,
@@ -43,6 +44,12 @@ function write(path: string, contents: string): void {
 }
 
 describe('framework-only files', () => {
+  test('strips the framework changelog repository from current and older templates', () => {
+    copy('config/changelog.ts')
+    write('logsmith.config.ts', 'export default { repo: "stacksjs/stacks" }')
+    expect(pruneFrameworkOnlyFiles(app)).toEqual(['config/changelog.ts', 'logsmith.config.ts'])
+  })
+
   test('every listed path still exists in the repository', () => {
     // A path that moved would silently start shipping to apps again.
     expect(FRAMEWORK_ONLY_PATHS.filter(path => !existsSync(join(REPO, path)))).toEqual([])

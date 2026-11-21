@@ -62,9 +62,9 @@ redefine those behaviors.
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/stacksjs/stacks)
 
-A Codespace provisions Pantry, installs dependencies, runs `buddy setup` and
-forwards the dev ports, so `./buddy dev` works on first open. Nothing to
-install locally.
+The root `.devcontainer/` configures GitHub Codespaces and the VS Code Dev
+Containers extension. It provisions Pantry, installs dependencies, runs
+`buddy setup` and forwards the dev ports so `./buddy dev` works on first open.
 
 ### On your machine
 

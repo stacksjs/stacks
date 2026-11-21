@@ -181,10 +181,10 @@ export function originRepository(cwd: string): GitHubRepository | null {
 
 /** The commits between the previous tag and `tag`, as logsmith renders them. */
 export async function releaseNotes(options: { cwd: string, tag: string, from?: string, repository: GitHubRepository }): Promise<string> {
-  const { generateChangelog, loadLogsmithConfig } = await import('@stacksjs/logsmith')
+  const { generateChangelog } = await import('@stacksjs/logsmith')
+  const { loadChangelogConfig } = await import('./changelog-config')
   const repoUrl = `https://github.com/${options.repository.owner}/${options.repository.repo}`
-  const config = await loadLogsmithConfig({
-    dir: options.cwd,
+  const config = await loadChangelogConfig(options.cwd, {
     from: options.from,
     to: options.tag,
     output: false,

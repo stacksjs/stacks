@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 import { execSync, log, parseOptions } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
-import { generateChangelog, loadLogsmithConfig } from '@stacksjs/logsmith'
+import { generateChangelog } from '@stacksjs/logsmith'
+import { loadChangelogConfig } from './changelog-config'
 
 type ChangelogOptions = {
   dryRun?: boolean
@@ -25,7 +26,8 @@ const sanitizeRevision = (revision: string): string => {
 // when log.debug is used, only log to file in production
 log.debug('Generating changelog')
 const options = parseOptions() as ChangelogOptions | undefined
-const fromRevision = sanitizeRevision(options?.from?.toString() ?? await execSync('git describe --abbrev=0 --tags HEAD^').catch(() => ''))
+const previousTag = options?.from?.toString() ?? await execSync('git describe --abbrev=0 --tags HEAD^').catch(() => '')
+const fromRevision = previousTag ? sanitizeRevision(previousTag) : undefined
 log.debug('FromRevision', fromRevision)
 const toRevision = sanitizeRevision(options?.to?.toString() ?? 'HEAD')
 log.debug('ToRevision', toRevision)
@@ -42,9 +44,8 @@ const isDryRun = options?.dryRun === true
 // Generate through logsmith's SDK rather than shelling out to changelogen. The
 // `github` theme matches the repo's committed changelog style; on a dry run we
 // render to the console (`output: false`) instead of writing the file.
-const config = await loadLogsmithConfig({
-  dir: projectPath(),
-  from: fromRevision || undefined,
+const config = await loadChangelogConfig(projectPath(), {
+  from: fromRevision,
   to: toRevision,
   output: isDryRun ? false : 'CHANGELOG.md',
   theme: 'github',

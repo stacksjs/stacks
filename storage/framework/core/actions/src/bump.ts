@@ -8,9 +8,10 @@ import { pantryLockViolations } from './pantry-lock'
 import { resolvePantryToolchain } from './pantry-toolchain'
 import { releasePushTarget } from './release-push-target'
 import { planNativeLibraryRelease } from './library/release-plan'
-import { generateChangelog, loadLogsmithConfig } from '@stacksjs/logsmith'
+import { generateChangelog } from '@stacksjs/logsmith'
 import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
+import { loadChangelogConfig } from './changelog-config'
 
 const options = parseOptions() as { dryRun?: boolean, bump?: string, preid?: string, verbose?: boolean, skipGithubRelease?: boolean } | undefined
 
@@ -221,8 +222,7 @@ const nextVersion = isDryRun && resolvedBumpArg && isValidVersion(resolvedBumpAr
 const latestTag = (await git(['describe', '--abbrev=0', '--tags'], p.projectPath(), { throwOnError: false }).catch(() => '')).trim()
 
 async function writeChangelog(): Promise<void> {
-  const config = await loadLogsmithConfig({
-    dir: p.projectPath(),
+  const config = await loadChangelogConfig(p.projectPath(), {
     from: latestTag || undefined,
     to: 'HEAD',
     output: isDryRun ? false : 'CHANGELOG.md',
