@@ -21,6 +21,10 @@ test('normal Stacks checks, deployment and downloaded native acceptance share an
   expect(workflow.jobs.deploy.environment).toBe('production')
   expect(workflow.jobs.native.environment).toBe('ios-testflight')
   expect(workflow.jobs.native.env.DEVELOPER_DIR).toBe(config.env.ios.DEVELOPER_DIR)
+  for (const job of Object.values(workflow.jobs) as any[]) {
+    expect(job.reviewos.checkout).toEqual({ depth: 0 })
+    expect(job.steps.some((step: any) => step.uses?.startsWith('actions/checkout@'))).toBe(false)
+  }
   for (const name of ['lint', 'typecheck', 'test', 'build']) {
     const job = workflow.jobs[name]
     expect(job.environment).toBeUndefined()

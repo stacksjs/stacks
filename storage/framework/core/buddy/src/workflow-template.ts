@@ -64,8 +64,10 @@ export function renderReviewOsWorkflow(config: WorkflowConfig): string {
     const names = nativeWorkflowSecretNames(config, step)
     return names.length ? { env: Object.fromEntries(names.map(name => [name, '${{ secrets.' + name + ' }}'])) } : {}
   }
+  // ReviewOS checks out the scoped commit before restoring dependencies and
+  // provisioning tools. A checkout action here would clean those files again.
+  const checkout = { depth: 0 }
   const bootstrap = () => [
-    { name: 'Checkout the exact source', uses: 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262', with: { 'fetch-depth': 0, 'persist-credentials': false } },
     { name: 'Set up the pinned tools', uses: 'pantry-pm/pantry/packages/action@624cd6674f8c5c2d4e4204c11ece62a00d7fac0a', with: { version: config.pantry ?? '0.11.199', install: 'false', packages: `bun.sh@${config.bun ?? '1.4.4'}` } },
     { name: 'Install the frozen application dependencies', run: 'bun install --frozen-lockfile' },
     { name: 'Prepare declared application inputs', run: './buddy workflow:step prepare' },
@@ -78,19 +80,19 @@ export function renderReviewOsWorkflow(config: WorkflowConfig): string {
   for (const name of ['lint', 'typecheck', 'test', 'build']) jobs[name] = {
     'runs-on': config.runners.checks,
     'timeout-minutes': name === 'test' ? 90 : 30,
-    reviewos: { ...jobPriority('checks'), secrets: config.secrets?.checks ?? [] }, env: { ...config.env?.checks, ...secretEnv('checks') },
+    reviewos: { checkout, ...jobPriority('checks'), secrets: config.secrets?.checks ?? [] }, env: { ...config.env?.checks, ...secretEnv('checks') },
     steps: [...bootstrap(), { name: `Run ${name}`, run: `./buddy workflow:step ${name}` }],
   }
   if (config.deploy) jobs.deploy = {
     needs: ['lint', 'typecheck', 'test', 'build'], if: main,
     'runs-on': config.runners.deploy, 'timeout-minutes': 60, environment: 'production',
-    reviewos: { ...jobPriority('deploy'), secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.deploy ?? [])] }, env: { ...config.env?.checks, ...config.env?.deploy, ...secretEnv('checks'), ...secretEnv('deploy') },
+    reviewos: { checkout, ...jobPriority('deploy'), secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.deploy ?? [])] }, env: { ...config.env?.checks, ...config.env?.deploy, ...secretEnv('checks'), ...secretEnv('deploy') },
     steps: [...bootstrap(), { name: 'Deploy the qualified source', run: './buddy workflow:step deploy' }, { name: 'Verify the deployed application', run: './buddy workflow:step after-deploy' }],
   }
   if (config.native) jobs.native = {
     needs: config.deploy ? ['deploy'] : ['lint', 'typecheck', 'test', 'build'], if: main,
     'runs-on': config.runners.ios, 'timeout-minutes': 90, environment: 'ios-testflight',
-    reviewos: { ...jobPriority('ios'), secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.ios ?? [])] }, env: { ...config.env?.checks, ...config.env?.ios, ...secretEnv('checks') },
+    reviewos: { checkout, ...jobPriority('ios'), secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.ios ?? [])] }, env: { ...config.env?.checks, ...config.env?.ios, ...secretEnv('checks') },
     steps: [...bootstrap(),
       { name: 'Read the committed release identity', id: 'release', run: './buddy workflow:release-state', env: { WORKFLOW_UPLOAD_REQUESTED: '${{ inputs.upload }}' } },
       { name: 'Validate native acceptance credentials', run: './buddy workflow:check-credentials native-accept', ...nativeSecrets('native-accept') },
