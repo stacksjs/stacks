@@ -22,6 +22,9 @@ export interface BrowserStoryOptions {
   /** Selector masks are applied before the first recorded frame, on every document. */
   masks?: string[]
   cursor?: { color?: string, size?: number, moveMs?: number, clickMs?: number }
+  /** Configure browser-level state such as HTTP authentication before the first request. */
+  beforeNavigate?: (cdp: Cdp) => Promise<void>
+  /** Prepare the application session after its first document loads, before capture. */
   prepare?: (context: BrowserStoryContext) => Promise<void>
   failOnBrowserErrors?: boolean
 }
@@ -123,6 +126,8 @@ export function browserStory(options: BrowserStoryOptions): StoryDriver<BrowserS
         async type(selector, value) { await context.click(selector); await cdp.send('Input.insertText', { text: value }) },
         async expectText(selector, text) { await waitFor(() => cdp.evaluate<boolean>(`document.querySelector(${JSON.stringify(selector)})?.textContent.includes(${JSON.stringify(text)}) ?? false`), 12000) },
       }
+      await options.beforeNavigate?.(cdp)
+      signal.throwIfAborted()
       await context.goto(base.href)
       if (options.prepare) await options.prepare(context)
       latest = Buffer.from((await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 85 })).data, 'base64')

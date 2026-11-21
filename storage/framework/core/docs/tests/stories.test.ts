@@ -1,4 +1,6 @@
 import { afterAll, expect, test } from 'bun:test'
+import { installBasicAuth } from '@stacksjs/testing/browser'
+import { browserStory } from '../src/story-drivers'
 import { mkdtemp, mkdir, rm, symlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -64,6 +66,44 @@ test.skipIf(!Bun.which('ffmpeg'))('Buddy records a real browser journey, publish
   }
   finally { server.stop(true) }
 }, 120000)
+
+test.skipIf(!Bun.which('ffmpeg'))('a gated story authenticates before its first document and prepares the origin afterward', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'story-basic-auth-'))
+  roots.push(root)
+  const authorization = 'Basic ' + btoa('reader:story-fixture')
+  const server = Bun.serve({
+    hostname: '127.0.0.1',
+    port: 0,
+    fetch(request) {
+      if (request.headers.get('Authorization') !== authorization)
+        return new Response(null, { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Story"' } })
+      if (new URL(request.url).pathname === '/favicon.ico')
+        return new Response(null, { status: 204 })
+      return new Response('<!doctype html><main><h1>Private preview</h1></main>', { headers: { 'Content-Type': 'text/html' } })
+    },
+  })
+  try {
+    const driver = browserStory({
+      baseUrl: server.url.href,
+      async beforeNavigate(cdp) {
+        await installBasicAuth(cdp, server.url.origin, 'reader', 'story-fixture')
+      },
+      async prepare({ cdp }) {
+        expect(await cdp.evaluate('location.origin')).toBe(server.url.origin)
+        await cdp.evaluate("localStorage.setItem('prepared', 'yes')")
+      },
+    })
+    const recording = await driver.open({ videoPath: join(root, 'preview.mp4'), fps: 10, signal: AbortSignal.timeout(30_000) })
+    try {
+      await recording.context.expectText('h1', 'Private preview')
+      expect(await recording.context.cdp.evaluate("localStorage.getItem('prepared')")).toBe('yes')
+      await recording.finish()
+      expect(await Bun.file(join(root, 'preview.mp4')).size).toBeGreaterThan(100)
+    }
+    finally { await recording.close() }
+  }
+  finally { server.stop(true) }
+}, 45_000)
 
 test('Buddy lists browser and native scenes without starting devices or executing story code', async () => {
   const root = await mkdtemp(join(tmpdir(), 'story-cli-')); roots.push(root)
