@@ -270,11 +270,11 @@ There are two packaging paths, and they grant different things.
 
 | | `buddy build:dmg` (direct download) | `buddy desktop:apple:package` (Mac App Store) |
 |---|---|---|
-| App Sandbox | Off. When `DESKTOP_SIGNING_IDENTITY` is set, every executable is signed with `app/Desktop/Entitlements.plist` if it exists and with no entitlements if not. | On. The bundle gets `com.apple.security.app-sandbox` and `com.apple.security.network.client`, nothing else. |
-| Craft runtime | When signing, re-signed with the launcher's entitlements, which drops the sandbox entitlement a published Craft binary arrives with. Unsigned, it keeps whatever signature it was built with. | Signed first, with only `app-sandbox` and `com.apple.security.inherit`, so it runs inside the parent's sandbox and cannot hold grants of its own. |
-| Extra capabilities | Whatever `app/Desktop/Entitlements.plist` declares. | Not configurable yet. User-selected files, camera, microphone and every other sandbox capability are not granted. |
-| Permission prompt text | `NS*UsageDescription` keys from `app/Desktop/Info.plist.json`. | Not read. The Store `Info.plist` carries no usage descriptions. |
-| Network transport | The framework launcher allows arbitrary loads, because its window opens a remote URL. An app-owned launcher gets a loopback-only exception instead. `Info.plist.json` can replace either. | Default App Transport Security, which requires HTTPS. Outbound only: listening on a port, as an app-owned launcher serving on loopback does, needs `com.apple.security.network.server`, which is not granted. |
+| App Sandbox | Off. When `DESKTOP_SIGNING_IDENTITY` is set, every executable is signed with the entitlements from `app/Desktop/Entitlements.plist` when supplied. | On. The bundle gets `com.apple.security.app-sandbox` and `com.apple.security.network.client`. |
+| Craft runtime | Signed with the launcher's entitlements when a signing identity is set. | Custom launchers use Craft's App Store runtime as the main executable. The bundled helper is signed with `com.apple.security.app-sandbox` and `com.apple.security.inherit`. |
+| Extra capabilities | Whatever `app/Desktop/Entitlements.plist` declares. | A custom launcher can request inbound connections or user-selected read-write file access in `launcher.appStore`. |
+| Permission prompt text | `NS*UsageDescription` keys from `app/Desktop/Info.plist.json`. | Custom launchers take permission prompts from the same file. |
+| Network transport | The framework launcher allows arbitrary loads for remote URLs. An app-owned launcher gets a loopback exception. | A custom launcher that runs a loopback service declares `launcher.appStore.networkServer` and binds only to loopback. Explain that path and give offline verification steps in App Review notes. |
 
 In both, the framework launcher starts Craft with `--no-devtools`, so the web inspector is
 not available in a packaged app. An app-owned launcher decides that for itself.
@@ -285,6 +285,47 @@ to it, which the framework wraps in `useCraft()`, `useWindowControls()` and
 (quit, notifications, app info), sidebar selection, and the system tray. Stacks adds no
 origin check of its own, and whether Craft limits the bridge by origin is Craft's contract,
 so treat any page the window can navigate to as able to call those.
+
+### Bun executables for the Mac App Store
+
+App Review can reject a compiled Bun helper that imports Apple's system ICU library.
+Buddy checks every Mach-O executable for that dependency before producing a Store
+installer. `DESKTOP_BUN_EXECUTABLE` sets the Bun runtime embedded by the launcher
+and Buddy webview builders. For an stx native backend that uses Bun's own executable
+as the compile runtime, put the patched Bun build first on `PATH` when running Buddy.
+
+The patched Bun 1.4.4 build below links upstream ICU 78.2 statically and keeps
+JavaScriptCore's internationalization support. On Apple Silicon macOS with Xcode
+selected, install the toolchain declared in the pinned Bun source (LLVM 23.1.1
+and Rust nightly 2026-09-15). Download `icu4c-78.2-sources.tgz` from
+[Unicode's ICU release](https://github.com/unicode-org/icu/releases/tag/release-78.2)
+and check it against that release's `SHASUM512.txt` before extracting it.
+
+```sh
+export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+mkdir icu-build
+cd icu-build
+MACOSX_DEPLOYMENT_TARGET=13.0 ../icu/source/configure \
+  --prefix="$PWD/install" --enable-static --disable-shared --disable-renaming \
+  --disable-tests --disable-samples --with-data-packaging=static
+make -j6
+make install
+export BUN_STATIC_ICU_LIB_DIR="$PWD/install/lib"
+cd ..
+
+git clone --depth 1 --branch bun-v1.4.4 https://github.com/oven-sh/bun.git
+cd bun
+git apply /absolute/path/to/bun-static-icu.patch
+BUN_TOOLCHAIN_LLVM=/absolute/path/to/llvm-23.1.1 RUSTUP_TOOLCHAIN=nightly-2026-09-15 \
+  bun scripts/build.ts --profile=release -j6
+otool -L build/release/bun
+build/release/bun -e 'console.log(process.versions.icu, new Intl.Collator("de").compare("ä", "z"))'
+```
+
+Use the [Bun build patch](./desktop/bun-static-icu.patch) for revision
+`38afee6c84`. Record the resulting executable's SHA-256 when providing it
+to CI. Ship the upstream ICU license in the application, and inspect the
+signed bundle's executables again using `otool -L` and `nm -um`.
 
 ### Storage
 

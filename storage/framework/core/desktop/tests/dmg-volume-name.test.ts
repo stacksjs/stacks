@@ -152,7 +152,7 @@ describe('build:dmg', () => {
     // `-volname appName` is the bug: it stages the bundle at
     // /Volumes/<App>/<App>.app, which macOS refuses when the app is installed.
     expect(steps).toContain(`'-volname', options.volumeName`)
-    expect(dmg).toContain('await imageDmg({ staging, volumeName, dmgPath, signingIdentity })')
+    expect(dmg).toMatch(/await imageDmg\(\{\s*staging, volumeName, dmgPath, signingIdentity\b/)
     expect(`${dmg}${steps}`).not.toContain(`'-volname', appName`)
 
     // Every packaging input arrives from one chain, so a flag and a variable

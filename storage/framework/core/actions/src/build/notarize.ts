@@ -1,4 +1,5 @@
-import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { Buffer } from 'node:buffer'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
@@ -53,6 +54,59 @@ export async function notarizeAndStaple(target: string, what: string, auth: stri
   await runBuildStep(['xcrun', 'stapler', 'staple', target], { cwd: dirname(target), describe: `Stapling the notarization ticket to ${what}` })
 }
 
+type FinderLayout = NonNullable<DesktopLauncherConfig['dmg']> & { appName: string, iconFile?: string }
+
+function finderRecord(store: Buffer, name: string, record: string): Buffer {
+  const filename = Buffer.from(name, 'utf16le').swap16()
+  const key = Buffer.alloc(12 + filename.length)
+  key.writeUInt32BE(filename.length / 2)
+  filename.copy(key, 4)
+  key.write(`${record}blob`, 4 + filename.length, 'ascii')
+  const offset = store.indexOf(key)
+  if (offset === -1) throw new Error(`Finder layout has no ${record} record for ${name}`)
+  const lengthOffset = offset + key.length
+  const dataOffset = lengthOffset + 4
+  return store.subarray(dataOffset, dataOffset + store.readUInt32BE(lengthOffset))
+}
+
+function finderPlistValue(plist: Buffer, key: string): string {
+  const result = Bun.spawnSync(['plutil', '-extract', key, 'raw', '-o', '-', '-'], { stdin: plist })
+  if (result.exitCode !== 0) throw new Error(`Could not read Finder's ${key} layout setting`)
+  return result.stdout.toString().trim()
+}
+
+async function verifyFinderLayout(dmg: string, layout: FinderLayout): Promise<void> {
+  const mount = mkdtempSync(join(tmpdir(), 'stacks-dmg-check-'))
+  let mounted = false
+  try {
+    await runBuildStep(['hdiutil', 'verify', dmg], { cwd: mount, describe: 'Verifying the disk image' })
+    await runBuildStep(['hdiutil', 'attach', dmg, '-nobrowse', '-readonly', '-mountpoint', mount], { cwd: tmpdir(), describe: 'Mounting the disk image for validation' })
+    mounted = true
+    const store = readFileSync(join(mount, '.DS_Store'))
+    const window = finderRecord(store, '.', 'bwsp')
+    const icons = finderRecord(store, '.', 'icvp')
+    if (!finderPlistValue(window, 'WindowBounds').endsWith(`{${layout.width}, ${layout.height}}}`)
+      || finderPlistValue(icons, 'backgroundType') !== '2'
+      || Number(finderPlistValue(icons, 'iconSize')) !== layout.iconSize)
+      throw new Error('Finder did not save the requested installer window size, icon size or background')
+    for (const [name, [x, y]] of [[layout.appName, layout.appPosition], ['Applications', layout.applicationsPosition]] as const) {
+      const position = finderRecord(store, name, 'Iloc')
+      if (position.readUInt32BE(0) !== x || position.readUInt32BE(4) !== y)
+        throw new Error(`Finder did not save the requested icon position for ${name}`)
+    }
+    if (readlinkSync(join(mount, 'Applications')) !== '/Applications')
+      throw new Error('Installer is missing the Applications drop target')
+    await runBuildStep(['codesign', '--verify', '--deep', '--strict', join(mount, layout.appName)], {
+      cwd: tmpdir(), describe: 'Verifying the installer application',
+    })
+  }
+  finally {
+    if (mounted)
+      await runBuildStep(['hdiutil', 'detach', mount], { cwd: tmpdir(), describe: 'Unmounting the disk image' })
+    rmSync(mount, { recursive: true, force: true })
+  }
+}
+
 /**
  * Image `staging` (which must hold only the `.app`) into `dmgPath`, with the
  * `/Applications` link every macOS DMG is expected to have, and sign the image:
@@ -64,7 +118,7 @@ export async function imageDmg(options: {
   dmgPath: string
   signingIdentity?: string
   root?: string
-  layout?: NonNullable<DesktopLauncherConfig['dmg']> & { appName: string, iconFile?: string }
+  layout?: FinderLayout
 }): Promise<void> {
   const { layout } = options
   if (layout) {
@@ -76,7 +130,7 @@ export async function imageDmg(options: {
     const executable = lookup.stdout.toString().trim()
     if (lookup.exitCode !== 0 || !executable)
       throw new Error(`Pantry could not locate create-dmg: ${lookup.stderr.toString().trim()}`)
-    await runBuildStep([
+    const args = [
       executable,
       '--volname', options.volumeName,
       ...(layout.iconFile ? ['--volicon', layout.iconFile] : []),
@@ -90,7 +144,18 @@ export async function imageDmg(options: {
       '--format', layout.format ?? 'UDZO',
       '--filesystem', 'HFS+',
       options.dmgPath, options.staging,
-    ], { cwd: root, describe: 'Packaging the styled disk image' })
+    ]
+    await runBuildStep(args, { cwd: root, describe: 'Packaging the styled disk image' })
+    try {
+      await verifyFinderLayout(options.dmgPath, layout)
+    }
+    catch (error) {
+      // Finder occasionally applies the layout without persisting the wallpaper.
+      log.warn(`${String(error)}. Rebuilding the disk image once.`)
+      rmSync(options.dmgPath, { force: true })
+      await runBuildStep(args, { cwd: root, describe: 'Rebuilding the styled disk image' })
+      await verifyFinderLayout(options.dmgPath, layout)
+    }
   }
   else {
     symlinkSync('/Applications', join(options.staging, 'Applications'))

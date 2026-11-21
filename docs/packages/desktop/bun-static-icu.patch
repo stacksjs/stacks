@@ -1,0 +1,43 @@
+diff --git a/scripts/build/binary-expectations.ts b/scripts/build/binary-expectations.ts
+index d256873a..386b782a 100644
+--- a/scripts/build/binary-expectations.ts
++++ b/scripts/build/binary-expectations.ts
+@@ -465,7 +465,7 @@ export function binaryExpectations(cfg: Config): BinaryExpectations {
+           names: [
+             "/usr/lib/libSystem.B.dylib",
+             "/usr/lib/libc++.1.dylib",
+-            "/usr/lib/libicucore.A.dylib",
++            ...(process.env.BUN_STATIC_ICU_LIB_DIR ? [] : ["/usr/lib/libicucore.A.dylib"]),
+             "/usr/lib/libresolv.9.dylib",
+           ],
+           exact: true,
+diff --git a/scripts/build/bun.ts b/scripts/build/bun.ts
+index e55cc310..ae413d19 100644
+--- a/scripts/build/bun.ts
++++ b/scripts/build/bun.ts
+@@ -12,7 +12,7 @@
+  */
+ 
+ import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync } from "node:fs";
+-import { relative, resolve, sep } from "node:path";
++import { join, relative, resolve, sep } from "node:path";
+ import type { Sources } from "../glob-sources.ts";
+ import { binaryExpectations, exportList, shimExpectations } from "./binary-expectations.ts";
+ import { emitCodegen, type CodegenOutputs } from "./codegen.ts";
+@@ -83,7 +83,15 @@ function systemLibs(cfg: Config): string[] {
+   if (cfg.darwin) {
+     // icucore: system ICU framework.
+     // resolv: DNS resolution (getaddrinfo et al).
+-    libs.push("-licucore", "-lresolv");
++    const staticIcu = process.env.BUN_STATIC_ICU_LIB_DIR;
++    if (staticIcu) {
++      for (const library of ["libicui18n.a", "libicuuc.a", "libicudata.a"]) {
++        libs.push(join(staticIcu, library));
++      }
++    } else {
++      libs.push("-licucore");
++    }
++    libs.push("-lresolv");
+   }
+ 
+   if (cfg.freebsd) {

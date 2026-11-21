@@ -287,7 +287,8 @@ const linted = Bun.spawnSync(['plutil', '-lint', infoPlistPath], { stdout: 'pipe
 if (linted.exitCode !== 0)
   throw new Error(`Generated an Info.plist that macOS cannot read: ${`${linted.stdout.toString()}${linted.stderr.toString()}`.trim()}`)
 
-if (signingIdentity) {
+const bundleSigningIdentity = signingIdentity || (local ? '-' : undefined)
+if (bundleSigningIdentity) {
   // Inside-out: every nested executable, then the launcher, then the bundle.
   // Signing the parent first invalidates its seal the moment an inner binary is
   // signed after it — and an app-owned launcher may ship several.
@@ -306,7 +307,7 @@ if (signingIdentity) {
   // still announced as signed, and the first sign that it was not came from
   // Gatekeeper on someone else's Mac.
   for (const target of [...nested, join(macosDir, launcherName), appDir]) {
-    await runBuildStep(codesignArgs({ identity: signingIdentity, target, entitlements }), {
+    await runBuildStep(codesignArgs({ identity: bundleSigningIdentity, target, entitlements }), {
       cwd: staging,
       describe: `Signing ${basename(target)}`,
     })
@@ -347,7 +348,22 @@ rmSync(staging, { recursive: true, force: true })
 
 if (notaryAuth) {
   await notarizeAndStaple(dmgPath, 'the DMG', notaryAuth, scratch)
+  await runBuildStep(['spctl', '--assess', '--type', 'open', '--context', 'context:primary-signature', dmgPath], { cwd: outputDir, describe: 'Checking the DMG with Gatekeeper' })
   log.success('Notarized and stapled')
+}
+
+if (local) {
+  const webDir = join(desktopDist, 'resources', 'web')
+  const web = { files: 0, bytes: 0 }
+  if (existsSync(webDir)) {
+    for (const entry of readdirSync(webDir, { recursive: true, withFileTypes: true })) {
+      if (!entry.isFile()) continue
+      web.files++
+      web.bytes += statSync(join(entry.parentPath, entry.name)).size
+    }
+  }
+  const compression = [{ format: local.dmg?.format ?? 'UDZO', bytes: statSync(dmgPath).size }]
+  writeFileSync(join(outputDir, 'size-report.json'), `${JSON.stringify({ web, runtimes, compression }, null, 2)}\n`)
 }
 
 if (local?.githubUpdates) {
