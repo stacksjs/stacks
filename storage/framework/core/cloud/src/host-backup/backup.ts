@@ -73,6 +73,7 @@ type Archive = Pick<ResticArchive, 'run' | 'restore' | 'snapshots'>
 interface BackupOptions {
   check?: boolean
   drill?: boolean
+  drillDirectory?: string
   retryFailed?: boolean
   preserveBackups?: boolean
   hostSources?: (project: string, root: string) => Promise<string[]>
@@ -173,7 +174,7 @@ async function backupProject(
   }
 }
 
-async function recoveryDrill(inventory: BackupInventory, archives: Record<string, Archive>, state: BackupStatus, statePath: string): Promise<void> {
+async function recoveryDrill(inventory: BackupInventory, archives: Record<string, Archive>, state: BackupStatus, statePath: string, directory: string): Promise<void> {
   const drills = state.drills ??= {}
   for (const [project, selection] of Object.entries(inventory.projects)) {
     const postgres = selection.postgres ?? []
@@ -186,23 +187,24 @@ async function recoveryDrill(inventory: BackupInventory, archives: Record<string
       const snapshot = snapshots.sort((a, b) => Date.parse(b.time) - Date.parse(a.time))[0]
       if (!snapshot)
         throw new Error(`${project}: no ${provider} recovery snapshot`)
+      console.log(`${project}: ${provider} starting restore drill (${postgres.length} PostgreSQL, ${mysql.length} Vitess)`)
       for (const database of postgres) {
-        await withScratch('/var/tmp/host-drill-', async (scratch) => {
+        await withScratch(join(directory, 'host-drill-'), async (scratch) => {
           const dump = join(scratch, 'database.dump')
           await archive.restore(snapshot.id, join(root, `${databaseName(database)}.dump`), dump)
-          await postgresRecovery(dump)
+          await postgresRecovery(dump, directory)
         })
       }
       for (const { source, index } of mysql) {
-        await withScratch('/var/tmp/host-drill-', async (scratch) => {
+        await withScratch(join(directory, 'host-drill-'), async (scratch) => {
           const dump = join(scratch, 'database.sql')
           await archive.restore(snapshot.id, join(root, `mysql-${index}-${databaseName(source.database)}.sql`), dump)
-          await mysqlRecovery(dump, source.database, source.binary)
+          await mysqlRecovery(dump, source.database, source.binary, directory)
         })
       }
       drills[`${project}:${provider}`] = epoch()
       saveJson(statePath, state)
-      console.log(`${project}: ${provider} recovered into isolated database instances`)
+      console.log(`${project}: ${provider} recovered into isolated database instances (${postgres.length} PostgreSQL, ${mysql.length} Vitess)`)
     }
   }
 }
@@ -222,7 +224,7 @@ export async function runHostBackup(
   }
   const state: BackupStatus = existsSync(statePath) ? readJson(statePath) : {}
   if (options.drill) {
-    await recoveryDrill(inventory, archives, state, statePath)
+    await recoveryDrill(inventory, archives, state, statePath, options.drillDirectory ?? '/var/tmp')
     return
   }
   if (options.check) {

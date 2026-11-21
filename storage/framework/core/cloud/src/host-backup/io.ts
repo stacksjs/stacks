@@ -72,29 +72,45 @@ interface CommandOptions {
   output?: string
   discardOutput?: boolean
   timeoutMs?: number
+  interruptOnTimeout?: boolean
   env?: Record<string, string | undefined>
 }
 
 export async function command(args: string[], options: CommandOptions = {}): Promise<string> {
   const output = options.output ? openSync(options.output, 'w', 0o600) : undefined
+  let deadline: ReturnType<typeof setTimeout> | undefined
+  let escalation: ReturnType<typeof setTimeout> | undefined
+  let timedOut = false
   try {
+    const timeout = options.timeoutMs ?? 1_200_000
     const child = Bun.spawn(args, {
       stdin: options.input ? Bun.file(options.input) : 'ignore',
       stdout: output ?? (options.discardOutput ? 'ignore' : 'pipe'),
       stderr: 'ignore',
       env: options.env,
-      timeout: options.timeoutMs ?? 1_200_000,
+      timeout: options.interruptOnTimeout ? 0 : timeout,
       killSignal: 'SIGKILL',
     })
+    if (options.interruptOnTimeout && timeout > 0) {
+      deadline = setTimeout(() => {
+        timedOut = true
+        child.kill('SIGINT')
+        escalation = setTimeout(() => child.kill('SIGKILL'), 30_000)
+      }, timeout)
+    }
     const [stdout, code] = await Promise.all([
       child.stdout && typeof child.stdout !== 'number' ? new Response(child.stdout).text() : '',
       child.exited,
     ])
+    if (timedOut)
+      throw new Error(`${basename(args[0] ?? 'command')} timed out`)
     if (code !== 0 || child.signalCode)
       throw new Error(`${basename(args[0] ?? 'command')} failed (${child.signalCode || `exit ${code}`})`)
     return stdout
   }
   finally {
+    clearTimeout(deadline)
+    clearTimeout(escalation)
     if (output !== undefined)
       closeSync(output)
   }

@@ -1,4 +1,4 @@
-import { existsSync, globSync, lstatSync, mkdirSync, realpathSync, renameSync, statSync, statfsSync, unlinkSync } from 'node:fs'
+import { existsSync, globSync, lstatSync, mkdirSync, realpathSync, renameSync, statSync, unlinkSync } from 'node:fs'
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path'
 import process from 'node:process'
 import { atomicWrite, command, requirePrivateDirectory, sqliteSnapshot, withScratch } from '../../storage/framework/core/cloud/src/host-backup/io'
@@ -105,16 +105,4 @@ export async function uploadMailBackup(runLocalBackup: () => Promise<void>): Pro
   }
   if (failures.length)
     throw new Error(`Mail backup failed on ${failures.join(', ')}. Local recovery archives are retained.`)
-}
-
-export function verifyMailHostCapacity(highWater: number): void {
-  if (!Number.isInteger(highWater) || highWater < 1 || highWater >= 100)
-    throw new Error('High-water mark must be between 1 and 99')
-  const stats = statfsSync('/')
-  const used = stats.blocks - stats.bfree
-  const usage = Math.ceil(100 * used / (used + stats.bavail))
-  console.log(`Root disk usage: ${usage}%`)
-  if (usage >= highWater)
-    throw new Error('Disk remains above high-water. Investigate live data and capacity.')
-  console.log('Capacity healthy. Data, backups, and releases are preserved.')
 }

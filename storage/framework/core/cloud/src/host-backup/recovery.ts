@@ -1,10 +1,10 @@
 import { chmodSync, copyFileSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { command, withScratch } from './io'
 import { databaseName, postgresCommand } from './inventory'
 
-export async function postgresRecovery(dump: string): Promise<void> {
-  await withScratch('/var/tmp/pg-drill-', async (scratch) => {
+export async function postgresRecovery(dump: string, workspace: string): Promise<void> {
+  await withScratch(join(workspace, 'pg-drill-'), async (scratch) => {
     const restored = join(scratch, 'database.dump')
     copyFileSync(dump, restored)
     chmodSync(restored, 0o600)
@@ -15,7 +15,7 @@ export async function postgresRecovery(dump: string): Promise<void> {
     await command([...pgCtl, '-l', join(scratch, 'postgres.log'), '-o', `-F -c listen_addresses='' -c unix_socket_directories='${scratch}' -p 55432`, '-w', 'start'])
     try {
       const connection = ['--host', scratch, '--port', '55432', '--username', 'backupcheck', '--dbname', 'postgres']
-      await command([...postgresCommand, '/usr/local/bin/pg_restore', '--no-owner', '--no-privileges', '--exit-on-error', ...connection, restored])
+      await command([...postgresCommand, '/usr/local/bin/pg_restore', '--no-owner', '--no-privileges', '--exit-on-error', ...connection, restored], { timeoutMs: 3_600_000 })
       await command([...postgresCommand, '/usr/local/bin/psql', ...connection, '-v', 'ON_ERROR_STOP=1', '-Atc', "SELECT count(*) FROM pg_class WHERE relkind='r'"])
     }
     finally {
@@ -24,11 +24,11 @@ export async function postgresRecovery(dump: string): Promise<void> {
   })
 }
 
-export async function mysqlRecovery(dump: string, name: string, binary: string): Promise<void> {
+export async function mysqlRecovery(dump: string, name: string, binary: string, workspace: string): Promise<void> {
   const database = databaseName(name)
-  const mysql = join(binary, '../mysql')
-  const server = join(binary, '../mysqld')
-  await withScratch('/var/tmp/mysql-drill-', async (scratch) => {
+  const mysql = join(dirname(binary), 'mysql')
+  const server = join(dirname(binary), 'mysqld')
+  await withScratch(join(workspace, 'mysql-drill-'), async (scratch) => {
     const data = join(scratch, 'data')
     const socket = join(scratch, 'mysql.sock')
     await command([server, '--no-defaults', '--initialize-insecure', '--user=root', `--datadir=${data}`])

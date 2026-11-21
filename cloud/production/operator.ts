@@ -1,5 +1,5 @@
 import type { BackupInventory } from '../../storage/framework/core/cloud/src/host-backup/inventory'
-import { closeSync, fsyncSync, lstatSync, mkdirSync, openSync, realpathSync, writeFileSync } from 'node:fs'
+import { chmodSync, closeSync, fsyncSync, lstatSync, mkdirSync, openSync, realpathSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
 import { parseArgs } from 'node:util'
@@ -7,10 +7,10 @@ import { runHostBackup } from '../../storage/framework/core/cloud/src/host-backu
 import { command, envValues, readJson, requirePrivateDirectory, requireRoot } from '../../storage/framework/core/cloud/src/host-backup/io'
 import { ResticArchive } from '../../storage/framework/core/cloud/src/host-backup/restic'
 import { configureInventory, deploymentsVolume, hostSources, inventoryPath } from './inventory'
-import { createMailBackup, mailBackupPaths, uploadMailBackup, verifyMailHostCapacity } from './mail'
+import { createMailBackup, mailBackupPaths, uploadMailBackup } from './mail'
+import { hostBackupLock, maintainMailHost, verifyMailHostCapacity } from './maintenance'
 
-const sharedLock = '/run/lock/host-backup.lock'
-const actions = 'host-backup, inventory, mail-backup, mail-restic-backup, mail-capacity, snapshot-record, reviewos-credentials'
+const actions = 'host-backup, inventory, mail-backup, mail-restic-backup, mail-capacity, mail-host-maintenance, snapshot-record, reviewos-credentials'
 const [operation, ...args] = process.argv.slice(2)
 const compiled = basename(process.execPath) !== 'bun'
 
@@ -86,14 +86,25 @@ async function main(): Promise<void> {
         'retry-failed': { type: 'boolean' },
         'preserve-backups': { type: 'boolean' },
       })
-      if (process.env.STACKS_HOST_LOCK !== sharedLock)
-        return lock(sharedLock)
+      if (process.env.STACKS_HOST_LOCK !== hostBackupLock)
+        return lock(hostBackupLock)
       const inventory = readJson<BackupInventory>(flags.config)
-      if (inventory.staging?.startsWith(`${deploymentsVolume}/`))
+      if (flags.drill || inventory.staging?.startsWith(`${deploymentsVolume}/`))
         await command(['mountpoint', '-q', deploymentsVolume])
+      const drillDirectory = join(deploymentsVolume, 'host-restore-drills')
+      if (flags.drill) {
+        mkdirSync(drillDirectory, { recursive: true, mode: 0o700 })
+        const directory = lstatSync(drillDirectory)
+        if (!directory.isDirectory() || directory.uid !== 0 || (directory.mode & 0o066))
+          throw new Error('Restore drill directory must be root-owned with private contents')
+        // PostgreSQL runs as its own user. It can traverse this directory to
+        // its private instance without listing the other temporary copies.
+        chmodSync(drillDirectory, 0o711)
+      }
       await runHostBackup(inventory, join(dirname(inventoryPath), 'host-backup-status.json'), {
         check: flags.check,
         drill: flags.drill,
+        drillDirectory,
         retryFailed: flags['retry-failed'],
         preserveBackups: flags['preserve-backups'],
         hostSources,
@@ -103,8 +114,8 @@ async function main(): Promise<void> {
     }
     case 'inventory': {
       const flags = options({ apply: { type: 'boolean' }, 'retire-missing-database': { type: 'string' } })
-      if (process.env.STACKS_HOST_LOCK !== sharedLock)
-        return lock(sharedLock)
+      if (process.env.STACKS_HOST_LOCK !== hostBackupLock)
+        return lock(hostBackupLock)
       await configureInventory({ apply: flags.apply, retire: flags['retire-missing-database'] })
       return
     }
@@ -124,8 +135,8 @@ async function main(): Promise<void> {
     }
     case 'mail-restic-backup': {
       options({})
-      if (process.env.STACKS_HOST_LOCK !== sharedLock)
-        return lock(sharedLock, 3600)
+      if (process.env.STACKS_HOST_LOCK !== hostBackupLock)
+        return lock(hostBackupLock, 3600)
       await uploadMailBackup(async () => {
         const self = compiled ? [process.execPath] : [process.execPath, import.meta.path]
         await command([...self, 'mail-backup'], { discardOutput: true, timeoutMs: 0 })
@@ -135,6 +146,28 @@ async function main(): Promise<void> {
     case 'mail-capacity':
       verifyMailHostCapacity(Number(options({ 'high-water': { type: 'string', default: '85' } })['high-water']))
       return
+    case 'mail-host-maintenance': {
+      const flags = options({
+        apply: { type: 'boolean' },
+        'verify-only': { type: 'boolean' },
+        'web-root': { type: 'string', default: '/var/www' },
+        'mail-root': { type: 'string', default: '/opt/mail' },
+        'high-water': { type: 'string', default: '85' },
+        target: { type: 'string', default: '75' },
+      })
+      if (flags['verify-only']) {
+        verifyMailHostCapacity(Number(flags['high-water']))
+        return
+      }
+      await maintainMailHost({
+        apply: flags.apply === true,
+        webRoot: flags['web-root'],
+        mailRoot: flags['mail-root'],
+        highWater: Number(flags['high-water']),
+        target: Number(flags.target),
+      })
+      return
+    }
     case 'snapshot-record': {
       const { verify, record } = options({ verify: { type: 'boolean' }, record: { type: 'string' } })
       if (!record)

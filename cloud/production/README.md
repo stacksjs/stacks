@@ -25,23 +25,28 @@ bun cloud/production/install-preserving.ts --apply
 The first command checks the installed operator hashes. Apply requires root and
 the mounted deployments volume, builds and smoke-tests the Bun executable,
 archives the previous operators and overrides on that volume, and reloads
-systemd. It installs `/usr/local/sbin/stacks-host-ops`. The legacy executables
-stay available for rollback. The scheduled capacity check uses the new
-read-only Bun command. The legacy host-only archival and release cleanup mode
-remains available through the pre-existing maintenance operator.
+systemd. It installs `/usr/local/sbin/stacks-host-ops` and switches
+`/usr/local/sbin/mail-host-maintenance` to the Bun command. The pre-install
+copies are available for rollback.
 
 The daily application backup and its hourly retry restore from both AWS and
 Hetzner before recording success. Both units use `--preserve-backups`. The
 hourly retry processes new, failed, missing and stale receipts, and skips
 groups verified by every provider within 36 hours. The integrity check reads
 one seventh of each repository per run. The database drill restores
-PostgreSQL and local Vitess into disposable instances with TCP disabled.
+PostgreSQL and local Vitess into disposable instances with TCP disabled, using
+scratch space on the mounted deployments volume.
 Systemd orders recovery checks behind queued backups and keeps the shared
 lock and runtime budgets.
 
 The mail units set `MAIL_BACKUP_PRESERVE=1` to retain local archives and remote
 snapshots. The mail restore drill waits behind queued host recovery work.
-`stacks-host-ops mail-capacity` reports root disk use without applying cleanup.
+`mail-host-maintenance --verify-only` reports root disk use without applying
+cleanup. Running `mail-host-maintenance` without arguments displays the
+maintenance plan. `--apply` recovers local disk space from aged duplicate
+dumps, abandoned scratch files, old mail binaries and inactive releases. A
+local dump is eligible only after a matching restore from both repositories
+and a durable receipt. The operator retains remote snapshots.
 
 ## Operator checks
 

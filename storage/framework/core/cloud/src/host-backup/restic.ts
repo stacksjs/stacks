@@ -27,7 +27,7 @@ export class ResticArchive {
   }
 
   run(...args: string[]): Promise<string> {
-    return command(['restic', '--retry-lock', '5m', ...args], { env: this.env, timeoutMs: 6 * 3_600_000 })
+    return command(['restic', '--retry-lock', '5m', ...args], { env: this.env, timeoutMs: 6 * 3_600_000, interruptOnTimeout: true })
   }
 
   async snapshots(...args: string[]): Promise<ResticSnapshot[]> {
@@ -39,6 +39,7 @@ export class ResticArchive {
       env: this.env,
       output: destination,
       timeoutMs: 6 * 3_600_000,
+      interruptOnTimeout: true,
     })
   }
 }

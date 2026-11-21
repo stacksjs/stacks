@@ -19,6 +19,11 @@
     "baseline": "62843367c78a07ffbfbb4cf7e93f646a0fe495908bd64ab3c8ab990411080172",
     "reviewed": "21e89b9dab64fe3a45c5c34c7defd49047ab4be645e73f6b28cbe509c8a8656f"
   },
+  "app_backup_retention.py": {
+    "target": "/usr/local/sbin/app_backup_retention.py",
+    "baseline": "542ac96de7ecbf425b554c265a2be94c0f56242e98b3bc4c423ae327a0927d5d",
+    "reviewed": "542ac96de7ecbf425b554c265a2be94c0f56242e98b3bc4c423ae327a0927d5d"
+  },
   "configure-host-backup.py": {
     "target": "/usr/local/sbin/configure-host-backup.py",
     "baseline": "20f4d76e12f773850cec8f20905c089934b7ada7dfbd40f1ba75e9c0fc7a6f82",

@@ -8,9 +8,13 @@ import { deploymentsVolume } from './inventory'
 const { values: { apply } } = parseArgs({ options: { apply: { type: 'boolean' } } })
 const source = import.meta.dir
 const installPath = '/usr/local/sbin/stacks-host-ops'
+const maintenancePath = '/usr/local/sbin/mail-host-maintenance'
+const maintenance = join(source, 'mail-host-maintenance.ts')
+const maintenanceDigest = await digest(maintenance)
 const baselines = readJson<Record<string, { target: string, baseline: string, reviewed: string }>>(join(source, 'operator-baseline.json'))
 for (const { target, baseline, reviewed } of Object.values(baselines)) {
-  if (!lstatSync(target).isFile() || ![baseline, reviewed].includes(await digest(target)))
+  const expected = target === maintenancePath ? [baseline, reviewed, maintenanceDigest] : [baseline, reviewed]
+  if (!lstatSync(target).isFile() || !expected.includes(await digest(target)))
     throw new Error(`Operator changed since review. Preserving ${target}`)
 }
 console.log(`Verified ${Object.keys(baselines).length} operator baselines`)
@@ -34,6 +38,7 @@ if (apply) {
     if (existsSync(installPath))
       copyFileSync(installPath, join(saved, 'stacks-host-ops'))
     atomicWrite(installPath, readFileSync(binary), 0o755)
+    atomicWrite(maintenancePath, readFileSync(maintenance), 0o755)
     for (const path of globSync('*.service.d/disk-recovery.conf', { cwd: join(source, 'systemd') })) {
       const target = join('/etc/systemd/system', path)
       mkdirSync(dirname(target), { recursive: true })
