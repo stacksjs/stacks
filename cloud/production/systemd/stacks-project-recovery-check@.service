@@ -1,0 +1,9 @@
+[Unit]
+Description=Check the off-host recovery point age for %i
+RequiresMountsFor=/var/lib/stacks-deployments
+
+[Service]
+Type=oneshot
+UMask=0077
+TimeoutStartSec=30
+ExecStart=/usr/local/sbin/stacks-project-recovery check %i

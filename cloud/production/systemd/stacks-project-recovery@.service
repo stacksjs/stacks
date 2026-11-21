@@ -1,0 +1,13 @@
+[Unit]
+Description=Off-host PostgreSQL recovery point for %i
+Wants=network-online.target
+After=network-online.target
+RequiresMountsFor=/var/lib/stacks-deployments
+
+[Service]
+Type=oneshot
+UMask=0077
+TimeoutStartSec=240
+Nice=10
+IOSchedulingClass=idle
+ExecStart=/usr/local/sbin/stacks-project-recovery backup %i

@@ -7,7 +7,15 @@ import { join } from 'node:path'
 import { runHostBackup } from '../src/host-backup/backup'
 import { discoverManagedProjects, retireMissingDatabase } from '../src/host-backup/inventory'
 import { readJson, saveJson, sqliteSnapshot, withScratch } from '../src/host-backup/io'
+import { staleRecoveryProviders } from '../src/host-backup/project-recovery'
 import { ResticArchive } from '../src/host-backup/restic'
+
+test('the short recovery point uses the snapshot source time for every independent repository', () => {
+  const snapshot = { timestamp: 9900, source_timestamp: 9100, snapshot: 'fixture', databases: 1, restore_verified: true }
+  const status = { projects: { fixture: { aws: snapshot, hetzner: { ...snapshot, source_timestamp: 9099 } } } }
+  expect(staleRecoveryProviders(status, 'fixture', ['aws', 'hetzner'], 10_000)).toEqual(['hetzner'])
+  expect(staleRecoveryProviders({ projects: { fixture: { aws: { ...snapshot, source_timestamp: 10_001 } } } }, 'fixture', ['aws', 'hetzner'], 10_000)).toEqual(['aws', 'hetzner'])
+})
 
 test('discovers databases in shared storage and retains the history of retired selections', async () => {
   await withScratch(join(tmpdir(), 'host-inventory-'), async (root) => {

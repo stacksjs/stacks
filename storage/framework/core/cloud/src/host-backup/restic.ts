@@ -12,7 +12,7 @@ export class ResticArchive {
   readonly repository: string
   private readonly env: Record<string, string | undefined>
 
-  constructor(config: string, provider: string, requireS3Credentials = false) {
+  constructor(config: string, provider: string, requireS3Credentials = false, private readonly policy = { lock: '5m', timeoutMs: 6 * 3_600_000 }) {
     const env = { ...process.env }
     for (const key of Object.keys(env)) {
       if (key.startsWith('RESTIC_') || key.startsWith('AWS_'))
@@ -28,7 +28,7 @@ export class ResticArchive {
   }
 
   run(...args: string[]): Promise<string> {
-    return command(['restic', '--retry-lock', '5m', ...args], { env: this.env, timeoutMs: 6 * 3_600_000, interruptOnTimeout: true })
+    return command(['restic', '--retry-lock', this.policy.lock, ...args], { env: this.env, timeoutMs: this.policy.timeoutMs, interruptOnTimeout: true })
   }
 
   async snapshots(...args: string[]): Promise<ResticSnapshot[]> {
@@ -36,10 +36,10 @@ export class ResticArchive {
   }
 
   async restore(snapshot: string, path: string, destination: string): Promise<void> {
-    await command(['restic', '--retry-lock', '5m', 'dump', snapshot, path], {
+    await command(['restic', '--retry-lock', this.policy.lock, 'dump', snapshot, path], {
       env: this.env,
       output: destination,
-      timeoutMs: 6 * 3_600_000,
+      timeoutMs: this.policy.timeoutMs,
       interruptOnTimeout: true,
     })
   }

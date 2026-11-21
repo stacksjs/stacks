@@ -13,6 +13,7 @@ const epoch = () => Math.floor(Date.now() / 1000)
 
 interface RecoveryReceipt {
   timestamp: number
+  source_timestamp?: number
   snapshot: string
   databases: number
   restore_verified: boolean
@@ -20,7 +21,7 @@ interface RecoveryReceipt {
 
 type ProjectStatus = Record<string, RecoveryReceipt | string | undefined> & { error?: string }
 
-interface BackupStatus {
+export interface BackupStatus {
   checks?: Record<string, { partition: number, timestamp: number }>
   drills?: Record<string, number>
   projects?: Record<string, ProjectStatus>
@@ -71,6 +72,7 @@ async function mysqlDump(root: string, target: string, source: MysqlSource): Pro
 type Archive = Pick<ResticArchive, 'run' | 'restore' | 'restoreVerifiedFile' | 'snapshots'>
 
 interface BackupOptions {
+  profile?: 'project-rpo'
   check?: boolean
   drill?: boolean
   drillDirectory?: string
@@ -87,7 +89,10 @@ async function backupProject(
   stage: string,
   status: ProjectStatus,
   options: BackupOptions,
+  persist: () => void,
 ): Promise<void> {
+  // Count age from before the database snapshot, even if upload took minutes.
+  const sourceTimestamp = epoch()
   const root = join(stage, project)
   const databases = join(root, 'databases')
   mkdirSync(databases, { recursive: true, mode: 0o700 })
@@ -131,14 +136,14 @@ async function backupProject(
     }
   }
   const manifest = join(root, 'recovery.json')
-  saveJson(manifest, { project, created: epoch(), databases: mapping, files: selection.files ?? [] })
+  saveJson(manifest, { project, created: epoch(), sourceTimestamp, databases: mapping, files: selection.files ?? [] })
   sources.push(manifest)
 
   const failures: string[] = []
-  for (const [provider, archive] of Object.entries(archives)) {
+  const upload = async ([provider, archive]: [string, Archive]) => {
     try {
       console.log(`${project}: ${provider} uploading persistent files and consistent databases`)
-      const output = await archive.run('backup', '--json', '--tag', 'app-daily', '--tag', 'production', '--tag', `project:${project}`, ...exclusions, '--', ...sources)
+      const output = await archive.run('backup', '--json', '--tag', options.profile ?? 'app-daily', '--tag', 'production', '--tag', `project:${project}`, ...exclusions, '--', ...sources)
       const summary = output.split('\n').filter(line => line.startsWith('{')).map(line => JSON.parse(line))
         .find(record => record.message_type === 'summary')
       const snapshot: string | undefined = summary?.snapshot_id
@@ -159,13 +164,16 @@ async function backupProject(
         if (await digest(restored) !== await digest(manifest))
           throw new Error('Recovery manifest checksum mismatch')
       })
-      status[provider] = { timestamp: epoch(), snapshot, databases: Object.keys(mapping).length, restore_verified: true }
+      status[provider] = { timestamp: epoch(), source_timestamp: sourceTimestamp, snapshot, databases: Object.keys(mapping).length, restore_verified: true }
+      if (options.profile) persist()
       console.log(`${project}: ${provider} uploaded and restored (${Object.keys(mapping).length} databases)`)
     }
     catch (error) {
       failures.push(`${provider}: ${error instanceof Error ? error.message : error}`)
     }
   }
+  if (options.profile) await Promise.all(Object.entries(archives).map(upload))
+  else for (const archive of Object.entries(archives)) await upload(archive)
   if (failures.length)
     throw new Error(failures.join(', '))
   for (const path of Object.keys(mapping)) {
@@ -174,7 +182,7 @@ async function backupProject(
   }
 }
 
-async function recoveryDrill(inventory: BackupInventory, archives: Record<string, Archive>, state: BackupStatus, statePath: string, directory: string): Promise<void> {
+async function recoveryDrill(inventory: BackupInventory, archives: Record<string, Archive>, state: BackupStatus, statePath: string, directory: string, profile = 'app-daily'): Promise<void> {
   const drills = state.drills ??= {}
   for (const [project, selection] of Object.entries(inventory.projects)) {
     const postgres = selection.postgres ?? []
@@ -183,7 +191,7 @@ async function recoveryDrill(inventory: BackupInventory, archives: Record<string
       continue
     const root = join(inventory.staging ?? defaultStage, project, 'databases')
     for (const [provider, archive] of Object.entries(archives)) {
-      const snapshots = await archive.snapshots('--latest', '1', '--tag', `app-daily,project:${project}`)
+      const snapshots = await archive.snapshots('--latest', '1', '--tag', `${profile},project:${project}`)
       const snapshot = snapshots.sort((a, b) => Date.parse(b.time) - Date.parse(a.time))[0]
       if (!snapshot)
         throw new Error(`${project}: no ${provider} recovery snapshot`)
@@ -193,6 +201,14 @@ async function recoveryDrill(inventory: BackupInventory, archives: Record<string
           const dump = join(scratch, 'database.dump')
           await archive.restoreVerifiedFile(snapshot.id, join(root, `${databaseName(database)}.dump`), dump)
           await postgresRecovery(dump, directory)
+        })
+      }
+      if (profile === 'project-rpo' && selection.files?.length) {
+        await withScratch(join(directory, 'host-files-drill-'), async (scratch) => {
+          const paths = selection.files!.map(path => realpathSync(path))
+          const includes = paths.flatMap(path => ['--include', path.replace(/[\\*?()[\]{}]/g, '\\$&')])
+          await archive.run('restore', snapshot.id, '--verify', '--target', scratch, ...includes)
+          for (const path of paths) lstatSync(join(scratch, path))
         })
       }
       for (const { source, index } of mysql) {
@@ -224,7 +240,7 @@ export async function runHostBackup(
   }
   const state: BackupStatus = existsSync(statePath) ? readJson(statePath) : {}
   if (options.drill) {
-    await recoveryDrill(inventory, archives, state, statePath, options.drillDirectory ?? '/var/tmp')
+    await recoveryDrill(inventory, archives, state, statePath, options.drillDirectory ?? '/var/tmp', options.profile)
     return
   }
   if (options.check) {
@@ -251,11 +267,11 @@ export async function runHostBackup(
   const failures: string[] = []
   const projects = state.projects = Object.assign(Object.create(null) as Record<string, ProjectStatus>, state.projects)
   for (const [project, selection] of Object.entries(inventory.projects)) {
-    const previous = projects[project] ?? {}
+    const previous = projects[project] ??= {}
     if (options.retryFailed && !projectBackupDue(previous, inventory.repositories, retryAt))
       continue
     try {
-      await backupProject(project, selection, archives, stage, previous, options)
+      await backupProject(project, selection, archives, stage, previous, options, () => saveJson(statePath, state))
       delete previous.error
     }
     catch (error) {
@@ -268,7 +284,7 @@ export async function runHostBackup(
   }
   if (failures.length)
     throw new Error(`Backup failures: ${failures.join(', ')}`)
-  if (!options.preserveBackups) {
+  if (!options.preserveBackups && !options.profile) {
     for (const archive of Object.values(archives))
       await archive.run('forget', '--tag', 'app-daily', '--group-by', 'tags', '--keep-daily', '7', '--keep-weekly', '5', '--keep-monthly', '12', '--prune')
   }

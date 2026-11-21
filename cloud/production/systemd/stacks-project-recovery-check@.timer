@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch the 15-minute off-host recovery objective for %i
+
+[Timer]
+OnCalendar=*-*-* *:*:30
+Persistent=true
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target
