@@ -53,6 +53,7 @@ import { appModelTables, declaredModelTables, outOfScopeRelationMessage, resolve
 import type { DatabaseRenameResult, FrameworkRename, RenameSqlRunner } from './framework-renames'
 import { applicableFrameworkRenames, applyFrameworkRenamesToDatabase, applyFrameworkRenamesToPlan } from './framework-renames'
 import { findShadowedColumnDrops, shadowDropsAllowed, shadowedDropMessage } from './shadowed-models'
+import { describeHeldBackChange, holdBackDestructiveChanges, planKeepingHeldBackChanges } from './held-back-changes'
 import { frameworkManagedColumns, withoutManagedColumnDrops, withoutManagedColumnDropSql } from './managed-columns'
 import { acquireLibsqlMigrationLock, acquireMigrationLock } from './migration-lock'
 import type { CorpusGate } from './migration-ledger'
@@ -2762,6 +2763,18 @@ export interface GenerateMigrationsOptions {
    * connection's. No database of that dialect is needed.
    */
   dialect?: GenerationDialect
+  /**
+   * Leave destructive changes (dropped tables and columns) out of the
+   * generated SQL and keep them in the snapshot, so everything else is
+   * generated now and they are proposed again next time. Falls back to the
+   * `STACKS_MIGRATE_HOLD_DESTRUCTIVE` env flag, which `buddy migrate` sets
+   * across the action subprocess boundary when nobody approved them.
+   */
+  holdBackDestructive?: boolean
+}
+
+function holdsBackDestructive(options: GenerateMigrationsOptions): boolean {
+  return options.holdBackDestructive ?? process.env.STACKS_MIGRATE_HOLD_DESTRUCTIVE === '1'
 }
 
 function resolveGenerateOptions(options: GenerateMigrationsOptions): { applyRenames?: boolean, fromDb?: boolean } {
@@ -3294,6 +3307,23 @@ async function generateMigrationsForDialect(options: GenerateMigrationsOptions):
         return err(new Error(shadowedDropMessage(drops)))
     }
 
+    // Destructive changes nobody approved are left out, and everything else
+    // goes ahead. They stay in the snapshot (below), so the next run proposes
+    // them again. See `held-back-changes.ts`.
+    let heldBack: MigrationOperation[] = []
+    if (holdsBackDestructive(options) && result.hasChanges && sqlStatements.length > 0) {
+      const relevant = await relevantMigrationOperations(result.operations ?? [], protectedTables)
+      const split = holdBackDestructiveChanges(sqlStatements, relevant)
+      sqlStatements = split.statements
+      heldBack = split.held
+      if (heldBack.length > 0) {
+        log.warn(`[migration] Held back ${heldBack.length} change${heldBack.length === 1 ? '' : 's'} that would delete data. Everything else was generated:`)
+        for (const operation of heldBack)
+          log.warn(`  • ${describeHeldBackChange(operation)}`)
+        log.info('  Apply them with `./buddy migrate --force` once you are sure the data is not needed.')
+      }
+    }
+
     if (result.hasChanges || extensionStatements.length > 0) {
       const written = persistGeneratedMigrations(sqlStatements, storedPlan, await claimedMigrationNames(migrationDirectory()), options.guard)
       // Only announce when we actually wrote files. `hasChanges` can be
@@ -3320,7 +3350,10 @@ async function generateMigrationsForDialect(options: GenerateMigrationsOptions):
     // naming/persistence. Advance its model snapshot only after that writer
     // succeeds, otherwise every run diffs against stale model state and model
     // removals can never be observed.
-    const stablePlan = preserveMigrationPlanTableOrder(result.plan, storedPlan)
+    const stablePlan = preserveMigrationPlanTableOrder(
+      planKeepingHeldBackChanges(result.plan, storedPlan, heldBack),
+      storedPlan,
+    )
     if (!storedPlan || JSON.stringify(stablePlan) !== JSON.stringify(storedPlan))
       writeGenerationSnapshot(stablePlan, getQbDialect(), options.guard)
     else

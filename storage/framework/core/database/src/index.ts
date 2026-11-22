@@ -110,6 +110,7 @@ export * from './utc-defaults'
 export * from './uuid-columns'
 
 // Schema-diff guards so trait-managed columns aren't proposed for dropping (stacksjs/stacks#2075)
+export * from './held-back-changes'
 export * from './managed-columns'
 
 // Foreign keys a model gets from `belongsTo` rather than from `attributes`

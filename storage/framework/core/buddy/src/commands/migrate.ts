@@ -597,11 +597,17 @@ async function missingBaselineNote(): Promise<string | undefined> {
 }
 
 /**
- * Gate destructive schema changes behind confirmation. Returns true to proceed,
- * false to abort. Runs in the interactive PARENT process (the migrate action
- * subprocess has no TTY), previewing the pending operations without applying.
+ * Decide what happens to destructive schema changes. `apply` includes them;
+ * `hold` generates and applies everything else and leaves them pending.
+ *
+ * Runs in the interactive PARENT process (the migrate action subprocess has no
+ * TTY), previewing the pending operations without applying.
+ *
+ * Declining, or having nobody to ask, used to cancel the whole migration, so
+ * a leftover table no model describes blocked every later change until
+ * someone agreed to delete it. The safe part now goes ahead either way.
  */
-async function confirmDestructiveMigrations(opts: { force?: boolean, fromDb?: boolean, applyRenames?: boolean }): Promise<boolean> {
+async function confirmDestructiveMigrations(opts: { force?: boolean, fromDb?: boolean, applyRenames?: boolean }): Promise<'apply' | 'hold'> {
   let operations: MigrationOpLike[] = []
   try {
     const { previewPendingMigrations } = await import('@stacksjs/database')
@@ -611,7 +617,7 @@ async function confirmDestructiveMigrations(opts: { force?: boolean, fromDb?: bo
     // If preview fails we can't classify changes — don't block; the real
     // generate runs next with full error handling.
     log.debug(`Migration preview unavailable: ${error instanceof Error ? error.message : String(error)}`)
-    return true
+    return 'apply'
   }
 
   // Report data-preserving renames so the user knows data was kept.
@@ -626,7 +632,7 @@ async function confirmDestructiveMigrations(opts: { force?: boolean, fromDb?: bo
 
   const destructive = operations.filter(o => o.destructive)
   if (destructive.length === 0)
-    return true
+    return 'apply'
 
   log.warn(`This migration includes ${destructive.length} potentially destructive change${destructive.length === 1 ? '' : 's'}:`)
   for (const op of destructive)
@@ -637,15 +643,19 @@ async function confirmDestructiveMigrations(opts: { force?: boolean, fromDb?: bo
     log.warn(baseline)
 
   if (opts.force)
-    return true
+    return 'apply'
 
-  // Non-interactive (CI or no TTY): never silently drop data.
+  // Non-interactive (CI or no TTY): never silently drop data, and never let
+  // that hold up the changes that drop nothing.
   if (isCI || !hasTTY) {
-    log.error('Refusing to apply destructive changes in a non-interactive environment. Re-run with --force to proceed.')
-    return false
+    log.warn('Nobody to ask in a non-interactive environment, so these are held back and the rest of the migration goes ahead. Re-run with --force to apply them.')
+    return 'hold'
   }
 
-  return confirm({ message: 'Apply these destructive changes?', initial: false })
+  const approved = await confirm({ message: 'Apply these destructive changes? (No applies everything else and keeps these pending)', initial: false })
+  if (!approved)
+    log.info('Held back. The rest of the migration goes ahead; these will be proposed again next time.')
+  return approved ? 'apply' : 'hold'
 }
 
 /**
@@ -738,7 +748,7 @@ export function migrate(buddy: CLI): void {
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
     auth: 'Also migrate auth tables (oauth_clients, oauth_access_tokens, oauth_refresh_tokens, password_resets)',
-    force: 'Apply destructive changes (drop column/table, lossy type change) without confirmation',
+    force: 'Apply destructive changes (drop column/table, lossy type change) without confirmation. Without it they are held back and everything else is applied',
     fromDb: 'Diff against the live database schema instead of the snapshot (self-heal drift)',
     noRename: 'Treat renamed columns as drop + add instead of a data-preserving rename',
     generate: 'Generate migrations from your models before applying them. The default in an interactive terminal; a non-interactive run (CI, a deploy) applies committed files only unless this is passed. --no-generate never generates',
@@ -979,15 +989,14 @@ export function migrate(buddy: CLI): void {
       // release directory look like it had no baseline and blocked deployment
       // before a single committed migration could run.
       if (generate) {
-        const proceed = await confirmDestructiveMigrations({ force: options.force, fromDb: options.fromDb, applyRenames })
-        if (!proceed) {
-          lock.release()
-          await outro('Migration cancelled - no changes applied.', { startTime: perf, useSeconds: true })
-          // An operator declining an interactive prompt is a successful cancel.
-          // A non-interactive refusal is a failed deployment precondition and
-          // must propagate a non-zero status to systemd/ts-cloud.
-          process.exit(isCI || !hasTTY ? ExitCode.FatalError : ExitCode.Success)
-        }
+        // Threaded to the action subprocess the same way as the flags above.
+        // `hold` generates everything that deletes nothing and keeps the rest
+        // in the snapshot to be proposed again.
+        const decision = await confirmDestructiveMigrations({ force: options.force, fromDb: options.fromDb, applyRenames })
+        if (decision === 'hold')
+          process.env.STACKS_MIGRATE_HOLD_DESTRUCTIVE = '1'
+        else
+          delete process.env.STACKS_MIGRATE_HOLD_DESTRUCTIVE
       }
 
       // Auth/oauth tables migrate by default, and run BEFORE the numbered
