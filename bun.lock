@@ -739,7 +739,9 @@
         "@stacksjs/path": "workspace:*",
         "@stacksjs/stx": "^0.2.908",
         "@stacksjs/testing": "workspace:*",
+        "@ts-videos/mp4": "^0.1.2",
         "craft-native": ">=0.0.499",
+        "ts-videos": "^0.1.2",
       },
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",

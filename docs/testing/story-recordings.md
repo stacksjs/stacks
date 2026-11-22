@@ -4,7 +4,7 @@
 
 A story records one journey you script, with its clicks and typing. To picture every screen of the application without scripting anything, use [screen documentation](/guide/screenshots) instead; [Screens or stories?](/guide/screenshots#screens-or-stories) compares the two.
 
-Install FFmpeg on the machine running the command. Browser stories also need Chrome. Native stories need an explicitly selected, booted simulator or emulator with your app already installed. The recorder leaves device provisioning, app installation, fixtures and account setup with your existing E2E workflow.
+Browser stories need Chrome and nothing else: Chrome encodes the video through WebCodecs and ts-videos, a TypeScript library, writes the MP4. Native stories also need FFmpeg, which draws the tap indicators onto the device's own recording. Native stories need an explicitly selected, booted simulator or emulator with your app already installed. The recorder leaves device provisioning, app installation, fixtures and account setup with your existing E2E workflow.
 
 ## Browser stories
 
@@ -147,7 +147,8 @@ Native capture includes system UI and has no automatic redaction. Provision dedi
 | `native.input` | Android adb | Existing native driver operations; required for iOS |
 | `native.tapFeedback` | `true` | Add tap indicators, or use the harness's own indicators |
 | `native.tapColor`, `tapSize`, `tapMs` | Blue, 72px, 450ms | Native tap indicator appearance and trailing duration |
-| `ffmpeg`, `chromePath`, `adb`, `xcrun` | Installed tools | Explicit executable paths on controlled runners |
+| `chromePath`, `adb`, `xcrun` | Installed tools | Explicit executable paths on controlled runners |
+| `native.ffmpeg` | `ffmpeg` from PATH | FFmpeg for native recordings only |
 
 `--config path` selects another config, `--out directory` overrides its destination, and `--only a,b` selects stories. `--json` returns a machine-readable report. `--list` validates the inventory without opening drivers or running scenes. Config files are executable TypeScript, so keep device setup inside `open`, `prepare` or scene callbacks rather than at module scope.
 

@@ -15,7 +15,7 @@ async function run(args: string[]) {
   return { code, stdout, stderr }
 }
 
-test.skipIf(!Bun.which('ffmpeg'))('Buddy records a real browser journey, publishes each scene, and detects changed evidence', async () => {
+test('Buddy records a real browser journey, publishes each scene, and detects changed evidence', async () => {
   const root = await mkdtemp(join(tmpdir(), 'story-browser-')); roots.push(root)
   const server = Bun.serve({ port: 0, fetch(request) { return new Response('<html><head><title>Story fixture</title></head><body><main><h1>Cart</h1><button onclick="document.querySelector(\'h1\').textContent=\'Purchased\'">Buy</button><input type="password" value="private-fixture"></main></body></html>', { status: new URL(request.url).pathname === '/unavailable' ? 503 : 200, headers: { 'Content-Type': 'text/html' } }) } })
   try {
@@ -36,8 +36,18 @@ test.skipIf(!Bun.which('ffmpeg'))('Buddy records a real browser journey, publish
     expect(page.match(/!\[/g)?.length).toBe(2)
     expect(page).not.toContain('private-fixture')
     const video = join(root, 'docs', report.results[0].video.path)
-    const decode = Bun.spawn(['ffmpeg', '-v', 'error', '-i', video, '-f', 'null', '-'], { stdout: 'ignore', stderr: 'pipe' })
-    expect(await decode.exited).toBe(0)
+    // Recorded without FFmpeg: the browser encodes H.264 and ts-videos writes
+    // the container, so read the result back with the same library.
+    const bytes = new Uint8Array(await Bun.file(video).arrayBuffer())
+    expect(Buffer.from(bytes.subarray(4, 8)).toString()).toBe('ftyp')
+    const { Mp4Demuxer } = await import('@ts-videos/mp4')
+    const { BufferSource } = await import('ts-videos')
+    const demuxer = new Mp4Demuxer(new BufferSource(bytes))
+    const tracks = await demuxer.getTracks()
+    const picture = tracks.find(track => track.type === 'video') as { codec: string, width: number, height: number } | undefined
+    expect(picture?.codec).toBe('h264')
+    expect(picture!.width).toBeGreaterThan(300)
+    expect(picture!.height).toBeGreaterThan(200)
     expect((await run(['--config', config, '--check', '--json'])).code).toBe(0)
     expect(await Bun.file(join(report.mediaDir, report.results[0].video.path)).exists()).toBe(true)
     for (const scene of report.results[0].scenes) expect(await Bun.file(join(report.mediaDir, scene.screenshot.path)).exists()).toBe(true)
@@ -67,7 +77,7 @@ test.skipIf(!Bun.which('ffmpeg'))('Buddy records a real browser journey, publish
   finally { server.stop(true) }
 }, 120000)
 
-test.skipIf(!Bun.which('ffmpeg'))('a gated story authenticates and keeps field masks under a strict style policy', async () => {
+test('a gated story authenticates and keeps field masks under a strict style policy', async () => {
   const root = await mkdtemp(join(tmpdir(), 'story-basic-auth-'))
   roots.push(root)
   const authorization = 'Basic ' + btoa('reader:story-fixture')

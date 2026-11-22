@@ -118,7 +118,8 @@ address; unbound ones stay listed as explained gaps. Hand-written pages are
 still accepted, alone or through `extra`. Each profile owns a separate Bun
 WebView process.
 
-`film: true` writes one walkthrough MP4 per viewport (needs FFmpeg) and
+`film: true` writes one walkthrough MP4 per viewport (encoded by the capture's
+browser and written by ts-videos; no FFmpeg) and
 `docs: { page, base }` writes a generated page of every screen. `--list`
 verifies the inventory and template coverage without a browser, `--publish`
 rebuilds films and page from the saved manifest, and `--check` verifies the

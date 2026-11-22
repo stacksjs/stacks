@@ -78,7 +78,7 @@ export interface ScreenshotConfig {
     prepare: (plan: ScreenshotModelPlan) => Promise<ScreenshotFixtures>
     cleanup?: () => Promise<void>
   }
-  /** Join the captured screens into one walkthrough MP4 per viewport. Needs FFmpeg. */
+  /** Join the captured screens into one walkthrough MP4 per viewport, encoded by the capture's browser. */
   film?: ScreenshotFilmOptions | boolean
   /** Write a documentation page that shows every captured screen and the films. */
   docs?: ScreenshotDocsOptions
@@ -439,7 +439,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
     let publishing: unknown
     try {
       if (options.publish !== false) {
-        if (config.film) report.films = await filmScreenshots(output, report.results, config.viewports ?? defaults, config.film === true ? {} : config.film)
+        if (config.film) report.films = await filmScreenshots(output, report.results, config.viewports ?? defaults, config.film === true ? {} : config.film, config.backend)
         if (config.docs) report.docsPage = await writeScreensPage(root, report, config.docs)
       }
     }
@@ -474,7 +474,7 @@ export async function publishScreenshots(options: Pick<ScreenshotOptions, 'confi
   if (report.generator !== '@stacksjs/docs/screenshots') throw new Error('This is not a Stacks screenshot manifest')
   delete report.films
   delete report.docsPage
-  if (config.film) report.films = await filmScreenshots(output, report.results, config.viewports ?? defaults, config.film === true ? {} : config.film)
+  if (config.film) report.films = await filmScreenshots(output, report.results, config.viewports ?? defaults, config.film === true ? {} : config.film, config.backend)
   if (config.docs) report.docsPage = await writeScreensPage(root, report, config.docs)
   await Bun.write(join(output, 'manifest.json.tmp'), `${JSON.stringify(report, null, 2)}\n`)
   await rename(join(output, 'manifest.json.tmp'), file)

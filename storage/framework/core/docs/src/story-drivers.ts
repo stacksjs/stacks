@@ -5,6 +5,7 @@ import { click, launch, settle, waitFor } from '@stacksjs/testing/browser'
 import { randomUUID } from 'node:crypto'
 import { readFile, rm } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
+import { type BrowserFilm, openBrowserFilm, serveFilmStudio } from './browser-film'
 import { captureMaskCss } from './capture-masks'
 
 export interface BrowserStoryContext {
@@ -19,7 +20,6 @@ export interface BrowserStoryOptions {
   viewport?: LaunchOptions['viewport']
   chromePath?: string
   headless?: boolean
-  ffmpeg?: string
   /** Selector masks are applied before the first recorded frame, on every document. */
   masks?: string[]
   cursor?: { color?: string, size?: number, moveMs?: number, clickMs?: number }
@@ -64,7 +64,11 @@ export function browserStory(options: BrowserStoryOptions): StoryDriver<BrowserS
   return { platform: 'browser', fingerprint: options, async open({ videoPath, fps, signal }) {
     const browser = await launch({ viewport: options.viewport, chromePath: options.chromePath, headless: options.headless })
     const { cdp } = browser
-    let encoder: ReturnType<typeof spawnOwnedProcess> | undefined
+    // The video is encoded by a second page of the same browser and written
+    // as MP4 by ts-videos: no FFmpeg, and nothing but Chrome to install.
+    let studio: Awaited<ReturnType<typeof launch>> | undefined
+    let room: ReturnType<typeof serveFilmStudio> | undefined
+    let film: BrowserFilm | undefined
     let done = false
     let pumping: Promise<void> | undefined
     let captureError: unknown
@@ -72,7 +76,12 @@ export function browserStory(options: BrowserStoryOptions): StoryDriver<BrowserS
     let off: (() => void) | undefined
     const documents = new Map<string, { status: number }>()
     const offDocuments = cdp.on('Network.responseReceived', response => { if (response.type === 'Document') documents.set(response.frameId, { status: response.response.status }) })
-    const abort = () => { done = true; void encoder?.stop().catch(() => {}); void browser.close().catch(() => {}) }
+    // A call into a page that is closing may never settle. Everything that
+    // waits on the encoder also waits on this, so shutdown cannot hang.
+    let release!: () => void
+    const released = new Promise<void>((resolve) => { release = resolve })
+    const closeStudio = async () => { release(); room?.stop(); room = undefined; const open = studio; studio = undefined; await Promise.race([open?.close().catch(() => {}), Bun.sleep(5000)]) }
+    const abort = () => { done = true; void closeStudio(); void browser.close().catch(() => {}) }
     signal.addEventListener('abort', abort, { once: true })
     try {
       signal.throwIfAborted()
@@ -138,44 +147,56 @@ export function browserStory(options: BrowserStoryOptions): StoryDriver<BrowserS
         latest = Buffer.from(frame.data, 'base64')
         void cdp.send('Page.screencastFrameAck', { sessionId: frame.sessionId }).catch(error => { captureError = error })
       })
-      encoder = spawnOwnedProcess([options.ffmpeg ?? 'ffmpeg', '-hide_banner', '-loglevel', 'error', '-nostdin', '-n', '-f', 'image2pipe', '-framerate', String(fps), '-vcodec', 'mjpeg', '-i', 'pipe:0', '-an', '-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2', '-c:v', 'libx264', '-preset', 'veryfast', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', videoPath], { stdin: 'pipe' })
-      await encoder.started
-      const stderr = new Response(encoder.stderr).text()
-      void new Response(encoder.stdout).arrayBuffer()
+      room = serveFilmStudio()
+      studio = await launch({ viewport: { width: 320, height: 240 }, chromePath: options.chromePath, headless: options.headless })
+      const studioPage = studio.cdp
+      await studioPage.send('Page.navigate', { url: room.url })
+      await waitFor(() => studioPage.evaluate<boolean>('document.readyState === "complete"'), 15000)
+      film = await openBrowserFilm(script => studioPage.evaluate(script), { fps })
       await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 85, everyNthFrame: 1 })
       const started = performance.now()
       pumping = (async () => {
         let frames = 0
+        let sent: Uint8Array | undefined
         while (!done) {
           signal.throwIfAborted()
           if (captureError) throw captureError
           const wanted = Math.floor((performance.now() - started) / 1000 * fps) + 1
           if (wanted - frames > fps * 10) throw new Error('Story encoder cannot keep up with the recording')
-          while (frames < wanted) { encoder!.stdin!.write(latest!); await encoder!.stdin!.flush(); frames++ }
+          if (wanted > frames) {
+            // The picture travels to the encoder only when the display changed;
+            // an idle screen repeats the frame it already has.
+            const picture = latest
+            await Promise.race([film!.add(picture === sent ? undefined : picture, wanted - frames), released])
+            sent = picture
+            frames = wanted
+          }
           await Bun.sleep(Math.max(1, 1000 / fps / 2))
         }
       })().catch(error => { captureError = error })
       let finished: Promise<void> | undefined
       const finish = () => finished ??= (async () => {
         done = true
-        const deadline = setTimeout(() => { captureError = new Error('Story video finalization timed out'); void encoder!.stop().catch(() => {}) }, 30000)
+        let timedOut = false
+        const deadline = setTimeout(() => { timedOut = true; void closeStudio() }, 60000)
         try {
           await pumping
           await cdp.send('Page.stopScreencast')
           off?.()
-          await encoder!.stdin!.end()
-          const exit = await encoder!.exited
-          await stderr
-          if (captureError || exit.code !== 0) throw new Error('Story video capture failed', { cause: captureError })
+          if (captureError) throw new Error('Story video capture failed', { cause: captureError })
+          let bytes: Uint8Array
+          try { bytes = await Promise.race([film!.finish(), released.then(() => { throw new Error('The encoder page closed') })]) }
+          catch (error) { throw new Error(timedOut ? 'Story video finalization timed out' : 'Story video capture failed', { cause: error }) }
+          await Bun.write(videoPath, bytes)
           if (options.failOnBrowserErrors !== false && cdp.errors.length) throw new Error('Browser story produced console or network errors')
         }
-        finally { clearTimeout(deadline) }
+        finally { clearTimeout(deadline); await closeStudio() }
       })()
-      return { context, screenshot: async () => Buffer.from((await cdp.send('Page.captureScreenshot', { format: 'png' })).data, 'base64'), finish, async close() { done = true; off?.(); offDocuments(); signal.removeEventListener('abort', abort); try { await encoder!.stop(); await pumping } finally { await browser.close() } } }
+      return { context, screenshot: async () => Buffer.from((await cdp.send('Page.captureScreenshot', { format: 'png' })).data, 'base64'), finish, async close() { done = true; off?.(); offDocuments(); signal.removeEventListener('abort', abort); try { await closeStudio(); await pumping } finally { await browser.close() } } }
     }
     catch (error) {
       done = true; off?.(); offDocuments(); signal.removeEventListener('abort', abort)
-      try { await encoder?.stop(); await pumping } finally { await browser.close() }
+      try { await closeStudio(); await pumping } finally { await browser.close() }
       throw error
     }
   } }

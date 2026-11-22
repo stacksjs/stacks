@@ -22,7 +22,7 @@ A picture shows a screen at rest. It does not prove that a payment, a consent or
 
 ## Quick start
 
-You need the application running with synthetic data. The films need FFmpeg on `PATH`.
+You need the application running with synthetic data. Nothing else has to be installed: the browser that takes the pictures also encodes the films.
 
 **1. Create `config/screenshots.ts`.**
 
@@ -404,7 +404,6 @@ film: {
   secondsPerScreen: 1.5, // default 2, from 0.2 to 30
   fps: 12,               // default 12, from 1 to 60
   viewports: ['desktop'], // default: every configured viewport
-  ffmpeg: '/usr/local/bin/ffmpeg', // default: ffmpeg from PATH
 }
 ```
 
@@ -412,8 +411,9 @@ film: {
 - Only captured screens are filmed. Gaps and failures are skipped, so a failed screen never puts a stale picture in the video.
 - The film is rebuilt from the whole manifest on every run, including a partial `--only` refresh.
 - There is no audio and no pointer.
+- The video is H.264 in an MP4 container, which every current browser plays.
 
-If FFmpeg is missing or fails, the pictures and the manifest are still written and the command then fails with FFmpeg's message, so a broken encoder cannot pass unnoticed.
+No FFmpeg is involved. The capture's browser encodes the frames through WebCodecs and [ts-videos](https://github.com/stacksjs/ts-videos), a TypeScript library, writes the MP4. If the browser cannot encode H.264, the pictures and the manifest are still written and the command then fails with the reason, so a missing encoder cannot pass unnoticed.
 
 ## The docs page
 
@@ -518,7 +518,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: bun install --frozen-lockfile
       - name: Seed and start the application
         run: |
@@ -544,7 +543,7 @@ Points that decide whether this works in practice:
 - **Loops.** The commit changes files under `docs/`, which the `paths` filter does not watch, and a push made with the workflow's own token starts no further workflow. If you push with a personal token, or watch `docs/`, add `[skip ci]` to the commit message.
 - **Failures still commit.** `if: always()` publishes the screens that did capture. The capture step has already failed the job, so a broken screen stays visible in CI and is listed under "Not pictured" in the docs.
 - **Who commits.** `git config` in the job sets the author. Use an identity your branch protection accepts. To push to a protected branch, check out with a token that may do so.
-- **Other CI systems.** The steps are plain shell. On a self-hosted runner, keep the same order and replace the setup steps with whatever provisions Bun, FFmpeg, Chrome and your database there.
+- **Other CI systems.** The steps are plain shell. On a self-hosted runner, keep the same order and replace the setup steps with whatever provisions Bun, Chrome and your database there.
 - **A gate instead of a bot.** To fail a pull request that changes a view without recapturing, run `./buddy docs:screenshots --check` in your checks instead of committing from CI.
 
 ### Repository size
@@ -598,7 +597,7 @@ Use screens for breadth: nothing a user can open goes undocumented. Use stories 
 | A picture shows skeletons or a spinner | The readiness check passed too early. Require a sustained quiet period, as in [When a screen is loaded](#when-a-screen-is-loaded). |
 | Every screen is captured once per role | Pages have no `profiles`. Return one from `each`. |
 | `Capture inputs or SDK changed` on `--only` | The config, an input or the package version changed since the saved manifest. Run a complete capture. |
-| `FFmpeg is required to film the captured screens` | Install FFmpeg, set `film.ffmpeg`, or remove `film`. The pictures were still saved. |
+| `The … screens could not be filmed: This browser cannot encode H.264 video` | The capture's browser has no H.264 encoder, which some Chromium builds leave out. Use Chrome (`backend: 'chrome'`, `BUN_CHROME_PATH`), or remove `film`. The pictures were still saved. |
 | `The screen film is missing; capture again` | A capture ran with `publish: false`, or `film` was added after the last capture. Run `./buddy docs:screenshots --publish`. |
 | `Refusing to replace a hand-written page` | `docs.page` points at a file the command did not generate. Choose another path or delete the file. |
 | `Refusing to overwrite an unowned screenshot` | The output directory holds pictures from another tool under the same names. Use an empty `outDir`. |
@@ -625,7 +624,7 @@ Use screens for breadth: nothing a user can open goes undocumented. Use stories 
 | `models` | App models | `{ includeDefaults: true }` adds framework models; `false` disables inspection |
 | `fixtures` | None | Records that bind parameterised addresses, by model name |
 | `data` | None | `prepare(plan)` and `cleanup()` hooks for fixtures looked up at capture time |
-| `film` | Off | `true`, or `{ secondsPerScreen, fps, viewports, ffmpeg }` |
+| `film` | Off | `true`, or `{ secondsPerScreen, fps, viewports }` |
 | `docs` | Off | `{ page, base, title, description }` |
 
 ### Page

@@ -226,7 +226,7 @@ describe('screens discovered from stx views', () => {
   })
 })
 
-test.skipIf(typeof Bun.WebView !== 'function' || !Bun.which('ffmpeg') || (process.platform !== 'darwin' && !process.env.STACKS_BROWSER_TESTS))('films the discovered screens, writes their documentation page and retires deleted views', async () => {
+test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' && !process.env.STACKS_BROWSER_TESTS))('films the discovered screens, writes their documentation page and retires deleted views', async () => {
   const root = await fixture()
   const server = Bun.serve({ port: 0, fetch: request => new Response(`<title>Fixture</title><main><h1>${new URL(request.url).pathname}</h1></main>`, { headers: { 'Content-Type': 'text/html' } }) })
   try {
