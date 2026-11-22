@@ -8,6 +8,10 @@ const { startTime } = await intro({
 const result = await Bun.build({
   entrypoints: ['./src/index.ts', './src/style-guide.ts', './src/screenshots.ts', './src/screenshot-models.ts', './src/screenshot-views.ts', './src/screenshot-publish.ts', './src/browser-film.ts', './src/stories.ts', './src/story-drivers.ts'],
   outdir: './dist',
+  // Outputs are named from here. Left to infer it, the bundler picked the
+  // package directory once an entry shared a module with another, wrote
+  // everything under dist/src, and left the manifest's entry points missing.
+  root: './src',
   format: 'esm',
   target: 'bun',
   // sourcemap: 'linked',
