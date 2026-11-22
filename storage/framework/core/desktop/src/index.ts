@@ -94,15 +94,34 @@ export function resolveCraftBinary(explicit: string | undefined = process.env.CR
 
 export type CraftBinaryLocator = (binary: string) => string | null
 
+/** Pantry puts a short activation script on PATH ahead of the actual binary. */
+export function isCraftActivationScript(executable: string): boolean {
+  const fd = openSync(executable, 'r')
+  try {
+    const prefix = Buffer.alloc(2)
+    return readSync(fd, prefix, 0, prefix.length, 0) === 2 && prefix.toString() === '#!'
+  }
+  finally {
+    closeSync(fd)
+  }
+}
+
 export function resolveCraftExecutable(
   explicit: string | undefined = process.env.CRAFT_BIN,
   findOnPath: CraftBinaryLocator = binary => Bun.which(binary),
 ): string {
   const resolved = resolveCraftBinary(explicit)
-  if (resolved !== 'craft') return resolved
-
-  const executable = findOnPath(resolved)
+  const executable = resolved === 'craft' ? findOnPath(resolved) : resolved
   if (!executable) throw new Error(craftBinaryNotFoundMessage(resolved))
+  if (existsSync(executable) && isCraftActivationScript(executable)) {
+    const pantry = Bun.which('pantry')
+    if (pantry) {
+      const result = Bun.spawnSync([pantry, 'which', '--resolve', executable], { stdout: 'pipe', stderr: 'pipe' })
+      const provider = result.stdout.toString().trim()
+      if (result.exitCode === 0 && existsSync(provider) && !isCraftActivationScript(provider))
+        return provider
+    }
+  }
   return executable
 }
 

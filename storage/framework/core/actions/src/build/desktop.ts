@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { corePath, projectPath, storagePath } from '@stacksjs/path'
-import { assertDesktopReleaseChannel, desktopLauncherCompileArgs, hasUserlandDesktopLauncher, loadDesktopConfig, resolveCraftExecutable, resolveDesktopLauncher } from '@stacksjs/desktop-build'
+import { assertDesktopReleaseChannel, desktopLauncherCompileArgs, hasUserlandDesktopLauncher, isCraftActivationScript, loadDesktopConfig, resolveCraftExecutable, resolveDesktopLauncher } from '@stacksjs/desktop-build'
 import { runBuildStep } from './run-build-step'
 
 const outputDir = storagePath('framework/desktop-dist')
@@ -38,7 +38,7 @@ const craftBinary = resolveCraftExecutable()
 // The runtime is copied verbatim into the bundle, so it has to be the native
 // executable. A dev wrapper script points at a path outside the bundle and
 // would leave every shipped app broken on first launch.
-if (readFileSync(craftBinary).subarray(0, 2).toString() === '#!') {
+if (isCraftActivationScript(craftBinary)) {
   throw new Error(
     `CRAFT_BIN points at a script, not a native binary: ${craftBinary}. `
     + 'Point it at the compiled Craft executable (packages/zig/zig-out/bin/craft).',
