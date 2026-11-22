@@ -91,7 +91,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/strings` | [`stacks-strings`](../stacks-strings/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/strings/src/index.ts) | 12 |
 | `@stacksjs/support` | [`stacks-support`](../stacks-support/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/support/src/index.ts) | 6 |
 | `@stacksjs/telephony` | [`stacks-telephony`](../stacks-telephony/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/telephony/src/index.ts) | 5 |
-| `@stacksjs/testing` | [`stacks-testing`](../stacks-testing/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/index.ts) | 26 |
+| `@stacksjs/testing` | [`stacks-testing`](../stacks-testing/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/index.ts) | 27 |
 | `@stacksjs/tinker` | [`stacks-repl`](../stacks-repl/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tinker/src/index.ts) | 4 |
 | `@stacksjs/tunnel` | [`stacks-tunnel`](../stacks-tunnel/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tunnel/src/index.ts) | 1 |
 | `@stacksjs/types` | [`stacks-types`](../stacks-types/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/types/src/index.ts) | 3 |
@@ -897,7 +897,7 @@ Read the entrypoint and package export map for re-exported or type-only surfaces
 
 Local source modules: [src/console.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/console.ts), [src/disposable-database.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/disposable-database.ts), [src/events.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/events.ts), [src/feature.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/feature.ts), [src/isolated.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/isolated.ts), [src/mail.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/mail.ts), [src/schema.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/schema.ts), [src/service.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/service.ts), [src/time.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/time.ts).
 
-Evidence directory: [26 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [27 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/tinker
 

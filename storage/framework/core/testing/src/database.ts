@@ -114,10 +114,18 @@ async function runGuarantees(steps: Guarantee[]): Promise<void> {
 }
 
 export async function setupDatabase(): Promise<void> {
-  const dbName = `${config.database?.connections?.mysql?.name ?? 'stacks'}_testing`
+  const driver = currentDriver()
 
-  if (currentDriver() === 'mysql') {
+  if (driver === 'mysql') {
+    const dbName = `${config.database?.connections?.mysql?.name ?? 'stacks'}_testing`
     await db.unsafe(`CREATE DATABASE IF NOT EXISTS ${dbName}`).execute()
+    await migrateTestDatabase()
+  }
+  // Postgres used to fall through here, so a fresh test database never got
+  // its tables and every feature test failed with `relation "..." does not
+  // exist` (stacksjs/stacks#3355).
+  if (driver === 'postgres') {
+    await assertPostgresTestDatabase()
     await migrateTestDatabase()
   }
 }
@@ -130,6 +138,55 @@ export async function refreshDatabase(): Promise<void> {
     await truncateMysql()
   if (driver === 'sqlite')
     await truncateSqliteFast()
+  if (driver === 'postgres')
+    await truncatePostgres()
+}
+
+interface PostgresTable {
+  tablename: string
+}
+
+function quotePostgresIdentifier(name: string): string {
+  return `"${name.replaceAll('"', '""')}"`
+}
+
+/**
+ * Refuse to migrate or empty a Postgres database whose name does not say it
+ * is for tests. `truncatePostgres()` empties every table in the schema, so
+ * pointing a test run at the development database by mistake would wipe it.
+ * Disposable databases (`withDisposableDatabase('postgres')`) are named
+ * `stacks_test_...` and pass.
+ */
+export async function assertPostgresTestDatabase(): Promise<void> {
+  const rows = await db.unsafe('SELECT current_database() AS name').execute() as unknown as Array<{ name: string }>
+  const name = rows[0]?.name ?? ''
+  if (!name.toLowerCase().includes('test'))
+    throw new Error(`[testing] Refusing to reset Postgres database "${name}": its name does not contain "test". Point DB_DATABASE at a test database.`)
+}
+
+/**
+ * Empty every table in the current Postgres schema except the migration
+ * ledger, in one statement.
+ *
+ * The tables come from the live schema, not from `fetchTables()`: that globs
+ * every model file, framework defaults included, while an app's generated
+ * Postgres corpus only creates tables for the models it uses, so a list built
+ * from the models names tables that do not exist and the TRUNCATE fails.
+ *
+ * One statement naming every table satisfies the foreign keys between them,
+ * so there is no CASCADE: that would also empty, without a word, any table
+ * outside this list that references one of them. RESTART IDENTITY resets the
+ * ids, so a test that expects the first row to be id 1 sees it again.
+ */
+export async function truncatePostgres(): Promise<void> {
+  await assertPostgresTestDatabase()
+  const rows = await db.unsafe(
+    `SELECT tablename FROM pg_tables WHERE schemaname = current_schema() AND tablename <> 'migrations' ORDER BY tablename`,
+  ).execute() as unknown as PostgresTable[]
+  if (rows.length === 0)
+    return
+  const tables = rows.map(row => quotePostgresIdentifier(row.tablename)).join(', ')
+  await db.unsafe(`TRUNCATE TABLE ${tables} RESTART IDENTITY`).execute()
 }
 
 export async function truncateMysql(): Promise<void> {

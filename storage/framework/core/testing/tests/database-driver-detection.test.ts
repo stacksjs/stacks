@@ -24,6 +24,8 @@ writeFileSync(sqliteFile, 'stub-db-bytes')
 
 // Flipped between tests to prove call-time driver resolution.
 let driver = 'mysql'
+// What the mocked Postgres reports as current_database().
+let postgresDatabase = 'stacks_test'
 
 // `mock.module` is process-wide and bun does NOT restore it between
 // test files (same hazard documented in auth/tests/register.test.ts),
@@ -37,7 +39,15 @@ mock.module('@stacksjs/database', () => ({
   ...realDatabase,
   db: {
     unsafe: (statement: string) => ({
-      execute: async () => { executed.push(statement) },
+      execute: async () => {
+        executed.push(statement)
+        if (statement.startsWith('SELECT current_database()'))
+          return [{ name: postgresDatabase }]
+        // Live tables, deliberately not fetchTables()'s model list.
+        if (statement.includes('FROM pg_tables'))
+          return [{ tablename: 'Audit"Log' }, { tablename: 'orders' }]
+        return []
+      },
     }),
   },
   fetchSqliteFile: () => sqliteFile,
@@ -74,6 +84,7 @@ afterAll(() => {
 beforeEach(() => {
   executed.length = 0
   calls.length = 0
+  postgresDatabase = 'stacks_test'
 })
 
 describe('test-database helper drives the current query-builder API', () => {
@@ -84,6 +95,36 @@ describe('test-database helper drives the current query-builder API', () => {
 
     expect(executed).toContain('CREATE DATABASE IF NOT EXISTS stacks_testing')
     expect(calls).toContain('runDatabaseMigration')
+  })
+
+  it('setupDatabase (postgres) migrates the test database', async () => {
+    driver = 'postgres'
+    const { setupDatabase } = await import('../src/database')
+    await setupDatabase()
+
+    expect(calls).toContain('runDatabaseMigration')
+    expect(executed.some(statement => statement.startsWith('CREATE DATABASE'))).toBe(false)
+  })
+
+  it('refreshDatabase (postgres) empties the live tables in one TRUNCATE', async () => {
+    driver = 'postgres'
+    const { refreshDatabase } = await import('../src/database')
+    await refreshDatabase()
+
+    expect(calls).toContain('runDatabaseMigration')
+    expect(executed.filter(statement => statement.startsWith('TRUNCATE'))).toEqual([
+      'TRUNCATE TABLE "Audit""Log", "orders" RESTART IDENTITY',
+    ])
+  })
+
+  it('refuses a Postgres database whose name does not contain "test"', async () => {
+    driver = 'postgres'
+    postgresDatabase = 'stacks'
+    const { refreshDatabase } = await import('../src/database')
+
+    await expect(refreshDatabase()).rejects.toThrow('Refusing to reset Postgres database "stacks"')
+    expect(calls).not.toContain('runDatabaseMigration')
+    expect(executed.some(statement => statement.startsWith('TRUNCATE'))).toBe(false)
   })
 
   it('resolves the driver at call time, not module load', async () => {
