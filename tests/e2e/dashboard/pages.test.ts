@@ -3,8 +3,8 @@
  * browser, against a real seeded database (stacksjs/stacks#3319).
  *
  * "Cleanly" is what `pageAuditClean` measures: the page went quiet, no
- * same-origin request answered with a status of 400 or more, none was made
- * twice, and no error was raised on the page while it loaded. A page whose
+ * same-origin request answered with a status of 400 or more, no accidental
+ * duplicate requests were made, and no page error was raised while it loaded. A page whose
  * shell renders while its data request fails or never answers is exactly
  * what a unit test cannot see and a person sees at once.
  */
@@ -33,7 +33,22 @@ describe.skipIf(!dashboardE2EAvailable)('every dashboard page', () => {
   test('each one loads with no failed request and no page error', async () => {
     const problems: string[] = []
     for (const path of await sidebarPages(e2e!)) {
-      const report = await auditPage(`${e2e!.origin}${path}`, { cdp: e2e!.browser.cdp })
+      const { browser: { cdp }, origin } = e2e!
+      const terminal = '/api/dashboard/deployments/terminal'
+      const terminalRequests: number[] = []
+      const stop = path === '/deployments' ? cdp.on('Network.requestWillBeSent', ({ request, timestamp }) => {
+        if (request.method === 'GET' && request.url === origin + terminal)
+          terminalRequests.push(timestamp)
+      }) : undefined
+      const report = await auditPage(origin + path, { cdp }).finally(() => stop?.())
+      // The terminal intentionally polls every four seconds. Keep near-simultaneous
+      // requests and every HTTP failure visible in the audit.
+      if (path === '/deployments') {
+        if (!terminalRequests.length)
+          problems.push('/deployments: terminal output was never requested')
+        else if (terminalRequests.slice(1).every((time, index) => time - terminalRequests[index]! >= 3.5))
+          delete report.duplicates[`GET ${terminal}`]
+      }
       if (!pageAuditClean(report))
         problems.push(`${formatPageAudit(report)}${report.errors.length ? `\n  ${report.errors.join('\n  ')}` : ''}`)
     }
