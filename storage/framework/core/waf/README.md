@@ -51,26 +51,24 @@ them, with a warning, when it is not.
 
 `bun bench/latency.ts [rule files]` times `Waf.inspect` per request through
 `bun:ffi`. Measured on an Apple M-series Mac (Bun 1.4.3, zig-waf `ReleaseFast`),
-p50 per request. zig-utils/zig-waf#84 makes the C ABI allocate through malloc
-instead of a page per allocation (#82). zig-utils/zig-waf#85 (#83) compiles each
-rule's operator once per WAF instead of on every request; it is not merged yet,
-and the CI job `waf` still pins 9a8e745 (#84):
+p50 per request, before and after zig-utils/zig-waf#84, which makes the C ABI
+allocate through malloc instead of a page per allocation (#82):
 
-| Rules | Request | zig-waf 6c61dc6 | with #84 | with #85 |
-| --- | --- | --- | --- | --- |
-| test fixture (CRS 942100 + 949110), 20,000 runs | GET, clean | 252 us | 13 us | 13 us |
-| | GET, SQL injection | 438 us | 17 us | 17 us |
-| | POST, 1 KB form | 245 us | 16 us | 16 us |
-| full CRS 4 (55b09f5), paranoia level 1, 300 runs | GET, clean | 26.5 ms | 9.6 ms | 3.5 ms |
-| | GET, SQL injection | 18.8 ms | 11.1 ms | 3.3 ms |
-| | POST, 1 KB form | 42.3 ms | 37.5 ms | 29.5 ms |
+| Rules | Request | zig-waf 6c61dc6 | with #84 |
+| --- | --- | --- | --- |
+| test fixture (CRS 942100 + 949110), 20,000 runs | GET, clean | 252 us | 13 us |
+| | GET, SQL injection | 438 us | 17 us |
+| | POST, 1 KB form | 245 us | 16 us |
+| full CRS 4 (55b09f5), paranoia level 1, 300 runs | GET, clean | 26.5 ms | 9.6 ms |
+| | GET, SQL injection | 18.8 ms | 11.1 ms |
+| | POST, 1 KB form | 42.3 ms | 37.5 ms |
 
-Compiling once takes about two thirds off a full-CRS GET but only about a fifth
-off the form post. What remains of the form post is regex matching over the body
-in zig-regex's backtracking engine, which re-walks each pattern's syntax tree at
-every match step, so its cost grows with pattern size times input length
-(zig-utils/zig-regex#53). The #85 column comes from a later run with its own #84
-control (full CRS: 9.3, 9.4 and 37.4 ms). Measure with your own rules (a full CRS
+For a GET, most of the full-CRS cost that remains is zig-waf compiling every
+`@rx` and `@pm` operator again on every request (zig-utils/zig-waf#83). The form
+post is different: compiling once takes only about a fifth off it, and the rest
+is regex matching over the body in zig-regex's backtracking engine, which
+re-walks each pattern's syntax tree at every match step, so its cost grows with
+pattern size times input length (zig-utils/zig-regex#53). Measure with your own rules (a full CRS
 needs a smaller run):
 
 ```sh
