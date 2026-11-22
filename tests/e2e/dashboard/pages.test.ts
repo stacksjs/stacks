@@ -4,9 +4,9 @@
  *
  * "Cleanly" is what `pageAuditClean` measures: the page went quiet, no
  * same-origin request answered with a status of 400 or more, no accidental
- * duplicate requests were made, and no page error was raised while it loaded. A page whose
- * shell renders while its data request fails or never answers is exactly
- * what a unit test cannot see and a person sees at once.
+ * duplicate requests were made, and no page error was raised while it
+ * loaded. The audit waits for the page's own requests, so a shell whose
+ * data request fails or never answers cannot pass.
  */
 import type { DashboardE2E } from './harness'
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
@@ -34,13 +34,15 @@ describe.skipIf(!dashboardE2EAvailable)('every dashboard page', () => {
     const problems: string[] = []
     for (const path of await sidebarPages(e2e!)) {
       const { browser: { cdp }, origin } = e2e!
+      // Retire the prior document and its timers before observing this page.
+      await navigate(cdp, 'about:blank', { quietMs: 0, includeSpeculative: false })
       const terminal = '/api/dashboard/deployments/terminal'
       const terminalRequests: number[] = []
       const stop = path === '/deployments' ? cdp.on('Network.requestWillBeSent', ({ request, timestamp }) => {
         if (request.method === 'GET' && request.url === origin + terminal)
           terminalRequests.push(timestamp)
       }) : undefined
-      const report = await auditPage(origin + path, { cdp }).finally(() => stop?.())
+      const report = await auditPage(origin + path, { cdp, includeSpeculative: false }).finally(() => stop?.())
       // The terminal intentionally polls every four seconds. Keep near-simultaneous
       // requests and every HTTP failure visible in the audit.
       if (path === '/deployments') {
