@@ -295,9 +295,10 @@ before producing a Store installer. `DESKTOP_BUN_EXECUTABLE` sets the Bun runtim
 and Buddy webview builders. For an stx native backend that uses Bun's own executable
 as the compile runtime, put the patched Bun build first on `PATH` when running Buddy.
 
-The patched Bun 1.4.4 build below links upstream ICU 78.2 statically and keeps
-JavaScriptCore's internationalization support. On Apple Silicon macOS with Xcode
-selected, install the toolchain declared in the pinned Bun source (LLVM 23.1.1
+The [App Store Bun runtime workflow](../../.github/workflows/bun-app-store-runtime.yml)
+links upstream ICU 78.2 into Bun 1.4.4 and runs both Bun and a compiled executable
+on macOS 15 before archiving them. For a local build, use Apple Silicon with Xcode
+16.4 and the toolchain declared in the pinned Bun source (LLVM 23.1.1
 and Rust nightly 2026-09-15). Download `icu4c-78.2-sources.tgz` from
 [Unicode's ICU release](https://github.com/unicode-org/icu/releases/tag/release-78.2)
 and check it against that release's `SHASUM512.txt` before extracting it.
@@ -306,7 +307,7 @@ and check it against that release's `SHASUM512.txt` before extracting it.
 export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
 mkdir icu-build
 cd icu-build
-MACOSX_DEPLOYMENT_TARGET=13.0 ../icu/source/configure \
+MACOSX_DEPLOYMENT_TARGET=13.0 CXXFLAGS='-O2 -fno-exceptions' ../icu/source/configure \
   --prefix="$PWD/install" --enable-static --disable-shared --disable-renaming \
   --disable-tests --disable-samples --with-data-packaging=static
 make -j6
@@ -318,15 +319,17 @@ git clone --depth 1 --branch bun-v1.4.4 https://github.com/oven-sh/bun.git
 cd bun
 git apply /absolute/path/to/bun-static-icu.patch
 BUN_TOOLCHAIN_LLVM=/absolute/path/to/llvm-23.1.1 RUSTUP_TOOLCHAIN=nightly-2026-09-15 \
-  bun scripts/build.ts --profile=release --osxDeploymentTarget=13.0 -j6
+  bun scripts/build.ts --profile=release --ci=true --canary=false --osxDeploymentTarget=13.0 -j6
 otool -L build/release/bun
 vtool -show-build build/release/bun
 build/release/bun -e 'console.log(process.versions.icu, new Intl.Collator("de").compare("ä", "z"))'
 ```
 
 Use the [Bun build patch](./desktop/bun-static-icu.patch) for revision
-`38afee6c84`. Record the resulting executable's SHA-256 when providing it
-to CI. Ship the upstream ICU license in the application, and inspect the
+`38afee6c84`. The patch uses Apple's libc++ headers for the static ICU build
+so the runtime does not import libc++ symbols unavailable on older macOS.
+Record the archive and executable SHA-256 hashes when providing them to CI.
+Ship the upstream ICU license in the application, and inspect the
 signed bundle's executables again using `otool -L` and `nm -um`.
 
 ### Storage

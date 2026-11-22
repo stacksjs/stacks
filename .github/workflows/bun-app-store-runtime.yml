@@ -1,0 +1,102 @@
+name: Build App Store Bun runtime
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runtime:
+    runs-on: macos-15
+    timeout-minutes: 90
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+      MACOSX_DEPLOYMENT_TARGET: '13.0'
+      RUSTUP_TOOLCHAIN: nightly-2026-09-15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check out Bun 1.4.4 source
+        uses: actions/checkout@v6
+        with:
+          repository: oven-sh/bun
+          ref: 38afee6c84fcf48c0edb2466aa4b27d287a59c30
+          path: bun-runtime
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.4'
+      - name: Install pinned LLVM and Rust
+        env:
+          LLVM_ARCHIVE: LLVM-23.1.1-macOS-ARM64.tar.zst
+          LLVM_SHA256: 2c4a0fdd1ec6a32d4fd57ff32aa714ec8b3c71bf02a24ec38608a4f23f8aca89
+        run: |
+          [[ "$(uname -m)" == arm64 ]]
+          [[ "$(sw_vers -productVersion)" == 15.* ]]
+          [[ "$(xcrun --sdk macosx --show-sdk-version)" == 15.5 ]]
+          mkdir "$RUNNER_TEMP/llvm"
+          curl --fail --silent --show-error --location --retry 3 \
+            "https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.1/$LLVM_ARCHIVE" \
+            --output "$RUNNER_TEMP/$LLVM_ARCHIVE"
+          printf '%s  %s\n' "$LLVM_SHA256" "$RUNNER_TEMP/$LLVM_ARCHIVE" | shasum -a 256 -c
+          tar -xf "$RUNNER_TEMP/$LLVM_ARCHIVE" --strip-components 1 -C "$RUNNER_TEMP/llvm"
+          rm "$RUNNER_TEMP/$LLVM_ARCHIVE"
+          "$RUNNER_TEMP/llvm/bin/clang" --version
+          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal
+      - name: Build upstream ICU 78.2 as static libraries
+        env:
+          ICU_SHA512: 92feddfe81c57336f386c7cbc9f6d976bf349db148a77a247c4559676f51116115c8c52c4d907feb50933f72ab75fd8e48be092bf9c8ca33a3e8fabc9372a5d6
+          CFLAGS: -O2
+          CXXFLAGS: -O2 -fno-exceptions
+        run: |
+          cd "$RUNNER_TEMP"
+          curl --fail --silent --show-error --location --retry 3 \
+            https://github.com/unicode-org/icu/releases/download/release-78.2/icu4c-78.2-sources.tgz \
+            --output icu4c-78.2-sources.tgz
+          printf '%s  %s\n' "$ICU_SHA512" icu4c-78.2-sources.tgz | shasum -a 512 -c
+          tar -xzf icu4c-78.2-sources.tgz
+          mkdir icu-build
+          cd icu-build
+          ../icu/source/configure --prefix="$RUNNER_TEMP/icu-install" --enable-static --disable-shared \
+            --disable-renaming --disable-tests --disable-samples --with-data-packaging=static
+          make -j3
+          make install
+      - name: Build and check the Bun runtime
+        working-directory: bun-runtime
+        run: |
+          git apply "$GITHUB_WORKSPACE/docs/packages/desktop/bun-static-icu.patch"
+          export BUN_TOOLCHAIN_LLVM="$RUNNER_TEMP/llvm"
+          export BUN_STATIC_ICU_LIB_DIR="$RUNNER_TEMP/icu-install/lib"
+          bun install --frozen-lockfile
+          bun scripts/build.ts --profile=release --ci=true --canary=false --osxDeploymentTarget="$MACOSX_DEPLOYMENT_TARGET" -j3
+      - name: Test the runtime and a compiled Bun executable on macOS 15
+        working-directory: bun-runtime
+        run: |
+          mkdir "$RUNNER_TEMP/icu-bun-release" "$RUNNER_TEMP/icu-bun-archive"
+          cp build/release/bun "$RUNNER_TEMP/icu-bun-release/bun"
+          cp LICENSE.md "$RUNNER_TEMP/icu-bun-release/BUN-LICENSE.md"
+          cp "$RUNNER_TEMP/icu/LICENSE" "$RUNNER_TEMP/icu-bun-release/ICU-LICENSE.txt"
+          cp "$GITHUB_WORKSPACE/docs/packages/desktop/bun-static-icu.patch" "$RUNNER_TEMP/icu-bun-release/"
+          cd "$RUNNER_TEMP/icu-bun-release"
+          cat > "$RUNNER_TEMP/icu-smoke.ts" <<'EOF'
+          if (Bun.version !== '1.4.4' || process.versions.icu !== '78.2' || process.arch !== 'arm64') process.exit(1)
+          if (new Intl.Collator('de').compare('ä', 'z') >= 0) process.exit(1)
+          console.log(`Bun ${Bun.version}, ICU ${process.versions.icu}`)
+          EOF
+          ./bun "$RUNNER_TEMP/icu-smoke.ts"
+          ./bun build --compile "$RUNNER_TEMP/icu-smoke.ts" --outfile "$RUNNER_TEMP/icu-smoke"
+          "$RUNNER_TEMP/icu-smoke"
+          otool -L bun "$RUNNER_TEMP/icu-smoke" | tee "$RUNNER_TEMP/icu-load-commands.txt"
+          if grep -q /usr/lib/libicucore "$RUNNER_TEMP/icu-load-commands.txt"; then exit 1; fi
+          archive=bun-darwin-arm64-icu-78.2.tar.gz
+          tar -czf "$RUNNER_TEMP/icu-bun-archive/$archive" bun BUN-LICENSE.md ICU-LICENSE.txt bun-static-icu.patch
+          shasum -a 256 bun > "$RUNNER_TEMP/icu-bun-archive/bun.sha256"
+          cd "$RUNNER_TEMP/icu-bun-archive"
+          shasum -a 256 "$archive" > "$archive.sha256"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: bun-darwin-arm64-icu-78.2
+          path: ${{ runner.temp }}/icu-bun-archive/
+          if-no-files-found: error

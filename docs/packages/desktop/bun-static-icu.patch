@@ -41,3 +41,20 @@ index e55cc310..ae413d19 100644
    }
  
    if (cfg.freebsd) {
+diff --git a/scripts/build/flags.ts b/scripts/build/flags.ts
+--- a/scripts/build/flags.ts
++++ b/scripts/build/flags.ts
+@@ -195,8 +195,11 @@
+       "-iframework",
+       join(c.osxSysroot!, "System", "Library", "Frameworks"),
+     ],
+     when: c =>
+-      c.darwin && c.crossTarget !== undefined && c.osxSysroot !== undefined && c.clangResourceDir !== undefined,
++      c.darwin &&
++      (c.crossTarget !== undefined || process.env.BUN_STATIC_ICU_LIB_DIR !== undefined) &&
++      c.osxSysroot !== undefined &&
++      c.clangResourceDir !== undefined,
+     lang: "cxx",
+-    desc: "macOS cross: only the SDK's (Apple) libc++/libc/framework headers + clang builtins",
++    desc: "macOS cross or static ICU: only the SDK's Apple headers and clang builtins",
+   },
