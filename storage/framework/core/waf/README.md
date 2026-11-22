@@ -63,9 +63,12 @@ allocate through malloc instead of a page per allocation (#82):
 | | GET, SQL injection | 18.8 ms | 11.1 ms |
 | | POST, 1 KB form | 42.3 ms | 37.5 ms |
 
-The full-CRS cost that remains is mostly zig-waf compiling every `@rx` and `@pm`
-operator again on every request (zig-utils/zig-waf#83), which is why the body
-rules barely moved. Measure with your own rules (a full CRS needs a smaller run):
+For a GET, most of the full-CRS cost that remains is zig-waf compiling every
+`@rx` and `@pm` operator again on every request (zig-utils/zig-waf#83). The form
+post is different: compiling once takes only about a fifth off it, and the rest
+is regex matching over the body in zig-regex's backtracking engine, whose cost
+grows with pattern size times input length. Measure with your own rules (a full
+CRS needs a smaller run):
 
 ```sh
 BENCH_ITERATIONS=300 bun bench/latency.ts crs-setup.conf rules/*.conf
