@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.656...v0.75.657)
+
+## 🐛 Bug Fixes
+
+- **docs**: build the docs package's entry points where its manifest names them ([6effc5f](https://github.com/stacksjs/stacks/commit/6effc5f)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.655...v0.75.656)
 
 ## ✨ Features
