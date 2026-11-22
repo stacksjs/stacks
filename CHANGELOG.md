@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.650...v0.75.651)
+
+## 🐛 Bug Fixes
+
+- **desktop**: resolve Pantry activation scripts to native Craft binaries ([255880a](https://github.com/stacksjs/stacks/commit/255880a)) _(by Chris Breuer)_
+- **desktop**: validate deployment targets in App Store bundles ([20a74a3](https://github.com/stacksjs/stacks/commit/20a74a3)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **desktop**: regenerate Craft runtime discovery references ([5426838](https://github.com/stacksjs/stacks/commit/5426838)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.649...v0.75.650)
 
 ## 🐛 Bug Fixes
