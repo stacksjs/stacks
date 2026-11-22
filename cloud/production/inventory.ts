@@ -10,8 +10,8 @@ export const deploymentsVolume = '/var/lib/stacks-deployments'
 const webRoot = '/var/www'
 
 export async function configureInventory(options: { apply?: boolean, retire?: string }): Promise<void> {
-  const databases = await discoverPostgresDatabases()
   if (options.retire !== undefined) {
+    const databases = await discoverPostgresDatabases()
     const inventory = readJson<BackupInventory>(inventoryPath)
     retireMissingDatabase(inventory, options.retire, new Set(databases.map(row => row.name)))
     if (!options.apply) {
@@ -27,6 +27,13 @@ export async function configureInventory(options: { apply?: boolean, retire?: st
     return
   }
 
+  const inventory = await discoverBackupInventory()
+  saveJson(inventoryPath, inventory)
+  console.log(`Configured ${Object.keys(inventory.projects).length} app groups`)
+}
+
+export async function discoverBackupInventory(): Promise<BackupInventory> {
+  const databases = await discoverPostgresDatabases()
   const projects = Object.assign(Object.create(null) as Record<string, BackupSelection>, discoverManagedProjects(webRoot))
   const select = (name: string) => projects[name] ??= { sqlite: [], postgres: [], files: [] }
   for (const row of databases) {
@@ -82,8 +89,7 @@ export async function configureInventory(options: { apply?: boolean, retire?: st
     if (!Object.values(selection).some(entries => entries.length))
       delete projects[name]
   }
-  saveJson(inventoryPath, inventory)
-  console.log(`Configured ${Object.keys(projects).length} app groups`)
+  return inventory
 }
 
 const postgresRoles = `

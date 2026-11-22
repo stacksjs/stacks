@@ -31,6 +31,7 @@ copies are available for rollback.
 
 The daily application backup and its hourly retry restore from both AWS and
 Hetzner before recording success. Both units use `--preserve-backups`. The
+units refresh the inventory through the Bun operator before starting. The
 hourly retry processes new, failed, missing and stale receipts, and skips
 groups verified by every provider within 36 hours. The integrity check reads
 one seventh of each repository per run. The database drill restores
