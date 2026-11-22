@@ -65,6 +65,7 @@ export interface SupervisorOptions {
   reservePort: (root: string, base: number) => number | null
   portIsFree: (port: number) => Promise<boolean>
   portAnswers: (port: number) => Promise<boolean>
+  dashboardBooting?: (port: number) => Promise<boolean>
   /** The end of what the dashboard printed, for an error worth reading. */
   logTail: (root: string) => string
   sleep?: (ms: number) => Promise<void>
@@ -167,10 +168,10 @@ export class DashboardSupervisor {
         port,
         env: {
           PORT_ADMIN: String(port),
-          // No window and no proxy of its own: this is a server in the
-          // background, and a browser or the app's window comes to it.
+          // A background launch can publish into a shared proxy without
+          // opening its own native window or prompting for administrator access.
           STACKS_NO_NATIVE: '1',
-          STACKS_DEV_LOCALHOST: '1',
+          STACKS_DASHBOARD_BACKGROUND: '1',
           STACKS_DASHBOARD_IDLE_EXIT_MS: String(this.idleExitMs),
         },
       }),
@@ -192,8 +193,9 @@ export class DashboardSupervisor {
 
       // Its own record is the better answer: it carries the port it really
       // bound. A release without one is ready once its port answers.
-      const service = this.options.readService(root)
-      if (service || await this.options.portAnswers(port)) {
+      let service = this.options.readService(root)
+      if (service || (await this.options.portAnswers(port) && !await this.options.dashboardBooting?.(port))) {
+        service ??= this.options.readService(root)
         dashboard.port = service?.port ?? port
         dashboard.url = service?.url ?? dashboard.url
         dashboard.ready = true

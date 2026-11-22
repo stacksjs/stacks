@@ -1,5 +1,5 @@
 <script client>
-type Project = { id: string, name: string, path: string, pending: number, issue: string }
+type Project = { id: string, name: string, path: string, pending: number, issue: string, dashboard: 'ready' | 'starting' | 'stopped' }
 type Snapshot = { online: boolean, watched: number, running: boolean, failed: number, projects: Project[], system: { cpu: number | null, memory: { used: number, total: number, raw: boolean } } }
 type Package = { name: string, version: string, managed?: boolean }
 type CatalogMatch = { name: string, domain: string }
@@ -9,6 +9,7 @@ type PantryStatus = { state: 'offline' | 'pair' | 'ready', issue?: string, packa
 const snapshot = state<Snapshot | null>(null)
 const filter = state('')
 const busy = state('')
+const launching = state('')
 const notice = state('')
 const unavailable = state(false)
 const pane = state<'overview' | 'pantry'>('overview')
@@ -143,6 +144,7 @@ async function searchCatalog() {
 async function perform(action: string, project?: string) {
   if (busy()) return
   busy.set(project || action)
+  if (action === 'dashboard' && project) launching.set(project)
   notice.set('')
   try {
     await call('/api/action', { action, project })
@@ -154,6 +156,7 @@ async function perform(action: string, project?: string) {
   }
   finally {
     busy.set('')
+    launching.set('')
   }
 }
 
@@ -185,12 +188,12 @@ onDestroy(() => {
   :root {
     color-scheme: light dark;
     font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    --ink: light-dark(#1e2026, #f1f0f5);
-    --secondary: light-dark(#555965, #aaaab5);
-    --surface: light-dark(#ffffffc2, #25252bd4);
-    --line: light-dark(#15172519, #ffffff20);
-    --accent: light-dark(#164bc3, #b3c9ff);
-    --accent-surface: light-dark(#e4ecff, #253759);
+    --ink: light-dark(#191b23, #f4f4f8);
+    --secondary: light-dark(#575d6c, #b3b6c5);
+    --surface: light-dark(#ffffffc9, #202128db);
+    --line: light-dark(#1d22351c, #ffffff20);
+    --accent: light-dark(#254eb1, #b7cbff);
+    --accent-surface: light-dark(#e9efff, #293955);
   }
   html, body { margin: 0; min-height: 100%; background: transparent; color: var(--ink); }
   body { font-size: 13px; }
@@ -211,6 +214,9 @@ onDestroy(() => {
   .issue { color: light-dark(#875115, #f0bd83); }
   .search { color: inherit; }
   .tab { border: 0; }
+  .tray-project { min-height: 44px; }
+  .project-icon { width: 25px; height: 25px; display: grid; place-items: center; border-radius: .45rem; }
+  .dashboard-launch { min-width: 5rem; }
   .meter { display: block; appearance: none; width: 100%; height: 4px; border: 0; overflow: hidden; border-radius: 8px; }
   .meter::-webkit-progress-bar { background: var(--accent-surface); }
   .meter::-webkit-progress-value { background: var(--accent); border-radius: 8px; }
@@ -341,7 +347,7 @@ onDestroy(() => {
             @endforeach
           </ul>
         @else
-          <p class="px-3 py-2.5 border rounded-xl line secondary surface">You’re caught up.</p>
+          <p class="text-xs secondary">No approvals waiting.</p>
         @endif
       </section>
 
@@ -353,14 +359,22 @@ onDestroy(() => {
         @if(recent().length)
           <ul class="m-0 p-0 list-none border rounded-xl line surface">
             @foreach(recent() as project)
-              <li class="flex gap-3 items-center justify-between px-3 py-1.5 border-b last:border-b-0 line">
-                <div class="min-w-0">
+              <li class="flex gap-2 items-center px-2.5 py-1.5 border-b last:border-b-0 line tray-project">
+                <span class="shrink-0 font-semibold text-xs accent project-icon" aria-hidden="true">{{ project.name.trim().slice(0, 1).toUpperCase() }}</span>
+                <div class="flex-1 min-w-0">
                   <p class="truncate" :title="project.path">{{ project.name }}</p>
                   @if(project.issue)
                     <p class="text-xs truncate issue" :title="project.issue">{{ project.issue }}</p>
+                  @elseif(project.dashboard === 'ready')
+                    <p class="text-xs online">Running</p>
                   @endif
                 </div>
-                <button type="button" class="shrink-0 px-2 py-1 text-xs rounded-md plain secondary" :disabled="busy() !== ''" @click="perform('dashboard', project.id)">Dashboard ↗</button>
+                <button type="button" class="shrink-0 px-2 py-1 text-xs accent rounded-md dashboard-launch tab"
+                  :aria-label="'Open ' + project.name + ' dashboard'"
+                  :aria-busy="launching() === project.id"
+                  :disabled="busy() !== ''" @click="perform('dashboard', project.id)">
+                  {{ launching() === project.id || project.dashboard === 'starting' ? 'Opening…' : 'Open' }}
+                </button>
               </li>
             @endforeach
           </ul>

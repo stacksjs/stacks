@@ -71,7 +71,7 @@ describe('opening a project\'s dashboard', () => {
     expect(supervisor.size).toBe(0)
   })
 
-  it('starts one with no window and no proxy, and an idle limit of its own', async () => {
+  it('starts one with background routing, no window, and an idle limit of its own', async () => {
     const { supervisor, launches, services, answering, service } = machine({ idleExitMs: 900_000 })
 
     const opening = supervisor.open('/code/shop')
@@ -82,9 +82,21 @@ describe('opening a project\'s dashboard', () => {
     expect(launches).toEqual([{
       root: '/code/shop',
       port: 3900,
-      env: { PORT_ADMIN: '3900', STACKS_NO_NATIVE: '1', STACKS_DEV_LOCALHOST: '1', STACKS_DASHBOARD_IDLE_EXIT_MS: '900000' },
+      env: { PORT_ADMIN: '3900', STACKS_NO_NATIVE: '1', STACKS_DASHBOARD_BACKGROUND: '1', STACKS_DASHBOARD_IDLE_EXIT_MS: '900000' },
     }])
     expect(supervisor.list()).toMatchObject([{ name: 'shop', path: '/code/shop', url: 'http://localhost:3900', state: 'ready' }])
+  })
+
+  it('waits for the new dashboard to publish its address even when its origin accepts connections', async () => {
+    const { supervisor, services, answering, service } = machine({
+      dashboardBooting: async () => {
+        services.set('/code/shop', { ...service(3900), url: 'https://dashboard.shop.test' })
+        return true
+      },
+    })
+    const opened = supervisor.open('/code/shop')
+    answering.add(3900)
+    expect(await opened).toEqual({ url: 'https://dashboard.shop.test', port: 3900, started: true })
   })
 
   it('takes a framework release that records nothing as ready once its port answers', async () => {

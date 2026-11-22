@@ -5,6 +5,7 @@ import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { openDevWindow } from '@stacksjs/desktop-build'
 import { defaultsPath, isTransientCheckout, listProjects, projectPath, registerProject } from '@stacksjs/path'
 import { findStacksProjects } from '@stacksjs/utils'
+import { openProjectDashboard } from '../daemon/client'
 import { findAvailablePort, waitForServer } from './dashboard-utils'
 import { isTrustedTrayRequest, trayOrigins } from './tray-origin'
 
@@ -105,11 +106,6 @@ function localIpAddress(): string {
   return '127.0.0.1'
 }
 
-function dashboardUrl(path = ''): string {
-  const base = hasPrettyDomain ? `https://dashboard.${domain}` : `http://localhost:${Number(process.env.PORT_ADMIN) || 3002}`
-  return `${base}${path}`
-}
-
 async function handleAction(input: TrayActionRequest): Promise<Response> {
   const projects = await discoverProjects()
   const project = input.project || projectPath()
@@ -126,9 +122,6 @@ async function handleAction(input: TrayActionRequest): Promise<Response> {
       const result = await runBuddy(project, ['doctor'])
       return Response.json({ ok: result.exitCode === 0, ...result })
     }
-    case 'settings':
-      openPath(dashboardUrl('/settings'))
-      return Response.json({ ok: true, message: 'Opened dashboard settings' })
     case 'check-updates': {
       const result = await runBuddy(project, ['outdated'])
       return Response.json({ ok: result.exitCode === 0, ...result })
@@ -136,8 +129,18 @@ async function handleAction(input: TrayActionRequest): Promise<Response> {
     case 'copy-ip':
       return Response.json({ ok: true, value: localIpAddress(), message: 'IP address ready to copy' })
     case 'open-dashboard':
-      openPath(dashboardUrl())
-      return Response.json({ ok: true, message: 'Opened dashboard' })
+    case 'settings':
+    case 'ask-buddy': {
+      try {
+        const { url } = await openProjectDashboard(project)
+        const path = input.action === 'settings' ? '/settings' : input.action === 'ask-buddy' ? '/buddy' : '/'
+        openPath(new URL(path, url).href)
+        return Response.json({ ok: true, message: 'Opened dashboard' })
+      }
+      catch (error) {
+        return Response.json({ ok: false, error: error instanceof Error ? error.message : String(error) }, { status: 503 })
+      }
+    }
     case 'buddy-commands': {
       const result = await runBuddy(project, ['list'])
       return Response.json({ ok: result.exitCode === 0, ...result })
@@ -171,9 +174,6 @@ async function handleAction(input: TrayActionRequest): Promise<Response> {
     case 'edit-email':
       openPath(join(project, 'config/email.ts'))
       return Response.json({ ok: true, message: 'Opened email configuration' })
-    case 'ask-buddy':
-      openPath(dashboardUrl('/buddy'))
-      return Response.json({ ok: true, message: 'Opened Ask Buddy' })
     default:
       return Response.json({ ok: false, error: 'Unknown tray action' }, { status: 400 })
   }

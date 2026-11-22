@@ -386,10 +386,8 @@ function connectsWithin(port: number, timeoutMs: number): Promise<boolean> {
  * response ran unbounded: `maxWait` of 500ms routinely took 11 seconds, all of
  * it before the banner printed, with nothing on screen to explain the wait.
  *
- * Nothing is lost by not rendering here: the STX server's own
- * `prewarmRenderCache` compiles the index in the background either way, so the
- * page is warm by the time anyone opens it - it just no longer holds the
- * banner hostage while it does.
+ * The dashboard renders a page when first visited and keeps the render in
+ * STX's cache. A readiness check should never trigger a render itself.
  */
 export async function waitForServer(port: number, maxWait = 500): Promise<boolean> {
   const deadline = Date.now() + maxWait

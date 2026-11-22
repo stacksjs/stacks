@@ -1,6 +1,6 @@
 import type { DashboardProxyProbes } from '../src/dev/dashboard-proxy'
 import { describe, expect, it } from 'bun:test'
-import { resolveDashboardDomain, resolveDashboardProxyStrategy } from '../src/dev/dashboard-proxy'
+import { dashboardOriginUrl, resolveDashboardDomain, resolveDashboardProxyStrategy } from '../src/dev/dashboard-proxy'
 
 function probes(overrides: Partial<DashboardProxyProbes> = {}): DashboardProxyProbes {
   return {
@@ -12,6 +12,14 @@ function probes(overrides: Partial<DashboardProxyProbes> = {}): DashboardProxyPr
 }
 
 describe('dashboard proxy strategy', () => {
+  it('honors an explicit dashboard host and only uses loopback on a direct origin', () => {
+    expect(resolveDashboardDomain('attic.localhost', false, 'https://attic.test')).toBe('attic.test')
+    expect(resolveDashboardDomain('attic.localhost', false, '  ')).toBe('dashboard.attic.localhost')
+    expect(resolveDashboardDomain('attic.localhost', true, 'https://attic.test')).toBeNull()
+    expect(resolveDashboardDomain('attic.localhost', false, 'https://attic.test:9443')).toBeNull()
+    expect(dashboardOriginUrl('dashboard.attic.localhost', 3901)).toBe('http://dashboard.attic.localhost:3901')
+    expect(dashboardOriginUrl('attic.test', 3901)).toBe('http://127.0.0.1:3901')
+  })
   it.each([
     '', 'localhost', 'localhost:4320', 'http://localhost', 'https://LOCALHOST.:4320/path',
     'http://127.0.0.1:4320', '127.0.0.2:4320', '127.1', '0.0.0.0:4320',

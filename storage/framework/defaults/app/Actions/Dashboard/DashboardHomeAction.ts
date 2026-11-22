@@ -1,8 +1,8 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { feature } from '@stacksjs/config'
-import { Order, Product, Request, User } from '@stacksjs/orm'
+import { Order, Product, User } from '@stacksjs/orm'
 import { checkApplicationHealth, type ApplicationHealthCheck } from '@stacksjs/router'
-import { formatRelative, safeGet } from '../../../resources/functions/dashboard/data'
+import { formatRelative, loadModel, safeGet } from '../../../resources/functions/dashboard/data'
 import { dashboardOperationalIssue } from './dashboard-response'
 
 /** Totals over every captured request, counted by the database. */
@@ -109,6 +109,7 @@ export default new Action({
   async handle() {
     const commerce = feature('commerce')
     const none = async () => null
+    const healthResult = settleEach([() => checkApplicationHealth()] as const)
     const [
       userCount,
       productCount,
@@ -116,10 +117,7 @@ export default new Action({
       totalRevenue,
       recentOrders,
       recentUsers,
-      requestCount,
-      successfulRequests,
-      failedRequests,
-      averageDuration,
+      requestMetrics,
     ] = await settleEach([
       () => User.count(),
       commerce ? () => Product.count() : none,
@@ -127,26 +125,25 @@ export default new Action({
       commerce ? () => Order.sum('totalAmount') : none,
       commerce ? () => Order.orderBy('created_at', 'desc').limit(5).get() : async () => [],
       () => User.orderBy('created_at', 'desc').limit(5).get(),
-      () => Request.count(),
-      () => Request.where('status_code', '>=', 200).where('status_code', '<', 400).count(),
-      () => Request.where('status_code', '>=', 400).count(),
-      () => Request.avg('duration_ms'),
+      async () => {
+        // A standalone developer dashboard may be open with the app's public
+        // dashboard bundle off. Resolve the persisted model from its source.
+        const Requests = await loadModel('Request')
+        const [total, successful, failed, averageDuration] = await Promise.all([
+          () => Requests.count(),
+          () => Requests.where('status_code', '>=', 200).where('status_code', '<', 400).count(),
+          () => Requests.where('status_code', '>=', 400).count(),
+          () => Requests.avg('duration_ms'),
+        ].map(query => Promise.resolve().then(query)))
+        return summarizeHttpRequests({ total: Number(total), successful: Number(successful), failed: Number(failed), averageDuration: Number(averageDuration ?? 0) })
+      },
     ] as const)
-    const healthResult = await Promise.allSettled([checkApplicationHealth()])
 
     const stats = homeStats({ users: userCount, products: productCount, revenue: totalRevenue, orders: orderCount }, commerce)
 
-    const httpMetrics = requestCount.status === 'fulfilled' && successfulRequests.status === 'fulfilled'
-      && failedRequests.status === 'fulfilled' && averageDuration.status === 'fulfilled'
-      ? summarizeHttpRequests({
-          total: Number(requestCount.value) || 0,
-          successful: Number(successfulRequests.value) || 0,
-          failed: Number(failedRequests.value) || 0,
-          averageDuration: Number(averageDuration.value) || 0,
-        })
-      : summarizeHttpRequests({ total: 0, successful: 0, failed: 0, averageDuration: 0 })
+    const httpMetrics = requestMetrics.status === 'fulfilled' ? requestMetrics.value : []
 
-    const health = healthResult[0]
+    const [health] = await healthResult
     const services = health.status === 'fulfilled'
       ? Object.entries(health.value.checks).map(([name, check]) => {
           if (!check.ok) {
@@ -195,10 +192,7 @@ export default new Action({
       ['Revenue', totalRevenue],
       ['Recent orders', recentOrders],
       ['Recent users', recentUsers],
-      ['Request count', requestCount],
-      ['Successful requests', successfulRequests],
-      ['Failed requests', failedRequests],
-      ['Average response', averageDuration],
+      ['HTTP metrics', requestMetrics],
     ]
     const issues = sources
       .map(([source, result]) => issue(source, result))

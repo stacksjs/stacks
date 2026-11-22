@@ -187,6 +187,12 @@ export function resolvePrettyDevDomain(appUrl: string | undefined, nativeMode = 
   }
 }
 
+async function developmentDashboardDomain(appDomain: string): Promise<string> {
+  const { resolveDashboardDomain } = await import('@stacksjs/actions/dev/dashboard-proxy')
+  const configured = resolveDashboardDomain(appDomain, false, process.env.DASHBOARD_URL)
+  return configured && configured !== appDomain ? configured : `dashboard.${appDomain}`
+}
+
 export function shouldUsePrettyDevUrls(input: {
   domain: string | null
   localhostOnly: boolean
@@ -849,7 +855,8 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // Only manage the proxy/TLS/daemon ourselves when rpx isn't already doing it.
   const hasCustomDomain = usePrettyUrls && !proxyManagedExternally
   const displayedDomain = usePrettyUrls ? domain : null
-  const dashboardDomain = displayedDomain ? `dashboard.${displayedDomain}` : null
+  const configuredDashboardDomain = includeDashboard && domain ? await developmentDashboardDomain(domain) : null
+  const dashboardDomain = displayedDomain ? configuredDashboardDomain : null
   const frontendBaseUrl = displayedDomain ? `https://${displayedDomain}` : `http://localhost:${frontendPort}`
   const frontendUrl = developmentUrl(frontendBaseUrl, entryPath)
   const apiUrl = displayedDomain ? `https://${displayedDomain}/api` : `http://localhost:${apiPort}`
@@ -859,6 +866,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // so they don't start their own (which would conflict on port 443).
   // Suppress early ts-css/STX/auth config noise — `printDevEngineNotes()` prints after "ready in".
   process.env.STACKS_PROXY_MANAGED = '1'
+  process.env.STACKS_MANAGED_DASHBOARD_DOMAIN = dashboardDomain ?? ''
   process.env.STACKS_DEV_QUIET = '1'
 
   // Minimal header while backends boot — URLs print once everything is ready.
@@ -879,12 +887,12 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // would delay every dev server; readiness waits on this promise before writing
   // registry entries.
   const rpxTlsPreflight = hasCustomDomain && domain
-    ? prepareRpxTlsForDev({ domain, includeDashboard, options })
+    ? prepareRpxTlsForDev({ domain, dashboardDomain, options })
     : Promise.resolve()
   // Opted out of pretty URLs: make sure no loopback override from a previous
   // pretty-URL session keeps the domain pointed at this machine.
   if (localhostOnly && domain && !proxyManagedExternally)
-    void removeStalePublicDomainOverrides(domain, includeDashboard, options.verbose ?? false).catch(() => { /* best-effort */ })
+    void removeStalePublicDomainOverrides(domain, configuredDashboardDomain, options.verbose ?? false).catch(() => { /* best-effort */ })
   // The HTTPS proxy is optional. This preflight is only awaited later (inside the
   // readiness handler, behind the frontend port probe), so without a handler
   // attached now an early failure — e.g. falling back to an @stacksjs/rpx build
@@ -940,7 +948,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
         await unregisterRpxProxies(activeRpxRegistryIds)
         activeRpxRegistryIds.length = 0
         if (hasCustomDomain && domain)
-          await removeStalePublicDomainOverrides(domain, includeDashboard, options.verbose ?? false)
+          await removeStalePublicDomainOverrides(domain, configuredDashboardDomain, options.verbose ?? false)
       }
       catch { /* best-effort teardown */ }
     })()
@@ -1046,7 +1054,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
               apiPort,
               docsPort,
               dashboardPort,
-              includeDashboard,
+              dashboardDomain,
               options,
             })
           }
@@ -1642,12 +1650,12 @@ const RPX_SSL_DIR = join(homedir(), '.stacks', 'ssl')
 const RPX_ROOT_CA_PATH = join(RPX_SSL_DIR, 'rpx-root-ca.crt')
 const RPX_HOST_CERT_PATH = join(RPX_SSL_DIR, 'rpx.localhost.crt')
 
-function buildDevelopmentTlsHostnames(domain: string, includeDashboard: boolean): string[] {
+function buildDevelopmentTlsHostnames(domain: string, dashboardDomain: string | null): string[] {
   // App domain must be first — it becomes the cert CN. Safari/Chrome surface CN in
   // “cert is for …” errors even when SANs are present.
   return [
     domain,
-    ...(includeDashboard ? [`dashboard.${domain}`] : []),
+    ...(dashboardDomain ? [dashboardDomain] : []),
     'rpx.localhost',
   ]
 }
@@ -1660,7 +1668,7 @@ function buildDevelopmentTlsHostnames(domain: string, includeDashboard: boolean)
 async function ensureRpxDevelopmentHttps(
   domain: string,
   options: DevOptions,
-  includeDashboard: boolean,
+  dashboardDomain: string | null,
   trustCertificate = true,
 ): Promise<void> {
   const verbose = options.verbose ?? false
@@ -1681,7 +1689,7 @@ async function ensureRpxDevelopmentHttps(
     verifyHttpsChain,
   } = await importDevelopmentRpx()
 
-  const hostnames = buildDevelopmentTlsHostnames(domain, includeDashboard)
+  const hostnames = buildDevelopmentTlsHostnames(domain, dashboardDomain)
   const entries = await readAll(getRegistryDir(), false).catch(() => [])
   for (const entry of entries) {
     const host = entry.to?.trim()
@@ -1776,10 +1784,9 @@ function buildRpxProxySpecs(input: {
   apiPort: number
   docsPort: number
   dashboardPort: number
-  includeDashboard: boolean
+  dashboardDomain: string | null
 }): RpxProxySpec[] {
-  const { domain, frontendPort, apiPort, docsPort, dashboardPort, includeDashboard } = input
-  const dashboardDomain = `dashboard.${domain}`
+  const { domain, frontendPort, apiPort, docsPort, dashboardPort, dashboardDomain } = input
 
   return [
     // Path-based routing on the app host (https://app.localhost/api, /docs).
@@ -1794,7 +1801,7 @@ function buildRpxProxySpecs(input: {
         { from: '/docs', to: `localhost:${docsPort}`, stripPrefix: true },
       ],
     },
-    ...(includeDashboard
+    ...(dashboardDomain
       ? [{ id: `${domain}-dashboard`, from: `127.0.0.1:${dashboardPort}`, to: dashboardDomain }]
       : []),
   ]
@@ -1821,10 +1828,10 @@ async function unregisterRpxProxies(ids: string[]): Promise<void> {
  * needs sudo (SUDO_PASSWORD or cached credentials), never throws, and logs the
  * exact manual command when it cannot finish.
  */
-async function removeStalePublicDomainOverrides(domain: string, includeDashboard: boolean, verbose: boolean): Promise<void> {
+async function removeStalePublicDomainOverrides(domain: string, dashboardDomain: string | null, verbose: boolean): Promise<void> {
   const { checkHosts, removeHosts, resolverFilePath, contentLooksLikeRpxResolver } = await importDevelopmentRpx()
 
-  const hosts = [domain, ...(includeDashboard ? [`dashboard.${domain}`] : [])]
+  const hosts = [domain, ...(dashboardDomain ? [dashboardDomain] : [])]
 
   // /etc/hosts is world-readable, so checking first keeps a deliberately
   // hand-written (non-rpx) entry from being rewritten for no reason.
@@ -1846,9 +1853,12 @@ async function removeStalePublicDomainOverrides(domain: string, includeDashboard
   if (process.platform !== 'darwin')
     return
 
-  const labels = domain.split('.')
-  const basename = labels.length >= 2 ? labels.slice(-2).join('.') : domain
-  const resolverPath = resolverFilePath(basename)
+  const resolverDomains = new Set(hosts.map(host => host.split('.').slice(-2).join('.')))
+  for (const resolverDomain of resolverDomains)
+    removeStaleRpxResolver(resolverFilePath(resolverDomain), resolverDomain, contentLooksLikeRpxResolver)
+}
+
+function removeStaleRpxResolver(resolverPath: string, domain: string, contentLooksLikeRpxResolver: (content: string) => boolean): void {
   let isRpxManaged = false
   try {
     isRpxManaged = contentLooksLikeRpxResolver(readFileSync(resolverPath, 'utf8'))
@@ -1879,17 +1889,17 @@ async function removeStalePublicDomainOverrides(domain: string, includeDashboard
  */
 async function prepareRpxTlsForDev(input: {
   domain: string
-  includeDashboard: boolean
+  dashboardDomain: string | null
   options: DevOptions
   skipHosts?: boolean
   trustCertificate?: boolean
 }): Promise<void> {
-  const { domain, includeDashboard, options, skipHosts = false, trustCertificate = true } = input
+  const { domain, dashboardDomain, options, skipHosts = false, trustCertificate = true } = input
   const verbose = options.verbose ?? false
 
   const hosts = [
     domain,
-    ...(includeDashboard ? [`dashboard.${domain}`] : []),
+    ...(dashboardDomain ? [dashboardDomain] : []),
   ]
 
   // `.localhost` resolves to 127.0.0.1 without /etc/hosts (RFC 6761). Only
@@ -1919,7 +1929,7 @@ async function prepareRpxTlsForDev(input: {
     })
   }
 
-  await ensureRpxDevelopmentHttps(domain, options, includeDashboard, trustCertificate)
+  await ensureRpxDevelopmentHttps(domain, options, dashboardDomain, trustCertificate)
 }
 
 // `input` is read throughout this function (input.domain, input.verbose).
@@ -1946,7 +1956,7 @@ export async function setupPrettyDevEnvironment(input: {
 
   await prepareRpxTlsForDev({
     domain,
-    includeDashboard: process.env.STACKS_DEV_DASHBOARD === '1',
+    dashboardDomain: await developmentDashboardDomain(domain),
     options: { verbose: input.verbose } as DevOptions,
     skipHosts: input.skipHosts,
     trustCertificate: !input.skipTrust,
@@ -2023,12 +2033,12 @@ async function registerRpxProxiesForDomain(input: {
   apiPort: number
   docsPort: number
   dashboardPort: number
-  includeDashboard: boolean
+  dashboardDomain: string | null
   options: DevOptions
 }): Promise<void> {
-  const { domain, frontendPort, apiPort, docsPort, dashboardPort, includeDashboard, options } = input
+  const { domain, frontendPort, apiPort, docsPort, dashboardPort, dashboardDomain, options } = input
   const verbose = options.verbose ?? false
-  const proxies = buildRpxProxySpecs({ domain, frontendPort, apiPort, docsPort, dashboardPort, includeDashboard })
+  const proxies = buildRpxProxySpecs({ domain, frontendPort, apiPort, docsPort, dashboardPort, dashboardDomain })
 
   // Drop legacy subdomain proxies from older dev sessions (api./docs. hosts).
   await unregisterRpxProxies([`${domain}-api`, `${domain}-docs`])

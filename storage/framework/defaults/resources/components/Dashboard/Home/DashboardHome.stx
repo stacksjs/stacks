@@ -13,7 +13,7 @@ const loadingCards = [1, 2, 3, 4]
 const allQuickLinks = [
   {
     title: 'Blog',
-    description: 'Manage persisted posts',
+    description: 'Manage posts and pages',
     href: '/content/dashboard',
     icon: 'i-hugeicons-book-open-01',
     tone: 'blue',
@@ -29,7 +29,7 @@ const allQuickLinks = [
   },
   {
     title: 'Cloud',
-    description: 'Monitor infrastructure',
+    description: 'View infrastructure',
     href: '/cloud',
     icon: 'i-hugeicons-cloud',
     tone: 'purple',
@@ -61,8 +61,8 @@ function quickLinks() {
 /** Orders are part of the feed only with commerce on, so they are named only then. */
 function activityDescription(): string {
   return dashboard.sections.value.commerce === true
-    ? 'Persisted orders and user registrations.'
-    : 'Persisted user registrations.'
+    ? 'Orders and user registrations'
+    : 'User registrations'
 }
 
 const resourceLinks = [
@@ -126,29 +126,50 @@ onMount(() => {
 })
 </script>
 
-<div class="mx-auto p-6 max-w-7xl">
-  <PageHeader title="Dashboard" description="A live overview of persisted application and infrastructure data.">
-    <template #actions>
-      <Button variant="secondary" :loading="dashboard.isLoading.value" @click="loadDashboard">
-        <span :if="!dashboard.isLoading.value" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>
-        Refresh
-      </Button>
-    </template>
-  </PageHeader>
+<style>
+  .dashboard-overview {
+    --overview-border: light-dark(#dedee5, #ffffff1a);
+    --overview-surface: light-dark(#ffffff, #18191f);
+  }
+  .overview-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+    gap: .625rem;
+    min-width: 0;
+  }
+  .overview-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr));
+    gap: 1rem;
+  }
+  .overview-panel {
+    background: var(--overview-surface);
+    border: 1px solid var(--overview-border);
+    border-radius: 1rem;
+  }
+</style>
 
-  <div :if="issues().length > 0" class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-6 px-4 py-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-800/50" role="status">
-    <div>
-      <p class="font-medium">Some dashboard data is unavailable</p>
-      <ul class="mt-1 pl-5 list-disc">
-        <li :for="issue in issues()">{{ issue.source }}: {{ issue.message }}</li>
-      </ul>
-    </div>
-    <Button variant="secondary" size="sm" :loading="dashboard.isLoading.value" @click="loadDashboard">Try again</Button>
+<div class="mx-auto px-4 py-6 sm:px-8 sm:py-8 max-w-6xl dashboard-overview">
+  <div class="flex flex-wrap gap-3 items-start justify-between mb-6">
+    <PageHeader title="Dashboard" description="Application activity and service health" />
+    <Button variant="secondary" size="sm" :loading="dashboard.isLoading.value" @click="loadDashboard">
+      Refresh
+    </Button>
   </div>
 
-  <section aria-labelledby="application-overview" class="mb-8">
-    <h2 id="application-overview" class="sr-only">Application overview</h2>
-    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+  <details :if="issues().length > 0" class="mb-4 px-4 py-3 text-amber-800 text-sm dark:text-amber-200 overview-panel">
+    <summary class="font-medium cursor-pointer">Some dashboard data is unavailable</summary>
+    <ul class="mt-2 pl-5 list-disc">
+      <li :for="issue in issues()">{{ issue.source }}: {{ issue.message }}</li>
+    </ul>
+  </details>
+
+  <section aria-labelledby="application-overview" class="mb-5 p-3 sm:p-4 overview-panel">
+    <div class="flex flex-wrap gap-2 items-center justify-between mb-3">
+      <h2 id="application-overview" class="font-semibold text-base text-neutral-900 dark:text-white">Overview</h2>
+      <StxLink to="/requests" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">Request history</StxLink>
+    </div>
+    <div class="overview-metrics">
       <StatsCard :for="item in loadingCards" :if="dashboard.isLoading.value && stats().length === 0" loading />
       <StatsCard
         :for="stat in stats()"
@@ -159,19 +180,6 @@ onMount(() => {
         :icon="stat.icon"
         :iconBg="stat.iconBg"
       />
-    </div>
-  </section>
-
-  <section aria-labelledby="http-performance" class="mb-8">
-    <div class="flex items-end justify-between mb-4">
-      <div>
-        <h2 id="http-performance" class="font-semibold text-base text-neutral-900 dark:text-white">HTTP performance</h2>
-        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Metrics calculated from captured application requests.</p>
-      </div>
-      <StxLink to="/requests" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">Request history</StxLink>
-    </div>
-    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-      <StatsCard :for="item in loadingCards" :if="dashboard.isLoading.value && httpMetrics().length === 0" loading />
       <StatsCard
         :for="metric in httpMetrics()"
         :title="metric.title"
@@ -183,9 +191,7 @@ onMount(() => {
     </div>
   </section>
 
-  <QuickLinks class="mb-8" :links="quickLinks()" />
-
-  <div class="grid gap-6 grid-cols-1 lg:grid-cols-2 mt-8">
+  <div class="overview-details">
     <ServiceHealth :services="services()" :loading="dashboard.isLoading.value" />
     <ActivityTable :activities="activities()" :description="activityDescription()" :loading="dashboard.isLoading.value">
       <template #actions>
@@ -194,5 +200,6 @@ onMount(() => {
     </ActivityTable>
   </div>
 
-  <QuickLinks class="mt-8" title="Resources" :links="resourceLinks" />
+  <div class="mt-5"><QuickLinks :links="quickLinks()" /></div>
+  <div class="mt-5"><QuickLinks title="Resources" :links="resourceLinks" /></div>
 </div>

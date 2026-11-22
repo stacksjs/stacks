@@ -6,7 +6,7 @@ import process from 'node:process'
 import { isProcessAlive, isProjectRoot, projectCliEntry, readProjectService, registerProject, reserveProjectPort } from '@stacksjs/path'
 import { machineEnvironment } from './environment'
 import { GenerationSupervisor } from './generation'
-import { portAnswers, portIsFree } from './net'
+import { dashboardBooting, portAnswers, portIsFree } from './net'
 import { DAEMON_IDLE_EXIT_MS, DAEMON_PROTOCOL, daemonDir, daemonSocket, daemonStateFile, dashboardLogFile } from './paths'
 import { DashboardError, DashboardSupervisor } from './supervisor'
 
@@ -192,6 +192,7 @@ export async function runDaemon(options: DaemonOptions = {}): Promise<void> {
     reservePort: (root, base) => reserveProjectPort(root, 'dashboard', base),
     portIsFree,
     portAnswers,
+    dashboardBooting,
     logTail,
     idleExitMs: dashboardIdleExitMs,
     onChange: () => restIfIdle(),

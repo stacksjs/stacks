@@ -19,6 +19,7 @@ interface TrayServices {
 export function traySnapshot(status: DaemonStatus | null, projects: RegisteredProject[]) {
   const approvals = new Map(status?.generation?.approvals?.map(({ path, files }) => [path, files]))
   const failures = new Map(status?.generation?.failures?.map(({ path, error }) => [path, error]))
+  const dashboards = new Map(status?.dashboards.map(({ path, state }) => [path, state]))
   return {
     online: status !== null,
     watched: status?.generation?.watched ?? 0,
@@ -30,6 +31,7 @@ export function traySnapshot(status: DaemonStatus | null, projects: RegisteredPr
       path,
       pending: approvals.get(path) ?? 0,
       issue: failures.get(path) ?? '',
+      dashboard: dashboards.get(path) ?? 'stopped',
     })),
   }
 }

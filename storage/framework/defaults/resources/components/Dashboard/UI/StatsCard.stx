@@ -39,10 +39,10 @@ const iconBackgroundClass = derived(() => iconBgClasses[liveIconBg() || 'primary
 const trendDirection = derived(() => liveTrend() === null || liveTrend() === 0 ? 'neutral' : (Number(liveTrend()) > 0 ? 'up' : 'down'))
 const trendClass = derived(() => trendClasses[trendDirection()])
 </script>
-<div class="p-5 bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5 hover:shadow-black/5 hover:shadow-md dark:hover:shadow-black/20 duration-150 transition-all">
-    <div class="flex items-start justify-between">
+<div class="p-3 sm:p-5 bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5 hover:shadow-black/5 hover:shadow-md dark:hover:shadow-black/20 duration-150 transition-all">
+    <div class="flex gap-2 items-start justify-between">
       <div class="flex-1 min-w-0">
-        <p class="font-medium text-[13px] text-neutral-500 tracking-tight truncate dark:text-neutral-400">
+        <p class="font-medium leading-snug text-[13px] text-neutral-500 tracking-tight dark:text-neutral-400">
           {{ liveTitle() }}
         </p>
 
@@ -80,7 +80,7 @@ const trendClass = derived(() => trendClasses[trendDirection()])
         @endif
       </div>
 
-      <div :if="liveIcon()" :class="'p-2.5 rounded-lg flex-shrink-0 ' + iconBackgroundClass()">
+      <div :if="liveIcon()" :class="'p-1.5 sm:p-2.5 rounded-lg flex-shrink-0 ' + iconBackgroundClass()">
         <div :class="liveIcon() + ' h-5 w-5'"></div>
       </div>
     </div>

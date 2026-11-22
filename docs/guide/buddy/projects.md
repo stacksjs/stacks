@@ -112,14 +112,14 @@ buddy dashboard shop     # any project, from anywhere
 
 The dashboard starts in the background if it is not already running, opens in your browser, and stops by itself once nobody has used it for a while. There is no terminal to keep open.
 
-Each project keeps the same address every time (`http://localhost:3900`, `3901`, and so on), so your browser remembers each project's session and settings separately.
+Buddy uses `https://dashboard.<APP_URL host>` when the local rpx proxy serves it. Set `DASHBOARD_URL=https://attic.test` in the project's `.env` to choose a different hostname. Run `buddy setup:ssl` to set up local DNS and trust the development CA. When HTTPS is unavailable, Buddy opens the direct address on the project's reserved port, using its `.localhost` dashboard name when available.
 
 | Option | What it does |
 |--------|--------------|
 | `--no-open` | Start it and print the address without opening a browser |
 | `--stop` | Stop the project's background dashboard |
 
-`buddy dev:dashboard` is still there when you want the dashboard in the foreground, in its own native window, for as long as the terminal is open.
+`buddy dev:dashboard` is still there when you want the dashboard in the foreground, in its own native window, for as long as the terminal is open. It uses the same stx pages as the browser dashboard.
 
 ### Switch projects in the dashboard
 

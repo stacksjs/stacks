@@ -12,7 +12,9 @@
  * - `origin-only`: no custom domain configured; `http://localhost:<port>` is the
  *   only URL there is.
  */
+import { lookup } from 'node:dns/promises'
 import { isIP } from 'node:net'
+import { getCACertificates } from 'node:tls'
 
 export type DashboardProxyStrategy = 'parent-managed' | 'daemon-route' | 'own-proxy' | 'origin-only'
 
@@ -23,11 +25,12 @@ export type DashboardProxyStrategy = 'parent-managed' | 'daemon-route' | 'own-pr
  * it a standalone `buddy dev:dashboard` asked for sudo before it would serve,
  * even when told to stay on localhost.
  */
-export function resolveDashboardDomain(appUrl: string, localhostOnly = false): string | null {
-  if (localhostOnly || !appUrl.trim())
+export function resolveDashboardDomain(appUrl: string, localhostOnly = false, dashboardUrl?: string): string | null {
+  const override = dashboardUrl?.trim()
+  if (localhostOnly || !(override || appUrl).trim())
     return null
   try {
-    const value = appUrl.trim()
+    const value = (override || appUrl).trim()
     if (!value.includes('://') && /^[a-z][a-z0-9+.-]*:(?!\d+(?:[/?#]|$))/i.test(value))
       return null
     const url = new URL(value.includes('://') ? value : `http://${value}`)
@@ -40,10 +43,49 @@ export function resolveDashboardDomain(appUrl: string, localhostOnly = false): s
       return null
     if (!hostname || !hostname.split('.').every(label => /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(label)))
       return null
-    return `dashboard.${hostname}`
+    if (override && (url.port || url.pathname !== '/' || url.search || url.hash))
+      return null
+    return override ? hostname : `dashboard.${hostname}`
   }
   catch {
     return null
+  }
+}
+
+export const dashboardReadyPath = '/__buddy/dashboard-ready'
+export const dashboardReadyHeader = 'x-stacks-dashboard'
+export const dashboardPendingHeader = 'x-stacks-dashboard-pending'
+
+export function dashboardOriginUrl(domain: string | null, port: number): string {
+  return `http://${domain?.endsWith('.localhost') ? domain : '127.0.0.1'}:${port}`
+}
+
+/** Only advertise a route that serves this dashboard through trusted HTTPS. */
+export async function dashboardHttpsAnswers(domain: string, instance: string): Promise<boolean> {
+  try {
+    if (!domain.endsWith('.localhost')) {
+      const addresses = await Promise.race([lookup(domain, { all: true }), Bun.sleep(350).then(() => [])])
+      if (!addresses.length || addresses.some(({ address }) => address !== '::1' && !/^(?:::ffff:)?127\./.test(address)))
+        return false
+    }
+    const ca = [...getCACertificates('default'), ...getCACertificates('system')]
+    // The registry watcher can pick the new route up just after the origin listens.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const response = await fetch(`https://${domain}${dashboardReadyPath}`, {
+        method: 'HEAD',
+        redirect: 'error',
+        signal: AbortSignal.timeout(350),
+        tls: { ca },
+      }).catch(() => null)
+      if (response?.ok && response.headers.get(dashboardReadyHeader) === instance)
+        return true
+      if (attempt === 0)
+        await Bun.sleep(125)
+    }
+    return false
+  }
+  catch {
+    return false
   }
 }
 

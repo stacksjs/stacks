@@ -137,7 +137,7 @@ select:not([multiple]):not([size]):not([data-ui-select]) {
      the document or moving the fixed dashboard shell. */
   overflow-x: hidden;
   margin-left: var(--stx-sidebar-width, 250px);
-  background: #f4f4f5;
+  background: #f6f6f9;
   transition: margin-left 0.3s ease-out;
 }
 /*
@@ -188,29 +188,8 @@ html .dashboard-modal-layer {
     left: 0;
   }
 }
-/*
- * These three rules used to hide the web sidebar and collapse the content
- * offset, because Craft rendered a real NSOutlineView in that strip and
- * showing both would have meant two navigations side by side.
- *
- * That native sidebar is retired (see actions/src/dev/dashboard.ts: "the web
- * one owns rendering and behavior"), and the dev server never requests one.
- * It does request `webSidebarMaterial: true`, purely for the NSVisualEffectView
- * vibrancy that sits BEHIND the stx-rendered rows.
- *
- * Craft conflates the two: macos.zig gates its native-sidebar bootstrap on
- * `style.web_sidebar_material` alone, and that bootstrap sets the global
- * `__craftNativeSidebar` flag. So asking for vibrancy silently asserted "a
- * native sidebar exists", the marker got stamped on the root element, and
- * these rules hid the only navigation the window had. The Craft window showed
- * a vibrant empty strip.
- *
- * Removed rather than re-gated: with the native sidebar retired there is no
- * state in which hiding the web sidebar is correct. The upstream conflation is
- * worth fixing in Craft too, so the flag stops lying to every other consumer.
- */
 .dark [data-stx-content] {
-  background: #0a0a0a;
+  background: #121318;
 }
 
 /* ===========================================================================

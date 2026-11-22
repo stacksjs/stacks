@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions/runtime'
-import { Request } from '@stacksjs/orm'
+import { loadModel } from '../../../../resources/functions/dashboard/data'
 import { dashboardOperationalError } from '../dashboard-response'
 
 export default new Action({
@@ -8,6 +8,7 @@ export default new Action({
   method: 'GET',
   async handle() {
     try {
+      const Request = await loadModel('Request')
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
       const [allRequests, total, errorCount, averageDurationMs, requestsLastHour] = await Promise.all([
         Request.orderByDesc('id').limit(100).get(),
@@ -17,7 +18,7 @@ export default new Action({
         Request.where('created_at', '>=', oneHourAgo).count(),
       ])
 
-    const requests = allRequests.map(request => ({
+    const requests = allRequests.map((request: { get: (column: string) => unknown }) => ({
       id: Number(request.get('id') || 0),
       method: String(request.get('method') || 'GET'),
       path: String(request.get('path') || ''),

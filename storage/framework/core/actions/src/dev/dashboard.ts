@@ -8,7 +8,7 @@ import { resolveComponentsLibraryRoot } from './defaults-resources'
 import { createIdleExit, projectSwitcherRoutes } from './dashboard-projects'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { resolveDashboardCraftExecutable, type CraftBinaryResolver } from './dashboard-native'
-import { resolveDashboardDomain, resolveDashboardProxyStrategy } from './dashboard-proxy'
+import { dashboardHttpsAnswers, dashboardOriginUrl, dashboardPendingHeader, dashboardReadyHeader, dashboardReadyPath, resolveDashboardDomain, resolveDashboardProxyStrategy } from './dashboard-proxy'
 import { buildManifest, discoverProjectModels, findAvailablePort, modelsWithEnabledFeatures, waitForServer, writeFileIfChanged } from './dashboard-utils'
 import { runDashboardSupervisor } from './dashboard-supervisor'
 import { ensureDiscoveredPackages } from '../discover-packages'
@@ -86,9 +86,21 @@ const idleExit = createIdleExit(idleExitMs, () => {
   process.exit(0)
 })
 
-// Determine if we have a custom domain (like stacks.localhost)
-const appUrl = process.env.APP_URL || ''
-const dashboardDomain = resolveDashboardDomain(appUrl, process.env.STACKS_DEV_LOCALHOST === '1')
+const dashboardInstance = crypto.randomUUID()
+let dashboardReady = false
+let dashboardPublished = false
+const { app, overridesReady } = await import('@stacksjs/config')
+await overridesReady
+const background = process.env.STACKS_DASHBOARD_BACKGROUND === '1'
+const appUrl = process.env.APP_URL || app.url || ''
+const localhostOnly = process.env.STACKS_DEV_LOCALHOST === '1'
+const defaultDashboardDomain = resolveDashboardDomain(appUrl, localhostOnly)
+const managedDashboardDomain = process.env.STACKS_MANAGED_DASHBOARD_DOMAIN
+const dashboardDomain = managedDashboardDomain === undefined
+  ? resolveDashboardDomain(appUrl, localhostOnly, process.env.DASHBOARD_URL) ?? defaultDashboardDomain
+  : managedDashboardDomain || null
+const originDomain = dashboardDomain?.endsWith('.localhost') ? dashboardDomain : defaultDashboardDomain
+let dashboardBrowserUrl = dashboardOriginUrl(originDomain, dashboardPort)
 const sslBasePath = `${process.env.HOME}/.stacks/ssl`
 
 function restoreConsole(): void {
@@ -107,9 +119,7 @@ async function startStxServer(): Promise<void> {
   // discover packages and refresh the app barrels before injecting primitives,
   // models, functions and authorization. Do this before importing app routes:
   // their transitive action imports can use `new Action()` at module scope.
-  const { overridesReady } = await import('@stacksjs/config')
   const { autoImportsAreStale, generateAutoImportFiles, injectGlobalAutoImports } = await import('@stacksjs/server')
-  await overridesReady
   await ensureDiscoveredPackages()
   if (!existsSync(storagePath('framework/auto-imports/models.ts')) || autoImportsAreStale())
     await generateAutoImportFiles()
@@ -299,7 +309,7 @@ async function startStxServer(): Promise<void> {
   const configRoutes: Record<string, (req: Request) => Response | Promise<Response>> = {
     ...projectSwitcherRoutes({
       root: projectPath(),
-      url: dashboardLocalUrl,
+      get url() { return dashboardBrowserUrl },
       idleExitMs,
       validateWrite: validateDevCsrfRequest,
       // Loaded on first use: most sessions never switch project, and the
@@ -556,6 +566,14 @@ async function startStxServer(): Promise<void> {
       const url = new URL(req.url)
       const pathname = url.pathname
 
+      if (pathname === dashboardReadyPath && req.method === 'HEAD') {
+        return new Response(null, { status: dashboardReady ? 204 : 503, headers: {
+          [dashboardReadyHeader]: dashboardInstance,
+          [dashboardPendingHeader]: dashboardPublished ? '0' : '1',
+          'cache-control': 'no-store',
+        } })
+      }
+
       if (shouldDelegateDashboardRequest(pathname, req.method))
         return stacksRoute.handleRequest(req)
 
@@ -637,13 +655,17 @@ async function startReverseProxy(): Promise<boolean> {
     if (strategy === 'origin-only')
       return false
 
-    // `buddy dev` owns the proxy; it is up or coming up there, and the pretty
-    // URL is the one to print either way.
+    // `buddy dev` owns the proxy and publishes its routes when the ports are ready.
     if (strategy === 'parent-managed')
       return true
 
-    if (strategy === 'daemon-route')
-      return await registerWithRpxDaemon(dashboardDomain)
+    if (strategy === 'daemon-route') {
+      await registerWithRpxDaemon(dashboardDomain)
+      return true
+    }
+
+    if (background)
+      return false
 
     await (await loadRpx()).startProxies({
       proxies: [
@@ -668,6 +690,10 @@ async function startReverseProxy(): Promise<boolean> {
     return false
   }
 }
+
+// Register the local route while the dashboard boots. Background starts never
+// wait for privilege escalation.
+const proxy = startReverseProxy()
 
 // Phase 1: Start STX server and discover models in parallel
 // eslint-disable-next-line ts/no-top-level-await
@@ -736,6 +762,16 @@ const serverReady = await waitForServer(dashboardPort)
 // Restore console before our output
 restoreConsole()
 
+if (!serverReady) {
+  console.error('Dashboard server did not start listening.')
+  process.exit(1)
+}
+dashboardReady = true
+const dashboardHttpsUrl = dashboardDomain ? `https://${dashboardDomain}` : null
+const proxyStarted = dashboardDomain && await proxy && await dashboardHttpsAnswers(dashboardDomain, dashboardInstance)
+if (dashboardHttpsUrl && proxyStarted)
+  dashboardBrowserUrl = dashboardHttpsUrl
+
 // Say where this dashboard is, in the project itself. `buddy dashboard`, the
 // background daemon and the project switcher of every other dashboard read
 // this to learn that the project already has one up, whoever started it.
@@ -743,28 +779,17 @@ recordProjectService(projectPath(), {
   name: 'dashboard',
   pid: servicePid,
   port: dashboardPort,
-  url: dashboardLocalUrl,
+  url: dashboardBrowserUrl,
   startedAt: new Date().toISOString(),
   ...(idleExitMs > 0 ? { idleExitMs } : {}),
 })
+dashboardPublished = true
 // A worker run on its own owns its record. Under the supervisor the record is
 // the supervisor's to take down, when it stops for good.
 if (servicePid === process.pid)
   process.on('exit', () => clearProjectService(projectPath(), 'dashboard', servicePid))
 
-// The native Craft window uses the same pretty HTTPS URL as the browser, so
-// both wait on the same answer: is anything serving `dashboard.<domain>`?
-// eslint-disable-next-line ts/no-top-level-await
-const proxyStarted = await startReverseProxy().catch((err) => {
-  if (verbose) console.warn('[Dashboard] Reverse proxy failed:', err)
-  return false
-})
-
-const dashboardHttpsUrl = dashboardDomain ? `https://${dashboardDomain}` : null
-
-const initialUrl = dashboardHttpsUrl && proxyStarted
-  ? `${dashboardHttpsUrl}/`
-  : `${dashboardLocalUrl}/`
+const initialUrl = `${dashboardBrowserUrl}/`
 
 // Print vite-style output
 const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000
@@ -782,17 +807,14 @@ if (dashboardHttpsUrl && proxyStarted) {
   console.log(`  ${dim('➜')}  ${dim('Origin')}:  ${dim(dashboardLocalUrl)}`)
 }
 else {
-  console.log(`  ${green('➜')}  ${bold('Local')}:   ${cyan(dashboardLocalUrl)}`)
+  console.log(`  ${green('➜')}  ${bold('Local')}:   ${cyan(dashboardBrowserUrl)}`)
   if (dashboardHttpsUrl)
-    console.log(`  ${dim('➜')}  ${dim('Pretty')}:  ${dim(`${dashboardHttpsUrl} needs the rpx proxy - run \`buddy dev\``)}`)
+    console.log(`  ${dim('➜')}  ${dim('Pretty')}:  ${dim(`${dashboardHttpsUrl} needs the rpx proxy - run \`buddy setup:ssl\``)}`)
 }
 console.log(`  ${green('➜')}  ${bold('Window')}:  ${dim('Stacks Dashboard')} ${dim('1400×900')}`)
 console.log(`  ${green('➜')}  ${bold('Models')}:  ${dim(`${discoveredModels.length} discovered`)}`)
 if (dashboardPort !== preferredPort) {
   console.log(`  ${dim('➜')}  ${dim(`Port ${preferredPort} in use, using ${dashboardPort}`)}`)
-}
-if (!serverReady) {
-  console.log(`  ${dim('⚠')}  ${dim('Dev server may not be ready yet')}`)
 }
 console.log()
 console.log(`  ${dim(`ready in ${elapsedMs.toFixed(0)} ms`)}`)
@@ -893,11 +915,6 @@ if (createApp && craftBinaryPath) {
       width: 1400,
       height: 900,
       titlebarHidden: true,
-      // Real vibrancy behind the stx-rendered macOS sidebar (see
-      // views/dashboard/layouts/default.stx). The native NSOutlineView
-      // sidebar is retired — the web one owns rendering and behavior.
-      webSidebarMaterial: true,
-      webSidebarWidth: 250,
       ...(appIconPath && { icon: appIconPath }),
     },
   })
@@ -917,7 +934,7 @@ if (createApp && craftBinaryPath) {
     process.exit(0)
   }
   catch (error) {
-    const fallbackUrl = dashboardHttpsUrl || dashboardLocalUrl
+    const fallbackUrl = dashboardBrowserUrl
     // eslint-disable-next-line no-console
     console.log(`  ${dim('Native Craft window failed:')} ${dim(error instanceof Error ? error.message : String(error))}`)
     // eslint-disable-next-line no-console

@@ -11,7 +11,7 @@ import { stacksHome } from '@stacksjs/path'
  * daemon running restarts it with its own code; a newer daemon answers an
  * older client the way it always did.
  */
-export const DAEMON_PROTOCOL = 3
+export const DAEMON_PROTOCOL = 4
 
 export function daemonDir(path = ''): string {
   return stacksHome(join('buddy', path))

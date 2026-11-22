@@ -19,7 +19,7 @@ const status: DaemonStatus = {
   pid: 42,
   protocol: 3,
   startedAt: timestamp,
-  dashboards: [],
+  dashboards: [{ name: shop.name, path: shop.path, url: 'https://shop.test', port: 3910, pid: 43, state: 'ready', startedAt: timestamp }],
   generation: {
     watched: 2,
     queued: 0,
@@ -68,8 +68,8 @@ test('maps generation and pending approvals from the existing daemon', () => {
     running: true,
     failed: 1,
     projects: [
-      { id: shop.id, name: shop.name, path: shop.path, pending: 3, issue: '' },
-      { id: studio.id, name: studio.name, path: studio.path, pending: 0, issue: 'Model could not load' },
+      { id: shop.id, name: shop.name, path: shop.path, pending: 3, issue: '', dashboard: 'ready' },
+      { id: studio.id, name: studio.name, path: studio.path, pending: 0, issue: 'Model could not load', dashboard: 'stopped' },
     ],
   })
   expect(traySnapshot(null, [])).toEqual({ online: false, watched: 0, running: false, failed: 0, projects: [] })

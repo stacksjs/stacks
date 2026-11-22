@@ -1,4 +1,19 @@
 import { connect } from 'node:net'
+import { dashboardPendingHeader, dashboardReadyPath } from '../dev/dashboard-proxy'
+
+export async function dashboardBooting(port: number): Promise<boolean> {
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}${dashboardReadyPath}`, {
+      method: 'HEAD',
+      redirect: 'manual',
+      signal: AbortSignal.timeout(350),
+    })
+    return response.headers.get(dashboardPendingHeader) === '1'
+  }
+  catch {
+    return false
+  }
+}
 
 /**
  * The two questions the daemon asks of a port. Kept apart from the dashboard's
