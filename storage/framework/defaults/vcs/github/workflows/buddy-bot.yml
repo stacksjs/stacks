@@ -100,9 +100,12 @@ jobs:
         if: ${{ github.event.schedule == '0 */2 * * *' || (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "update"]'), inputs.job)) }}
         run: bunx @buddysh/buddy update --strategy "${{ inputs.strategy || 'patch' }}" ${{ inputs.dry_run && '--dry-run' || '' }}
 
+      # `dashboard` has no --dry-run (it rejects the option and fails the run),
+      # so a dry run previews with `scan`, which lists what the dashboard would
+      # show and writes nothing - as the framework's own workflow does.
       - name: Update the dependency dashboard
         if: ${{ github.event.schedule == '15 */2 * * *' || (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "dashboard"]'), inputs.job)) }}
-        run: bunx @buddysh/buddy dashboard ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: bunx @buddysh/buddy ${{ inputs.dry_run && 'scan' || 'dashboard' }}
 
       - name: Close landed pull requests and clean up branches
         if: ${{ github.event.schedule == '0 4 * * *' || (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "check"]'), inputs.job)) }}

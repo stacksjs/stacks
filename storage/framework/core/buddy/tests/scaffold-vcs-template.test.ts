@@ -184,6 +184,23 @@ describe('the app template runs exactly one dependency bot (#2574)', () => {
     expect(contents).toContain('GITHUB_REPOSITORY_OWNER')
   })
 
+  test('a dry run passes --dry-run only to commands that accept it (#3357)', () => {
+    // @buddysh/buddy 0.11.18: `update` and `update-check` take --dry-run,
+    // `dashboard` rejects it ("Unknown option `--dryRun`"), so a manual run
+    // with "Dry run" checked failed at the dashboard step. The dry-run preview
+    // for the dashboard is `scan`, which writes nothing.
+    const workflow = readFileSync(join(APP_VCS, 'workflows/buddy-bot.yml'), 'utf8')
+    const runs = workflow.split('\n').filter(line => line.includes('bunx @buddysh/buddy'))
+    expect(runs.length).toBeGreaterThan(0)
+    const passing = runs
+      .filter(line => line.includes('--dry-run'))
+      .map(line => line.match(/bunx @buddysh\/buddy ([a-z-]+)/)?.[1])
+    expect(passing.sort()).toEqual(['update', 'update-check'])
+
+    const dashboard = runs.find(line => line.includes("'dashboard'") || line.includes('buddy dashboard'))
+    expect(dashboard).toContain("inputs.dry_run && 'scan' || 'dashboard'")
+  })
+
   test('the scaffold renders that template, so the placeholder never ships', () => {
     // applyAppConfigTemplate is what substitutes __APP_SLUG__; it copies every
     // .ts in the directory, so adding the file is enough - this pins that the
