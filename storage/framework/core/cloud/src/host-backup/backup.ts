@@ -152,7 +152,7 @@ async function backupProject(
       await withScratch(join(root, 'restore-'), async (scratch) => {
         const restored = join(scratch, 'recovered')
         for (const [file, record] of Object.entries(mapping)) {
-          await archive.restore(snapshot, file, restored)
+          await archive.restoreVerifiedFile(snapshot, file, restored)
           if (await digest(restored) !== record.sha256)
             throw new Error('Database recovery checksum mismatch')
           if (record.engine === 'sqlite')
