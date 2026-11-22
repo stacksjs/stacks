@@ -319,7 +319,7 @@ Create a setup file for global test configuration:
 import { beforeAll, beforeEach } from 'bun:test'
 import { refreshDatabase, setupDatabase } from '@stacksjs/testing/database'
 
-// Creates the test database (MySQL) and runs migrations, once.
+// Creates the test database (MySQL) or migrates it (PostgreSQL), once.
 beforeAll(async () => {
   await setupDatabase()
 })

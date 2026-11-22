@@ -38,24 +38,27 @@ without imports throws "Action is not defined". `setupTestEnvironment()` still
 exists and only sets the env.
 
 ```typescript
-import { refreshDatabase, setupDatabase, truncateMysql, truncateSqlite } from '@stacksjs/testing/database'
+import { refreshDatabase, setupDatabase, truncateMysql, truncatePostgres, truncateSqlite } from '@stacksjs/testing/database'
 
-// MySQL database setup; this helper does not initialize SQLite
+// MySQL and PostgreSQL setup: migrates the test database (SQLite is set up by refreshDatabase)
 await setupDatabase()
 
-// Reset the configured test database, including the SQLite reset path
+// Reset the configured test database for its driver
 await refreshDatabase()
 
 // Truncate tables
-await truncateSqlite()   // for SQLite
-await truncateMysql()    // for MySQL
+await truncateSqlite()    // for SQLite
+await truncateMysql()     // for MySQL
+await truncatePostgres()  // for PostgreSQL: every live table but `migrations`, ids restarted
 ```
 
 The database subpath is intentional. Importing its fixtures from the root
 would eagerly load the database graph during test preload and can deadlock
 module loading. Set the test environment before database work and confirm the
 configured database points at disposable test data. `refreshDatabase()` follows
-the active configured driver; it is not a generic PostgreSQL reset utility.
+the active configured driver. On PostgreSQL it refuses a database whose name
+does not contain `test`, because it empties every table in the schema;
+`withDisposableDatabase('postgres')` names its databases `stacks_test_...`.
 
 ## DynamoDB Testing
 
