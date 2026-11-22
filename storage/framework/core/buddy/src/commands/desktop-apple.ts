@@ -921,6 +921,7 @@ export function unsupportedMacosTarget(loadCommands: string, minimumMacos: strin
   const declared = minimumMacos.split('.').map(Number)
   const targets = loadCommands.matchAll(/^\s*(?:minos\s+|cmd LC_VERSION_MIN_MACOSX\s*\n\s*cmdsize \d+\s*\n\s*version\s+)(\d+(?:\.\d+){0,2})\s*$/gm)
   for (const [, target] of targets) {
+    if (!target) continue
     const components = target.split('.').map(Number)
     for (let i = 0; i < Math.max(components.length, declared.length); i++) {
       const difference = (components[i] ?? 0) - (declared[i] ?? 0)
