@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.651...v0.75.652)
+
+## 🐛 Bug Fixes
+
+- **desktop**: narrow deployment target matches in strict builds ([4be8916](https://github.com/stacksjs/stacks/commit/4be8916)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.650...v0.75.651)
 
 ## 🐛 Bug Fixes
