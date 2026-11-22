@@ -82,10 +82,13 @@ async function main(): Promise<void> {
       const flags = options({
         config: { type: 'string', default: inventoryPath },
         check: { type: 'boolean' },
+        'check-provider': { type: 'string' },
         drill: { type: 'boolean' },
         'retry-failed': { type: 'boolean' },
         'preserve-backups': { type: 'boolean' },
       })
+      if (flags.drill && flags['check-provider'] !== undefined)
+        throw new Error('Select a pack integrity check or a restore drill')
       if (process.env.STACKS_HOST_LOCK !== hostBackupLock)
         return lock(hostBackupLock)
       const inventory = readJson<BackupInventory>(flags.config)
@@ -103,6 +106,7 @@ async function main(): Promise<void> {
       }
       await runHostBackup(inventory, join(dirname(inventoryPath), 'host-backup-status.json'), {
         check: flags.check,
+        checkProvider: flags['check-provider'],
         drill: flags.drill,
         drillDirectory,
         retryFailed: flags['retry-failed'],

@@ -74,6 +74,7 @@ type Archive = Pick<ResticArchive, 'run' | 'restore' | 'restoreVerifiedFile' | '
 interface BackupOptions {
   profile?: 'project-rpo'
   check?: boolean
+  checkProvider?: string
   drill?: boolean
   drillDirectory?: string
   retryFailed?: boolean
@@ -243,13 +244,16 @@ export async function runHostBackup(
     await recoveryDrill(inventory, archives, state, statePath, options.drillDirectory ?? '/var/tmp', options.profile)
     return
   }
-  if (options.check) {
+  if (options.check || options.checkProvider !== undefined) {
+    const providers = Object.entries(archives).filter(([provider]) => options.checkProvider === undefined || provider === options.checkProvider)
+    if (!providers.length)
+      throw new Error('Unknown Restic provider for pack integrity check')
     const checks = state.checks ??= {}
     const logDir = join(dirname(statePath), 'pack-checks')
     mkdirSync(logDir, { recursive: true, mode: 0o700 })
     requirePrivateDirectory(logDir)
     const failed: string[] = []
-    for (const [provider, archive] of Object.entries(archives)) {
+    for (const [provider, archive] of providers) {
       if (!/^[a-z0-9_-]+$/i.test(provider))
         throw new Error('Invalid Restic provider name')
       const partition = (checks[provider]?.partition ?? 0) % 7 + 1

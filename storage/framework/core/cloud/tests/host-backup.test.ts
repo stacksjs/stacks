@@ -155,11 +155,19 @@ test('checks both Restic repositories and advances only the provider that passed
       async snapshots() { return [] },
     }
     const attempted: number[] = []
-    await expect(runHostBackup({ repositories: {}, projects: {} }, state, { check: true }, {
-      aws: { ...archive, async checkPackPartition(partition) { attempted.push(partition); throw new Error('offline') } },
-      hetzner: { ...archive, async checkPackPartition(partition) { attempted.push(partition) } },
-    })).rejects.toThrow('failed for aws')
+    const inventory = { repositories: {}, projects: {} }
+    const archives = {
+      aws: { ...archive, async checkPackPartition(partition: number) { attempted.push(partition); throw new Error('offline') } },
+      hetzner: { ...archive, async checkPackPartition(partition: number) { attempted.push(partition) } },
+    }
+    await expect(runHostBackup(inventory, state, { check: true }, archives)).rejects.toThrow('failed for aws')
     expect(attempted).toEqual([1, 7])
     expect(readJson(state)).toMatchObject({ checks: { aws: { partition: 7, timestamp: 1 }, hetzner: { partition: 7 } } })
+
+    attempted.length = 0
+    await runHostBackup(inventory, state, { checkProvider: 'hetzner' }, archives)
+    expect(attempted).toEqual([1])
+    expect(readJson(state)).toMatchObject({ checks: { aws: { partition: 7, timestamp: 1 }, hetzner: { partition: 1 } } })
+    await expect(runHostBackup(inventory, state, { checkProvider: 'other' }, archives)).rejects.toThrow('Unknown Restic provider')
   })
 })

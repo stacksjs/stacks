@@ -25,6 +25,10 @@ export class ResticArchive {
       throw new Error(`Missing explicit S3 credentials or Restic password file for ${provider}`)
     this.repository = credentials.RESTIC_REPOSITORY
     this.env = { ...env, RESTIC_CACHE_DIR: `${dirname(config)}/cache-${provider}`, ...credentials }
+    // The Hetzner endpoint can cancel full pack reads on HTTP/2 even after
+    // retries. Keep the HTTPS request and use Go's HTTP/1.1 transport there.
+    if (provider === 'hetzner')
+      this.env.GODEBUG = [this.env.GODEBUG, 'http2client=0'].filter(Boolean).join(',')
   }
 
   run(...args: string[]): Promise<string> {

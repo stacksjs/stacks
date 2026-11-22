@@ -34,7 +34,9 @@ Hetzner before recording success. Both units use `--preserve-backups`. The
 units refresh the inventory through the Bun operator before starting. The
 hourly retry processes new, failed, missing and stale receipts, and skips
 groups verified by every provider within 36 hours. The integrity check reads
-one seventh of each repository per run. The database drill restores
+one seventh of each repository per run. To retry a provider's current partition,
+run `stacks-host-ops host-backup --check-provider hetzner` or substitute `aws`.
+The database drill restores
 PostgreSQL and local Vitess into disposable instances with TCP disabled, using
 scratch space on the mounted deployments volume.
 Systemd orders recovery checks behind queued backups and keeps the shared
