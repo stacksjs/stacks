@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.653...v0.75.654)
+
+## ✨ Features
+
+- **docs**: limit a screen to some of the configured viewports ([78a80c6](https://github.com/stacksjs/stacks/commit/78a80c6)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- fold automatic screens into one screen documentation guide ([db5bcd7](https://github.com/stacksjs/stacks/commit/db5bcd7)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.652...v0.75.653)
 
 ## ✨ Features
