@@ -4,7 +4,7 @@
 
 A story records one journey you script, with its clicks and typing. To picture every screen of the application without scripting anything, use [screen documentation](/guide/screenshots) instead; [Screens or stories?](/guide/screenshots#screens-or-stories) compares the two.
 
-Browser stories need Chrome and nothing else: Chrome encodes the video through WebCodecs and ts-videos, a TypeScript library, writes the MP4. Native stories also need FFmpeg, which draws the tap indicators onto the device's own recording. Native stories need an explicitly selected, booted simulator or emulator with your app already installed. The recorder leaves device provisioning, app installation, fixtures and account setup with your existing E2E workflow.
+No FFmpeg is involved in any recording. A browser encodes the video through WebCodecs and [ts-videos](https://github.com/stacksjs/ts-videos), a TypeScript library, writes the MP4. Browser stories need Chrome. Native stories re-time the device's own recording and draw the tap indicators in system WebKit on a Mac, or in Chrome elsewhere (`BUN_CHROME_PATH` selects it). Native stories need an explicitly selected, booted simulator or emulator with your app already installed. The recorder leaves device provisioning, app installation, fixtures and account setup with your existing E2E workflow.
 
 ## Browser stories
 
@@ -148,7 +148,6 @@ Native capture includes system UI and has no automatic redaction. Provision dedi
 | `native.tapFeedback` | `true` | Add tap indicators, or use the harness's own indicators |
 | `native.tapColor`, `tapSize`, `tapMs` | Blue, 72px, 450ms | Native tap indicator appearance and trailing duration |
 | `chromePath`, `adb`, `xcrun` | Installed tools | Explicit executable paths on controlled runners |
-| `native.ffmpeg` | `ffmpeg` from PATH | FFmpeg for native recordings only |
 
 `--config path` selects another config, `--out directory` overrides its destination, and `--only a,b` selects stories. `--json` returns a machine-readable report. `--list` validates the inventory without opening drivers or running scenes. Config files are executable TypeScript, so keep device setup inside `open`, `prepare` or scene callbacks rather than at module scope.
 

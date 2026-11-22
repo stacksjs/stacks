@@ -26,7 +26,12 @@ async function record(config: string) {
   expect(report.results[0].status).toBe('passed')
   expect(report.results[0].scenes.map((scene: { status: string }) => scene.status)).toEqual(['passed', 'passed'])
   const movie = join(report.outDir, report.results[0].video.path)
-  await exec(['ffmpeg', '-v', 'error', '-i', movie, '-f', 'null', '-'])
+  // Recorded without FFmpeg: read the container back with ts-videos.
+  const { Mp4Demuxer } = await import('@ts-videos/mp4')
+  const { BufferSource } = await import('ts-videos')
+  const picture = (await new Mp4Demuxer(new BufferSource(new Uint8Array(await readFile(movie)))).getTracks()).find(track => track.type === 'video') as { codec: string, width: number } | undefined
+  expect(picture?.codec).toBe('h264')
+  expect(picture!.width).toBeGreaterThan(200)
   await exec([process.execPath, '--conditions=development', cli, 'docs:stories', '--config', config, '--check'])
   const page = await readFile(join(report.outDir, report.results[0].page.path), 'utf8')
   expect(page.match(/!\[/g)?.length).toBe(2)

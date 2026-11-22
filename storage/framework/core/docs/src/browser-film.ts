@@ -22,17 +22,34 @@ export interface BrowserFilmOptions {
   bitrate?: number
 }
 
+/** A square outline drawn over a recording between two moments, in the recording's own pixels. */
+export interface FilmMark { x: number, y: number, size: number, color: string, start: number, end: number }
+
 export interface BrowserFilm {
   /** Show a PNG or JPEG for this many frames. Pass no picture to hold the previous one. */
   add: (picture: Uint8Array | undefined, frames: number) => Promise<void>
+  /**
+   * Re-time a recording the page can load (see `serveFilmStudio`'s files) to
+   * this film's frame rate, drawing each mark while it is active. Resolves
+   * with the recording's length in seconds.
+   */
+  addVideo: (url: string, marks?: FilmMark[]) => Promise<number>
   /** Finish encoding and return the MP4. */
   finish: () => Promise<Uint8Array>
   frames: () => number
 }
 
-/** A blank page on localhost: WebCodecs needs a secure context, and localhost is one. */
-export function serveFilmStudio(): { url: string, stop: () => void } {
-  const server = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch: () => new Response('<!doctype html><meta charset="utf-8"><title>Film</title>', { headers: { 'Content-Type': 'text/html' } }) })
+/**
+ * A blank page on localhost: WebCodecs needs a secure context, and localhost
+ * is one. `files` maps a path such as `/raw.mp4` to a local file the page may
+ * load, with byte ranges so a video element can seek in it.
+ */
+export function serveFilmStudio(files: Record<string, string> = {}): { url: string, stop: () => void } {
+  const server = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch(request) {
+    const file = files[new URL(request.url).pathname]
+    if (file) return new Response(Bun.file(file), { headers: { 'Content-Type': 'video/mp4', 'Accept-Ranges': 'bytes' } })
+    return new Response('<!doctype html><meta charset="utf-8"><title>Film</title>', { headers: { 'Content-Type': 'text/html' } })
+  } })
   return { url: `http://127.0.0.1:${server.port}/`, stop: () => { void server.stop(true) } }
 }
 
@@ -90,6 +107,46 @@ const studio = (options: BrowserFilmOptions): string => `(() => {
     if (film.encoder.encodeQueueSize > 30) await film.encoder.flush()
     if (film.error) throw new Error(film.error)
   }
+  film.open = async (url) => {
+    const video = film.video = document.createElement('video')
+    video.muted = true; video.playsInline = true; video.preload = 'auto'
+    await new Promise((resolve, reject) => {
+      video.addEventListener('loadeddata', resolve, { once: true })
+      video.addEventListener('error', () => reject(new Error('This browser cannot play the recording')), { once: true })
+      video.src = url
+    })
+    if (!video.videoWidth || !Number.isFinite(video.duration)) throw new Error('The recording has no picture')
+    await film.start(Math.ceil(video.videoWidth / 2) * 2, Math.ceil(video.videoHeight / 2) * 2)
+    return JSON.stringify({ seconds: video.duration, frames: Math.max(1, Math.round(video.duration * ${options.fps})) })
+  }
+  // One output frame per tick of this film's clock, each taken from the
+  // recording at that moment: a device's variable frame rate becomes steady.
+  film.copy = async (from, count, marks) => {
+    const video = film.video
+    for (let index = from; index < from + count; index++) {
+      const time = Math.min(index / ${options.fps}, Math.max(0, video.duration - 0.001))
+      if (Math.abs(video.currentTime - time) > 0.0005) {
+        await new Promise((resolve, reject) => {
+          video.addEventListener('seeked', resolve, { once: true })
+          video.addEventListener('error', () => reject(new Error('The recording could not be read')), { once: true })
+          video.currentTime = time
+        })
+      }
+      film.context.fillStyle = '#fff'; film.context.fillRect(0, 0, film.width, film.height)
+      film.context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight)
+      for (const mark of marks) {
+        if (time < mark.start || time > mark.end) continue
+        film.context.globalAlpha = 0.9; film.context.strokeStyle = mark.color; film.context.lineWidth = 4
+        film.context.strokeRect(Math.round(mark.x - mark.size / 2) + 2, Math.round(mark.y - mark.size / 2) + 2, mark.size - 4, mark.size - 4)
+        film.context.globalAlpha = 1
+      }
+      const frame = new VideoFrame(film.canvas, { timestamp: Math.round(film.frame * 1e6 / ${options.fps}), duration: Math.round(1e6 / ${options.fps}) })
+      film.encoder.encode(frame, { keyFrame: film.frame % ${Math.max(1, Math.round(options.fps * 2))} === 0 })
+      frame.close(); film.frame++
+    }
+    await film.encoder.flush()
+    if (film.error) throw new Error(film.error)
+  }
   film.drain = async (last) => {
     if (last && film.encoder) { await film.encoder.flush(); film.encoder.close() }
     if (film.error) throw new Error(film.error)
@@ -127,6 +184,20 @@ export async function openBrowserFilm(evaluate: FilmEvaluate, options: BrowserFi
       total += frames
       // Keep the page's memory flat on a long film.
       if (total % (options.fps * 20) < frames) await drain(false)
+    },
+    async addVideo(url, marks = []) {
+      for (const mark of marks) {
+        if (![mark.x, mark.y, mark.size, mark.start, mark.end].every(Number.isFinite) || !/^#[0-9a-f]{6}$/i.test(mark.color)) throw new Error('Invalid film mark')
+      }
+      const opened = JSON.parse(String(await evaluate(`window.__stacksFilm.open(${JSON.stringify(url)})`))) as { seconds: number, frames: number }
+      // A second of output per call keeps each round trip, and the page's memory, small.
+      for (let from = 0; from < opened.frames; from += options.fps) {
+        const count = Math.min(options.fps, opened.frames - from)
+        await evaluate(`window.__stacksFilm.copy(${from}, ${count}, ${JSON.stringify(marks)})`)
+        total += count
+        await drain(false)
+      }
+      return opened.seconds
     },
     async finish() {
       await drain(true)

@@ -51,9 +51,6 @@ async function command(args: string[], signal?: AbortSignal, timeoutMs = 30000):
   }
   finally { clearTimeout(timeout); signal?.removeEventListener('abort', abort); await child.stop() }
 }
-async function encode(args: string[], ffmpeg = 'ffmpeg') {
-  await command([ffmpeg, '-hide_banner', '-loglevel', 'error', '-nostdin', '-n', ...args], undefined, 180000)
-}
 
 /** Chrome actions reuse the guarded testing click and dispatch real mouse movement. */
 export function browserStory(options: BrowserStoryOptions): StoryDriver<BrowserStoryContext> {
@@ -221,7 +218,6 @@ export interface NativeStoryOptions {
   input?: NativeStoryInput
   adb?: string
   xcrun?: string
-  ffmpeg?: string
   /** Set to false only when interaction indicators are supplied by the native driver. */
   tapFeedback?: boolean
   tapColor?: string
@@ -321,8 +317,18 @@ export function nativeStory(options: NativeStoryOptions): StoryDriver<NativeStor
       let finished: Promise<void> | undefined
       const finish = () => finished ??= (async () => {
         await stop!()
-        const filters = options.tapFeedback === false ? [] : taps.map(tap => `drawbox=x=${Math.round(tap.x - tapSize / 2)}:y=${Math.round(tap.y - tapSize / 2)}:w=${tapSize}:h=${tapSize}:color=0x${color.slice(1)}@0.9:t=4:enable='between(t,${tap.start.toFixed(3)},${tap.end.toFixed(3)})'`)
-        await encode(['-i', rawPath, '-an', '-vf', [...filters, 'pad=ceil(iw/2)*2:ceil(ih/2)*2'].join(','), '-r', String(fps), '-c:v', 'libx264', '-preset', 'veryfast', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', videoPath], options.ffmpeg)
+        // The device's recording is re-timed and marked by a browser and
+        // written by ts-videos: system WebKit on a Mac, Chrome elsewhere.
+        if (typeof Bun.WebView !== 'function') throw new Error('This Bun has no WebView. Upgrade Bun before recording native stories.')
+        const room = serveFilmStudio({ '/raw.mp4': rawPath })
+        const view = new Bun.WebView({ width: 320, height: 240, backend: process.platform === 'darwin' ? 'webkit' : { type: 'chrome', url: false, argv: process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : [] } })
+        try {
+          await view.navigate(room.url)
+          const film = await openBrowserFilm(script => view.evaluate(script), { fps })
+          await film.addVideo('/raw.mp4', options.tapFeedback === false ? [] : taps.map(tap => ({ x: tap.x, y: tap.y, size: tapSize, color, start: tap.start, end: tap.end })))
+          await Bun.write(videoPath, await film.finish())
+        }
+        finally { view.close(); room.stop() }
         await rm(rawPath)
       })()
       return {
