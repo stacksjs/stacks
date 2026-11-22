@@ -35,6 +35,16 @@ export class ResticArchive {
     return JSON.parse(await this.run('snapshots', '--json', ...args))
   }
 
+  async checkPackPartition(partition: number, log: string): Promise<void> {
+    await command(['restic', '--retry-lock', '5m', '--verbose', 'check', `--read-data-subset=${partition}/7`], {
+      env: this.env,
+      output: log,
+      logErrorsToOutput: true,
+      timeoutMs: 6 * 3_600_000,
+      interruptOnTimeout: true,
+    })
+  }
+
   async restore(snapshot: string, path: string, destination: string): Promise<void> {
     await command(['restic', '--retry-lock', this.policy.lock, 'dump', snapshot, path], {
       env: this.env,

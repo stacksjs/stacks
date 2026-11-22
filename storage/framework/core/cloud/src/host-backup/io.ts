@@ -70,6 +70,7 @@ export async function withScratch<T>(prefix: string, operation: (path: string) =
 interface CommandOptions {
   input?: string
   output?: string
+  logErrorsToOutput?: boolean
   discardOutput?: boolean
   timeoutMs?: number
   interruptOnTimeout?: boolean
@@ -86,7 +87,7 @@ export async function command(args: string[], options: CommandOptions = {}): Pro
     const child = Bun.spawn(args, {
       stdin: options.input ? Bun.file(options.input) : 'ignore',
       stdout: output ?? (options.discardOutput ? 'ignore' : 'pipe'),
-      stderr: 'ignore',
+      stderr: options.logErrorsToOutput && output !== undefined ? output : 'ignore',
       env: options.env,
       timeout: options.interruptOnTimeout ? 0 : timeout,
       killSignal: 'SIGKILL',

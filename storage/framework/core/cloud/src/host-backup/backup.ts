@@ -69,7 +69,7 @@ async function mysqlDump(root: string, target: string, source: MysqlSource): Pro
   })
 }
 
-type Archive = Pick<ResticArchive, 'run' | 'restore' | 'restoreVerifiedFile' | 'snapshots'>
+type Archive = Pick<ResticArchive, 'run' | 'restore' | 'restoreVerifiedFile' | 'snapshots' | 'checkPackPartition'>
 
 interface BackupOptions {
   profile?: 'project-rpo'
@@ -245,13 +245,29 @@ export async function runHostBackup(
   }
   if (options.check) {
     const checks = state.checks ??= {}
+    const logDir = join(dirname(statePath), 'pack-checks')
+    mkdirSync(logDir, { recursive: true, mode: 0o700 })
+    requirePrivateDirectory(logDir)
+    const failed: string[] = []
     for (const [provider, archive] of Object.entries(archives)) {
+      if (!/^[a-z0-9_-]+$/i.test(provider))
+        throw new Error('Invalid Restic provider name')
       const partition = (checks[provider]?.partition ?? 0) % 7 + 1
-      await archive.run('check', `--read-data-subset=${partition}/7`)
-      checks[provider] = { partition, timestamp: epoch() }
-      saveJson(statePath, state)
-      console.log(`${provider}: repository check ${partition}/7 passed`)
+      const log = join(logDir, `${provider}.log`)
+      console.log(`${provider}: checking Restic pack partition ${partition}/7`)
+      try {
+        await archive.checkPackPartition(partition, log)
+        checks[provider] = { partition, timestamp: epoch() }
+        saveJson(statePath, state)
+        console.log(`${provider}: repository check ${partition}/7 passed`)
+      }
+      catch (error) {
+        failed.push(provider)
+        console.error(`${provider}: repository check ${partition}/7 failed (${error instanceof Error ? error.message : error}). See ${log}`)
+      }
     }
+    if (failed.length)
+      throw new Error(`Restic pack checks failed for ${failed.join(', ')}`)
     return
   }
 

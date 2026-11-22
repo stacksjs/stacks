@@ -125,6 +125,7 @@ test('retry backs up missing, stale and failed groups and verifies each provider
       async snapshots() {
         return []
       },
+      async checkPackPartition() {},
     }
     const archives = { aws: archive, hetzner: archive }
     let cleared = 0
@@ -140,5 +141,25 @@ test('retry backs up missing, stale and failed groups and verifies each provider
     await runHostBackup(inventory, state, options, archives)
     expect(calls).toHaveLength(10)
     expect(cleared).toBe(1)
+  })
+})
+
+test('checks both Restic repositories and advances only the provider that passed', async () => {
+  await withScratch(join(tmpdir(), 'host-pack-check-'), async (root) => {
+    const state = join(root, 'status.json')
+    saveJson(state, { checks: { aws: { partition: 7, timestamp: 1 }, hetzner: { partition: 6, timestamp: 1 } } })
+    const archive = {
+      async run() { return '' },
+      async restore() {},
+      async restoreVerifiedFile() {},
+      async snapshots() { return [] },
+    }
+    const attempted: number[] = []
+    await expect(runHostBackup({ repositories: {}, projects: {} }, state, { check: true }, {
+      aws: { ...archive, async checkPackPartition(partition) { attempted.push(partition); throw new Error('offline') } },
+      hetzner: { ...archive, async checkPackPartition(partition) { attempted.push(partition) } },
+    })).rejects.toThrow('failed for aws')
+    expect(attempted).toEqual([1, 7])
+    expect(readJson(state)).toMatchObject({ checks: { aws: { partition: 7, timestamp: 1 }, hetzner: { partition: 7 } } })
   })
 })
