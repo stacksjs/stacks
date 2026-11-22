@@ -57,7 +57,8 @@ would eagerly load the database graph during test preload and can deadlock
 module loading. Set the test environment before database work and confirm the
 configured database points at disposable test data. `refreshDatabase()` follows
 the active configured driver. On PostgreSQL it refuses a database whose name
-does not contain `test`, because it empties every table in the schema;
+does not have `test` or `testing` as a word (`app_test`, `test_app`,
+`app_testing`; not `app_latest`), because it empties every table in the schema;
 `withDisposableDatabase('postgres')` names its databases `stacks_test_...`.
 
 ## DynamoDB Testing

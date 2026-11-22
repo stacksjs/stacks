@@ -117,14 +117,23 @@ describe('test-database helper drives the current query-builder API', () => {
     ])
   })
 
-  it('refuses a Postgres database whose name does not contain "test"', async () => {
+  it.each(['stacks', 'app_latest', 'contest', 'protest_prod', 'attestations'])('refuses a Postgres database named %s', async (name) => {
     driver = 'postgres'
-    postgresDatabase = 'stacks'
+    postgresDatabase = name
     const { refreshDatabase } = await import('../src/database')
 
-    await expect(refreshDatabase()).rejects.toThrow('Refusing to reset Postgres database "stacks"')
+    await expect(refreshDatabase()).rejects.toThrow(`Refusing to reset Postgres database "${name}"`)
     expect(calls).not.toContain('runDatabaseMigration')
     expect(executed.some(statement => statement.startsWith('TRUNCATE'))).toBe(false)
+  })
+
+  it.each(['app_test', 'test_app', 'app_testing', 'App-Test', 'stacks_test_0123abcd'])('accepts a Postgres database named %s', async (name) => {
+    driver = 'postgres'
+    postgresDatabase = name
+    const { truncatePostgres } = await import('../src/database')
+
+    await truncatePostgres()
+    expect(executed.some(statement => statement.startsWith('TRUNCATE'))).toBe(true)
   })
 
   it('resolves the driver at call time, not module load', async () => {

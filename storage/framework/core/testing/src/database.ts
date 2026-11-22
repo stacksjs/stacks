@@ -151,17 +151,24 @@ function quotePostgresIdentifier(name: string): string {
 }
 
 /**
+ * A database name says it is for tests when `test` or `testing` is a whole
+ * word in it, separated by `_` or `-`: `app_test`, `test_app`, `app_testing`,
+ * and the disposable `stacks_test_...`. A substring match would also accept
+ * `app_latest`, `contest` or `protest_prod` and empty them.
+ */
+const TEST_DATABASE_NAME = /(?:^|[_-])test(?:ing)?(?:$|[_-])/i
+
+/**
  * Refuse to migrate or empty a Postgres database whose name does not say it
- * is for tests. `truncatePostgres()` empties every table in the schema, so
- * pointing a test run at the development database by mistake would wipe it.
- * Disposable databases (`withDisposableDatabase('postgres')`) are named
- * `stacks_test_...` and pass.
+ * is for tests (`TEST_DATABASE_NAME`). `truncatePostgres()` empties every
+ * table in the schema, so pointing a test run at the development database by
+ * mistake would wipe it.
  */
 export async function assertPostgresTestDatabase(): Promise<void> {
   const rows = await db.unsafe('SELECT current_database() AS name').execute() as unknown as Array<{ name: string }>
   const name = rows[0]?.name ?? ''
-  if (!name.toLowerCase().includes('test'))
-    throw new Error(`[testing] Refusing to reset Postgres database "${name}": its name does not contain "test". Point DB_DATABASE at a test database.`)
+  if (!TEST_DATABASE_NAME.test(name))
+    throw new Error(`[testing] Refusing to reset Postgres database "${name}": its name does not have "test" or "testing" as a word (app_test, test_app, app_testing). Point DB_DATABASE at a test database.`)
 }
 
 /**
