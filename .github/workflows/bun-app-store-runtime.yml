@@ -36,6 +36,7 @@ jobs:
           [[ "$(uname -m)" == arm64 ]]
           [[ "$(sw_vers -productVersion)" == 15.* ]]
           [[ "$(xcrun --sdk macosx --show-sdk-version)" == 15.5 ]]
+          printf 'SDKROOT=%s\n' "$(xcrun --sdk macosx --show-sdk-path)" >> "$GITHUB_ENV"
           mkdir "$RUNNER_TEMP/llvm"
           curl --fail --silent --show-error --location --retry 3 \
             "https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.1/$LLVM_ARCHIVE" \
