@@ -106,25 +106,25 @@ including a changed guide and a skill page. A successful build alone does not
 prove the prose or API examples are correct. For deployment work, read
 `stacks-deploy` and verify the CI run for the pushed commit plus the live docs.
 
-## Automated screen documentation
+## Screen documentation
 
-Use `buddy docs:screenshots` for an explicit UI inventory rather than one-off
-page captures. `config/screenshots.ts` uses `defineScreenshotConfig` from
-`@stacksjs/docs/screenshots`: pages describe purpose, concrete paths, profiles,
-readiness selectors, optional hooks and masks. Each profile owns a separate
-Bun WebView process. `--list` verifies template coverage without a browser;
-`--check` verifies the complete saved inventory, source/config hashes and PNG
-bytes. Failed or deliberately excluded screens remain visible in the manifest.
-Read `docs/guide/screenshots.md` for the full configuration and CI workflow.
+Use `buddy docs:screenshots` to picture every screen rather than one-off page
+captures. `config/screenshots.ts` uses `defineScreenshotConfig` from
+`@stacksjs/docs/screenshots`. Build `pages` with `screensFromViews()` from the
+same module: it reads the stx route table, so a new view is captured on the
+next run and a deleted one loses its pictures. Its `each` and `routes` rules
+assign the signed-in profile and bind a seeded example to each parameterised
+address; unbound ones stay listed as explained gaps. Hand-written pages are
+still accepted, alone or through `extra`. Each profile owns a separate Bun
+WebView process.
 
-To cover every view without a hand-written list, build `pages` with
-`screensFromViews()` from the same module. It reads the stx route table, so a
-new view is captured on the next run. Its `each` and `routes` rules assign the
-signed-in profile and bind a seeded example to each parameterised address;
-unbound ones stay listed as explained gaps. `film: true` writes one walkthrough
-MP4 per viewport (needs FFmpeg) and `docs: { page, base }` writes a generated
-page of every screen. A complete run removes pictures of deleted views. Read
-`docs/guide/automatic-screens.md` for the rules, the CI workflow that commits
-the output, and troubleshooting.
+`film: true` writes one walkthrough MP4 per viewport (needs FFmpeg) and
+`docs: { page, base }` writes a generated page of every screen. `--list`
+verifies the inventory and template coverage without a browser, `--publish`
+rebuilds films and page from the saved manifest, and `--check` verifies the
+saved output against source, config and file hashes. Failed or excluded
+screens remain visible in the manifest. `buddy docs:stories` is the separate
+tool for recorded journeys. Read `docs/guide/screenshots.md` for rules, the CI
+workflow that commits the output, troubleshooting and the reference.
 Use seeded accounts, keep credentials out of artifacts, review every image, and
 verify native apps separately from phone-width web captures.

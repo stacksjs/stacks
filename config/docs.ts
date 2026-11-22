@@ -178,10 +178,9 @@ const config: BunPressOptions = {
             { text: 'Getting Started', link: '/testing/getting-started' },
             { text: 'Unit Tests', link: '/testing/unit-tests' },
             { text: 'Feature Tests', link: '/testing/feature-tests' },
-            { text: 'User Story Videos', link: '/testing/story-recordings' },
             { text: 'Http Tests', link: '/testing/http-tests' },
-            { text: 'Screen documentation', link: '/guide/screenshots' },
-            { text: 'Automatic screens and videos', link: '/guide/automatic-screens' },
+            { text: 'Screen Documentation', link: '/guide/screenshots' },
+            { text: 'User Story Videos', link: '/testing/story-recordings' },
           ],
         },
         {

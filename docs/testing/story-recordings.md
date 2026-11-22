@@ -2,7 +2,7 @@
 
 `buddy docs:stories` runs named end-to-end scenes, records an MP4, captures a PNG after every reached scene, and adds a documentation page containing the video and all scene screenshots. The generated index links every configured story and shows its result. Browser, iOS Simulator and Android Emulator recordings use the same command.
 
-Stories cover the journeys you script. To picture every view without scripting anything, see [Automatic screens, videos and docs](/guide/automatic-screens).
+A story records one journey you script, with its clicks and typing. To picture every screen of the application without scripting anything, use [screen documentation](/guide/screenshots) instead; [Screens or stories?](/guide/screenshots#screens-or-stories) compares the two.
 
 Install FFmpeg on the machine running the command. Browser stories also need Chrome. Native stories need an explicitly selected, booted simulator or emulator with your app already installed. The recorder leaves device provisioning, app installation, fixtures and account setup with your existing E2E workflow.
 

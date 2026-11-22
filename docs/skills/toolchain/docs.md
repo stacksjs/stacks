@@ -21,7 +21,7 @@ source and retained evidence; driver limits are explicit.
 - Configuration (config/docs.ts)
 - CLI Commands
 - Gotchas
-- Automated screen documentation
+- Screen documentation
 
 ## Using it
 
