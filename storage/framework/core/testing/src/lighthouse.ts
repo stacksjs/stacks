@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
+import { findChrome } from '../../../defaults/ai/skills/stacks-browse/scripts/chrome'
 
 const lighthouseVersion = '13.6.0'
 export const lighthouseCategories = ['performance', 'accessibility', 'best-practices', 'seo'] as const
@@ -148,9 +149,10 @@ function mainThreadDiagnostics(report: any): LighthouseMainThread | undefined {
   return Object.keys(diagnostics).length ? diagnostics : undefined
 }
 
-async function run(args: string[], timeoutMs: number, cwd: string) {
+async function run(args: string[], timeoutMs: number, cwd: string, chromePath?: string) {
   const child = Bun.spawn(args, {
     cwd,
+    env: chromePath ? { ...process.env, CHROME_PATH: chromePath } : undefined,
     stdout: 'ignore', stderr: 'pipe', timeout: timeoutMs, killSignal: 'SIGTERM',
   })
   const [code, stderr] = await Promise.all([child.exited, new Response(child.stderr).text()])
@@ -185,7 +187,10 @@ export async function auditLighthouse(options: LighthouseOptions, runner?: Light
       const install = await run([process.execPath, 'install', '--ignore-scripts', '--no-progress', '--prefer-offline', '--backend=copyfile'], timeoutMs, cwd)
       if (install.code !== 0) throw new Error(`Could not install Lighthouse ${lighthouseVersion}: ${install.stderr.trim() || `exit ${install.code}`}`)
       command = [process.execPath, join(cwd, 'node_modules/lighthouse/cli/index.js')]
-      execute = (args, timeout) => run(args, timeout, cwd)
+      // Discover the same executable as Buddy, including Chrome for Testing.
+      // A caller connecting to a running browser already chose its executable.
+      const chromePath = options.chromePort ? undefined : findChrome() ?? undefined
+      execute = (args, timeout) => run(args, timeout, cwd, chromePath)
     }
     for (const url of urls) {
       for (const formFactor of devices) {
