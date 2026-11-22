@@ -12,11 +12,14 @@ else {
   assert(['127.0.0.1', 'localhost', '[::1]'].includes(process.env.DB_HOST!))
 }
 
-const { overridesReady, hashing } = await import('@stacksjs/config')
+// Read the section through `config` after `overridesReady`: a `hashing`
+// destructured from the import is the pre-load snapshot, which stops being
+// the live section as soon as the project's config/hashing.ts loads (#3356).
+const { overridesReady, config } = await import('@stacksjs/config')
 await overridesReady
-hashing.driver = 'bcrypt'
-hashing.bcrypt = { rounds: 5 }
-hashing.rehashOnLogin = true
+config.hashing.driver = 'bcrypt'
+config.hashing.bcrypt = { rounds: 5 }
+config.hashing.rehashOnLogin = true
 
 const { db, initializeDbConfig, ensureDatabaseConfigLoaded, closeDatabaseConnection } = await import('@stacksjs/database/runtime')
 await ensureDatabaseConfigLoaded()
