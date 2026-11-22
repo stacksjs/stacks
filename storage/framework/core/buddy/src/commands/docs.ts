@@ -43,11 +43,18 @@ export function docs(buddy: CLI): void {
     .option('--viewport <names>', 'Comma-separated configured viewport names')
     .option('--list', 'Validate screen coverage without opening a browser', { default: false })
     .option('--check', 'Verify the complete saved inventory and image hashes', { default: false })
+    .option('--publish', 'Rebuild the films and docs page from the saved captures, without a browser', { default: false })
     .option('--json', 'Print the inventory, model plan and capture report as JSON', { default: false })
     .example('buddy docs:screenshots --list')
     .example('buddy docs:screenshots --only welcome,calendar --viewport mobile')
-    .action(async (options: { config?: string, out?: string, only?: string, viewport?: string, list?: boolean, check?: boolean, json?: boolean }) => {
-      const { captureScreenshots } = await import('@stacksjs/docs/screenshots')
+    .action(async (options: { config?: string, out?: string, only?: string, viewport?: string, list?: boolean, check?: boolean, publish?: boolean, json?: boolean }) => {
+      const { captureScreenshots, publishScreenshots } = await import('@stacksjs/docs/screenshots')
+      if (options.publish) {
+        const published = await publishScreenshots({ config: options.config, outDir: options.out })
+        if (options.json) console.log(JSON.stringify(published, null, 2))
+        else console.log(`${published.films?.length ?? 0} films${published.docsPage ? ` and ${published.docsPage.path}` : ''} rebuilt from ${published.results.filter(result => result.status === 'captured').length} captures.`)
+        return
+      }
       const report = await captureScreenshots({ config: options.config, outDir: options.out, only: options.only?.split(',').map(value => value.trim()).filter(Boolean), viewports: options.viewport?.split(',').map(value => value.trim()).filter(Boolean), list: options.list, check: options.check, onProgress: result => { if (!options.json) console.log(`${result.status} ${result.id}/${result.profile}/${result.viewport.name}`) } })
       if (options.json) {
         console.log(JSON.stringify(report, null, 2))

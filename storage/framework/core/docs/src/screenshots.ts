@@ -116,6 +116,8 @@ export interface ScreenshotOptions {
   viewports?: string[]
   list?: boolean
   check?: boolean
+  /** False captures without rebuilding the films and docs page; call publishScreenshots() when the batch is done. */
+  publish?: boolean
   onProgress?: (result: ScreenshotResult) => void
 }
 export const defineScreenshotConfig = (config: ScreenshotConfig): ScreenshotConfig => config
@@ -428,8 +430,10 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
     // and documents the whole inventory. A film failure keeps the manifest.
     let publishing: unknown
     try {
-      if (config.film) report.films = await filmScreenshots(output, report.results, config.viewports ?? defaults, config.film === true ? {} : config.film)
-      if (config.docs) report.docsPage = await writeScreensPage(root, report, config.docs)
+      if (options.publish !== false) {
+        if (config.film) report.films = await filmScreenshots(output, report.results, config.viewports ?? defaults, config.film === true ? {} : config.film)
+        if (config.docs) report.docsPage = await writeScreensPage(root, report, config.docs)
+      }
     }
     catch (error) { publishing = error }
     await Bun.write(join(output, 'manifest.json.tmp'), `${JSON.stringify(report, null, 2)}\n`)
@@ -444,6 +448,29 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
     return report
   }
   finally { await rm(temporary, { recursive: true, force: true }) }
+}
+
+/**
+ * Rebuild the films and the docs page from the saved manifest, without
+ * opening a browser. For a wrapper that captures in batches with
+ * `publish: false`, and for changing film or page settings after a capture.
+ */
+export async function publishScreenshots(options: Pick<ScreenshotOptions, 'config' | 'root' | 'outDir'> = {}): Promise<ScreenshotReport> {
+  const root = resolve(options.root ?? process.cwd())
+  const config = await load(resolve(root, options.config ?? 'config/screenshots.ts'))
+  await validateScreenshotConfig(config, root)
+  const output = resolve(root, options.outDir ?? config.outDir)
+  const file = join(output, 'manifest.json')
+  if ((await lstat(file)).isSymbolicLink()) throw new Error('Screenshot manifest must not be a symlink')
+  const report = JSON.parse(await readFile(file, 'utf8')) as ScreenshotReport
+  if (report.generator !== '@stacksjs/docs/screenshots') throw new Error('This is not a Stacks screenshot manifest')
+  delete report.films
+  delete report.docsPage
+  if (config.film) report.films = await filmScreenshots(output, report.results, config.viewports ?? defaults, config.film === true ? {} : config.film)
+  if (config.docs) report.docsPage = await writeScreensPage(root, report, config.docs)
+  await Bun.write(join(output, 'manifest.json.tmp'), `${JSON.stringify(report, null, 2)}\n`)
+  await rename(join(output, 'manifest.json.tmp'), file)
+  return report
 }
 
 if (import.meta.main && process.argv[2] === '--worker') {

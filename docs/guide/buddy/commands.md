@@ -1886,6 +1886,7 @@ Capture and verify an explicit UI inventory with Bun WebView
 | `--viewport` | Comma-separated configured viewport names | value, required | - |
 | `--list` | Validate screen coverage without opening a browser | boolean, optional | `false` |
 | `--check` | Verify the complete saved inventory and image hashes | boolean, optional | `false` |
+| `--publish` | Rebuild the films and docs page from the saved captures, without a browser | boolean, optional | `false` |
 | `--json` | Print the inventory, model plan and capture report as JSON | boolean, optional | `false` |
 
 Examples:

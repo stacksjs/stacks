@@ -299,6 +299,26 @@ The page ends with a "Not pictured" list: every gap with its reason, and every s
 
 The page is generated and carries a marker comment. The command replaces a page that has the marker and refuses to overwrite one that does not, so pointing `docs.page` at a hand-written file by mistake cannot destroy it. It contains no timestamp: when no picture changed, the page's bytes are identical and CI has nothing to commit.
 
+## Rebuild the video and page without recapturing
+
+```sh
+./buddy docs:screenshots --publish
+```
+
+`--publish` reads the saved manifest, rebuilds the films and the docs page, and updates their hashes. It opens no browser and needs no running application. Use it after changing `film` or `docs` settings, or when a full capture is not worth it for a change that only affects how the output is presented.
+
+Programmatic callers get the same split. A wrapper that captures in batches (one screen per call, to bound browser memory or to retry failures) would otherwise re-encode the films after every batch. Pass `publish: false` to each capture and publish once at the end:
+
+```ts
+import { captureScreenshots, publishScreenshots } from '@stacksjs/docs/screenshots'
+
+for (const id of ['home', 'settings', 'projects'])
+  await captureScreenshots({ only: [id], publish: false })
+await publishScreenshots()
+```
+
+Until `publishScreenshots()` runs, the manifest has no films or page, and `--check` fails with "The screen film is missing".
+
 ## Deleted and renamed views
 
 A complete run (no `--only`, no `--viewport`) removes the pictures of screens that are no longer in the inventory, and their sections leave the docs page and the films. Only files the previous manifest recorded are removed; anything else in the output directory is left alone.
@@ -416,6 +436,7 @@ Use the screens pipeline for breadth: nothing a user can open goes undocumented.
 | A picture shows skeletons or a spinner | The readiness check passed too early. Require a sustained quiet period, as in [When is a screen loaded?](#when-is-a-screen-loaded) |
 | Every screen is captured once per role | Views have no `profiles`. Return one from `each`. |
 | `FFmpeg is required to film the captured screens` | Install FFmpeg, set `film.ffmpeg`, or remove `film`. The pictures were still saved. |
+| `The screen film is missing; capture again` | A capture ran with `publish: false`, or `film` was added after the last capture. Run `./buddy docs:screenshots --publish`. |
 | `Refusing to replace a hand-written page` | `docs.page` points at a file the command did not generate. Choose another path or delete the file. |
 | `Refusing to overwrite an unowned screenshot` | The output directory holds pictures from another tool under the same names. Use an empty `outDir`. |
 | `--check` fails right after a capture in CI | A file listed in `inputs`, or a view, differs between the capture and the check, often a generated file that the build rewrites. Remove it from `inputs`. |

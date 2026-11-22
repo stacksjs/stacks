@@ -2,7 +2,7 @@ import { afterAll, describe, expect, test } from 'bun:test'
 import { lstat, mkdtemp, mkdir, readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { captureScreenshots, type ScreenshotConfig, validateScreenshotConfig } from '../src/screenshots'
+import { captureScreenshots, publishScreenshots, type ScreenshotConfig, validateScreenshotConfig } from '../src/screenshots'
 
 const roots: string[] = []
 afterAll(async () => { for (const root of roots) await rm(root, { recursive: true, force: true }) })
@@ -250,6 +250,14 @@ test.skipIf(typeof Bun.WebView !== 'function' || !Bun.which('ffmpeg') || (proces
     await captureScreenshots({ root, config: 'screens.ts', check: true })
 
     // A removed view loses its picture and its section on the next full capture.
+    // A batch wrapper captures without publishing, then publishes once.
+    const quiet = await captureScreenshots({ root, config: 'screens.ts', only: ['index'], publish: false })
+    expect(quiet.films).toBeUndefined()
+    await expect(captureScreenshots({ root, config: 'screens.ts', check: true })).rejects.toThrow('film is missing')
+    const republished = await publishScreenshots({ root, config: 'screens.ts' })
+    expect(republished.films).toMatchObject([{ viewport: 'mobile', screens: 2 }])
+    await captureScreenshots({ root, config: 'screens.ts', check: true })
+
     // A second file name, because one process caches the imported config module.
     await rm(join(root, 'resources/views/pricing.stx'))
     await Bun.write(join(root, 'next.ts'), await Bun.file(join(root, 'screens.ts')).text())
