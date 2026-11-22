@@ -363,15 +363,12 @@ onDestroy(() => {
                 <span class="shrink-0 font-semibold text-xs accent project-icon" aria-hidden="true">{{ project.name.trim().slice(0, 1).toUpperCase() }}</span>
                 <div class="flex-1 min-w-0">
                   <p class="truncate" :title="project.path">{{ project.name }}</p>
-                  @if(project.issue)
-                    <p class="text-xs truncate issue" :title="project.issue">{{ project.issue }}</p>
-                  @elseif(project.dashboard === 'ready')
-                    <p class="text-xs online">Running</p>
-                  @endif
+                  <p class="text-xs truncate issue" :if="project.issue" :title="project.issue">{{ project.issue }}</p>
+                  <p class="text-xs online" :if="project.dashboard === 'ready' && !project.issue">Running</p>
                 </div>
                 <button type="button" class="shrink-0 px-2 py-1 text-xs accent rounded-md dashboard-launch tab"
                   :aria-label="'Open ' + project.name + ' dashboard'"
-                  :aria-busy="launching() === project.id"
+                  :aria-busy="launching() === project.id || project.dashboard === 'starting'"
                   :disabled="busy() !== ''" @click="perform('dashboard', project.id)">
                   {{ launching() === project.id || project.dashboard === 'starting' ? 'Opening…' : 'Open' }}
                 </button>
