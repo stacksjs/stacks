@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.654...v0.75.655)
+
+## ✨ Features
+
+- **docs**: film screens and record browser stories without FFmpeg ([2afcd27](https://github.com/stacksjs/stacks/commit/2afcd27)) _(by Chris Breuer)_
+
+## ✅ Tests
+
+- isolate dashboard page audit navigations ([f7d7751](https://github.com/stacksjs/stacks/commit/f7d7751)) _(by Chris Breuer)_ ([#3384](https://github.com/stacksjs/stacks/issues/3384))
+- distinguish deployment terminal polling in page audits ([3a0fc6e](https://github.com/stacksjs/stacks/commit/3a0fc6e)) _(by Chris Breuer)_ ([#3384](https://github.com/stacksjs/stacks/issues/3384))
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.653...v0.75.654)
 
 ## ✨ Features
