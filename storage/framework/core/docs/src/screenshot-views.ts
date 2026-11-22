@@ -40,7 +40,7 @@ export interface ViewScreenOptions {
   /** View directories, relative to the root. Default `['resources/views']`. */
   directories?: string[]
   /** Applied to every view before its own rule. `waitFor` defaults to `body`. */
-  defaults?: Partial<Pick<ScreenshotPage, 'waitFor' | 'profiles' | 'masks' | 'prepare' | 'ready' | 'reason'>>
+  defaults?: Partial<Pick<ScreenshotPage, 'waitFor' | 'profiles' | 'viewports' | 'masks' | 'prepare' | 'ready' | 'reason'>>
   /** Rules by exact route pattern, e.g. `'/workouts/[id]': { path: ({ fixtures }) => ... }`. */
   routes?: Record<string, ViewScreenRule>
   /** A rule computed per view, e.g. the signed-in role by route prefix. Runs before `routes`. */

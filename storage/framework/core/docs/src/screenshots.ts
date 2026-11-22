@@ -40,6 +40,8 @@ export interface ScreenshotPage {
   /** Project-relative template paths covered by this screen. */
   sources?: string[]
   profiles?: string[]
+  /** Only these configured viewports, for a screen that exists at some sizes only. Default: all. */
+  viewports?: string[]
   waitFor: string
   /** Intentional HTTP error screens must name their expected status. */
   expectedStatus?: number
@@ -162,6 +164,9 @@ export async function validateScreenshotConfig(config: ScreenshotConfig, root = 
     viewportNames.add(viewport.name)
   }
   if (!viewportNames.size) throw new Error('At least one viewport is required')
+  for (const page of config.pages) {
+    if (page.viewports !== undefined && (!page.viewports.length || page.viewports.some(name => !viewportNames.has(name)))) throw new Error(`Unknown or empty viewports for ${page.id}`)
+  }
   for (const input of config.inputs ?? []) await readFile(resolve(root, input))
   validateScreenshotPublishing(config.film === true ? {} : config.film, config.docs, root, config.viewports ?? defaults)
   const missing: string[] = []
@@ -223,6 +228,7 @@ async function captureProfile(configFile: string, profile: string, options: Scre
     for (const page of config.pages) {
       if (options.only?.length && !options.only.includes(page.id)) continue
       if (!(page.profiles ?? Object.keys(config.profiles ?? { default: {} })).includes(profile)) continue
+      if (page.viewports && !page.viewports.includes(viewport.name)) continue
       const result: ScreenshotResult = { id: page.id, profile, viewport, title: page.title, description: page.description, ...(page.reason ? { reason: page.reason } : {}), path: new URL(typeof page.path === 'string' ? page.path : page.route!, config.baseUrl).pathname, status: 'failed' }
       results.push(result)
       if (page.skip) { result.status = 'skipped'; result.error = page.skip; process.send?.({ type: 'screenshot-result', result }); continue }
@@ -313,6 +319,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
     for (const page of config.pages) {
       for (const profile of page.profiles ?? Object.keys(config.profiles ?? { default: {} })) {
         for (const viewport of config.viewports ?? defaults) {
+          if (page.viewports && !page.viewports.includes(viewport.name)) continue
           const result = existing.results.find(item => item.id === page.id && item.profile === profile && item.viewport.name === viewport.name)
           if (!result || (!page.skip && result.status !== 'captured')) throw new Error(`Missing screenshot: ${page.id}/${profile}-${viewport.name}`)
           if (result.file && (relative(output, resolve(output, result.file)).split(/[\\/]/)[0] === '..' || isAbsolute(relative(output, resolve(output, result.file))) || hash(await readFile(join(output, result.file))) !== result.sha256)) throw new Error(`Screenshot bytes changed: ${page.id}`)
@@ -341,6 +348,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
     try { if ((await lstat(directory)).isSymbolicLink()) throw new Error(`Screenshot directory is a symlink: ${page.id}`) }
     catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
     for (const profile of page.profiles ?? Object.keys(config.profiles ?? { default: {} })) for (const viewport of config.viewports ?? defaults) {
+      if (page.viewports && !page.viewports.includes(viewport.name)) continue
       const file = `${page.id}/${profile}-${viewport.name}.png`
       try {
         const info = await lstat(join(output, file))
@@ -363,7 +371,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
     for (const profile of Object.keys(config.profiles ?? { default: {} })) {
       const resultFile = join(temporary, `${profile}.json`)
       const selected = config.pages.filter(page => (!options.only?.length || options.only.includes(page.id)) && (page.profiles ?? Object.keys(config.profiles ?? { default: {} })).includes(profile))
-      const count = selected.length * (config.viewports ?? defaults).filter(viewport => !options.viewports?.length || options.viewports.includes(viewport.name)).length
+      const count = selected.reduce((sum, page) => sum + (config.viewports ?? defaults).filter(viewport => (!options.viewports?.length || options.viewports.includes(viewport.name)) && (!page.viewports || page.viewports.includes(viewport.name))).length, 0)
       if (!count) continue
       const runtime = import.meta.path.startsWith('/$bunfs/') ? Bun.which('bun') : process.execPath
       if (!runtime) throw new Error('An installed Bun is required for screenshot workers')
@@ -387,7 +395,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
       }
       catch (error) {
         for (const page of selected) for (const viewport of config.viewports ?? defaults) {
-          if (options.viewports?.length && !options.viewports.includes(viewport.name)) continue
+          if ((options.viewports?.length && !options.viewports.includes(viewport.name)) || (page.viewports && !page.viewports.includes(viewport.name))) continue
           report.results.push({ id: page.id, profile, viewport, title: page.title, description: page.description, path: new URL(typeof page.path === 'string' ? page.path : page.route!, config.baseUrl).pathname, status: 'failed', error: redacted(error, config) })
         }
       }

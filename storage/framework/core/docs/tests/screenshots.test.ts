@@ -14,6 +14,8 @@ describe('documentation screenshot inventory', () => {
     for (const modify of [
       (value: ScreenshotConfig) => { value.pages.push({ ...value.pages[0]! }) },
       (value: ScreenshotConfig) => { value.pages[0]!.profiles = ['admin'] },
+      (value: ScreenshotConfig) => { value.pages[0]!.viewports = ['watch'] },
+      (value: ScreenshotConfig) => { value.pages[0]!.viewports = [] },
       (value: ScreenshotConfig) => { value.pages[0]!.id = '../secret' },
       (value: ScreenshotConfig) => { value.pages[0]!.path = 'https://other.test/' },
       (value: ScreenshotConfig) => { value.baseUrl = 'https://user:secret@example.test' },
@@ -234,11 +236,12 @@ test.skipIf(typeof Bun.WebView !== 'function' || !Bun.which('ffmpeg') || (proces
     await Bun.write(join(root, 'resources/views/[slug].stx'), '<main>Profile</main>')
     await Bun.write(join(root, 'screens.ts'), `import { screensFromViews } from ${JSON.stringify(join(import.meta.dir, '../src/screenshot-views.ts'))}
       export default { baseUrl: 'http://127.0.0.1:${server.port}', outDir: 'docs/public/screens', timeoutMs: 15000, models: false,
-        viewports: [{ name: 'mobile', width: 390, height: 844 }], coverage: { directories: ['resources/views'] },
-        film: { secondsPerScreen: 0.5 }, docs: { page: 'docs/screens.md', base: '/screens', title: 'Every screen' },
-        pages: screensFromViews({ root: ${JSON.stringify(root)}, defaults: { waitFor: 'main' } }) }`)
+        viewports: [{ name: 'mobile', width: 390, height: 844 }, { name: 'wide', width: 1000, height: 700 }], coverage: { directories: ['resources/views'] },
+        film: { secondsPerScreen: 0.5, viewports: ['mobile'] }, docs: { page: 'docs/screens.md', base: '/screens', title: 'Every screen' },
+        pages: screensFromViews({ root: ${JSON.stringify(root)}, defaults: { waitFor: 'main', viewports: ['mobile'] }, routes: { '/': { viewports: ['mobile', 'wide'] } } }) }`)
     const report = await captureScreenshots({ root, config: 'screens.ts' })
-    expect(report.results.map(result => [result.id, result.status])).toEqual([['index', 'captured'], ['slug', 'skipped'], ['pricing', 'captured']])
+    // Only the home page is pictured wide; every other screen is phone-only.
+    expect(report.results.map(result => [result.id, result.viewport.name, result.status])).toEqual([['index', 'mobile', 'captured'], ['slug', 'mobile', 'skipped'], ['pricing', 'mobile', 'captured'], ['index', 'wide', 'captured']])
     expect(report.films).toMatchObject([{ viewport: 'mobile', file: 'film-mobile.mp4', screens: 2, seconds: 1 }])
     const film = new Uint8Array(await Bun.file(join(root, 'docs/public/screens/film-mobile.mp4')).arrayBuffer())
     expect(Buffer.from(film.subarray(4, 8)).toString()).toBe('ftyp')
@@ -262,7 +265,7 @@ test.skipIf(typeof Bun.WebView !== 'function' || !Bun.which('ffmpeg') || (proces
     await rm(join(root, 'resources/views/pricing.stx'))
     await Bun.write(join(root, 'next.ts'), await Bun.file(join(root, 'screens.ts')).text())
     const next = await captureScreenshots({ root, config: 'next.ts' })
-    expect(next.results.map(result => result.id)).toEqual(['index', 'slug'])
+    expect(next.results.map(result => result.id)).toEqual(['index', 'slug', 'index'])
     expect(await Bun.file(join(root, 'docs/public/screens/pricing/default-mobile.png')).exists()).toBe(false)
     expect(await Bun.file(join(root, 'docs/screens.md')).text()).not.toContain('pricing')
     await captureScreenshots({ root, config: 'next.ts', check: true })

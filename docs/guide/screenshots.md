@@ -111,7 +111,7 @@ const pages = screensFromViews({
 
 A rule is one of:
 
-- **An object** with any page field: `title`, `description`, `reason`, `path`, `model`, `profiles`, `waitFor`, `prepare`, `ready`, `masks`, `expectedStatus`, `skip`.
+- **An object** with any page field: `title`, `description`, `reason`, `path`, `model`, `profiles`, `viewports`, `waitFor`, `prepare`, `ready`, `masks`, `expectedStatus`, `skip`.
 - **A string**, which leaves the screen out and records the string as the reason.
 - **`false`**, which leaves it out with a generic reason.
 - **`undefined`**, which changes nothing. Return it from `each` for views the function has no opinion about.
@@ -383,6 +383,16 @@ viewports: [
 ],
 ```
 
+A screen that exists at some sizes only names them with `viewports`. For example, an application that sends phones from `/home` to another address pictures `/home` on the desktop alone:
+
+```ts
+routes: {
+  '/home': { viewports: ['desktop'] },
+}
+```
+
+The other sizes are not captured, not expected by `--check`, and not counted as gaps.
+
 Screen ids, profiles and viewport names form stable paths: `home/member-phone.png`. A phone-width browser capture verifies the web layout only. A native iOS or Android build needs its own simulator or device check.
 
 ## The walkthrough video
@@ -581,7 +591,7 @@ Use screens for breadth: nothing a user can open goes undocumented. Use stories 
 | `Undocumented screens:` followed by template paths | A hand-written inventory misses those views. Add pages for them, exclude them with a reason under `coverage.exclude`, or derive the inventory with `screensFromViews()`. |
 | `Screenshot rule for a view that does not exist: /x` | A key in `routes` matches no view. The view was renamed or deleted; update or remove the rule. Patterns use brackets: `/x/[id]`, not `/x/:id`. |
 | `Dynamic view needs a concrete path or model` | `strict` is on and a parameterised address has no example. Add a `path` or `model` rule for it. |
-| `The screen redirected to a different route` | The profile may not see the screen, or the router redirects it. Assign the right profile, or leave the view out with the redirect as its reason. |
+| `The screen redirected to a different route` | The profile may not see the screen, or the router redirects it. Assign the right profile, or leave the view out with the redirect as its reason. If it redirects at one size only, limit the screen with `viewports`. |
 | `The screen returned HTTP 404` | The example record does not exist in this database. Seed it, or resolve the id at capture time instead of hard-coding it. |
 | `The browser did not expose a document HTTP status` | `requireHttpStatus` or `expectedStatus` is set and the backend is WebKit. Set `backend: 'chrome'`. |
 | `The screen did not become ready before its deadline` | `waitFor` never matched or `ready` never returned `true`. Open the address in a browser as that role; raise `timeoutMs` only if the page is merely slow. |
@@ -629,6 +639,7 @@ Use screens for breadth: nothing a user can open goes undocumented. Use stories 
 | `model` | The model whose fixture fills the path's parameters |
 | `sources` | Project-relative templates this screen covers |
 | `profiles` | Who captures it. Default: every configured profile |
+| `viewports` | The configured viewports it is captured at. Default: all |
 | `waitFor` | Selector that must exist before the picture |
 | `ready` | Hook that must return `true` before the picture |
 | `prepare` | Hook that runs after navigation, to reach a state |
@@ -644,7 +655,7 @@ Returns the pages for `pages`.
 | --- | --- | --- |
 | `root` | Current directory | Project root |
 | `directories` | `['resources/views']` | View directories, relative to the root |
-| `defaults` | `{ waitFor: 'body' }` | `waitFor`, `profiles`, `masks`, `prepare`, `ready` and `reason` for every view |
+| `defaults` | `{ waitFor: 'body' }` | `waitFor`, `profiles`, `viewports`, `masks`, `prepare`, `ready` and `reason` for every view |
 | `each` | None | `(view) => rule`, computed per view |
 | `routes` | None | Rules by exact route pattern |
 | `extra` | None | Additional hand-written pages |
