@@ -10,6 +10,7 @@ import type { StacksConfig } from '@stacksjs/types'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { projectPath } from '@stacksjs/path'
 import { defaults } from './defaults'
 import { plainEnv } from './plain-env'
 import { validateConfig } from './validators'
@@ -222,8 +223,8 @@ const userConfigs: Array<[keyof StacksConfig, string, ...string[]]> = [
  * Both present is ambiguous rather than wrong, so it warns and takes the
  * primary instead of guessing silently.
  */
-export function resolveUserConfigName(names: [string, ...string[]], cwd = process.cwd()): string {
-  const present = names.filter(candidate => existsSync(resolve(cwd, 'config', `${candidate}.ts`)))
+export function resolveUserConfigName(names: [string, ...string[]], root = projectPath()): string {
+  const present = names.filter(candidate => existsSync(resolve(root, 'config', `${candidate}.ts`)))
 
   if (present.length > 1) {
     console.warn(
@@ -235,8 +236,19 @@ export function resolveUserConfigName(names: [string, ...string[]], cwd = proces
   return present[0] ?? names[0]
 }
 
-export function userConfigUrl(name: string, cwd = process.cwd()): string {
-  return pathToFileURL(resolve(cwd, 'config', `${name}.ts`)).href
+/**
+ * The project's `config/<name>.ts`, resolved against the project root rather
+ * than the working directory. `projectPath()` is where the rest of the
+ * framework finds the project (its models, migrations and `.env`), and it
+ * climbs out of `storage/framework/...`. Resolving against `process.cwd()`
+ * instead meant a process started inside the framework tree, such as a core
+ * package's own test run, read the project's `.env` but none of its
+ * `config/*.ts`, and fell back to the framework defaults without a word:
+ * `config.database.default` was `sqlite` with DB_CONNECTION=postgres
+ * (stacksjs/stacks#3356).
+ */
+export function userConfigUrl(name: string, root = projectPath()): string {
+  return pathToFileURL(resolve(root, 'config', `${name}.ts`)).href
 }
 
 /**
