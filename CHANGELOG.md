@@ -1,5 +1,49 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.652...v0.75.653)
+
+## ✨ Features
+
+- **docs**: rebuild screen films and the docs page without recapturing ([1c357f4](https://github.com/stacksjs/stacks/commit/1c357f4)) _(by Chris Breuer)_
+- **docs**: picture every stx view, film the screens and write their docs page ([394cc75](https://github.com/stacksjs/stacks/commit/394cc75)) _(by Chris Breuer)_
+- **testing**: migrate and truncate a Postgres test database ([1a70124](https://github.com/stacksjs/stacks/commit/1a70124)) _(by glennmichael123)_ ([stacksjs/stacks#3355](https://github.com/stacksjs/stacks/issues/3355), [stacksjs/stacks#3356](https://github.com/stacksjs/stacks/issues/3356))
+
+## 🐛 Bug Fixes
+
+- **scaffold**: preview the dashboard with scan on a Buddy dry run ([c562911](https://github.com/stacksjs/stacks/commit/c562911)) _(by glennmichael123)_ ([stacksjs/stacks#3357](https://github.com/stacksjs/stacks/issues/3357))
+- **config**: load the project's config files from the project root ([fc8f6a4](https://github.com/stacksjs/stacks/commit/fc8f6a4)) _(by glennmichael123)_ ([stacksjs/stacks#3356](https://github.com/stacksjs/stacks/issues/3356))
+- **testing**: require "test" as a word in a Postgres test database name ([9a48f09](https://github.com/stacksjs/stacks/commit/9a48f09)) _(by glennmichael123)_ ([stacksjs/stacks#3355](https://github.com/stacksjs/stacks/issues/3355))
+- **cloud**: retry Hetzner pack checks over HTTP/1.1 ([b99c2d1](https://github.com/stacksjs/stacks/commit/b99c2d1)) _(by Chris Breuer)_
+- **cloud**: refresh scheduled backup inventory with Bun ([2cddf35](https://github.com/stacksjs/stacks/commit/2cddf35)) _(by Chris Breuer)_
+- **buddy**: show live dashboard status in the tray ([3f700f4](https://github.com/stacksjs/stacks/commit/3f700f4)) _(by Chris Breuer)_
+- **buddy**: make dashboard launches project-aware ([67340be](https://github.com/stacksjs/stacks/commit/67340be)) _(by Chris Breuer)_
+- **cloud**: retain diagnostics for each Restic pack check ([465b8b5](https://github.com/stacksjs/stacks/commit/465b8b5)) _(by Chris Breuer)_
+- **testing**: reuse native Chrome discovery for Lighthouse ([90f825f](https://github.com/stacksjs/stacks/commit/90f825f)) _(by Chris Breuer)_
+- expose the selected SDK to Bun host tools ([1f8a46a](https://github.com/stacksjs/stacks/commit/1f8a46a)) _(by Chris Breuer)_
+- isolate Bun release compilation phases ([07c93aa](https://github.com/stacksjs/stacks/commit/07c93aa)) _(by Chris Breuer)_
+- build App Store Bun for macOS 15 ([69ab2ca](https://github.com/stacksjs/stacks/commit/69ab2ca)) _(by Chris Breuer)_
+
+## ⚡ Performance Improvements
+
+- **cloud**: use parallel pack reads for backup restores ([4793616](https://github.com/stacksjs/stacks/commit/4793616)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **testing**: document refreshDatabase on Postgres ([8780fdf](https://github.com/stacksjs/stacks/commit/8780fdf)) _(by glennmichael123)_ ([stacksjs/stacks#3355](https://github.com/stacksjs/stacks/issues/3355))
+- **waf**: drop the zig-waf#85 latency column ([e775956](https://github.com/stacksjs/stacks/commit/e775956)) _(by glennmichael123)_ ([zig-utils/zig-waf#85](https://github.com/zig-utils/zig-waf/issues/85), [#85](https://github.com/stacksjs/stacks/issues/85))
+- **waf**: add zig-waf#85 latency and the zig-regex cause ([d5068b5](https://github.com/stacksjs/stacks/commit/d5068b5)) _(by glennmichael123)_ ([#85](https://github.com/stacksjs/stacks/issues/85), [zig-utils/zig-waf#85](https://github.com/zig-utils/zig-waf/issues/85), [zig-utils/zig-waf#83](https://github.com/zig-utils/zig-waf/issues/83), [#84](https://github.com/stacksjs/stacks/issues/84), [zig-utils/zig-regex#53](https://github.com/zig-utils/zig-regex/issues/53))
+- **waf**: attribute the form-post cost to regex matching ([bb488f8](https://github.com/stacksjs/stacks/commit/bb488f8)) _(by glennmichael123)_ ([zig-utils/zig-waf#83](https://github.com/zig-utils/zig-waf/issues/83), [#83](https://github.com/stacksjs/stacks/issues/83))
+
+## ✅ Tests
+
+- **auth**: set the rehash fixture's bcrypt rounds on the live config ([32fd403](https://github.com/stacksjs/stacks/commit/32fd403)) _(by glennmichael123)_ ([stacksjs/stacks#3356](https://github.com/stacksjs/stacks/issues/3356))
+- **upgrade**: serve Pantry's Bun package from the test's own registry ([f7cc3d7](https://github.com/stacksjs/stacks/commit/f7cc3d7)) _(by glennmichael123)_ ([stacksjs/stacks#3348](https://github.com/stacksjs/stacks/issues/3348))
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.651...v0.75.652)
 
 ## 🐛 Bug Fixes
