@@ -63,14 +63,24 @@ jobs:
             --disable-renaming --disable-tests --disable-samples --with-data-packaging=static
           make -j3
           make install
-      - name: Build and check the Bun runtime
+      - name: Prepare the patched Bun source
         working-directory: bun-runtime
         run: |
           git apply "$GITHUB_WORKSPACE/docs/packages/desktop/bun-static-icu.patch"
-          export BUN_TOOLCHAIN_LLVM="$RUNNER_TEMP/llvm"
-          export BUN_STATIC_ICU_LIB_DIR="$RUNNER_TEMP/icu-install/lib"
           bun install --frozen-lockfile
-          bun scripts/build.ts --profile=release --ci=true --canary=false --osxDeploymentTarget="$MACOSX_DEPLOYMENT_TARGET" -j3
+          printf 'BUN_TOOLCHAIN_LLVM=%s/llvm\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+          printf 'BUN_STATIC_ICU_LIB_DIR=%s/icu-install/lib\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+          printf 'GIT_SHA=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Build the Bun Rust crates
+        working-directory: bun-runtime
+        run: |
+          env -u CI -u GITHUB_ACTIONS -u GITHUB_SHA bun scripts/build.ts --profile=release --ci=on --canary=off \
+            --osxDeploymentTarget="$MACOSX_DEPLOYMENT_TARGET" --target=bun-rust -j3
+      - name: Link and verify the Bun runtime
+        working-directory: bun-runtime
+        run: |
+          env -u CI -u GITHUB_ACTIONS -u GITHUB_SHA bun scripts/build.ts --profile=release --ci=on --canary=off \
+            --osxDeploymentTarget="$MACOSX_DEPLOYMENT_TARGET" --target=bun -j3
       - name: Test the runtime and a compiled Bun executable on macOS 15
         working-directory: bun-runtime
         run: |
