@@ -211,8 +211,9 @@ import { eraseSubject, exportSubjectData, pruneRetainedData } from '@stacksjs/or
   start answers 503 instead of letting everything through; in detection mode it logs and passes. A
   request built in-process has no socket and is not inspected. With zig-utils/zig-waf#84 a two-rule set
   costs about 15 us per request and full CRS about 10 ms for a GET, most of it zig-waf recompiling
-  operators per request (zig-utils/zig-waf#83). A form post costs more, mostly zig-regex backtracking
-  over the body rather than recompiling; see `core/waf/README.md`.
+  operators per request (zig-utils/zig-waf#83, open as zig-utils/zig-waf#85: about 3.5 ms with it). A
+  form post costs more, mostly zig-regex backtracking over the body (zig-utils/zig-regex#53); see
+  `core/waf/README.md`.
 - The firewall rate limit is per-minute per-IP at the WAF (`firewall.rateLimitPerMinute`)
 - Application rate limits (`.rateLimit()`, `rateLimit()`, the login lockout) share the Redis cache when it is configured and count per process otherwise; see `stacks-router`
 
