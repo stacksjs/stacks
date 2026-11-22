@@ -181,6 +181,7 @@ const config: BunPressOptions = {
             { text: 'User Story Videos', link: '/testing/story-recordings' },
             { text: 'Http Tests', link: '/testing/http-tests' },
             { text: 'Screen documentation', link: '/guide/screenshots' },
+            { text: 'Automatic screens and videos', link: '/guide/automatic-screens' },
           ],
         },
         {

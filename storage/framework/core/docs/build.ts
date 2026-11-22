@@ -6,7 +6,7 @@ const { startTime } = await intro({
 })
 
 const result = await Bun.build({
-  entrypoints: ['./src/index.ts', './src/style-guide.ts', './src/screenshots.ts', './src/screenshot-models.ts', './src/stories.ts', './src/story-drivers.ts'],
+  entrypoints: ['./src/index.ts', './src/style-guide.ts', './src/screenshots.ts', './src/screenshot-models.ts', './src/screenshot-views.ts', './src/screenshot-publish.ts', './src/stories.ts', './src/story-drivers.ts'],
   outdir: './dist',
   format: 'esm',
   target: 'bun',

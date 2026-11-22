@@ -7,6 +7,8 @@ description: Capture an explicit UI inventory with Bun WebView, verify template 
 
 Use `buddy screenshot <url>` for a quick picture of one page. Use `buddy docs:screenshots` when documentation must cover a product's screens, roles and layouts repeatedly. It reads an explicit inventory, captures each selected screen on desktop and mobile, and writes PNGs, a JSON manifest and a Markdown gallery.
 
+To skip the hand-written list, derive the inventory from your stx views with `screensFromViews()`; the same run can also produce a walkthrough video and a docs page. [Automatic screens, videos and docs](/guide/automatic-screens) covers that pipeline and its CI workflow.
+
 The inventory explains what each screen does. A picture supplements that explanation; it does not prove that a payment, consent, permission check or entire user journey works.
 
 ## Start with two screens

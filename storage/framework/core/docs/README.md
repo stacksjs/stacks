@@ -40,3 +40,5 @@ MIT license. Contributions follow the Stacks repository conventions.
 ## Automated UI documentation
 
 `@stacksjs/docs/screenshots` exports `defineScreenshotConfig`, `validateScreenshotConfig` and `captureScreenshots`. Run a configured inventory with `buddy docs:screenshots`; use `--list` to verify template coverage and `--check` to validate saved captures. Each authentication profile owns a separate Bun WebView worker process. See the [screen documentation guide](https://stacksjs.com/docs/guide/screenshots) for readiness hooks, role setup, masks, artifacts and CI examples.
+
+`screensFromViews()` derives that inventory from the application's stx views, so every route is captured without a hand-written list. Add `film` for a walkthrough MP4 per viewport and `docs` for a generated page showing every screen. See `docs/guide/automatic-screens.md`.

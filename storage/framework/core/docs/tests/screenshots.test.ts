@@ -192,3 +192,75 @@ test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' 
   }
   finally { server.stop(true) }
 }, 60_000)
+
+describe('screens discovered from stx views', () => {
+  test('lists every view with a stable id, route and source, and explains dynamic gaps', async () => {
+    const root = await fixture()
+    await mkdir(join(root, 'resources/views/projects'), { recursive: true })
+    await Bun.write(join(root, 'resources/views/index.stx'), '<title>Welcome home</title><main>Home</main>')
+    await Bun.write(join(root, 'resources/views/settings.stx'), '@extends(\'layouts/app\')\n<main>Settings</main>')
+    await Bun.write(join(root, 'resources/views/projects/index.stx'), '<main>Projects</main>')
+    await Bun.write(join(root, 'resources/views/projects/[id].stx'), '<main>Project</main>')
+    const { discoverViews, screensFromViews } = await import('../src/screenshot-views')
+    expect(discoverViews({ root }).map(view => [view.id, view.route, view.source, view.group, view.dynamic])).toEqual([
+      ['index', '/', 'resources/views/index.stx', 'home', false],
+      ['projects', '/projects', 'resources/views/projects/index.stx', 'projects', false],
+      ['projects-id', '/projects/[id]', 'resources/views/projects/[id].stx', 'projects', true],
+      ['settings', '/settings', 'resources/views/settings.stx', 'settings', false],
+    ])
+    const pages = screensFromViews({ root, defaults: { waitFor: 'main' }, each: view => view.layout === 'layouts/app' ? { profiles: ['member'] } : undefined })
+    expect(pages.map(page => page.title)).toEqual(['Welcome home', 'Projects', 'Projects / by id', 'Settings'])
+    expect(pages.find(page => page.id === 'projects-id')!.skip).toContain('/projects/[id]')
+    expect(pages.find(page => page.id === 'settings')!.profiles).toEqual(['member'])
+    // The derived inventory satisfies template coverage without a hand-written list.
+    await validateScreenshotConfig({ baseUrl: 'https://example.test', outDir: 'pictures', profiles: { member: {} }, coverage: { directories: ['resources/views'] }, pages }, root)
+
+    const bound = screensFromViews({ root, routes: { '/projects/[id]': { path: ({ fixtures }) => `/projects/${fixtures.Project!.id}` }, '/settings': 'Shown in the account guide instead.' } })
+    expect(bound.find(page => page.id === 'projects-id')).toMatchObject({ route: '/projects/[id]' })
+    expect(bound.find(page => page.id === 'projects-id')!.skip).toBeUndefined()
+    expect(bound.find(page => page.id === 'settings')!.skip).toBe('Shown in the account guide instead.')
+    expect(() => screensFromViews({ root, strict: true })).toThrow('/projects/[id]')
+    expect(() => screensFromViews({ root, routes: { '/gone': { waitFor: 'main' } } })).toThrow('/gone')
+  })
+})
+
+test.skipIf(typeof Bun.WebView !== 'function' || !Bun.which('ffmpeg') || (process.platform !== 'darwin' && !process.env.STACKS_BROWSER_TESTS))('films the discovered screens, writes their documentation page and retires deleted views', async () => {
+  const root = await fixture()
+  const server = Bun.serve({ port: 0, fetch: request => new Response(`<title>Fixture</title><main><h1>${new URL(request.url).pathname}</h1></main>`, { headers: { 'Content-Type': 'text/html' } }) })
+  try {
+    await mkdir(join(root, 'resources/views'), { recursive: true })
+    await Bun.write(join(root, 'resources/views/index.stx'), '<main>Home</main>')
+    await Bun.write(join(root, 'resources/views/pricing.stx'), '<main>Pricing</main>')
+    await Bun.write(join(root, 'resources/views/[slug].stx'), '<main>Profile</main>')
+    await Bun.write(join(root, 'screens.ts'), `import { screensFromViews } from ${JSON.stringify(join(import.meta.dir, '../src/screenshot-views.ts'))}
+      export default { baseUrl: 'http://127.0.0.1:${server.port}', outDir: 'docs/public/screens', timeoutMs: 15000, models: false,
+        viewports: [{ name: 'mobile', width: 390, height: 844 }], coverage: { directories: ['resources/views'] },
+        film: { secondsPerScreen: 0.5 }, docs: { page: 'docs/screens.md', base: '/screens', title: 'Every screen' },
+        pages: screensFromViews({ root: ${JSON.stringify(root)}, defaults: { waitFor: 'main' } }) }`)
+    const report = await captureScreenshots({ root, config: 'screens.ts' })
+    expect(report.results.map(result => [result.id, result.status])).toEqual([['index', 'captured'], ['slug', 'skipped'], ['pricing', 'captured']])
+    expect(report.films).toMatchObject([{ viewport: 'mobile', file: 'film-mobile.mp4', screens: 2, seconds: 1 }])
+    const film = new Uint8Array(await Bun.file(join(root, 'docs/public/screens/film-mobile.mp4')).arrayBuffer())
+    expect(Buffer.from(film.subarray(4, 8)).toString()).toBe('ftyp')
+    const page = await Bun.file(join(root, 'docs/screens.md')).text()
+    expect(page).toContain('# Every screen')
+    expect(page).toContain('src="/screens/film-mobile.mp4"')
+    expect(page).toContain('src="/screens/pricing/default-mobile.png"')
+    expect(page).toContain('## Not pictured')
+    await captureScreenshots({ root, config: 'screens.ts', check: true })
+
+    // A removed view loses its picture and its section on the next full capture.
+    // A second file name, because one process caches the imported config module.
+    await rm(join(root, 'resources/views/pricing.stx'))
+    await Bun.write(join(root, 'next.ts'), await Bun.file(join(root, 'screens.ts')).text())
+    const next = await captureScreenshots({ root, config: 'next.ts' })
+    expect(next.results.map(result => result.id)).toEqual(['index', 'slug'])
+    expect(await Bun.file(join(root, 'docs/public/screens/pricing/default-mobile.png')).exists()).toBe(false)
+    expect(await Bun.file(join(root, 'docs/screens.md')).text()).not.toContain('pricing')
+    await captureScreenshots({ root, config: 'next.ts', check: true })
+
+    await Bun.write(join(root, 'docs/screens.md'), '# Hand-written')
+    await expect(captureScreenshots({ root, config: 'next.ts' })).rejects.toThrow('hand-written')
+  }
+  finally { server.stop(true) }
+}, 120_000)

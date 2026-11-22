@@ -116,5 +116,15 @@ Bun WebView process. `--list` verifies template coverage without a browser;
 `--check` verifies the complete saved inventory, source/config hashes and PNG
 bytes. Failed or deliberately excluded screens remain visible in the manifest.
 Read `docs/guide/screenshots.md` for the full configuration and CI workflow.
+
+To cover every view without a hand-written list, build `pages` with
+`screensFromViews()` from the same module. It reads the stx route table, so a
+new view is captured on the next run. Its `each` and `routes` rules assign the
+signed-in profile and bind a seeded example to each parameterised address;
+unbound ones stay listed as explained gaps. `film: true` writes one walkthrough
+MP4 per viewport (needs FFmpeg) and `docs: { page, base }` writes a generated
+page of every screen. A complete run removes pictures of deleted views. Read
+`docs/guide/automatic-screens.md` for the rules, the CI workflow that commits
+the output, and troubleshooting.
 Use seeded accounts, keep credentials out of artifacts, review every image, and
 verify native apps separately from phone-width web captures.

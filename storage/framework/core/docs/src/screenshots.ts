@@ -1,6 +1,6 @@
 /** Reproducible documentation screenshots, using Bun's native browser view. */
 import { createHash } from 'node:crypto'
-import { lstat, mkdir, mkdtemp, readFile, rename, rm, stat } from 'node:fs/promises'
+import { lstat, mkdir, mkdtemp, readFile, rename, rm, rmdir, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -8,6 +8,10 @@ import { captureMaskCss } from './capture-masks'
 import { discoverScreenshotModels, screenshotFixturePath, type ScreenshotFixtures, type ScreenshotModelOptions, type ScreenshotModelPlan } from './screenshot-models'
 export { discoverScreenshotModels, planScreenshotModels, screenshotFixturePath } from './screenshot-models'
 export type { ScreenshotFixtures, ScreenshotModel, ScreenshotModelOptions, ScreenshotModelPlan } from './screenshot-models'
+import { filmScreenshots, type ScreenshotDocsOptions, type ScreenshotDocsPage, type ScreenshotFilm, type ScreenshotFilmOptions, validateScreenshotPublishing, writeScreensPage } from './screenshot-publish'
+export { discoverViews, screensFromViews } from './screenshot-views'
+export type { ViewScreen, ViewScreenOptions, ViewScreenRule } from './screenshot-views'
+export type { ScreenshotDocsOptions, ScreenshotDocsPage, ScreenshotFilm, ScreenshotFilmOptions } from './screenshot-publish'
 import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
 import { version as generatorVersion } from '../package.json'
 
@@ -72,6 +76,10 @@ export interface ScreenshotConfig {
     prepare: (plan: ScreenshotModelPlan) => Promise<ScreenshotFixtures>
     cleanup?: () => Promise<void>
   }
+  /** Join the captured screens into one walkthrough MP4 per viewport. Needs FFmpeg. */
+  film?: ScreenshotFilmOptions | boolean
+  /** Write a documentation page that shows every captured screen and the films. */
+  docs?: ScreenshotDocsOptions
 }
 export interface ScreenshotResult {
   id: string
@@ -97,6 +105,8 @@ export interface ScreenshotReport {
   results: ScreenshotResult[]
   models: ScreenshotModelPlan
   inventory: Array<{ id: string, title: string, path: string, sources: string[], skip?: string }>
+  films?: ScreenshotFilm[]
+  docsPage?: ScreenshotDocsPage
 }
 export interface ScreenshotOptions {
   config?: string
@@ -151,6 +161,7 @@ export async function validateScreenshotConfig(config: ScreenshotConfig, root = 
   }
   if (!viewportNames.size) throw new Error('At least one viewport is required')
   for (const input of config.inputs ?? []) await readFile(resolve(root, input))
+  validateScreenshotPublishing(config.film === true ? {} : config.film, config.docs, root, config.viewports ?? defaults)
   const missing: string[] = []
   const found = new Set<string>()
   for (const directory of config.coverage?.directories ?? []) {
@@ -306,6 +317,11 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
         }
       }
     }
+    for (const film of existing.films ?? []) {
+      if (relative(output, resolve(output, film.file)).startsWith('..') || hash(await readFile(join(output, film.file))) !== film.sha256) throw new Error(`Screen film changed: ${film.file}`)
+    }
+    if (config.film && !existing.films?.length) throw new Error('The screen film is missing; capture again')
+    if (config.docs && (!existing.docsPage || existing.docsPage.path !== config.docs.page || hash(await readFile(resolve(root, config.docs.page))) !== existing.docsPage.sha256)) throw new Error('The screens documentation page is missing or changed; capture again')
     return existing
   }
   let previous: ScreenshotReport | undefined
@@ -396,7 +412,26 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
       const old = previous?.results.find(row => row.id === result.id && row.profile === result.profile && row.viewport.name === result.viewport.name)
       if (old?.file) { result.file = old.file; result.sha256 = old.sha256 }
     }
+    // A complete capture retires pictures of screens that no longer exist, so
+    // a deleted view does not stay in the published folder. Only files the
+    // previous manifest owned are removed.
+    if (!options.only?.length && !options.viewports?.length) {
+      const current = new Set(report.results.map(result => result.file).filter(Boolean))
+      for (const file of owned) {
+        if (!file || current.has(file) || relative(output, resolve(output, file)).startsWith('..')) continue
+        await rm(join(output, file), { force: true })
+        await rmdir(dirname(join(output, file))).catch(() => { /* Other pictures still live there. */ })
+      }
+    }
     await mkdir(output, { recursive: true })
+    // Publishing reads the merged results, so a partial refresh still films
+    // and documents the whole inventory. A film failure keeps the manifest.
+    let publishing: unknown
+    try {
+      if (config.film) report.films = await filmScreenshots(output, report.results, config.viewports ?? defaults, config.film === true ? {} : config.film)
+      if (config.docs) report.docsPage = await writeScreensPage(root, report, config.docs)
+    }
+    catch (error) { publishing = error }
     await Bun.write(join(output, 'manifest.json.tmp'), `${JSON.stringify(report, null, 2)}\n`)
     await rename(join(output, 'manifest.json.tmp'), join(output, 'manifest.json'))
     const escape = (value: string): string => value.replace(/[\\`*_[\]<>]/g, '\\$&').replaceAll('\n', ' ')
@@ -405,6 +440,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
       gallery.push(`## ${escape(result.title)} (${result.profile}, ${result.viewport.name})`, '', escape(result.description), '', ...(result.reason ? [escape(result.reason), ''] : []), result.status === 'captured' ? `![${escape(result.title)}](${result.file})` : `**${result.status}:** ${escape(result.error ?? 'No image')}`, '')
     }
     await Bun.write(join(output, 'gallery.md'), `${gallery.join('\n')}\n`)
+    if (publishing) throw publishing
     return report
   }
   finally { await rm(temporary, { recursive: true, force: true }) }
