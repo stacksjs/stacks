@@ -1,12 +1,53 @@
 import { describe, expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { delimiter, dirname, join } from 'node:path'
 
 const target = '0.74.66'
 const newer = '0.74.70'
 const upgradeModule = join(import.meta.dir, '../src/upgrade/packages.ts')
+
+// Pantry downloads the Bun an app pins (`bun.sh`) from registry.pantry.dev,
+// about 40 MB, and a cold CI runner then had to fetch it inside the 15 s
+// budget below (#3348). PANTRY_REGISTRY_URL sends those requests here
+// instead. Nothing in the campaign runs the installed Bun, so the package is a
+// launcher for the Bun running this test, laid out as the registry's own
+// tarball is.
+function pantryBunRegistry(root: string, requests: string[]) {
+  const version = Bun.version
+  const platform = `${process.platform}-${process.arch === 'x64' ? 'x86-64' : process.arch}`
+  const bin = join(root, 'pantry-bun/bin')
+  mkdirSync(bin, { recursive: true })
+  writeFileSync(join(bin, 'bun'), `#!/bin/sh\nexec ${JSON.stringify(process.execPath)} "$@"\n`, { mode: 0o755 })
+  symlinkSync('bun', join(bin, 'bunx'))
+  const packed = Bun.spawnSync(['tar', '-czf', '-', '-C', join(root, 'pantry-bun'), '.'])
+  if (packed.exitCode !== 0)
+    throw new Error(`Packing the Pantry Bun fixture failed: ${packed.stderr.toString()}`)
+  const tarball = new Uint8Array(packed.stdout)
+  const path = `binaries/bun.com/${version}/${platform}/bun.com-${version}.tar.gz`
+  const sha256 = createHash('sha256').update(tarball).digest('hex')
+  return Bun.serve({
+    hostname: '127.0.0.1',
+    port: 0,
+    fetch(request) {
+      const url = new URL(request.url)
+      requests.push(url.pathname)
+      if (url.pathname === '/binaries/bun.com/metadata.json') {
+        return Response.json({
+          name: 'bun.com',
+          latestVersion: version,
+          versions: { [version]: { platforms: { [platform]: { tarball: path, sha256, size: tarball.byteLength } } } },
+        })
+      }
+      if (url.pathname === `/${path}`)
+        return new Response(tarball)
+      if (url.pathname === `/${path}.sha256`)
+        return new Response(`${sha256}  bun.com-${version}.tar.gz\n`)
+      return new Response('Unknown fixture request', { status: 404 })
+    },
+  })
+}
 
 // A private registry and real Bun installation reproduce a caret upgrade
 // choosing a newer release than the one the native command reports.
@@ -80,11 +121,18 @@ throw new Error('The framework script returned instead of terminating at its pac
       return new Response('Unknown fixture request', { status: 404 })
     },
   })
+  const pantryRequests: string[] = []
+  const pantryRegistry = options.pantry ? pantryBunRegistry(root, pantryRequests) : null
+  if (pantryRegistry)
+    mkdirSync(join(root, 'home'))
   const env = {
     ...process.env,
     PATH: `${dirname(process.execPath)}${delimiter}${process.env.PATH ?? ''}`,
     BUN_INSTALL_CACHE_DIR: join(root, 'cache'),
     NPM_CONFIG_REGISTRY: registry.url.origin,
+    // Pantry caches packages under HOME. A fresh one keeps a warm cache on a
+    // developer machine from answering what CI has to download.
+    ...(pantryRegistry ? { HOME: join(root, 'home'), PANTRY_REGISTRY_URL: pantryRegistry.url.origin } : {}),
   }
   writeFileSync(join(app, 'bunfig.toml'), `[install]\nlinker = "hoisted"\nregistry = ${JSON.stringify(registry.url.origin)}\n`)
   writeFileSync(join(app, '.npmrc'), `@stacksjs:registry=${registry.url.origin}\n`)
@@ -146,10 +194,11 @@ console.log('PACKAGE_UPGRADE_RETURNED')
       .map(path => ({ path, manifest: existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null }))
     const pantryReplay = options.pantry ? await run(['pantry', 'ci'], 'pantry-after') : null
     const pantryLock = options.pantry ? JSON.parse(readFileSync(join(app, 'pantry.lock'), 'utf8')) : null
-    return { ...result, installed, declared, lock, requests, repeated, actions, pantryReplay, pantryLock }
+    return { ...result, installed, declared, lock, requests, pantryRequests, repeated, actions, pantryReplay, pantryLock }
   }
   finally {
     registry.stop(true)
+    pantryRegistry?.stop(true)
     rmSync(root, { recursive: true, force: true })
   }
 }
@@ -160,6 +209,7 @@ describe('native package upgrade release selection', () => {
     expect(result.code, result.stderr).toBe(0)
     expect(result.installed).toBe(target)
     expect(result.pantryLock?.workspaces).toBeUndefined()
+    expect(result.pantryRequests.filter(path => path.endsWith('.tar.gz'))).toHaveLength(1)
     expect(result.pantryReplay?.code, result.pantryReplay?.stderr).toBe(0)
     expect(result.stdout).not.toContain('Refreshing Pantry workspace metadata')
     expect(result.repeated?.code, result.repeated?.stderr).toBe(0)
@@ -171,6 +221,7 @@ describe('native package upgrade release selection', () => {
     expect(result.installed).toBe(target)
     expect(result.pantryReplay?.code, result.pantryReplay?.stderr).toBe(0)
     expect(result.pantryLock?.workspaces?.['']?.dependencies?.stacks).toBe(result.declared.dependencies.stacks)
+    expect(result.pantryRequests.filter(path => path.endsWith('.tar.gz'))).toHaveLength(1)
     expect(result.repeated?.code, result.repeated?.stderr).toBe(0)
     expect(result.repeated?.stdout).not.toContain('Refreshing Pantry workspace metadata')
   }, 60_000)
