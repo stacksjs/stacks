@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.655...v0.75.656)
+
+## ✨ Features
+
+- **docs**: record native stories without FFmpeg ([ba98f8b](https://github.com/stacksjs/stacks/commit/ba98f8b)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **skills**: refresh the native catalogue for the docs package's video dependencies ([caa32ff](https://github.com/stacksjs/stacks/commit/caa32ff)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.654...v0.75.655)
 
 ## ✨ Features

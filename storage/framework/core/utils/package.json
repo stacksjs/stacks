@@ -2,7 +2,7 @@
   "name": "@stacksjs/utils",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.655",
+  "version": "0.75.656",
   "description": "The Stacks helper functions.",
   "author": "Chris Breuer",
   "contributors": [
