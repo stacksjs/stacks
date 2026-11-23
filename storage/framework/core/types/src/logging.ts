@@ -188,6 +188,17 @@ export interface LoggingOptions {
   writeToFile?: boolean
 
   /**
+   * **Retention**
+   *
+   * Days of daily `stacks-YYYY-MM-DD.log` files to keep. Older ones are
+   * deleted when the logger starts and once a day after. `0` keeps every
+   * file. `LOG_RETENTION_DAYS` overrides it.
+   *
+   * @default 14
+   */
+  retentionDays?: number
+
+  /**
    * **LogHQ**
    *
    * Remote log delivery. Supplying an ingest key registers the transport in

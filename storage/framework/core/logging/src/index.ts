@@ -4,6 +4,9 @@ import type { Logger } from '@stacksjs/clarity'
 import { captureError, flushErrorReporters } from '@stacksjs/error-handling/reporters'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import process from 'node:process'
+import { keepDailyLogsFor, resolveRetentionDays } from './retention'
+
+export { DEFAULT_LOG_RETENTION_DAYS, pruneDailyLogs } from './retention'
 
 const EXIT_CODE_SUCCESS = 0
 const EXIT_CODE_FATAL_ERROR = 1
@@ -455,6 +458,7 @@ interface LoggingConfigSection {
   format?: string
   writeToFile?: boolean
   logsPath?: string
+  retentionDays?: number
   transports?: unknown
 }
 
@@ -640,6 +644,7 @@ function applyConfigWhenReady(): void {
       writeToFile: next.writeToFile,
     })
     _builtWith = next
+    retainDailyLogs(next, logging)
     try {
       await (previous as unknown as { flush?: () => Promise<void> }).flush?.()
       await (previous as unknown as { destroy?: () => Promise<void> }).destroy?.()
@@ -651,6 +656,17 @@ function applyConfigWhenReady(): void {
     // A config that fails to load or validate reports that itself; there is
     // nothing here to apply.
   })
+}
+
+/**
+ * Delete daily files past the retention window, now and once a day
+ * (stacksjs/stacks#3365). Only when the logger writes files: a console-only
+ * logger has no directory of its own to prune.
+ */
+function retainDailyLogs(settings: BuiltSettings, logging: LoggingConfigSection | null): void {
+  if (!settings.writeToFile)
+    return
+  keepDailyLogsFor(settings.logDirectory, resolveRetentionDays({ env: process.env.LOG_RETENTION_DAYS, cfg: logging?.retentionDays }))
 }
 
 async function initLogger(): Promise<void> {
@@ -685,6 +701,7 @@ async function initLogger(): Promise<void> {
       writeToFile: settings.writeToFile,
     })
     _builtWith = settings
+    retainDailyLogs(settings, logging)
   })()
 
   // Fire-and-forget: importing `@stacksjs/config` above installs the readiness

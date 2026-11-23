@@ -53,7 +53,11 @@ format/file-writing options. Read config/logging.ts rather than inventing a
 separate severity vocabulary from another logger.
 
 Default local logs live under storage/logs; selected file paths and runtime
-fallbacks come from the logger/config. The Log model does not automatically make
+fallbacks come from the logger/config. Daily files (`stacks-YYYY-MM-DD.log`)
+are kept for `retentionDays` in config/logging.ts (default 14, `0` keeps every
+file, LOG_RETENTION_DAYS overrides it); older ones are deleted when the logger
+starts and once a day after, and `stacks.log` and other files there are left
+alone. `pruneDailyLogs(directory, days)` runs the same pass on demand. The Log model does not automatically make
 every log call a database insert. normalizeError/normalizeContext retain embedded
 Error detail and bound cause traversal; they are not secret redaction policies.
 
