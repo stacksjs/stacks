@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.660...v0.75.661)
+
+## 🐛 Bug Fixes
+
+- **docs**: keep browser worker temp paths short ([b7dec11](https://github.com/stacksjs/stacks/commit/b7dec11)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 ## v0.75.660
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.658...v0.75.659)
