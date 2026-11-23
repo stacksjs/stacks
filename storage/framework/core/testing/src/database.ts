@@ -16,6 +16,10 @@ import {
   runDatabaseMigration,
 } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
+import { realpathSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { basename, resolve as resolvePath, sep } from 'node:path'
+import process from 'node:process'
 import { fs, globSync } from '@stacksjs/storage'
 
 /**
@@ -215,8 +219,39 @@ export async function truncateMysql(): Promise<void> {
   }
 }
 
+/**
+ * Refuse to reset a SQLite file the test run did not create.
+ *
+ * `truncateSqlite()` drops every table. It used to act on
+ * `database/stacks.sqlite` whatever the connection pointed at, so a test run
+ * on a developer's machine emptied their real database (stacksjs/stacks#3362).
+ * A file is accepted when it is the run's own (`STACKS_TEST_DATABASE_PATH`, set
+ * by `bootTestEnvironment()`), lives under the system temporary directory, or
+ * says in its name that it is for tests (`app_test.sqlite`,
+ * `stacks_testing.sqlite`), the same rule as the Postgres guard.
+ */
+export function assertSqliteTestDatabase(file: string, owned: string | undefined = process.env.STACKS_TEST_DATABASE_PATH): void {
+  if (file === ':memory:' || (owned && resolvePath(file) === resolvePath(owned)))
+    return
+  const temporary = [tmpdir(), realTmpdir()].map(dir => resolvePath(dir) + sep)
+  if (temporary.some(dir => resolvePath(file).startsWith(dir)))
+    return
+  if (TEST_DATABASE_NAME.test(basename(file).replace(/\.(sqlite3?|db)$/i, '')))
+    return
+  throw new Error(
+    `[testing] Refusing to reset the SQLite database at ${file}: this test run did not create it, and its name does not say it is for tests. `
+    + 'Boot the suite with bootTestEnvironment() for a throwaway database, or point DB_DATABASE_PATH at a file whose name contains "test".',
+  )
+}
+
+function realTmpdir(): string {
+  try { return realpathSync(tmpdir()) }
+  catch { return tmpdir() }
+}
+
 export async function truncateSqlite(): Promise<void> {
   const sqlitePath = fetchSqliteFile()
+  assertSqliteTestDatabase(sqlitePath)
 
   if (!fs.existsSync(sqlitePath))
     await Bun.$`touch ${sqlitePath}`
@@ -253,6 +288,7 @@ export async function truncateSqlite(): Promise<void> {
  */
 export async function truncateSqliteFast(): Promise<void> {
   const sqlitePath = fetchSqliteFile()
+  assertSqliteTestDatabase(sqlitePath)
   const snapPath = getSnapshotPath()
 
   const snapshotIsStale = (() => {

@@ -5,10 +5,11 @@ import { log } from '@stacksjs/logging'
 function italic(str: string): string {
   return `\x1B[3m${str}\x1B[23m`
 }
-import { app } from '@stacksjs/config'
+import { app, config } from '@stacksjs/config'
 // Local relative import — see drivers/mysql.ts for the cycle-deadlock rationale.
 import { db, SQLITE_BOOTSTRAP_PRAGMAS } from '../utils'
 import { ok } from '@stacksjs/error-handling'
+import { sqliteFilePath } from './sqlite-path'
 // Deep import to the leaf orm/utils file — see drivers/helpers.ts for why
 // we go around the orm barrel.
 import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '@stacksjs/model-meta'
@@ -97,12 +98,10 @@ export async function dropSqliteTables(): Promise<void> {
   }
 }
 
+/** The SQLite file the configured connection uses, which is the one a reset must act on. */
 export function fetchSqliteFile(): string {
-  if (app.env === 'testing') {
-    return fetchTestSqliteFile()
-  }
-
-  return path.userDatabasePath('stacks.sqlite')
+  const configured = (config.database?.connections as { sqlite?: { database?: string } } | undefined)?.sqlite?.database
+  return sqliteFilePath(configured, path.projectPath(), app.env === 'testing' ? 'database/stacks_testing.sqlite' : undefined)
 }
 
 export function fetchTestSqliteFile(): string {
