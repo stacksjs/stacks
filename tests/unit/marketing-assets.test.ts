@@ -110,7 +110,6 @@ describe('minifyCss', () => {
 
 describe('the brand fonts', () => {
   const themeCss = readFileSync(join(root, 'public/assets/styles/theme.css'), 'utf8')
-  const blogCss = readFileSync(join(root, 'content/blog/.theme.css'), 'utf8')
 
   for (const [role, url] of Object.entries(fonts)) {
     test(`${role} exists, and its name is its content hash`, () => {
@@ -123,9 +122,8 @@ describe('the brand fonts', () => {
       expect(url).toContain(`.${hash}.woff2`)
     })
 
-    test(`${role} is the file theme.css and the blog theme load`, () => {
+    test(`${role} is the file theme.css loads`, () => {
       expect(themeCss).toContain(`url("${url}")`)
-      expect(blogCss).toContain(`url("${url}")`)
     })
   }
 
@@ -141,7 +139,7 @@ describe('the brand fonts', () => {
       'public/assets/styles/theme.css',
       'public/assets/styles/marketing.css',
       'public/assets/styles/home.css',
-      'content/blog/.theme.css',
+      'public/assets/styles/blog.css',
     ]
 
     for (const file of sources)
@@ -154,8 +152,11 @@ describe('client scripts on the marketing pages', () => {
   // them, other than the server block and structured data, is compiled as an
   // stx client script and brings the runtime with it.
   const files = [
-    ...readdirSync(join(root, 'resources/partials')).filter(name => name.startsWith('marketing-')).map(name => `resources/partials/${name}`),
+    ...readdirSync(join(root, 'resources/partials')).filter(name => name.startsWith('marketing-') || name.startsWith('blog-')).map(name => `resources/partials/${name}`),
     'resources/views/index.stx',
+    'resources/views/blog.stx',
+    'resources/views/blog/[slug].stx',
+    'resources/partials/signup-notice.stx',
     'resources/views/features/index.stx',
     'resources/views/features/[slug].stx',
     'resources/views/use-cases/index.stx',

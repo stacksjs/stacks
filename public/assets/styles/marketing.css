@@ -783,6 +783,56 @@ input[type="email"]:focus {
   outline: 3px solid rgba(var(--accent-rgb), 0.22);
 }
 
+/* The answer a signup form shows after it posts and comes back with
+  ?subscribe=<outcome>: the home page's closing form and the blog's. */
+.signup-notice {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin: 0;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.signup-notice i {
+  flex: 0 0 auto;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.05rem;
+}
+
+.signup-notice--success {
+  color: var(--text);
+  background: rgba(var(--accent-rgb), 0.1);
+}
+
+.signup-notice--success i {
+  color: var(--accent);
+}
+
+.signup-notice--error {
+  color: var(--text);
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.signup-notice--error i {
+  color: #dc2626;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ── Footer ───────────────────────────────────────────────────────
  *
  * A site map rather than a copyright line: the brand column, then the

@@ -1,0 +1,89 @@
+{{-- The body of a post page, included by resources/views/blog/[slug].stx
+  only once the post exists, so it can declare `post` as present rather than
+  re-checking it on every line. --}}
+<script server>
+import type { BlogArticle, BlogCard } from '../data/blog'
+
+declare const post: BlogArticle
+declare const shares: Array<{ label: string, icon: string, href: string }>
+declare const more: BlogCard[]
+</script>
+
+<article class="post site-shell">
+  <header class="post-head">
+    <div class="breadcrumb">
+      <a href="/blog">Blog</a>
+      <i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i>
+      <span>{{ post.title }}</span>
+    </div>
+    <p class="post-meta">
+      <time datetime="{{ post.date }}">{{ post.dateLabel }}</time>
+      <span aria-hidden="true">·</span>
+      <span>{{ post.minutes }} min read</span>
+    </p>
+    <h1 class="post-title">{{ post.title }}</h1>
+    <p class="post-deck">{{ post.description }}</p>
+    <div class="post-byline">
+      @if (post.byTeam)
+        <span class="post-avatar post-avatar--mark" aria-hidden="true"><img src="/images/logos/favicon.svg" alt="" width="26" height="26"></span>
+      @else
+        <span class="post-avatar" aria-hidden="true">{{ post.authorInitials }}</span>
+      @endif
+      <span class="post-author">{{ post.author }}</span>
+    </div>
+  </header>
+
+  <div class="post-layout">
+    <div class="prose">
+      {!! post.html !!}
+    </div>
+
+    <aside class="post-aside" aria-label="About this post">
+      <div class="aside-card">
+        <span class="aside-kicker">Pre-release</span>
+        <p>Stacks is not out yet. Want to know the day it is?</p>
+        <a class="button primary" href="#subscribe">Join the launch list</a>
+      </div>
+      <div class="aside-share">
+        <span class="aside-label">Share</span>
+        <div class="share-row">
+          @foreach (shares as share)
+            <a class="share-link" href="{{ share.href }}" target="_blank" rel="noopener noreferrer" aria-label="{{ share.label }}" title="{{ share.label }}"><i class="{{ share.icon }}" aria-hidden="true"></i></a>
+          @endforeach
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="post-signup" id="subscribe" aria-labelledby="signup-heading">
+    <div class="post-signup-copy">
+      <span class="signup-badge"><i class="i-hugeicons-mail-01" aria-hidden="true"></i>Launch list</span>
+      <h2 id="signup-heading" class="signup-title">Get Stacks the day it opens up.</h2>
+      <p class="signup-copy">We are finishing the framework, the docs and the deploy path now. Leave your email for early access and one note when it ships.</p>
+    </div>
+    @include('blog-subscribe')
+  </section>
+
+  @if (more.length)
+    <section class="post-more" aria-labelledby="more-heading">
+      <div class="blog-list-head">
+        <h2 id="more-heading" class="blog-list-title">Keep reading</h2>
+        <a class="blog-rss" href="/blog">All posts<i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i></a>
+      </div>
+      <div class="post-grid">
+        @foreach (more as other)
+          <a class="post-card" href="{{ other.url }}">
+            <p class="post-meta">
+              <time datetime="{{ other.date }}">{{ other.dateLabel }}</time>
+              <span aria-hidden="true">·</span>
+              <span>{{ other.minutes }} min read</span>
+            </p>
+            <h3 class="post-card-title">{{ other.title }}</h3>
+            <p class="post-card-excerpt">{{ other.description }}</p>
+            <span class="read-link">Read<i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i></span>
+          </a>
+        @endforeach
+      </div>
+    </section>
+  @endif
+</article>

@@ -805,14 +805,15 @@ export const tsCloud: TsCloudConfig = {
    *    to `/var/www/<siteName>`, served by the reverse proxy's `file_server`)
    *  - `bucket`            → upload built `root` to object storage + CDN
    *
-   * The static sites below (`docs`, `blog`, and external marketing sites) are the Hetzner
+   * The static sites below (`docs` and external marketing sites) are the Hetzner
    * server-static replacement for the AWS website-hosting buckets in
    * `infrastructure.storage` (see the supersede note there). `buddy deploy`'s
    * Hetzner path (`deployAllComputeSites`) builds each site's `root`, tars it,
    * and ships it to `/var/www/<siteName>` on the box. No new Hetzner buckets are
    * created. Each site's key maps 1:1 to `/var/www/<key>`:
    *   - `docs`   → /var/www/docs   → served at /docs   on stacksjs.com
-   *   - `blog`   → /var/www/blog   → served at /blog   on stacksjs.com
+   *
+   * The blog is not one of them: it is part of the `main` app (see below).
    *
    * The Stacks root is served by the `main` server app; do not add a second
    * static `/` site for stacksjs.com or it will compete with the app route.
@@ -939,19 +940,11 @@ export const tsCloud: TsCloudConfig = {
       pathRewriteStyle: 'directory',
     },
 
-    // Blog (BunPress static build of content/blog/, same engine as /docs).
-    // `buildBlog` renders the markdown posts with the custom Stacks theme into
-    // clean-URL pages (`<slug>/index.html`) plus the listing, feed.xml, and
-    // sitemap.xml — the static twin of the dev-server's onRequest renderer.
-    blog: {
-      deploy: 'server',
-      root: 'dist/blog',
-      path: '/blog',
-      domain: env.APP_DOMAIN || 'stacksjs.com',
-      build: 'bun -e "const {buildBlog}=await import(\'./storage/framework/core/actions/src/blog\'); await buildBlog({outDir:\'./dist/blog\', baseUrl: (process.env.APP_URL?(/^https?:/.test(process.env.APP_URL)?process.env.APP_URL:\'https://\'+process.env.APP_URL):\'https://stacksjs.com\')})"',
-      // Extensionless blog URLs resolve to <path>/index.html.
-      pathRewriteStyle: 'directory',
-    },
+    // No `blog` site. /blog is rendered by the `main` app from
+    // resources/views/blog.stx and blog/[slug].stx, on the marketing site's own
+    // nav and theme, so it falls through to the `/` route above. It used to be
+    // a BunPress static build shipped to /var/www/blog; a static site here
+    // would claim /blog at the gateway again and serve that stale copy.
 
     // Redirect-only sites (gateway answers with a 301; nothing is shipped).
     // The alternate adblock domain → canonical, and www → apex for stacksjs.com.

@@ -1,0 +1,94 @@
+<script server>
+/*
+ * One template, every post: /blog/<slug> reads content/blog/<slug>.md.
+ *
+ * The slug comes off `params`, and the route matches every URL under /blog,
+ * so a slug that names no published post (a typo, a draft) answers 404 with
+ * `notFound()` rather than a not-found body under a 200.
+ *
+ * The page ends on the launch-list signup: a reader who got to the bottom of
+ * a post is the reader most worth asking.
+ */
+import { articleHead } from '@stacksjs/cms/article'
+import { blogArticle, otherPosts, shareLinks, subscribeNotice } from '../../data/blog'
+import { breadcrumbJsonLd } from '../../data/schema'
+
+
+const post = blogArticle(String(params?.slug || ''))
+
+if (!post)
+  notFound()
+
+const site = 'https://stacksjs.com'
+const pageTitle = post ? `${post.title} - Stacks` : 'Post not found - Stacks'
+const pageDescription = post ? post.description : 'That post does not exist.'
+const canonicalPath = post ? post.url : '/blog'
+const pageStyles = ['blog']
+
+// A BlogPosting beside the breadcrumb trail, so a search result can show the
+// date and the byline. Built here so the `@` keys never meet the template.
+const jsonLd = post
+  ? JSON.stringify([
+      JSON.parse(breadcrumbJsonLd([{ name: 'Blog', path: '/blog' }, { name: post.title, path: post.url }])),
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        'headline': post.title,
+        'description': post.description,
+        'datePublished': post.date,
+        'url': `${site}${post.url}`,
+        'mainEntityOfPage': `${site}${post.url}`,
+        'author': { '@type': 'Organization', 'name': post.author, 'url': site },
+        'publisher': { '@type': 'Organization', 'name': 'Stacks', 'logo': { '@type': 'ImageObject', 'url': `${site}/images/logos/logo.png` } },
+      },
+    ])
+  : ''
+
+// Figures and embeds need the article stylesheet; a text-only post does not
+// carry it.
+const mediaStyles = post && post.hasMedia ? articleHead() : ''
+
+const shares = post ? shareLinks(`${site}${post.url}`, post.title) : []
+const more = post ? otherPosts(post.slug) : []
+
+const notice = subscribeNotice(typeof query !== 'undefined' ? query : undefined)
+const subscribeSource = post ? `blog:${post.slug}` : 'blog'
+const subscribeReturn = `${canonicalPath}#subscribe`
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    @include('marketing-head')
+    <meta property="article:published_time" content="{{ post ? post.date : '' }}">
+    <link rel="alternate" type="application/rss+xml" title="The Stacks Blog" href="/blog/feed.xml">
+    {!! mediaStyles !!}
+  </head>
+  <body>
+    <div class="site-content">
+      @include('marketing-nav')
+
+      <main class="blog">
+        @if (post)
+          @include('blog-post')
+        @else
+          <section class="page-hero page-hero--solo site-shell">
+            <div class="not-found-panel">
+              <span class="kicker">Not found</span>
+              <h1 class="page-title">No post at this address.</h1>
+              <p class="page-lede">It may have moved, or it was never published. Every post is on the blog's front page.</p>
+              <div class="hero-actions">
+                <a class="button primary" href="/blog">All posts</a>
+                <a class="button" href="/">Back to home</a>
+              </div>
+            </div>
+          </section>
+        @endif
+      </main>
+
+      @include('marketing-footer')
+    </div>
+
+    @include('marketing-theme-toggle')
+  </body>
+</html>

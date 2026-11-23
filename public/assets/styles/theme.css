@@ -25,8 +25,8 @@
  *   glow    #7EA3FF   the accent on a dark ground, where cobalt would sink
  *
  * Neutrals are cool slate, never warm paper, so the blue is the only hue on
- * the page. Two themes switch on `data-theme` on <html>, matching the blog
- * (content/blog/.theme.css): light, the default, and dark. The third
+ * the page. Two themes switch on `data-theme` on <html>, on every page
+ * including the blog: light, the default, and dark. The third
  * "colored" mode belonged to the sunset brand and is gone; a visitor who
  * saved it is read as having made no choice, and gets their OS preference.
  *
@@ -217,7 +217,7 @@
   --term-bg: #0a1122;
 }
 
-/* Theme toggle. Mirrors .blog-theme-toggle in content/blog/.theme.css. */
+/* Theme toggle, the same on every marketing page and the blog. */
 .theme-toggle {
   position: fixed;
   right: 1.1rem;

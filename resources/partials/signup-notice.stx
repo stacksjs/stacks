@@ -1,0 +1,15 @@
+{{-- What a signup form says after it posts and comes back with
+  ?subscribe=<outcome>. The page sets `notice` with subscribeNotice() from
+  resources/data/blog.ts; nothing renders when it is null. --}}
+<script server>
+import type { SubscribeNotice } from '../data/blog'
+
+declare const notice: SubscribeNotice | null
+</script>
+
+@if (notice)
+  <p class="signup-notice signup-notice--{{ notice.tone }}" role="status">
+    <i class="{{ notice.tone === 'success' ? 'i-hugeicons-checkmark-circle-02' : 'i-hugeicons-alert-circle' }}" aria-hidden="true"></i>
+    {{ notice.text }}
+  </p>
+@endif

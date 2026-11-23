@@ -1,0 +1,749 @@
+/*
+ * The blog: /blog and /blog/<slug>.
+ *
+ * Builds on theme.css (tokens, .site-shell, .kicker, .button) and
+ * marketing.css (nav, footer, .breadcrumb, email input) like every other
+ * marketing page; the head partial inlines all three when a page names
+ * `pageStyles = ['blog']`. Everything here is prefixed by what it belongs to
+ * (blog-, lead-, post-, signup-, prose) to stay clear of Crosswind's utility
+ * names.
+ */
+
+/* ── Index hero: the pitch on the left, the signup on the right ──── */
+
+.blog-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: center;
+  padding: clamp(3rem, 7vw, 5.5rem) 0 clamp(2.5rem, 5vw, 3.75rem);
+}
+
+.blog-hero-title {
+  margin: 0 0 1.1rem;
+  font-family: var(--font-hero);
+  font-size: clamp(2.6rem, 6vw, 4.4rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.blog-hero-title span {
+  color: var(--accent);
+}
+
+.blog-hero-lede {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1.65;
+}
+
+/* ── The signup card (index) and band (post) ─────────────────────── */
+
+.signup-card,
+.post-signup {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(var(--accent-rgb), 0.14), transparent 60%),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.signup-card {
+  padding: clamp(1.5rem, 3vw, 2.1rem);
+}
+
+.signup-badge {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--badge-bg);
+}
+
+.signup-badge i {
+  width: 1rem;
+  height: 1rem;
+}
+
+.signup-title {
+  margin: 1rem 0 0.5rem;
+  font-size: clamp(1.45rem, 2.6vw, 1.8rem);
+  font-weight: 750;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.signup-copy {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+  font-size: 0.97rem;
+  line-height: 1.6;
+}
+
+.signup-form {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.signup-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.signup-row input[type="email"] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.signup-row .button {
+  flex: 0 0 auto;
+  min-height: 46px;
+}
+
+.signup-fine {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* ── Shared post metadata, pills and links ───────────────────────── */
+
+.post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+}
+
+.post-pill {
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  color: var(--on-accent);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--button-bg);
+}
+
+.read-link {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  color: var(--accent);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.read-link i {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Lead story ──────────────────────────────────────────────────── */
+
+.blog-lead {
+  padding-bottom: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+.lead-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  color: inherit;
+  text-decoration: none;
+  background: var(--surface);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lead-card:hover {
+  border-color: rgba(var(--accent-rgb), 0.4);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+.lead-card:focus-visible,
+.post-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.lead-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+  padding: clamp(1.75rem, 4vw, 3rem);
+}
+
+.lead-title {
+  margin: 0;
+  font-size: clamp(1.9rem, 3.6vw, 2.7rem);
+  font-weight: 780;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  transition: color 0.18s ease;
+}
+
+.lead-excerpt {
+  max-width: 38rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+  line-height: 1.65;
+}
+
+.lead-card:hover .lead-title {
+  color: var(--accent);
+}
+
+.lead-card:hover .read-link i,
+.post-card:hover .read-link i {
+  transform: translateX(3px);
+}
+
+/* The art is the brand plate: the logo's own blue ramp, a fine grid, and
+  the mark. It belongs to the blog rather than to one post, so a post with no
+  picture of its own never looks unfinished. */
+.lead-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  overflow: hidden;
+  background:
+    radial-gradient(80% 70% at 30% 20%, rgba(255, 255, 255, 0.18), transparent 60%),
+    linear-gradient(145deg, var(--grad-b), var(--grad-a));
+}
+
+.lead-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(75% 75% at 50% 50%, #000 30%, transparent 100%);
+}
+
+.lead-mark {
+  position: relative;
+  width: clamp(72px, 9vw, 104px);
+  height: auto;
+  filter: drop-shadow(0 18px 30px rgba(0, 20, 60, 0.45));
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lead-card:hover .lead-mark {
+  transform: translateY(-4px) rotate(-4deg);
+}
+
+.lead-caption {
+  position: absolute;
+  bottom: 1.1rem;
+  left: 1.25rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+
+/* ── Post grid (index "more posts", post "keep reading") ─────────── */
+
+.blog-list {
+  padding-bottom: 1rem;
+}
+
+.blog-list-head {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.blog-list-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.blog-rss {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.blog-rss:hover {
+  color: var(--accent);
+}
+
+.blog-rss i {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.post-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 1rem;
+}
+
+.post-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: inherit;
+  text-decoration: none;
+  background: var(--surface);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.post-card:hover {
+  border-color: rgba(var(--accent-rgb), 0.4);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+.post-card-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.post-card:hover .post-card-title {
+  color: var(--accent);
+}
+
+.post-card-excerpt {
+  display: -webkit-box;
+  flex: 1 1 auto;
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.93rem;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.blog-empty {
+  padding: 2rem 0;
+  color: var(--muted);
+}
+
+/* ── Post page ───────────────────────────────────────────────────── */
+
+.post-head {
+  max-width: 780px;
+  padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(2rem, 4vw, 2.75rem);
+}
+
+.post-head .breadcrumb span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.post-title {
+  margin: 1rem 0 1.1rem;
+  font-family: var(--font-hero);
+  font-size: clamp(2.4rem, 5.6vw, 4rem);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.post-deck {
+  max-width: 44rem;
+  margin: 0 0 1.75rem;
+  color: var(--muted);
+  font-size: clamp(1.08rem, 1.8vw, 1.25rem);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.post-byline {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.post-avatar {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: linear-gradient(145deg, var(--grad-b), var(--grad-a));
+}
+
+.post-avatar--mark {
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.post-avatar--mark img {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.post-author {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.post-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 720px) minmax(0, 260px);
+  gap: clamp(2rem, 6vw, 5rem);
+  justify-content: space-between;
+  padding-top: clamp(2rem, 4vw, 2.75rem);
+  border-top: 1px solid var(--line);
+}
+
+.post-aside {
+  position: sticky;
+  top: 96px;
+  display: grid;
+  gap: 1.5rem;
+  align-self: start;
+}
+
+.aside-card {
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.aside-card p {
+  margin: 0.55rem 0 1rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.aside-card .button {
+  width: 100%;
+}
+
+.aside-kicker,
+.aside-label {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.aside-kicker {
+  color: var(--accent);
+}
+
+.share-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.share-link {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  color: var(--muted);
+  background: var(--surface);
+  transition: color 0.16s ease, border-color 0.16s ease;
+}
+
+.share-link:hover {
+  border-color: rgba(var(--accent-rgb), 0.45);
+  color: var(--accent);
+}
+
+.share-link i {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.post-signup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+  margin-top: clamp(3rem, 7vw, 4.5rem);
+  padding: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.post-signup .signup-copy {
+  margin-bottom: 0;
+}
+
+.post-more {
+  margin-top: clamp(3rem, 7vw, 4.5rem);
+}
+
+/* ── Long-form type ──────────────────────────────────────────────── */
+
+.prose {
+  min-width: 0;
+  color: var(--text);
+  font-size: 1.08rem;
+  line-height: 1.78;
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose p {
+  margin: 0 0 1.35em;
+  text-wrap: pretty;
+}
+
+.prose h2 {
+  margin: 2.4em 0 0.75em;
+  font-size: 1.6rem;
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  scroll-margin-top: 96px;
+}
+
+.prose h3 {
+  margin: 2em 0 0.6em;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  scroll-margin-top: 96px;
+}
+
+.prose a {
+  color: var(--accent);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--accent-rgb), 0.35);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.16s ease;
+}
+
+.prose a:hover {
+  text-decoration-color: currentColor;
+}
+
+.prose strong {
+  font-weight: 650;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0 0 1.35em;
+  padding-left: 1.4rem;
+}
+
+/* marketing.css strips list markers site-wide for nav and footer lists;
+  in an article they carry meaning, so they come back here. */
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose li {
+  margin: 0.45em 0;
+  padding-left: 0.2rem;
+}
+
+.prose ul > li::marker {
+  color: var(--accent);
+}
+
+.prose ol > li::marker {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.prose blockquote {
+  margin: 2em 0;
+  padding: 0.25rem 0 0.25rem 1.4rem;
+  border-left: 3px solid var(--accent);
+  color: var(--text);
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+}
+
+.prose blockquote p {
+  margin: 0;
+}
+
+.prose blockquote p + p {
+  margin-top: 0.6em;
+}
+
+.prose code {
+  padding: 0.1em 0.32em;
+  border-radius: 6px;
+  color: var(--accent-strong);
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: var(--badge-bg);
+}
+
+.prose pre {
+  margin: 1.75em 0;
+  padding: 1.1rem 1.25rem;
+  overflow-x: auto;
+  border: 1px solid var(--term-line);
+  border-radius: 12px;
+  color: var(--term-fg);
+  font-size: 0.88rem;
+  line-height: 1.65;
+  background: var(--term-bg);
+}
+
+.prose pre code {
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  background: none;
+}
+
+.prose hr {
+  height: 1px;
+  margin: 3em 0;
+  border: 0;
+  background: var(--line-strong);
+}
+
+.prose table {
+  width: 100%;
+  margin: 1.75em 0;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.prose th,
+.prose td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.prose th {
+  font-weight: 650;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+/* ── Smaller screens ─────────────────────────────────────────────── */
+
+@media (max-width: 960px) {
+  .blog-hero,
+  .lead-card,
+  .post-signup {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lead-art {
+    order: -1;
+    min-height: 200px;
+  }
+
+  .post-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The aside's only job on a phone is the share row: the signup it points
+    at is a scroll away, and a sticky column has no column to stick in. */
+  .post-aside {
+    position: static;
+  }
+
+  .aside-card {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .signup-row {
+    flex-direction: column;
+  }
+
+  .signup-row .button {
+    width: 100%;
+  }
+
+  .prose {
+    font-size: 1.02rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lead-card,
+  .post-card,
+  .lead-mark,
+  .read-link i {
+    transition: none;
+  }
+
+  .lead-card:hover,
+  .post-card:hover,
+  .lead-card:hover .lead-mark {
+    transform: none;
+  }
+}

@@ -1,0 +1,122 @@
+<script server>
+/*
+ * /blog, on the marketing site's own nav, footer, palette and theme toggle.
+ *
+ * It used to be a BunPress page: a docs shell with a docs search box, the
+ * post title standing in for the brand, BunPress's orange links and a theme
+ * switch of its own. This file existing is also what tells the server the
+ * blog is stx-native (core/actions/src/dev/views.ts and the production
+ * server), so BunPress steps aside and only the feed is still generated from
+ * the markdown.
+ *
+ * Stacks has not launched. The page is honest about that and asks for an
+ * email in the one place a reader decides whether to come back.
+ */
+import { blogCards, subscribeNotice } from '../data/blog'
+import { breadcrumbJsonLd } from '../data/schema'
+
+
+const pageTitle = 'Blog - Stacks'
+const pageDescription = 'Notes from building Stacks, a full-stack TypeScript framework on Bun, on the way to its first release.'
+const canonicalPath = '/blog'
+const pageStyles = ['blog']
+const jsonLd = breadcrumbJsonLd([{ name: 'Blog', path: '/blog' }])
+
+const posts = blogCards()
+const lead = posts[0]
+const rest = posts.slice(1)
+
+const notice = subscribeNotice(typeof query !== 'undefined' ? query : undefined)
+const subscribeSource = 'blog-index'
+const subscribeReturn = '/blog#subscribe'
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    @include('marketing-head')
+    <link rel="alternate" type="application/rss+xml" title="The Stacks Blog" href="/blog/feed.xml">
+  </head>
+  <body>
+    <div class="site-content">
+      @include('marketing-nav')
+
+      <main class="blog">
+        <section class="blog-hero site-shell" aria-labelledby="blog-heading">
+          <div class="blog-hero-copy">
+            <span class="kicker">The Stacks blog</span>
+            <h1 id="blog-heading" class="blog-hero-title">Notes from the road <span>to 1.0.</span></h1>
+            <p class="blog-hero-lede">
+              Stacks is not out yet. This is where we write down what we are building, why we made the calls we made, and when you will be able to try it.
+            </p>
+          </div>
+
+          <div class="signup-card" id="subscribe">
+            <span class="signup-badge"><i class="i-hugeicons-mail-01" aria-hidden="true"></i>Launch list</span>
+            <h2 class="signup-title">Be first in line.</h2>
+            <p class="signup-copy">Join the list and we will tell you the day Stacks opens up, with early access before the public release.</p>
+            @include('blog-subscribe')
+          </div>
+        </section>
+
+        @if (lead)
+          <section class="blog-lead site-shell" aria-label="Latest post">
+            <a class="lead-card" href="{{ lead.url }}">
+              <div class="lead-body">
+                <p class="post-meta">
+                  @if (lead.featured)
+                    <span class="post-pill">Featured</span>
+                  @endif
+                  <time datetime="{{ lead.date }}">{{ lead.dateLabel }}</time>
+                  <span aria-hidden="true">·</span>
+                  <span>{{ lead.minutes }} min read</span>
+                </p>
+                <h2 class="lead-title">{{ lead.title }}</h2>
+                <p class="lead-excerpt">{{ lead.description }}</p>
+                <span class="read-link">Read the post<i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i></span>
+              </div>
+              <div class="lead-art" aria-hidden="true">
+                <span class="lead-grid"></span>
+                <img class="lead-mark" src="/images/logos/favicon.svg" alt="" width="96" height="96">
+                <span class="lead-caption">stacksjs.com/blog</span>
+              </div>
+            </a>
+          </section>
+        @endif
+
+        @if (rest.length)
+          <section class="blog-list site-shell" aria-labelledby="all-posts-heading">
+            <div class="blog-list-head">
+              <h2 id="all-posts-heading" class="blog-list-title">More posts</h2>
+              <a class="blog-rss" href="/blog/feed.xml"><i class="i-hugeicons-rss" aria-hidden="true"></i>RSS</a>
+            </div>
+            <div class="post-grid">
+              @foreach (rest as post)
+                <a class="post-card" href="{{ post.url }}">
+                  <p class="post-meta">
+                    <time datetime="{{ post.date }}">{{ post.dateLabel }}</time>
+                    <span aria-hidden="true">·</span>
+                    <span>{{ post.minutes }} min read</span>
+                  </p>
+                  <h3 class="post-card-title">{{ post.title }}</h3>
+                  <p class="post-card-excerpt">{{ post.description }}</p>
+                  <span class="read-link">Read<i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i></span>
+                </a>
+              @endforeach
+            </div>
+          </section>
+        @endif
+
+        @if (!lead)
+          <section class="blog-empty site-shell">
+            <p>The first post is being written. Join the list above and it will reach you the day it goes up.</p>
+          </section>
+        @endif
+      </main>
+
+      @include('marketing-footer')
+    </div>
+
+    @include('marketing-theme-toggle')
+  </body>
+</html>

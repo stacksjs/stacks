@@ -1,0 +1,35 @@
+{{-- The launch-list signup the blog pages share.
+
+  It is a plain form: it posts to /api/email/subscribe and the API sends the
+  browser back to `subscribeReturn` with `?subscribe=<outcome>`, which the
+  page turns into `notice`. No script, so no stx runtime on a page that
+  otherwise hydrates nothing (see tests/unit/marketing-assets.test.ts).
+
+  The page declares `subscribeSource` (who signed up from where, for the
+  subscribers table), `subscribeReturn` (its own path plus `#subscribe`) and
+  `notice` (from subscribeNotice in resources/data/blog.ts). --}}
+<script server>
+import type { SubscribeNotice } from '../data/blog'
+
+declare const subscribeSource: string
+declare const subscribeReturn: string
+declare const notice: SubscribeNotice | null
+</script>
+
+<form class="signup-form" action="/api/email/subscribe" method="POST">
+  <input type="hidden" name="source" value="{{ subscribeSource }}">
+  <input type="hidden" name="return" value="{{ subscribeReturn }}">
+  <label class="sr-only" for="signup-email">Email address</label>
+  <div class="signup-row">
+    <input id="signup-email" type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+    <button class="button primary" type="submit">Get the launch email</button>
+  </div>
+  @if (notice)
+    <p class="signup-notice signup-notice--{{ notice.tone }}" role="status">
+      <i class="{{ notice.tone === 'success' ? 'i-hugeicons-checkmark-circle-02' : 'i-hugeicons-alert-circle' }}" aria-hidden="true"></i>
+      {{ notice.text }}
+    </p>
+  @else
+    <p class="signup-fine">One email when Stacks opens up, then a build note now and then. Unsubscribe in one click.</p>
+  @endif
+</form>
