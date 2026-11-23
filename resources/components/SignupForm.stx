@@ -45,7 +45,7 @@ const emailInput = useRef('emailInput')
 // to be the slow part.
 const minimumSpin = 450
 
-async function send(): Promise<SubscribeOutcome> {
+async function send() {
   try {
     const response = await fetch('/api/email/subscribe', {
       method: 'POST',
@@ -60,7 +60,7 @@ async function send(): Promise<SubscribeOutcome> {
     return subscribeOutcome(response.status, body)
   }
   catch {
-    return 'error'
+    return 'error' as const
   }
 }
 
