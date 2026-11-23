@@ -21,6 +21,8 @@ export interface BrowserStoryOptions {
   viewport?: LaunchOptions['viewport']
   chromePath?: string
   headless?: boolean
+  /** Optional FFmpeg executable for streaming frames directly to H.264 on constrained runners. */
+  ffmpeg?: string
   /** Selector masks are applied before the first recorded frame, on every document. */
   masks?: string[]
   cursor?: { color?: string, size?: number, moveMs?: number, clickMs?: number }
@@ -53,6 +55,37 @@ async function command(args: string[], signal?: AbortSignal, timeoutMs = 30000):
   finally { clearTimeout(timeout); signal?.removeEventListener('abort', abort); await child.stop() }
 }
 
+async function openStreamedFilm(executable: string, fps: number, path: string) {
+  const encoder = spawnOwnedProcess([
+    executable, '-hide_banner', '-loglevel', 'error', '-nostdin', '-n', '-threads', '2',
+    '-f', 'image2pipe', '-framerate', String(fps), '-vcodec', 'mjpeg', '-i', 'pipe:0',
+    '-an', '-filter_threads', '1', '-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2',
+    '-c:v', 'libx264', '-threads', '2', '-preset', 'veryfast', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', path,
+  ], { stdin: 'pipe' })
+  const error = new Response(encoder.stderr).text()
+  const output = new Response(encoder.stdout).arrayBuffer()
+  try {
+    await encoder.started
+    const input = encoder.stdin
+    if (!input) throw new Error('Story encoder has no input stream')
+    return {
+      async add(picture: Uint8Array, frames: number) {
+        for (let index = 0; index < frames; index++) {
+          input.write(picture)
+          await input.flush()
+        }
+      },
+      async finish() {
+        await input.end()
+        const [exit, diagnostic] = await Promise.all([encoder.exited, error, output])
+        if (exit.code !== 0) throw new Error(`Story encoder failed: ${diagnostic.trim() || exit.signal || exit.code}`)
+      },
+      async close() { await encoder.stop() },
+    }
+  }
+  catch (error) { await encoder.stop(); throw error }
+}
+
 /** Chrome actions reuse the guarded testing click and dispatch real mouse movement. */
 export function browserStory(options: BrowserStoryOptions): StoryDriver<BrowserStoryContext> {
   const base = origin(options.baseUrl)
@@ -62,11 +95,11 @@ export function browserStory(options: BrowserStoryOptions): StoryDriver<BrowserS
   return { platform: 'browser', fingerprint: options, async open({ videoPath, fps, signal }) {
     const browser = await launch({ viewport: options.viewport, chromePath: options.chromePath, headless: options.headless })
     const { cdp } = browser
-    // The video is encoded by a second page of the same browser and written
-    // as MP4 by ts-videos: no FFmpeg, and nothing but Chrome to install.
+    // The default encodes through a second page of the same browser.
     let studio: Awaited<ReturnType<typeof launch>> | undefined
     let room: ReturnType<typeof serveFilmStudio> | undefined
     let film: BrowserFilm | undefined
+    let streamedFilm: Awaited<ReturnType<typeof openStreamedFilm>> | undefined
     let done = false
     let pumping: Promise<void> | undefined
     let captureError: unknown
@@ -78,8 +111,17 @@ export function browserStory(options: BrowserStoryOptions): StoryDriver<BrowserS
     // waits on the encoder also waits on this, so shutdown cannot hang.
     let release!: () => void
     const released = new Promise<void>((resolve) => { release = resolve })
-    const closeStudio = async () => { release(); room?.stop(); room = undefined; const open = studio; studio = undefined; await Promise.race([open?.close().catch(() => {}), Bun.sleep(5000)]) }
-    const abort = () => { done = true; void closeStudio(); void browser.close().catch(() => {}) }
+    const closeEncoder = async () => {
+      release()
+      room?.stop()
+      room = undefined
+      const open = studio
+      const stream = streamedFilm
+      studio = undefined
+      streamedFilm = undefined
+      await Promise.allSettled([Promise.race([open?.close(), Bun.sleep(5000)]), stream?.close()])
+    }
+    const abort = () => { done = true; void closeEncoder(); void browser.close().catch(() => {}) }
     signal.addEventListener('abort', abort, { once: true })
     try {
       signal.throwIfAborted()
@@ -145,12 +187,16 @@ export function browserStory(options: BrowserStoryOptions): StoryDriver<BrowserS
         latest = Buffer.from(frame.data, 'base64')
         void cdp.send('Page.screencastFrameAck', { sessionId: frame.sessionId }).catch(error => { captureError = error })
       })
-      room = serveFilmStudio()
-      studio = await launch({ viewport: { width: 320, height: 240 }, chromePath: options.chromePath, headless: options.headless })
-      const studioPage = studio.cdp
-      await studioPage.send('Page.navigate', { url: room.url })
-      await waitFor(() => studioPage.evaluate<boolean>('document.readyState === "complete"'), 15000)
-      film = await openBrowserFilm(script => studioPage.evaluate(script), { fps })
+      if (options.ffmpeg) streamedFilm = await openStreamedFilm(options.ffmpeg, fps, videoPath)
+      else {
+        room = serveFilmStudio()
+        studio = await launch({ viewport: { width: 320, height: 240 }, chromePath: options.chromePath, headless: options.headless })
+        const studioPage = studio.cdp
+        await studioPage.send('Page.navigate', { url: room.url })
+        await waitFor(() => studioPage.evaluate<boolean>('document.readyState === "complete"'), 15000)
+        film = await openBrowserFilm(script => studioPage.evaluate(script), { fps })
+      }
+      signal.throwIfAborted()
       await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 85, everyNthFrame: 1 })
       const started = performance.now()
       pumping = (async () => {
@@ -165,7 +211,9 @@ export function browserStory(options: BrowserStoryOptions): StoryDriver<BrowserS
             // The picture travels to the encoder only when the display changed;
             // an idle screen repeats the frame it already has.
             const picture = latest
-            await Promise.race([film!.add(picture === sent ? undefined : picture, wanted - frames), released])
+            const count = wanted - frames
+            const encode = streamedFilm ? streamedFilm.add(picture!, count) : film!.add(picture === sent ? undefined : picture, count)
+            await Promise.race([encode, released])
             sent = picture
             frames = wanted
           }
@@ -175,26 +223,26 @@ export function browserStory(options: BrowserStoryOptions): StoryDriver<BrowserS
       let finished: Promise<void> | undefined
       const finish = () => finished ??= (async () => {
         done = true
+        const stream = streamedFilm
         let timedOut = false
-        const deadline = setTimeout(() => { timedOut = true; void closeStudio() }, 60000)
+        const deadline = setTimeout(() => { timedOut = true; void closeEncoder() }, 60000)
         try {
           await pumping
           await cdp.send('Page.stopScreencast')
           off?.()
           if (captureError) throw new Error('Story video capture failed', { cause: captureError })
-          let bytes: Uint8Array
-          try { bytes = await Promise.race([film!.finish(), released.then(() => { throw new Error('The encoder page closed') })]) }
+          const write = stream ? stream.finish() : film!.finish().then(bytes => Bun.write(videoPath, bytes))
+          try { await Promise.race([write, released.then(() => { throw new Error('The story encoder closed') })]) }
           catch (error) { throw new Error(timedOut ? 'Story video finalization timed out' : 'Story video capture failed', { cause: error }) }
-          await Bun.write(videoPath, bytes)
           if (options.failOnBrowserErrors !== false && cdp.errors.length) throw new Error('Browser story produced console or network errors')
         }
-        finally { clearTimeout(deadline); await closeStudio() }
+        finally { clearTimeout(deadline); await closeEncoder() }
       })()
-      return { context, screenshot: async () => Buffer.from((await cdp.send('Page.captureScreenshot', { format: 'png' })).data, 'base64'), finish, async close() { done = true; off?.(); offDocuments(); signal.removeEventListener('abort', abort); try { await closeStudio(); await pumping } finally { await browser.close() } } }
+      return { context, screenshot: async () => Buffer.from((await cdp.send('Page.captureScreenshot', { format: 'png' })).data, 'base64'), finish, async close() { done = true; off?.(); offDocuments(); signal.removeEventListener('abort', abort); try { await closeEncoder(); await pumping } finally { await browser.close() } } }
     }
     catch (error) {
       done = true; off?.(); offDocuments(); signal.removeEventListener('abort', abort)
-      try { await closeStudio(); await pumping } finally { await browser.close() }
+      try { await closeEncoder(); await pumping } finally { await browser.close() }
       throw error
     }
   } }

@@ -68,6 +68,8 @@ The visible circular mouse pointer follows real `mouseMoved` input. Clicks use t
 
 Each story gets a separate browser context. Use `beforeNavigate(cdp)` to configure HTTP authentication or browser cookies before the first request. For a preview protected by HTTP Basic authentication, call `installBasicAuth` from `@stacksjs/testing/browser` there with the story origin and credentials from your secret manager. `prepare(context)` on `browserStory()` can establish synthetic authentication before recording starts. Password inputs and configured mask selectors become transparent before document scripts and the first recorded frame, while remaining actionable. Masks do not cover browser dialogs, canvas contents or unrelated elements. Use synthetic accounts and add selectors for personal content before sharing any recording.
 
+On runners with FFmpeg installed, `browserStory({ baseUrl, ffmpeg: 'ffmpeg' })` streams the captured frames to H.264. One browser page drives the journey and draws the cursor and field masks. The recorder waits for FFmpeg to accept each frame before sending the next.
+
 ## Native stories
 
 `nativeStory()` records the actual OS display with `simctl recordVideo` or Android `screenrecord`. It never uses a browser viewport as native evidence.

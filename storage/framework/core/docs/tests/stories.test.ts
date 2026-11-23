@@ -15,14 +15,18 @@ async function run(args: string[]) {
   return { code, stdout, stderr }
 }
 
-test('Buddy records a real browser journey, publishes each scene, and detects changed evidence', async () => {
+const ffmpeg = Bun.which('ffmpeg')
+const encoders: Array<[string, string | undefined]> = [['WebCodecs', undefined]]
+if (ffmpeg) encoders.push(['FFmpeg', ffmpeg])
+
+test.each(encoders)('Buddy uses %s to record a browser journey, publish each scene, and detect changed evidence', async (_name, executable) => {
   const root = await mkdtemp(join(tmpdir(), 'story-browser-')); roots.push(root)
   const server = Bun.serve({ port: 0, fetch(request) { return new Response('<html><head><title>Story fixture</title></head><body><main><h1>Cart</h1><button onclick="document.querySelector(\'h1\').textContent=\'Purchased\'">Buy</button><input type="password" value="private-fixture"></main></body></html>', { status: new URL(request.url).pathname === '/unavailable' ? 503 : 200, headers: { 'Content-Type': 'text/html' } }) } })
   try {
     const config = join(root, 'stories.ts')
     const driver = pathToFileURL(resolve(import.meta.dir, '../src/story-drivers.ts')).href
     await Bun.write(config, `import { browserStory } from ${JSON.stringify(driver)}
-      export default { outDir: ${JSON.stringify(join(root, 'docs'))}, holdMs: 300, stories: [{ id:'purchase', title:'Purchase', driver:browserStory({baseUrl:${JSON.stringify(server.url.href)},viewport:{width:640,height:480}}), scenes:[
+      export default { outDir: ${JSON.stringify(join(root, 'docs'))}, holdMs: 300, stories: [{ id:'purchase', title:'Purchase', driver:browserStory({baseUrl:${JSON.stringify(server.url.href)},viewport:{width:640,height:480},ffmpeg:${JSON.stringify(executable)}}), scenes:[
         {id:'cart',title:'Review cart',run:async view=>{await view.expectText('h1','Cart')}},
         {id:'purchased',title:'Order confirmed',run:async view=>{await view.click('button');await view.expectText('h1','Purchased')}}
       ] }] }`)
@@ -36,10 +40,10 @@ test('Buddy records a real browser journey, publishes each scene, and detects ch
     expect(page.match(/!\[/g)?.length).toBe(2)
     expect(page).not.toContain('private-fixture')
     const video = join(root, 'docs', report.results[0].video.path)
-    // Recorded without FFmpeg: the browser encodes H.264 and ts-videos writes
-    // the container, so read the result back with the same library.
+    // Both encoders produce an H.264 MP4 with the captured viewport.
     const bytes = new Uint8Array(await Bun.file(video).arrayBuffer())
     expect(Buffer.from(bytes.subarray(4, 8)).toString()).toBe('ftyp')
+    if (executable) expect(Buffer.from(bytes).includes('Lavf')).toBe(true)
     const { Mp4Demuxer } = await import('@ts-videos/mp4')
     const { BufferSource } = await import('ts-videos')
     const demuxer = new Mp4Demuxer(new BufferSource(bytes))
