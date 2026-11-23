@@ -8,7 +8,15 @@
   which is what makes it reachable by keyboard without a line of JavaScript.
   Each trigger is a real link to the overview page, so a tap on a touch
   device (where there is no hover) goes somewhere useful rather than
-  nowhere. --}}
+  nowhere.
+
+  On a phone the row of links does not fit, and it used to scroll sideways
+  with nothing to say so: Docs and Blog sat off the edge of the screen and
+  the call to action was dropped. Below 720px the links move into a native
+  disclosure instead, which opens with a tap or the keyboard and needs no
+  script to do it. Its one inline handler closes it again when a link inside
+  is followed, because the nav stays mounted while the router swaps the page
+  beneath it. --}}
 <script server>
 import { navLinks, navMenus } from '../data/nav'
 
@@ -76,6 +84,22 @@ const brandName = 'Stacks'
     <div class="nav-end">
       <a class="nav-github" href="https://github.com/stacksjs/stacks" aria-label="Stacks on GitHub"><i class="i-hugeicons-github" aria-hidden="true"></i></a>
       <a class="nav-cta" href="/#start">Get started</a>
+
+      <details class="nav-menu">
+        <summary aria-label="Menu">
+          <i class="i-hugeicons-menu-01 nav-menu-open" aria-hidden="true"></i>
+          <i class="i-hugeicons-cancel-01 nav-menu-close" aria-hidden="true"></i>
+        </summary>
+        <div class="nav-menu-panel" onclick="this.parentElement.open = false">
+          @foreach (navMenus as menu)
+            <a href="{{ menu.url }}">{{ menu.label }}</a>
+          @endforeach
+          @foreach (navLinks as link)
+            <a href="{{ link.url }}" {{ link.native ? 'data-no-router' : '' }}>{{ link.label }}</a>
+          @endforeach
+          <a class="button primary" href="/#start">Get started</a>
+        </div>
+      </details>
     </div>
   </div>
 </nav>

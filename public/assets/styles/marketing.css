@@ -522,6 +522,79 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
   background: rgba(var(--ink-rgb), 0.06);
 }
 
+/* The phone menu. Hidden until the row of links no longer fits (see the
+  720px block under Responsive), where it takes their place. */
+.nav-menu {
+  display: none;
+}
+
+.nav-menu summary {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 1.25rem;
+  list-style: none;
+  cursor: pointer;
+  background: var(--surface);
+}
+
+.nav-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.nav-menu summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Two classes each: the icons also carry an Iconify class, and its
+  generated `display: inline-block` would win at equal specificity. */
+.nav-menu .nav-menu-close,
+.nav-menu[open] .nav-menu-open {
+  display: none;
+}
+
+.nav-menu[open] .nav-menu-close {
+  display: inline-block;
+}
+
+.nav-menu-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.75rem 16px 1.25rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  box-shadow: 0 24px 40px -24px rgba(var(--ink-rgb), 0.35);
+}
+
+.nav-menu-panel a:not(.button) {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 0.5rem;
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 1.02rem;
+  font-weight: 560;
+}
+
+.nav-menu-panel a:not(.button):hover {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.06);
+}
+
+.nav-menu-panel .button {
+  margin-top: 0.6rem;
+}
+
 .nav-cta {
   display: inline-flex;
   align-items: center;
@@ -889,39 +962,25 @@ input[type="email"]:focus {
   }
 }
 
+/* The links, the wordmark and two buttons stop fitting on one line a little
+  above a large phone. They used to scroll sideways there, with nothing to
+  show there was more to scroll to; now they collapse into the menu. */
+@media (max-width: 720px) {
+  .nav-links,
+  .nav-cta {
+    display: none;
+  }
+
+  .nav-menu {
+    display: block;
+  }
+}
+
 @media (max-width: 600px) {
   .nav-inner {
     gap: 0.7rem;
     min-height: 58px;
   }
-
-  /* Five links plus the wordmark do not fit at 375px, and shrinking the
-    type further only makes them unreadable. The row scrolls instead, with
-    no visible scrollbar: nothing is dropped from the navigation and
-    nothing overlaps the brand. */
-  .nav-links {
-    flex: 1;
-    gap: 0.9rem;
-    min-width: 0;
-    overflow-x: auto;
-    font-size: 0.78rem;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .nav-links::-webkit-scrollbar {
-    display: none;
-  }
-
-  .nav-links a {
-    white-space: nowrap;
-  }
-
-  .nav-cta {
-    display: none;
-  }
-
-  
 
   .hero-actions {
     flex-direction: column;
