@@ -371,6 +371,82 @@
   line-height: 1.45;
 }
 
+/* ── In production ──────────────────────────────────────────────── */
+
+/* Five live products as one ruled strip, the same construction as the stats
+   above it, so the two read as a pair: what ships, then who shipped with it.
+   Each column is a link to the product itself. */
+.proof {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block: 1px solid var(--line);
+}
+
+.proof li + li {
+  border-left: 1px solid var(--line);
+}
+
+.proof-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  height: 100%;
+  padding: 1.5rem 1.25rem 1.4rem;
+  transition: background 0.18s ease;
+}
+
+.proof-item:hover {
+  background: var(--surface);
+}
+
+.proof-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.proof-name {
+  display: inline-flex;
+  gap: 0.55rem;
+  align-items: center;
+  color: var(--text);
+  font-size: 1.04rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.proof-name i {
+  color: var(--accent);
+  font-size: 1.15rem;
+}
+
+.proof-what {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.proof-host {
+  display: inline-flex;
+  gap: 0.3rem;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 0.4rem;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+}
+
+.proof-host i {
+  transition: transform 0.18s ease;
+}
+
+.proof-item:hover .proof-host i {
+  transform: translate(2px, -2px);
+}
+
 /* ── Bento ──────────────────────────────────────────────────────── */
 
 .bento {
@@ -471,9 +547,15 @@
 /* Code: the feature's own sample, cut to its first dozen lines and faded
    into the window's own navy, so the cell says "this is the file" without
    becoming the file. */
+/* The window takes whatever height the row leaves it. Its neighbour in the
+   row is usually a taller checklist, and a fixed-height window above an
+   empty half of a card read as a card that had failed to load. */
 .bento-code {
   position: relative;
-  display: block;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
   margin: 1.25rem -0.25rem 0;
   overflow: hidden;
   border: 1px solid rgba(126, 163, 255, 0.14);
@@ -501,7 +583,8 @@
 }
 
 .bento-code pre {
-  max-height: 190px;
+  flex: 1 1 0;
+  min-height: 190px;
   margin: 0;
   padding: 0.75rem 0.9rem;
   overflow: hidden;
@@ -1317,6 +1400,83 @@
   }
 }
 
+/* ── Questions ──────────────────────────────────────────────────── */
+
+/* Native disclosure, so the answers open with no script, with the keyboard,
+   and with find-in-page. Sharing a `name` makes them one accordion: opening
+   a question closes the last one. */
+.faq {
+  max-width: 50rem;
+  margin-inline: auto;
+  border-top: 1px solid var(--line);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--line);
+}
+
+.faq-item summary {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 0.25rem;
+  list-style: none;
+  cursor: pointer;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary:focus-visible {
+  border-radius: 10px;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.faq-item h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.08rem;
+  font-weight: 620;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+  transition: color 0.16s ease;
+}
+
+.faq-item summary:hover h3 {
+  color: var(--accent);
+}
+
+.faq-item summary i {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 1.15rem;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.16s ease;
+}
+
+.faq-item[open] summary i {
+  color: var(--accent);
+  transform: rotate(45deg);
+}
+
+.faq-answer {
+  display: grid;
+  gap: 0.9rem;
+  justify-items: start;
+  padding: 0 0.25rem 1.5rem;
+}
+
+.faq-answer p {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
 /* ── Closing call to action ─────────────────────────────────────── */
 
 .cta {
@@ -1398,6 +1558,33 @@
     padding-top: 2.75rem;
   }
 
+  /* Three and two: the strip keeps its rules, and no product is left alone
+     on a row. */
+  .proof {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .proof li {
+    grid-column: span 2;
+  }
+
+  .proof li:nth-child(n + 4) {
+    grid-column: span 3;
+    border-top: 1px solid var(--line);
+  }
+
+  .proof li:nth-child(4) {
+    border-left: 0;
+  }
+
+  /* Stacked, a code cell has no row to fill, so it goes back to showing the
+     top of the file and no more. */
+  .bento-code pre {
+    flex: 0 0 auto;
+    max-height: 190px;
+    min-height: 0;
+  }
+
   .home-hero-copy {
     max-width: 40rem;
   }
@@ -1456,6 +1643,24 @@
 }
 
 @media (max-width: 640px) {
+  .proof {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .proof li,
+  .proof li:nth-child(n + 4) {
+    grid-column: auto;
+    border-left: 0;
+  }
+
+  .proof li + li {
+    border-top: 1px solid var(--line);
+  }
+
+  .proof-item {
+    padding-inline: 0.25rem;
+  }
+
   .bento-cell,
   .bento-cell--code,
   .bento-cell--capabilities,
@@ -1526,8 +1731,18 @@
   .bento-cell:hover,
   .bento-foot i,
   .home-badge i,
-  .path-link i {
+  .path-link i,
+  .proof-host i,
+  .faq-item summary i {
     transition: none;
+  }
+
+  .bento-cell,
+  .bento-cell:hover,
+  .bento-foot i,
+  .home-badge i,
+  .path-link i,
+  .proof-host i {
     transform: none !important;
   }
 }

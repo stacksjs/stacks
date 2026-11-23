@@ -2,6 +2,7 @@
 import { comparisonGroups, comparisons, comparisonsInGroup } from '../data/comparisons'
 import { features } from '../data/features'
 import { highlight } from '../data/highlight'
+import { faqs, showcase } from '../data/home'
 import { stats } from '../data/stats'
 import { useCases } from '../data/use-cases'
 import { comparisonSpotlight } from '../data/nav'
@@ -71,9 +72,37 @@ const jsonLd = JSON.stringify({
       description: siteDescription,
       url: `${siteUrl}/`,
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      license: 'https://opensource.org/licenses/MIT',
+      isAccessibleForFree: true,
+    },
+    // The same questions and answers the page shows, from the same list.
+    // Google no longer draws FAQ rich results from this; it is here for the
+    // readers that still use it, answer engines among them, and it can only
+    // describe what a visitor can also read.
+    {
+      '@type': 'FAQPage',
+      '@id': `${siteUrl}/#faq`,
+      mainEntity: faqs.map(faq => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+      })),
     },
   ],
 })
+
+/*
+ * The questions, flattened for the template: it reads one level of property
+ * and never has to ask whether an answer has a link.
+ */
+const homeFaqs = faqs.map((faq, i) => ({
+  question: faq.question,
+  answer: faq.answer,
+  open: i === 0 ? 'open' : '',
+  linkLabel: faq.link ? faq.link.label : '',
+  linkUrl: faq.link ? faq.link.url : '',
+  linkAttr: faq.link && faq.link.native ? 'data-no-router' : '',
+}))
 
 const featureFor = (slug: string) => features.find(feature => feature.slug === slug)
 
@@ -123,9 +152,11 @@ const bentoCells = features.map((feature) => {
     style: `--cols: ${feature.bento.cols}`,
     visual: feature.bento.visual || '',
     command: feature.page.commands[0],
-    // The first dozen lines are the part that says what the file is.
+    // The top of the file is the part that says what the file is. The cell
+    // is as tall as its row, so it is handed more lines than it can show and
+    // clips them, instead of showing a dozen above an empty half.
     codeFile: feature.page.code.file,
-    codeHtml: feature.bento.visual === 'code' ? highlight(feature.page.code.code.split('\n').slice(0, 12).join('\n')) : '',
+    codeHtml: feature.bento.visual === 'code' ? highlight(feature.page.code.code.split('\n').slice(0, 24).join('\n')) : '',
     capabilities: feature.page.capabilities.slice(0, 6).map(capability => capability.title),
   }
 })
@@ -337,6 +368,25 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
               <span>{{ stat.label }}</span>
             </div>
           @endforeach
+        </section>
+
+        <section id="production" class="home-section site-shell" aria-labelledby="production-heading">
+          <div class="home-head rise">
+            <h2 id="production-heading" class="home-h2">Products that run on it today.</h2>
+            <p class="home-sub">Five products in production, each one a Stacks application built from the models, queues, mail, dashboard, and deploys on this page. Four of them are open source.</p>
+          </div>
+
+          <ul class="proof rise">
+            @foreach (showcase as product)
+              <li>
+                <a class="proof-item" href="{{ product.url }}" rel="noopener" data-no-router>
+                  <span class="proof-name"><i class="{{ product.icon }}" aria-hidden="true"></i>{{ product.name }}</span>
+                  <span class="proof-what">{{ product.what }}</span>
+                  <span class="proof-host">{{ product.host }}<i class="i-hugeicons-arrow-up-right-01" aria-hidden="true"></i></span>
+                </a>
+              </li>
+            @endforeach
+          </ul>
         </section>
 
         <section id="platform" class="home-section site-shell" aria-labelledby="platform-heading">
@@ -573,6 +623,30 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
             </span>
             <span class="spotlight-cta">{{ comparisonSpotlight.label }}<i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i></span>
           </a>
+        </section>
+
+        <section id="faq" class="home-section site-shell" aria-labelledby="faq-heading">
+          <div class="home-head home-head--center rise">
+            <h2 id="faq-heading" class="home-h2">Questions before you install.</h2>
+            <p class="home-sub">Short answers, each with a link to the longer one.</p>
+          </div>
+
+          <div class="faq">
+            @foreach (homeFaqs as faq)
+              <details class="faq-item" name="home-faq" {{ faq.open }}>
+                <summary>
+                  <h3>{{ faq.question }}</h3>
+                  <i class="i-hugeicons-add-01" aria-hidden="true"></i>
+                </summary>
+                <div class="faq-answer">
+                  <p>{{ faq.answer }}</p>
+                  @if (faq.linkUrl)
+                    <a class="path-link" href="{{ faq.linkUrl }}" {{ faq.linkAttr }}>{{ faq.linkLabel }}<i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i></a>
+                  @endif
+                </div>
+              </details>
+            @endforeach
+          </div>
         </section>
 
         <section class="home-section home-section--last site-shell" aria-labelledby="cta-heading">
