@@ -1,0 +1,309 @@
+<script client>
+/*
+ * A newsletter signup, answered in place. Drop it on any page:
+ *
+ *   <SubscribeForm />
+ *   <SubscribeForm list="launch" source="blog" label="Get the launch email" />
+ *
+ * It posts to the framework's public endpoint, POST /api/email/subscribe
+ * (SubscriberEmailAction), which puts the address on a newsletter list through
+ * @stacksjs/newsletter and sends the welcome email. Submitting does not reload
+ * the page: the button shows a spinner while the request is out and the answer
+ * appears under the field. A good address clears the field; a bad one keeps it,
+ * with focus, to fix.
+ *
+ * Without JavaScript it is still a plain form. The endpoint sends the browser
+ * back with ?subscribe=<outcome>; hand that to `outcome` and the matching
+ * message shows on load:
+ *
+ *   <SubscribeForm outcome="{{ typeof query !== 'undefined' ? query.subscribe : '' }}" />
+ *
+ * Props (all optional):
+ *   list         a public list's slug; the default list when empty
+ *   source       where the signup came from, stored on the subscriber
+ *   returnTo     the path (and #fragment) a plain form post comes back to
+ *   outcome      the ?subscribe= value the page was loaded with
+ *   label        the button text
+ *   placeholder  the field's placeholder
+ *   intro        a visible label above the field (else a screen-reader label)
+ *   fine         fine print under the field, replaced by the answer
+ *   successText, alreadyText   what to say for those two outcomes
+ *   tone         'primary' for a filled button, 'outline' for an outlined one
+ *   buttonClass  extra classes for the button, such as an app's own button class
+ *
+ * Styling: everything is under `.subscribe-form` at zero specificity, coloured
+ * from CSS variables (--subscribe-accent, --subscribe-text, --subscribe-muted,
+ * --subscribe-border, --subscribe-field, --subscribe-success, --subscribe-error),
+ * so an app's own stylesheet wins without a fight.
+ */
+type Outcome = 'subscribed' | 'already' | 'invalid' | 'busy' | 'error'
+
+const list = useReactiveProp<string>('list', '')
+const source = useReactiveProp<string>('source', 'website')
+const returnTo = useReactiveProp<string>('returnTo', '')
+const loadedWith = useReactiveProp<string>('outcome', '')
+const label = useReactiveProp<string>('label', 'Subscribe')
+const placeholder = useReactiveProp<string>('placeholder', 'you@example.com')
+const intro = useReactiveProp<string>('intro', '')
+const fine = useReactiveProp<string>('fine', '')
+const successText = useReactiveProp<string>('successText', 'Thanks, you are subscribed. A welcome email is on its way to your inbox.')
+const alreadyText = useReactiveProp<string>('alreadyText', 'You are already subscribed. Thanks for sticking around.')
+const tone = useReactiveProp<string>('tone', 'primary')
+const buttonClass = useReactiveProp<string>('buttonClass', '')
+
+const messages = {
+  invalid: 'That email address did not look right. Try it again?',
+  busy: 'That was a lot of tries in a minute. Give it a moment and try again.',
+  error: 'Something went wrong on our side and you are not subscribed yet. Please try again.',
+}
+const outcomes = ['subscribed', 'already', 'invalid', 'busy', 'error']
+
+const email = state('')
+const sending = state(false)
+const outcome = state<Outcome | ''>(outcomes.includes(loadedWith()) ? loadedWith() as Outcome : '')
+const tonePositive = derived(() => outcome() === 'subscribed' || outcome() === 'already')
+const noticeText = derived(() => {
+  switch (outcome()) {
+    case 'subscribed': return successText()
+    case 'already': return alreadyText()
+    case '': return ''
+    default: return messages[outcome() as 'invalid' | 'busy' | 'error']
+  }
+})
+const noticeClass = derived(() => !outcome() ? 'subscribe-form__notice--empty' : tonePositive() ? 'subscribe-form__notice--success' : 'subscribe-form__notice--error')
+const noticeIcon = derived(() => tonePositive() ? 'i-hugeicons-checkmark-circle-02' : 'i-hugeicons-alert-circle')
+const emailInput = useRef('emailInput')
+
+// Long enough to read as "working" rather than a flicker, short enough never
+// to be the slow part.
+const minimumSpin = 450
+
+/** Read the endpoint's JSON answer as an outcome. */
+function outcomeOf(status: number, body: { success?: unknown, message?: unknown } | null): Outcome {
+  if (status === 429)
+    return 'busy'
+  if (status >= 200 && status < 300 && body) {
+    if (body.success === true)
+      return body.message === 'Already subscribed' ? 'already' : 'subscribed'
+    if (body.success === false)
+      return 'invalid'
+  }
+  return 'error'
+}
+
+async function send(): Promise<Outcome> {
+  try {
+    const response = await fetch('/api/email/subscribe', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ email: email(), source: source(), list: list(), return: returnTo() }).toString(),
+    })
+    let body: { success?: unknown, message?: unknown } | null = null
+    try {
+      body = await response.json()
+    }
+    catch {}
+    return outcomeOf(response.status, body)
+  }
+  catch {
+    return 'error'
+  }
+}
+
+async function submit(): Promise<void> {
+  if (sending())
+    return
+
+  sending.set(true)
+  const [answer] = await Promise.all([send(), new Promise(resolve => setTimeout(resolve, minimumSpin))])
+  outcome.set(answer)
+  sending.set(false)
+
+  if (answer === 'subscribed' || answer === 'already')
+    email.set('')
+  else
+    void nextTick(() => emailInput.current?.focus())
+}
+</script>
+
+<form
+  class="subscribe-form"
+  :class="sending() ? 'is-loading' : ''"
+  action="/api/email/subscribe"
+  method="POST"
+  :aria-busy="sending() ? 'true' : 'false'"
+  @submit.prevent="submit()"
+>
+  <input type="hidden" name="source" :value="source()">
+  <input type="hidden" name="list" :value="list()">
+  <input type="hidden" name="return" :value="returnTo()">
+  <label class="subscribe-form__intro" :class="intro() ? '' : 'subscribe-form__sr'" for="subscribe-email">{{ intro() || 'Email address' }}</label>
+  <div class="subscribe-form__row">
+    <input id="subscribe-email" ref="emailInput" class="subscribe-form__field" type="email" name="email" :placeholder="placeholder()" autocomplete="email" required x-model.trim="email">
+    <button type="submit" class="subscribe-form__button" :class="(tone() === 'outline' ? 'subscribe-form__button--outline ' : '') + buttonClass()" :disabled="sending()">
+      <span class="subscribe-form__spinner" aria-hidden="true"></span>
+      <span>{{ label() }}</span>
+    </button>
+  </div>
+  <p class="subscribe-form__notice" :class="noticeClass()" role="status" aria-live="polite">
+    <i aria-hidden="true" :class="noticeIcon()"></i>
+    <span>{{ noticeText() }}</span>
+  </p>
+  <p class="subscribe-form__fine" :class="outcome() || !fine() ? 'subscribe-form__fine--gone' : ''">{{ fine() }}</p>
+</form>
+
+<style>
+  :where(.subscribe-form) {
+    --subscribe-accent: #3451b2;
+    --subscribe-on-accent: #ffffff;
+    --subscribe-text: inherit;
+    --subscribe-muted: #6b7280;
+    --subscribe-border: rgba(0, 0, 0, 0.15);
+    --subscribe-field: #ffffff;
+    --subscribe-success: rgba(52, 81, 178, 0.1);
+    --subscribe-error: rgba(220, 38, 38, 0.1);
+    display: grid;
+    gap: 0.7rem;
+    color: var(--subscribe-text);
+  }
+
+  :where(.subscribe-form__row) {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  :where(.subscribe-form__field) {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 0.9rem;
+    border: 1px solid var(--subscribe-border);
+    border-radius: 10px;
+    color: inherit;
+    font: inherit;
+    background: var(--subscribe-field);
+  }
+
+  :where(.subscribe-form__button) {
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 1.1rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: var(--subscribe-on-accent);
+    font: inherit;
+    font-weight: 600;
+    white-space: nowrap;
+    background: var(--subscribe-accent);
+    cursor: pointer;
+  }
+
+  :where(.subscribe-form__button--outline) {
+    border-color: var(--subscribe-border);
+    color: inherit;
+    background: transparent;
+  }
+
+  :where(.subscribe-form__button:disabled) {
+    cursor: progress;
+    opacity: 0.85;
+  }
+
+  :where(.subscribe-form__spinner) {
+    display: none;
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: subscribe-form-spin 0.7s linear infinite;
+  }
+
+  :where(.subscribe-form.is-loading .subscribe-form__spinner) {
+    display: inline-block;
+  }
+
+  :where(.subscribe-form__intro) {
+    color: var(--subscribe-muted);
+    font-size: 0.9rem;
+  }
+
+  :where(.subscribe-form__sr) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  :where(.subscribe-form__notice) {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    margin: 0;
+    padding: 0.65rem 0.8rem;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    animation: subscribe-form-in 0.22s ease-out;
+  }
+
+  :where(.subscribe-form__notice i) {
+    flex: 0 0 auto;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.05rem;
+  }
+
+  :where(.subscribe-form__notice--success) {
+    background: var(--subscribe-success);
+  }
+
+  :where(.subscribe-form__notice--success i) {
+    color: var(--subscribe-accent);
+  }
+
+  :where(.subscribe-form__notice--error) {
+    background: var(--subscribe-error);
+  }
+
+  :where(.subscribe-form__notice--error i) {
+    color: #dc2626;
+  }
+
+  :where(.subscribe-form__notice--empty, .subscribe-form__fine--gone) {
+    display: none;
+  }
+
+  :where(.subscribe-form__fine) {
+    margin: 0;
+    color: var(--subscribe-muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  @keyframes subscribe-form-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes subscribe-form-in {
+    from { opacity: 0; transform: translateY(-3px); }
+  }
+
+  @media (max-width: 560px) {
+    :where(.subscribe-form__row) {
+      flex-direction: column;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where(.subscribe-form__spinner) { animation-duration: 1.6s; }
+    :where(.subscribe-form__notice) { animation: none; }
+  }
+</style>

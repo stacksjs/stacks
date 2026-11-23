@@ -15,6 +15,7 @@ source and retained evidence; driver limits are explicit.
 ## Inside the skill
 
 - Lifecycle
+- Public signup: the `<SubscribeForm />` component and `POST /api/email/subscribe`
 
 ## Using it
 

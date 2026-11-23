@@ -53,109 +53,11 @@ const { appName, description } = withDefaults(
       </p>
 
       <div class="flex gap-x-6 items-center mt-10">
-        <form id="coming-soon-form" class="flex w-380px rounded-md shadow-sm" novalidate>
-          <div class="flex relative focus-within:z-10 flex-grow items-stretch">
-            <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-              <div class="h-5 w-5 text-gray-400 i-hugeicons-envelope"></div>
-            </div>
-
-            <input
-              id="coming-soon-email"
-              type="email"
-              name="email"
-              required
-              class="block pl-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-l-md rounded-none focus:ring-2 focus:ring-blue-600 focus:ring-inset"
-              placeholder="may-we-ask@your-email.org">
-          </div>
-
-          <button
-            id="coming-soon-submit"
-            type="submit"
-            class="inline-flex relative gap-x-1.5 items-center -ml-px px-3 py-2 w-120px font-semibold text-gray-900 text-sm hover:bg-gray-50 ring-1 ring-gray-300 ring-inset rounded-r-md">
-            <span id="coming-soon-submit-label">Stay in Touch</span>
-            <div id="coming-soon-spinner" class="hidden h-4 w-4 animate-spin i-hugeicons-loading-01"></div>
-          </button>
-        </form>
+        <div class="w-380px">
+          <SubscribeForm source="coming-soon" label="Stay in touch" placeholder="may-we-ask@your-email.org" successText="Thanks, we will be in touch." />
+        </div>
       </div>
-
-      <p id="coming-soon-error" class="hidden pt-2 text-red-500 text-xs"></p>
-      <p id="coming-soon-success" class="hidden pt-2 text-green-700 text-xs">
-        Thanks, we'll be in touch.
-      </p>
     </div>
   </div>
 </div>
 
-<script client>
-// Client-side wiring for the holding-page email form. The endpoint
-// itself (/api/email/subscribe) is rate-limited server-side; this
-// handler just gives the visitor immediate feedback.
-const form = document.getElementById('coming-soon-form') as HTMLFormElement | null
-const emailInput = document.getElementById('coming-soon-email') as HTMLInputElement | null
-const submitBtn = document.getElementById('coming-soon-submit') as HTMLButtonElement | null
-const submitLabel = document.getElementById('coming-soon-submit-label')
-const spinner = document.getElementById('coming-soon-spinner')
-const errorEl = document.getElementById('coming-soon-error')
-const successEl = document.getElementById('coming-soon-success')
-
-function setLoading(loading: boolean) {
-  if (!submitBtn || !submitLabel || !spinner) return
-  submitBtn.disabled = loading
-  submitBtn.classList.toggle('opacity-50', loading)
-  submitLabel.classList.toggle('hidden', loading)
-  spinner.classList.toggle('hidden', !loading)
-}
-
-function showError(message: string) {
-  if (!errorEl) return
-  errorEl.textContent = message
-  errorEl.classList.remove('hidden')
-}
-
-function clearMessages() {
-  if (errorEl) errorEl.classList.add('hidden')
-  if (successEl) successEl.classList.add('hidden')
-}
-
-if (form) {
-  form.addEventListener('submit', async function (event) {
-    event.preventDefault()
-    clearMessages()
-
-    const email = emailInput && emailInput.value ? emailInput.value.trim() : ''
-    if (!email || email.indexOf('@') === -1) {
-      showError('Please enter a valid email address.')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const response = await fetch('/api/email/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      })
-
-      if (response.ok) {
-        if (successEl) successEl.classList.remove('hidden')
-        if (form) form.reset()
-      }
-      else {
-        let message = 'Sorry, we could not subscribe you. Please try again later.'
-        try {
-          const data = await response.json()
-          if (data && data.message) message = data.message
-        }
-        catch { /* ignore parse errors */ }
-        showError(message)
-      }
-    }
-    catch {
-      showError('Network error, please try again.')
-    }
-    finally {
-      setLoading(false)
-    }
-  })
-}
-</script>

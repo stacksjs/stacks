@@ -1197,13 +1197,12 @@ async function subscribeEmail(email: string): Promise<{ success: boolean, messag
     body: JSON.stringify({ email }),
   })
 
-  if (response.ok) {
+  // The endpoint answers a bad address with 200 and `success: false`, so the
+  // status alone is not the answer: read the body.
+  const data = await response.json().catch(() => ({})) as { success?: boolean, message?: string }
+  if (response.ok && data.success === true)
     return { success: true }
-  }
-  else {
-    const data = await response.json().catch(() => ({}))
-    return { success: false, message: data.message || 'Failed to subscribe. Please try again later.' }
-  }
+  return { success: false, message: data.message || 'Failed to subscribe. Please try again later.' }
 }
 
 // Email signup (notification popup)
