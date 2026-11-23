@@ -117,8 +117,15 @@
  * `swap` paints text at once in the fallback. "Geist Fallback" is Arial
  * resized to Geist's measured advance and given Geist's own ascent and
  * descent (1005 and 295 on a 1000 unit em), so the swap changes the letter
- * shapes without moving a line. Geist Mono needs no such face: every
- * monospace fallback in the stack is already 0.6em wide.
+ * shapes without moving a line. It is five faces rather than one because
+ * Geist widens with weight faster than Arial does: one adjustment fitted to
+ * the body text left a 700 heading about 2% narrower in the fallback, which
+ * is enough for a hero headline to wrap one word differently and push the
+ * panel under it down when the real face arrived. Each face covers the
+ * weights the site uses in its range (400; 500 to 550; 600 and 620; 650 and
+ * 680; 700 and 720), measured against the Arial cut it maps to. Geist Mono
+ * needs no such face: every monospace fallback in the stack is already 0.6em
+ * wide.
  */
 @font-face {
   font-family: "Geist";
@@ -140,10 +147,51 @@
 
 @font-face {
   font-family: "Geist Fallback";
-  src: local("Arial");
-  size-adjust: 101.4%;
-  ascent-override: 99.1%;
-  descent-override: 29.1%;
+  font-weight: 100 449;
+  src: local("Arial"), local("ArialMT");
+  size-adjust: 102.0%;
+  ascent-override: 98.5%;
+  descent-override: 28.9%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Geist Fallback";
+  font-weight: 450 574;
+  src: local("Arial"), local("ArialMT");
+  size-adjust: 105.0%;
+  ascent-override: 95.7%;
+  descent-override: 28.1%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Geist Fallback";
+  font-weight: 575 639;
+  src: local("Arial Bold"), local("Arial-BoldMT");
+  size-adjust: 99.6%;
+  ascent-override: 100.9%;
+  descent-override: 29.6%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Geist Fallback";
+  font-weight: 640 689;
+  src: local("Arial Bold"), local("Arial-BoldMT");
+  size-adjust: 100.8%;
+  ascent-override: 99.7%;
+  descent-override: 29.3%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Geist Fallback";
+  font-weight: 690 900;
+  src: local("Arial Bold"), local("Arial-BoldMT");
+  size-adjust: 101.8%;
+  ascent-override: 98.7%;
+  descent-override: 29.0%;
   line-gap-override: 0%;
 }
 

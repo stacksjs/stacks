@@ -26,8 +26,8 @@ a {
 }
 
 /*
- * Entrance motion: the hero settles on load and each section settles as it
- * scrolls into view, on a CSS view() timeline. Everything collapses to
+ * Entrance motion: each section settles as it scrolls into view, on a CSS
+ * view() timeline. Nothing animates on load, and everything collapses to
  * static under reduced motion.
  *
  * The sections move and do not fade. A fade tied to scroll position leaves

@@ -93,16 +93,15 @@
   padding: clamp(3rem, 6vw, 5.5rem) 0 clamp(2.5rem, 4vw, 3.5rem);
 }
 
-/* The hero settles into place rather than fading in. It holds the largest
-   thing on the page, and a block that starts transparent is a block the
-   browser cannot count as painted until the fade is under way. */
-.home-hero-copy > * {
-  animation: settle-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.home-hero-copy > *:nth-child(2) { animation-delay: 0.06s; }
-.home-hero-copy > *:nth-child(3) { animation-delay: 0.12s; }
-.home-hero-copy > *:nth-child(4) { animation-delay: 0.18s; }
+/*
+ * The hero does not animate in. It used to rise and fade over most of a
+ * second, staggered, and it holds the largest element on the page: for that
+ * second the page was drawn but not finished, which is exactly what Speed
+ * Index and Largest Contentful Paint measure, and a throttled phone stretched
+ * the second to three. Everything above the fold is in its final place in
+ * the first frame; motion on this page starts when the reader does, on the
+ * scroll (.rise) and on hover.
+ */
 
 .home-badge {
   display: inline-flex;
@@ -174,7 +173,6 @@
 .home-hero-visual {
   position: relative;
   min-width: 0;
-  animation: settle-in 0.7s 0.08s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .home-hero-visual::before {
@@ -290,6 +288,15 @@
 #hero-tab-3:checked ~ .home-code-panes .home-code-pane:nth-child(4),
 #hero-tab-4:checked ~ .home-code-panes .home-code-pane:nth-child(5) {
   display: block;
+}
+
+/* A pane fades in when its tab is chosen. Not the first one: it is the pane
+   the page loads with, so its "entrance" was the page's largest element
+   starting transparent on every visit. */
+#hero-tab-1:checked ~ .home-code-panes .home-code-pane:nth-child(2),
+#hero-tab-2:checked ~ .home-code-panes .home-code-pane:nth-child(3),
+#hero-tab-3:checked ~ .home-code-panes .home-code-pane:nth-child(4),
+#hero-tab-4:checked ~ .home-code-panes .home-code-pane:nth-child(5) {
   animation: pane-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -1721,8 +1728,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-hero-copy > *,
-  .home-hero-visual,
   .home-code-pane {
     animation: none !important;
   }
