@@ -1079,6 +1079,20 @@ function uniqueColumns(attributes: Record<string, Attribute>): string[] {
 }
 
 /**
+ * Unique columns whose values come from a closed set (an enum rule).
+ *
+ * A suffix is how an exhausted pool stays distinct, and on an enum it is a
+ * value the column does not allow: `bluesky-3` failed the CHECK constraint
+ * and with it the whole insert, so the model seeded nothing
+ * (stacksjs/stacks#3363). Such a column can hold at most one row per value.
+ */
+function closedSetColumns(attributes: Record<string, Attribute>): Set<string> {
+  return new Set(Object.entries(attributes)
+    .filter(([, attr]) => attr.unique === true && (attr.validation?.rule as { name?: string } | undefined)?.name === 'enum')
+    .map(([field]) => snakeCase(field)))
+}
+
+/**
  * `value` with `suffix` appended, separated by something the value can survive.
  *
  * A space is invalid in nearly everything a unique string column is used for:
@@ -1191,7 +1205,7 @@ function uniqueKey(record: Record<string, unknown>, columns: readonly string[]):
 /** How many times a row's parents are re-drawn before the row is given up. */
 const RELATION_ATTEMPTS = 25
 
-async function generateRecords(model: SeederModel, options: SeederConfig = {}): Promise<Record<string, unknown>[]> {
+export async function generateRecords(model: SeederModel, options: SeederConfig = {}): Promise<Record<string, unknown>[]> {
   const records: Record<string, unknown>[] = []
   const context = factoryContext(model)
   // NOT NULL columns a factory fills, checked once the relations and fixtures
@@ -1202,10 +1216,12 @@ async function generateRecords(model: SeederModel, options: SeederConfig = {}): 
   const pools = await relationPools(model, options)
   const relations = chooseRelations(pools, model.count)
   const unique = uniqueColumns(model.attributes)
+  const closed = closedSetColumns(model.attributes)
   const used = new Map<string, Set<unknown>>()
   const sets = uniqueColumnSets(model)
   const claimed = sets.map(() => new Set<string>())
   let dropped = 0
+  let exhausted = 0
 
   /** Whether `row` repeats a combination an earlier row already holds. */
   const collides = (row: Record<string, unknown>): boolean =>
@@ -1231,6 +1247,13 @@ async function generateRecords(model: SeederModel, options: SeederConfig = {}): 
       for (let attempt = 0; attempt < 3 && !distinct; attempt++) {
         record = await generateRecord(model.attributes, model.name, false, context)
         distinct = claimUniqueValues(record, unique, used, 0)
+      }
+      // A suffix would put an enum column outside its allowed values, so a
+      // row that still collides there is given up instead. A fixture is kept
+      // as written, below.
+      if (!distinct && !model.fixtures[i] && unique.some(column => closed.has(column) && record[column] != null && used.get(column)?.has(record[column]))) {
+        exhausted++
+        continue
       }
       if (!distinct)
         claimUniqueValues(record, unique, used, i + 1)
@@ -1279,6 +1302,11 @@ async function generateRecords(model: SeederModel, options: SeederConfig = {}): 
         claimed[s]!.add(key)
     })
     records.push(row)
+  }
+
+  if (exhausted > 0) {
+    const columns = unique.filter(column => closed.has(column)).join(', ')
+    log.info(`  ${model.name}: seeding ${records.length} of ${model.count} rows - ${columns} allows only its declared values, one row each.`)
   }
 
   if (dropped > 0) {
