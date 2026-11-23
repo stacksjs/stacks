@@ -1,5 +1,5 @@
 import type { AgentHandler, DesktopAgent } from './agent'
-import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { appendFileSync, chmodSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import process from 'node:process'
@@ -110,18 +110,56 @@ export function releaseInstanceLock(lockFile: string, pid: number = process.pid)
   catch {}
 }
 
+/** How large a detached log grows before it is rotated to `<file>.1`. */
+const DETACHED_LOG_MAX_BYTES = 5 * 1024 * 1024
+
+/**
+ * `text` with every `session=` query value replaced.
+ *
+ * The window's start URL carries the session token, and that token is the
+ * session cookie itself, so a log line holding it is a credential to the
+ * app's local agent for as long as the app runs (stacksjs/stacks#3371).
+ */
+export function redactSessionTokens(text: string): string {
+  return text.replace(/([?&]session=)[^&#\s"'`]+/g, '$1[redacted]')
+}
+
 /**
  * Launched from Finder there is no terminal, and what the app prints would go
  * nowhere: send it to a log file instead. From a terminal the developer keeps
  * stdout and stderr. Returns whether it redirected.
+ *
+ * The file is readable by its owner only, holds no session token, and is
+ * rotated to `<file>.1` once it passes `maxBytes` (5 MB), keeping one previous
+ * file. It used to be world-readable, unbounded, and to record the window's
+ * `?session=` URL as Craft echoed it (stacksjs/stacks#3371).
  */
-export function logToFileWhenDetached(logFile: string, isTTY: boolean = Boolean(process.stdout.isTTY)): boolean {
+export function logToFileWhenDetached(logFile: string, isTTY: boolean = Boolean(process.stdout.isTTY), options: { maxBytes?: number } = {}): boolean {
   if (isTTY) return false
-  mkdirSync(dirname(logFile), { recursive: true })
+  const maxBytes = options.maxBytes ?? DETACHED_LOG_MAX_BYTES
+  mkdirSync(dirname(logFile), { recursive: true, mode: 0o700 })
+
+  let size = 0
+  try {
+    size = statSync(logFile).size
+    chmodSync(logFile, 0o600)
+  }
+  catch {}
+  const rotate = (): void => {
+    try { renameSync(logFile, `${logFile}.1`) }
+    catch {}
+    size = 0
+  }
+  if (size > maxBytes) rotate()
+
   for (const level of ['log', 'info', 'warn', 'error', 'debug'] as const) {
     console[level] = (...args: unknown[]) => {
       try {
-        appendFileSync(logFile, `${new Date().toISOString()} ${level === 'log' ? '' : `[${level}] `}${format(...args)}\n`)
+        const line = redactSessionTokens(`${new Date().toISOString()} ${level === 'log' ? '' : `[${level}] `}${format(...args)}\n`)
+        const bytes = Buffer.byteLength(line)
+        if (size > 0 && size + bytes > maxBytes) rotate()
+        appendFileSync(logFile, line, { mode: 0o600 })
+        size += bytes
       }
       catch {}
     }
