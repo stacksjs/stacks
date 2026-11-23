@@ -12,6 +12,8 @@
 
 import type { PostMeta } from '@stacksjs/cms/blog'
 import { formatPostDate, initialsOf, loadPost, loadPosts, renderPostBody } from '@stacksjs/cms/blog'
+import type { SubscribeOutcome } from './signup-messages'
+import { isSubscribeOutcome } from './signup-messages'
 
 export interface BlogCard {
   slug: string
@@ -78,36 +80,16 @@ export function otherPosts(slug: string, count = 2): BlogCard[] {
   return blogCards().filter(post => post.slug !== slug).slice(0, count)
 }
 
-export interface SubscribeNotice {
-  tone: 'success' | 'error'
-  text: string
-}
-
-/** What /api/email/subscribe can answer, as `?subscribe=<outcome>`. */
-export type SubscribeOutcome = 'subscribed' | 'already' | 'invalid' | 'busy' | 'error'
 
 /**
- * What a reader is told for each outcome. One table for both paths: the
- * page reads it when a plain form post comes back with `?subscribe=`, and
- * the in-place script (resources/data/signup.ts) carries the same table, so
- * the two can never say different things.
+ * The `?subscribe=<outcome>` a page was loaded with, or ''. A signup form
+ * that posted without JavaScript comes back with it (see form-return.ts in
+ * the default actions), and the page hands it to the SignupForm component,
+ * which shows the matching message.
  */
-export const subscribeMessages: Record<SubscribeOutcome, SubscribeNotice> = {
-  subscribed: { tone: 'success', text: 'Thanks, you are on the list. A welcome email is on its way to your inbox.' },
-  already: { tone: 'success', text: 'You are already on the list. We will write the day Stacks opens up.' },
-  invalid: { tone: 'error', text: 'That email address did not look right. Try it again?' },
-  busy: { tone: 'error', text: 'That was a lot of tries in a minute. Give it a moment and try again.' },
-  error: { tone: 'error', text: 'Something went wrong on our side and you are not on the list yet. Please try again.' },
-}
-
-/**
- * What to tell a reader whose signup form posted without JavaScript and came
- * back with `?subscribe=<outcome>` (see form-return.ts in the default
- * actions). With JavaScript the form answers in place instead.
- */
-export function subscribeNotice(query: unknown): SubscribeNotice | null {
-  const outcome = query && typeof query === 'object' ? String((query as Record<string, unknown>).subscribe || '') : ''
-  return Object.hasOwn(subscribeMessages, outcome) ? subscribeMessages[outcome as SubscribeOutcome] : null
+export function subscribeOutcomeFrom(query: unknown): SubscribeOutcome | '' {
+  const outcome = query && typeof query === 'object' ? (query as Record<string, unknown>).subscribe : ''
+  return isSubscribeOutcome(outcome) ? outcome : ''
 }
 
 /** Share links for a post, built from its canonical URL. */

@@ -1,6 +1,10 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, test } from 'bun:test'
-import { subscribeMessages, subscribeNotice } from '../../resources/data/blog'
-import { signupScript, subscribeOutcome } from '../../resources/data/signup'
+import { subscribeOutcomeFrom } from '../../resources/data/blog'
+import { isSubscribeOutcome, subscribeMessages, subscribeOutcome } from '../../resources/data/signup-messages'
+
+const root = join(import.meta.dir, '../..')
 
 describe('subscribeOutcome', () => {
   test('reads each answer /api/email/subscribe gives a script', () => {
@@ -14,23 +18,33 @@ describe('subscribeOutcome', () => {
   })
 })
 
-describe('signupScript', () => {
-  const body = signupScript.slice('<script>'.length, -'</script>'.length)
-
-  test('is one script that parses on its own', () => {
-    expect(signupScript.startsWith('<script>')).toBe(true)
-    expect(body).not.toContain('</script')
-    expect(() => new Function(body)).not.toThrow()
+describe('the ?subscribe= a page comes back with', () => {
+  test('names an outcome or nothing', () => {
+    expect(subscribeOutcomeFrom({ subscribe: 'busy' })).toBe('busy')
+    expect(subscribeOutcomeFrom({ subscribe: 'toString' })).toBe('')
+    expect(subscribeOutcomeFrom({})).toBe('')
+    expect(subscribeOutcomeFrom(undefined)).toBe('')
+    expect(isSubscribeOutcome('constructor')).toBe(false)
   })
 
-  test('carries the same messages the server renders', () => {
+  test('every outcome has something to say', () => {
     for (const notice of Object.values(subscribeMessages))
-      expect(body).toContain(JSON.stringify(notice.text))
+      expect(notice.text.length).toBeGreaterThan(20)
+  })
+})
+
+describe('SignupForm', () => {
+  const source = readFileSync(join(root, 'resources/components/SignupForm.stx'), 'utf8')
+
+  test('is bound with stx, not by querying the document', () => {
+    expect(source).toContain('@submit.prevent="submit()"')
+    expect(source).toContain('x-model.trim="email"')
+    expect(source).not.toMatch(/document\.|window\.|querySelector/)
   })
 
-  test('the server reads the same table for a plain form post', () => {
-    expect(subscribeNotice({ subscribe: 'busy' })).toEqual(subscribeMessages.busy)
-    expect(subscribeNotice({ subscribe: 'toString' })).toBeNull()
-    expect(subscribeNotice({})).toBeNull()
+  test('still posts as a plain form without JavaScript', () => {
+    expect(source).toContain('action="/api/email/subscribe"')
+    expect(source).toContain('method="POST"')
+    expect(source).toContain('name="return"')
   })
 })

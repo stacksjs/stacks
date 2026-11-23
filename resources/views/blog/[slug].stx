@@ -10,7 +10,7 @@
  * a post is the reader most worth asking.
  */
 import { articleHead } from '@stacksjs/cms/article'
-import { blogArticle, otherPosts, shareLinks, subscribeNotice } from '../../data/blog'
+import { blogArticle, otherPosts, shareLinks, subscribeOutcomeFrom } from '../../data/blog'
 import { breadcrumbJsonLd } from '../../data/schema'
 
 
@@ -51,7 +51,7 @@ const mediaStyles = post && post.hasMedia ? articleHead() : ''
 const shares = post ? shareLinks(`${site}${post.url}`, post.title) : []
 const more = post ? otherPosts(post.slug) : []
 
-const notice = subscribeNotice(typeof query !== 'undefined' ? query : undefined)
+const subscribeOutcome = subscribeOutcomeFrom(typeof query !== 'undefined' ? query : undefined)
 const subscribeSource = post ? `blog:${post.slug}` : 'blog'
 const subscribeReturn = `${canonicalPath}#subscribe`
 </script>

@@ -156,7 +156,6 @@ describe('client scripts on the marketing pages', () => {
     'resources/views/index.stx',
     'resources/views/blog.stx',
     'resources/views/blog/[slug].stx',
-    'resources/partials/signup-notice.stx',
     'resources/views/features/index.stx',
     'resources/views/features/[slug].stx',
     'resources/views/use-cases/index.stx',

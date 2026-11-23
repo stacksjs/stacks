@@ -94,33 +94,6 @@
   line-height: 1.6;
 }
 
-.signup-form {
-  display: grid;
-  gap: 0.7rem;
-}
-
-.signup-row {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.signup-row input[type="email"] {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.signup-row .button {
-  flex: 0 0 auto;
-  min-height: 46px;
-}
-
-.signup-fine {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.8rem;
-  line-height: 1.5;
-}
-
 /* ── Shared post metadata, pills and links ───────────────────────── */
 
 .post-meta {
@@ -720,14 +693,6 @@
 }
 
 @media (max-width: 560px) {
-  .signup-row {
-    flex-direction: column;
-  }
-
-  .signup-row .button {
-    width: 100%;
-  }
-
   .prose {
     font-size: 1.02rem;
   }

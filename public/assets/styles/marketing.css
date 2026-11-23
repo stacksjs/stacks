@@ -827,6 +827,50 @@ input[type="email"]:focus {
   color: #dc2626;
 }
 
+/* The signup form (resources/components/SignupForm.stx), on the blog and
+  the home page. */
+.signup-form {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.signup-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.signup-row input[type="email"] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.signup-row .button {
+  flex: 0 0 auto;
+  min-height: 46px;
+}
+
+.signup-fine {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.signup-intro {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 560px) {
+  .signup-row {
+    flex-direction: column;
+  }
+
+  .signup-row .button {
+    width: 100%;
+  }
+}
+
 /* The signup button while the in-place submit is out (resources/data/signup.ts):
   a spinner beside the label, the label kept so the button keeps its width. */
 .signup-spinner {
@@ -854,8 +898,15 @@ input[type="email"]:focus {
 
 /* A notice appears without pushing the page around: it fades and slides a
   few pixels in the space the fine print held. */
-.signup-notice:not([hidden]) {
+.signup-notice:not(.signup-notice--empty) {
   animation: signup-in 0.22s ease-out;
+}
+
+/* Nothing to say yet, or nothing left to say: the component keeps both
+  elements in the page and switches them with a class. */
+.signup-notice--empty,
+.signup-fine--gone {
+  display: none;
 }
 
 @keyframes signup-spin {
@@ -868,11 +919,7 @@ input[type="email"]:focus {
 
 @media (prefers-reduced-motion: reduce) {
   .signup-spinner { animation-duration: 1.6s; }
-  .signup-notice:not([hidden]) { animation: none; }
-}
-
-[hidden] {
-  display: none !important;
+  .signup-notice:not(.signup-notice--empty) { animation: none; }
 }
 
 .sr-only {

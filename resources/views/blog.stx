@@ -12,7 +12,7 @@
  * Stacks has not launched. The page is honest about that and asks for an
  * email in the one place a reader decides whether to come back.
  */
-import { blogCards, subscribeNotice } from '../data/blog'
+import { blogCards, subscribeOutcomeFrom } from '../data/blog'
 import { breadcrumbJsonLd } from '../data/schema'
 
 
@@ -26,7 +26,7 @@ const posts = blogCards()
 const lead = posts[0]
 const rest = posts.slice(1)
 
-const notice = subscribeNotice(typeof query !== 'undefined' ? query : undefined)
+const subscribeOutcome = subscribeOutcomeFrom(typeof query !== 'undefined' ? query : undefined)
 const subscribeSource = 'blog-index'
 const subscribeReturn = '/blog#subscribe'
 </script>
