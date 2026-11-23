@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { formReturnLocation, wantsFormRedirect } from '../../storage/framework/defaults/app/Actions/form-return'
+import { formReturnLocation, normalizeEmail, wantsFormRedirect } from '../../storage/framework/defaults/app/Actions/form-return'
 
 describe('wantsFormRedirect', () => {
   const headers = (accept: string, type: string) => new Headers({ 'accept': accept, 'content-type': type })
@@ -45,5 +45,19 @@ describe('formReturnLocation', () => {
 
     // A referer only ever contributes its path, never its host.
     expect(back(undefined, 'https://evil.example/landing')).toBe('/landing?subscribe=subscribed')
+  })
+})
+
+describe('normalizeEmail', () => {
+  test('one address however it is typed', () => {
+    expect(normalizeEmail('  Ada@Example.COM ')).toBe('ada@example.com')
+    expect(normalizeEmail('first.last+tag@sub.example.co.uk')).toBe('first.last+tag@sub.example.co.uk')
+  })
+
+  test('refuses what is not an address', () => {
+    for (const value of ['', 'bogus', 'a@b', '@example.com', 'a@@example.com', 'a b@example.com', '<b>@example.com', 'a@example.com<script>', 'a@example.c', undefined, 42, null])
+      expect(normalizeEmail(value)).toBeNull()
+
+    expect(normalizeEmail(`${'a'.repeat(250)}@example.com`)).toBeNull()
   })
 })
