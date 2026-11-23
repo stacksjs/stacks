@@ -784,7 +784,13 @@ input[type="email"]:focus {
 }
 
 /* The answer a signup form shows after it posts and comes back with
-  ?subscribe=<outcome>: the home page's closing form and the blog's. */
+  ?subscribe=<outcome>: the home page's closing form and the blog's. The
+  form is the #subscribe the browser returns to; the margin keeps its top
+  clear of the sticky nav. */
+#subscribe {
+  scroll-margin-top: 96px;
+}
+
 .signup-notice {
   display: flex;
   gap: 0.5rem;

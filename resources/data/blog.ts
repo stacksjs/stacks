@@ -95,11 +95,15 @@ export function subscribeNotice(query: unknown): SubscribeNotice | null {
 
   switch (outcome) {
     case 'subscribed':
-      return { tone: 'success', text: 'You are on the list. Check your inbox for a confirmation link.' }
+      return { tone: 'success', text: 'Thanks, you are on the list. A welcome email is on its way to your inbox.' }
     case 'already':
-      return { tone: 'success', text: 'You are already on the list. We will write when there is news.' }
+      return { tone: 'success', text: 'You are already on the list. We will write the day Stacks opens up.' }
     case 'invalid':
       return { tone: 'error', text: 'That email address did not look right. Try it again?' }
+    case 'busy':
+      return { tone: 'error', text: 'That was a lot of tries in a minute. Give it a moment and try again.' }
+    case 'error':
+      return { tone: 'error', text: 'Something went wrong on our side and you are not on the list yet. Please try again.' }
     default:
       return null
   }
