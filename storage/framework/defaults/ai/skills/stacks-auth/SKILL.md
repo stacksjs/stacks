@@ -275,6 +275,7 @@ the operation must do both separately.
 - `Auth.revokeOtherTokens(userId?: number, { exceptTokenId? }): Promise<{ keptTokenId: number | null }>` - keeps `exceptTokenId`, else the request's own token; when neither resolves it revokes every token (fail closed)
 - `Auth.pruneExpiredTokens(): Promise<number>`
 - `Auth.pruneRevokedTokens(): Promise<number>`
+- The scheduler runs `auth/prune` daily by default (expired tokens, revoked ones older than 7 days); `pruneTokens: false` in config/auth.ts turns it off. `tokenRotation` is read by nothing, and the scheduler warns when it is set.
 - `Auth.rotateToken(oldToken: string): Promise<AuthToken | null>`
 - `Auth.findToken(tokenId: number): Promise<PersonalAccessToken | null>`
 

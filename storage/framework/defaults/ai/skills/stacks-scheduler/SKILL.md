@@ -252,6 +252,14 @@ import { runScheduler } from '@stacksjs/scheduler'
 const result = await runScheduler()
 ```
 
+Last, `runScheduler()` adds the framework's own housekeeping (`maintenance.ts`):
+`auth/prune` (what `buddy auth:prune` does: expired tokens, and revoked ones
+older than 7 days) daily at 03:15, unless the app already schedules
+`auth/prune` itself or `config/auth.ts` sets `pruneTokens: false`. It also warns
+when `config/auth.ts` still sets the dead `tokenRotation`. `buddy dev` starts
+the scheduler only for an app with an app/Scheduler.ts or a job, so an app
+with neither prunes only where `schedule:run` runs.
+
 ## Queue-Level Scheduler (queue/src/scheduler.ts)
 
 A separate, queue-integrated scheduler that discovers jobs and dispatches them to the queue system:
