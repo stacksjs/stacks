@@ -88,7 +88,7 @@ describe('frameworkRouteAdmission', () => {
     const userRoot = mkdtempSync(join(scratch, 'user-models-'))
     writeFileSync(join(userRoot, 'User.ts'), `export default { name: 'User', table: 'users' }\n`)
     const excluded = excludedFrameworkModels({ userRoot, includeFrameworkDefaults: false })
-    expect(excluded.map(m => m.name)).toContain('Subscriber')
+    expect(excluded.map(m => m.name)).toContain('SubscriberEmail')
 
     const admit = (await frameworkRouteAdmission({
       excluded,
@@ -96,7 +96,9 @@ describe('frameworkRouteAdmission', () => {
       appActionsRoot: join(userRoot, 'Actions'),
       frameworkActionsRoot: resolve(import.meta.dir, '../../../defaults/app/Actions'),
     }))!
-    expect(admit('Actions/SubscriberEmailAction')).toContain('Subscriber (table "subscribers" does not exist)')
+    // The signup goes through @stacksjs/newsletter and names SubscriberEmail,
+    // so that is the missing table the refusal reports.
+    expect(admit('Actions/SubscriberEmailAction')).toContain('SubscriberEmail (table "subscriber_emails" does not exist)')
     expect(admit('Actions/HealthAction')).toBeUndefined()
   })
 })
