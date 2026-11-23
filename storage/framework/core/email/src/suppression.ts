@@ -29,7 +29,7 @@
  */
 
 import { db } from '@stacksjs/database/runtime'
-import { isDuplicateSuppressionError, isMissingTableError } from './suppression-errors'
+import { isDuplicateSuppressionError, isMissingTableError, isSuppressionStoreUnavailable } from './suppression-errors'
 
 export { isDuplicateSuppressionError, isMissingTableError }
 
@@ -53,25 +53,6 @@ function warnOnceAboutMissingTable(): void {
     + 'Publish the model (`buddy publish model EmailSuppression`) and run `buddy migrate`, or add its table in a migration of your own '
     + '(email, type, reason, created_at, updated_at, unique on email and type).',
   )
-}
-
-/**
- * The suppression list is a best-effort compliance safeguard, not a hard
- * dependency of sending. When its backing store is simply unavailable — the
- * DB connection dropped, the file can't be opened, no database is configured —
- * we must NOT let that take down every outbound email. Treat those the same
- * way as a missing table: warn once, then proceed (fail-open).
- */
-function isSuppressionStoreUnavailable(err: unknown): boolean {
-  if (isMissingTableError(err))
-    return true
-  const msg = ((err as { message?: string } | null)?.message ?? '').toLowerCase()
-  return msg.includes('connection closed')
-    || msg.includes('unable to open database')
-    || msg.includes('econnrefused')
-    || msg.includes('connection terminated')
-    || msg.includes('no database')
-    || msg.includes('database connection')
 }
 
 /**

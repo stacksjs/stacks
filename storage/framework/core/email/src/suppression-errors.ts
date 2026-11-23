@@ -46,3 +46,38 @@ export function isDuplicateSuppressionError(err: unknown): boolean {
     || msg.includes('Duplicate entry') // mysql
     || msg.includes('duplicate key value violates unique constraint') // postgres wording
 }
+
+/**
+ * The suppression list is a best-effort compliance safeguard, not a hard
+ * dependency of sending. When its backing store is simply unavailable — the
+ * DB connection dropped, the file can't be opened, no database is configured —
+ * we must NOT let that take down every outbound email. Treat those the same
+ * way as a missing table: warn once, then proceed (fail-open).
+ */
+export function isSuppressionStoreUnavailable(err: unknown): boolean {
+  if (isMissingTableError(err) || isMissingDatabaseError(err))
+    return true
+  const msg = ((err as { message?: string } | null)?.message ?? '').toLowerCase()
+  return msg.includes('connection closed')
+    || msg.includes('unable to open database')
+    || msg.includes('econnrefused')
+    || msg.includes('connection terminated')
+    || msg.includes('no database')
+    || msg.includes('database connection')
+}
+
+/**
+ * Does this error mean the configured database itself does not exist?
+ *
+ * The Postgres and MySQL form of SQLite's "unable to open database": the
+ * server answers, but the database the app names was never created. Scoped to
+ * the database, so `column "x" does not exist` is not mistaken for it.
+ */
+export function isMissingDatabaseError(err: unknown): boolean {
+  const e = err as { message?: string, code?: unknown, errno?: unknown } | null
+  const msg = e?.message ?? ''
+  return e?.code === '3D000' || e?.errno === '3D000' // postgres SQLSTATE: invalid_catalog_name
+    || e?.errno === 1049 // mysql ER_BAD_DB_ERROR
+    || /database "[^"]*" does not exist/i.test(msg) // postgres wording
+    || /unknown database/i.test(msg) // mysql wording
+}

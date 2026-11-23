@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { isDuplicateSuppressionError, isMissingTableError } from '../src/suppression-errors'
+import { isDuplicateSuppressionError, isMissingTableError, isSuppressionStoreUnavailable } from '../src/suppression-errors'
 
 // stacksjs/stacks#1976 — the suppression layer is fail-open: a missing
 // `email_suppressions` table must warn-once and proceed, never hard-fail a
@@ -60,5 +60,30 @@ describe('isDuplicateSuppressionError', () => {
     expect(isDuplicateSuppressionError({ message: 'relation "email_suppressions" does not exist', code: '42P01' })).toBe(false)
     expect(isDuplicateSuppressionError({ message: 'connection closed' })).toBe(false)
     expect(isDuplicateSuppressionError(null)).toBe(false)
+  })
+})
+
+describe('isSuppressionStoreUnavailable', () => {
+  // The suppression list fails open: a store that cannot be reached must not
+  // stop every outbound email. A configured database that does not exist is
+  // the Postgres and MySQL form of SQLite's "unable to open database", and
+  // used to throw out of mail.send() instead.
+  test('a configured database that does not exist, on every dialect', () => {
+    expect(isSuppressionStoreUnavailable({ message: 'database "stacks" does not exist', errno: '3D000' })).toBe(true)
+    expect(isSuppressionStoreUnavailable({ message: 'database "stacks" does not exist' })).toBe(true)
+    expect(isSuppressionStoreUnavailable({ message: 'Unknown database \'stacks\'', errno: 1049 })).toBe(true)
+    expect(isSuppressionStoreUnavailable({ message: 'unable to open database file' })).toBe(true)
+  })
+
+  test('the store being unreachable or unmigrated', () => {
+    expect(isSuppressionStoreUnavailable({ message: 'connect ECONNREFUSED 127.0.0.1:5432' })).toBe(true)
+    expect(isSuppressionStoreUnavailable({ message: 'Connection closed' })).toBe(true)
+    expect(isSuppressionStoreUnavailable({ message: 'relation "email_suppressions" does not exist', code: '42P01' })).toBe(true)
+  })
+
+  test('a genuine schema or query bug still surfaces', () => {
+    expect(isSuppressionStoreUnavailable({ message: 'column "kind" does not exist' })).toBe(false)
+    expect(isSuppressionStoreUnavailable({ message: 'syntax error at or near "FROM"' })).toBe(false)
+    expect(isSuppressionStoreUnavailable(null)).toBe(false)
   })
 })
