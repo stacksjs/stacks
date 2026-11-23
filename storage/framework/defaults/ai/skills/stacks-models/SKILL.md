@@ -104,6 +104,13 @@ of forcing a cast. See `orm/tests/inference-attributes.test-d.ts`.
 | `validation` | `{ rule, message? }` - declared rules are enforced on direct ORM writes and generated CRUD |
 | `encrypted` | Encrypt persisted values and decrypt model reads; raw queries still see stored ciphertext |
 
+`encrypted` applies to the model's own writes and reads only. A write through the
+query builder (`db.insertInto(table).values(row)`) is not encrypted on its own: wrap
+the row with `encryptRow(table, row)`, and decrypt query-builder reads with
+`decryptRow(table, row)` / `decryptRows(table, rows)`, all from `@stacksjs/orm`.
+They take column or attribute names, are idempotent, and throw for a table no loaded
+model defines; `encryptedColumns(table)` lists a table's encrypted columns.
+
 ### Traits
 
 | Trait | What it adds |
