@@ -27,7 +27,9 @@
  *   placeholder  the field's placeholder
  *   intro        a visible label above the field (else a screen-reader label)
  *   fine         fine print under the field, replaced by the answer
- *   successText, alreadyText   what to say for those two outcomes
+ *   successText, pendingText, alreadyText   what to say for those outcomes
+ *                (pending: the list has double opt-in on and a confirmation
+ *                email went out)
  *   tone         'primary' for a filled button, 'outline' for an outlined one
  *   buttonClass  extra classes for the button, such as an app's own button class
  *
@@ -36,7 +38,7 @@
  * --subscribe-border, --subscribe-field, --subscribe-success, --subscribe-error),
  * so an app's own stylesheet wins without a fight.
  */
-type Outcome = 'subscribed' | 'already' | 'invalid' | 'busy' | 'error'
+type Outcome = 'subscribed' | 'pending' | 'already' | 'invalid' | 'busy' | 'error'
 
 const list = useReactiveProp<string>('list', '')
 const source = useReactiveProp<string>('source', 'website')
@@ -47,6 +49,7 @@ const placeholder = useReactiveProp<string>('placeholder', 'you@example.com')
 const intro = useReactiveProp<string>('intro', '')
 const fine = useReactiveProp<string>('fine', '')
 const successText = useReactiveProp<string>('successText', 'Thanks, you are subscribed. A welcome email is on its way to your inbox.')
+const pendingText = useReactiveProp<string>('pendingText', 'Almost there. Check your inbox and open the link to confirm your subscription.')
 const alreadyText = useReactiveProp<string>('alreadyText', 'You are already subscribed. Thanks for sticking around.')
 const tone = useReactiveProp<string>('tone', 'primary')
 const buttonClass = useReactiveProp<string>('buttonClass', '')
@@ -56,15 +59,16 @@ const messages = {
   busy: 'That was a lot of tries in a minute. Give it a moment and try again.',
   error: 'Something went wrong on our side and you are not subscribed yet. Please try again.',
 }
-const outcomes = ['subscribed', 'already', 'invalid', 'busy', 'error']
+const outcomes = ['subscribed', 'pending', 'already', 'invalid', 'busy', 'error']
 
 const email = state('')
 const sending = state(false)
 const outcome = state<Outcome | ''>(outcomes.includes(loadedWith()) ? loadedWith() as Outcome : '')
-const tonePositive = derived(() => outcome() === 'subscribed' || outcome() === 'already')
+const tonePositive = derived(() => outcome() === 'subscribed' || outcome() === 'pending' || outcome() === 'already')
 const noticeText = derived(() => {
   switch (outcome()) {
     case 'subscribed': return successText()
+    case 'pending': return pendingText()
     case 'already': return alreadyText()
     case '': return ''
     default: return messages[outcome() as 'invalid' | 'busy' | 'error']
@@ -79,10 +83,12 @@ const emailInput = useRef('emailInput')
 const minimumSpin = 450
 
 /** Read the endpoint's JSON answer as an outcome. */
-function outcomeOf(status: number, body: { success?: unknown, message?: unknown } | null): Outcome {
+function outcomeOf(status: number, body: { success?: unknown, pending?: unknown, message?: unknown } | null): Outcome {
   if (status === 429)
     return 'busy'
   if (status >= 200 && status < 300 && body) {
+    if (body.success === true && body.pending === true)
+      return 'pending'
     if (body.success === true)
       return body.message === 'Already subscribed' ? 'already' : 'subscribed'
     if (body.success === false)
@@ -98,7 +104,7 @@ async function send(): Promise<Outcome> {
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ email: email(), source: source(), list: list(), return: returnTo() }).toString(),
     })
-    let body: { success?: unknown, message?: unknown } | null = null
+    let body: { success?: unknown, pending?: unknown, message?: unknown } | null = null
     try {
       body = await response.json()
     }
@@ -119,7 +125,7 @@ async function submit(): Promise<void> {
   outcome.set(answer)
   sending.set(false)
 
-  if (answer === 'subscribed' || answer === 'already')
+  if (answer === 'subscribed' || answer === 'pending' || answer === 'already')
     email.set('')
   else
     void nextTick(() => emailInput.current?.focus())

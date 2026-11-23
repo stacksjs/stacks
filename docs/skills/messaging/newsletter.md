@@ -16,6 +16,7 @@ source and retained evidence; driver limits are explicit.
 
 - Lifecycle
 - Public signup: the `<SubscribeForm />` component and `POST /api/email/subscribe`
+- Double opt-in: pending memberships, the confirmation email and `GET /api/email/confirm`
 
 ## Using it
 

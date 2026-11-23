@@ -80,7 +80,7 @@ export function otherPosts(slug: string, count = 2): BlogCard[] {
 
 
 /** What /api/email/subscribe can send a plain form post back with. */
-const subscribeOutcomes = ['subscribed', 'already', 'invalid', 'busy', 'error'] as const
+const subscribeOutcomes = ['subscribed', 'pending', 'already', 'invalid', 'busy', 'error'] as const
 
 /**
  * The `?subscribe=<outcome>` a page was loaded with, or ''. A signup form

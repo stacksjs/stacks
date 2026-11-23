@@ -33,7 +33,7 @@ describe('SubscribeForm', () => {
   test('has something to say for every outcome the endpoint gives', () => {
     const action = read('storage/framework/defaults/app/Actions/SubscriberEmailAction.ts')
     const outcomes = action.match(/type Outcome = ([^\n]+)/)?.[1]?.match(/'([a-z]+)'/g)?.map(s => s.slice(1, -1)) ?? []
-    expect(outcomes.sort()).toEqual(['already', 'busy', 'error', 'invalid', 'subscribed'])
+    expect(outcomes.sort()).toEqual(['already', 'busy', 'error', 'invalid', 'pending', 'subscribed'])
     for (const outcome of outcomes)
       expect(component).toContain(`'${outcome}'`)
   })

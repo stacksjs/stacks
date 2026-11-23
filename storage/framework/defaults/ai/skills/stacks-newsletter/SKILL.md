@@ -54,8 +54,28 @@ unsubscribe link and RFC 8058 headers leave that list only.
 `reactivated` (signed back up after a per-list or global opt-out),
 `subscriberId` and `token`. The legacy global unsubscribe link (a subscriber
 uuid) also unsubscribes every list membership, since campaigns send to
-memberships. `EmailList.doubleOptIn` is stored but not yet enforced: signups
-are single opt-in.
+memberships.
+
+## Double opt-in
+
+Turn on `doubleOptIn` for a list (`lists.create({ ..., doubleOptIn: true })`
+or the dashboard) and its public signups confirm their address first. The
+endpoint calls `subscribe()` with `confirmation: 'list'`, so a new or returning
+address on such a list is stored `pending` (the membership, and the person if
+they are new), the `SubscriptionConfirmRequest` mail sends a
+`resources/emails/subscription-confirm.stx` email, and the form answers
+`pending` (`pendingText`). Its button opens `GET /api/email/confirm?token=`
+(`ConfirmSubscriptionAction`), which calls `confirm(token)`, stamps
+`subscribed_at`, and sends the welcome email. Campaigns skip pending
+memberships. Signing up again while pending re-sends the email; confirming
+twice is harmless; a token that has since unsubscribed is refused.
+
+`subscribe()` without `confirmation: 'list'` (imports, admin adds) subscribes
+at once and promotes a pending membership. The auto-created default list is
+single opt-in. A default list created by an older release has
+`double_opt_in` on; set it off if you do not want confirmation there. The
+confirm and unsubscribe routes stay reachable in maintenance and coming-soon
+mode, like the signup.
 
 Campaign delivery snapshots, dispatch keys and state conflict errors protect
 retries and concurrent queue requests. Scheduled work uses the package's actual
