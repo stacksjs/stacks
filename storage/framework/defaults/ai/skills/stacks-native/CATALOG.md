@@ -60,7 +60,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/i18n` | [`stacks-i18n`](../stacks-i18n/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/index.ts) | 7 |
 | `@stacksjs/image` | [`stacks-image`](../stacks-image/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/index.ts) | 5 |
 | `@stacksjs/lint` | [`stacks-lint`](../stacks-lint/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/lint/src/index.ts) | 3 |
-| `@stacksjs/logging` | [`stacks-logging`](../stacks-logging/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/logging/src/index.ts) | 14 |
+| `@stacksjs/logging` | [`stacks-logging`](../stacks-logging/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/logging/src/index.ts) | 15 |
 | `@stacksjs/mobile` | [`stacks-mobile`](../stacks-mobile/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/mobile/src/index.ts) | 23 |
 | `@stacksjs/model-meta` | [`stacks-models`](../stacks-models/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/model-meta/src/index.ts) | 1 |
 | `@stacksjs/newsletter` | [`stacks-newsletter`](../stacks-newsletter/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/index.ts) | 10 |
@@ -595,9 +595,11 @@ Evidence directory: [3 retained tests](https://github.com/stacksjs/stacks/blob/m
 
 Guidance: [`stacks-logging`](../stacks-logging/SKILL.md). Source: [storage/framework/core/logging/src/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/logging/src/index.ts).
 
-Declared runtime exports: `currentLevel`, `dd`, `defaultLogDirectory`, `dump`, `echo`, `formatMessage`, `getLogContext`, `log`, `logger`, `normalizeContext`, `normalizeError`, `parseLogFormat`, `parseLogLevel`, `registerTransport`, `renderNormalizedError`, `report`, `resolveLogSettings`, `struct`, `suppressedAtCurrentLevel`, `transports`, `withLogContext`.
+Declared runtime exports: `DEFAULT_LOG_RETENTION_DAYS`, `currentLevel`, `dd`, `defaultLogDirectory`, `dump`, `echo`, `formatMessage`, `getLogContext`, `log`, `logger`, `normalizeContext`, `normalizeError`, `parseLogFormat`, `parseLogLevel`, `pruneDailyLogs`, `registerTransport`, `renderNormalizedError`, `report`, `resolveLogSettings`, `struct`, `suppressedAtCurrentLevel`, `transports`, `withLogContext`.
 
-Evidence directory: [14 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/logging/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Local source modules: [src/retention.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/logging/src/retention.ts).
+
+Evidence directory: [15 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/logging/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/mobile
 
