@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.662...v0.75.663)
+
+## 🐛 Bug Fixes
+
+- **components**: keep the signup transport type private ([be966ea](https://github.com/stacksjs/stacks/commit/be966ea)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.661...v0.75.662)
 
 ## ✨ Features
