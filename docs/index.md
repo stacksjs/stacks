@@ -1,76 +1,61 @@
 ---
 layout: home
 title: Stacks Framework
-description: Build full-stack TypeScript applications, APIs, libraries, and cloud infrastructure with Stacks.
-titleTemplate: Modern TypeScript Fullstack Development.
+description: Stacks is a full-stack TypeScript framework. One UI ships to web, desktop, and mobile, with CMS, commerce, AI, auth, queues, and cloud deployment built in.
+titleTemplate: The full-stack TypeScript framework
 hero:
-  name: Stacks.js
-  text: Build. Ship. Faster.
-  tagline: "Rapid application, cloud & library development framework. For the best full-stack teams."
-  image: /images/logos/logo-white.png
+  name: Stacks
+  text: The whole stack, one framework.
+  tagline: "Models, auth, CMS, commerce, AI, queues, and cloud deploys, in one typed codebase that ships to web, desktop, and mobile."
+  image: /images/logos/logo.svg
   actions:
     - theme: brand
-      text: Coming Soon
+      text: Get started
       link: /docs/guide/get-started
     - theme: alt
       text: View on GitHub
       link: https://github.com/stacksjs/stacks
 features:
-  - title: Best-in-Class DX
-    icon: 🦋
-    details: One framework that does it all. Building TypeScript apps & libraries has never been simpler.
-  - title: AI-Native
-    icon: 🧠
-    details: "115 agent skills ship with the framework, documenting every subsystem for Claude Code, Codex, Cursor, Copilot & Gemini."
-  - title: App Development
-    icon: 🖥️
-    details: Performant web and Craft desktop applications with one TypeScript codebase.
-  - title: Library Development
-    icon: 📚
-    details: "Automagically builds & distributes your component & function libraries, via npm."
-  - title: Cloud Development
-    icon: ☁️
-    details: Automatic zero-downtime deployments of production-ready serverless clouds. Self-hosted.
-  - title: Modern Administration
-    icon: 📊
-    details: "A sleek admin dashboard, out-of-the-box. For devs & your clients. Our product is your product."
-  - title: Scalable APIs
-    icon: 📡
-    details: "Building serverless APIs has never been simpler. Focus on your business logic, not your infrastructure."
-  - title: Secure Authentication
-    icon: 🔐
-    details: "Robust API & web authentication, ensuring the security of your user data. User-friendly, zero-config & ready-to-go."
-  - title: Built-in CI / CD
-    icon: 🤖
-    details: "Focus on coding, not publishing. Automates linting, version tagging, changelog generation, test execution, and more."
-  - title: Global CDN
-    icon: 🌐
-    details: "\"Securely deliver content with low latency and high transfer speeds,\" AWS. Your assets, zero-config."
-  - title: Queues & Jobs
-    icon: 📦
-    details: Leverage the power of queues. Defer time-consuming tasks using managed serverless queues.
-  - title: Notifications
+  - title: "Application core"
+    icon: 🧱
+    details: "Routing, STX views, models, actions, middleware, and validation in one typed application."
+  - title: "Queues and mail"
     icon: 📨
-    details: "Send notifications to your users via email, SMS, Slack, Discord, Push and more."
-  - title: Billing & Payments
-    icon: 💳
-    details: "Accept payments from your users using Stripe. One-off payments, subscriptions, and more."
-  - title: Search Engine
-    icon: 🔍
-    details: "Powerful & fast. \"Build an intuitive search experience in a snap,\" Meilisearch."
-  - title: Progressive UI Engine
-    icon: ⚙️
-    details: "An approachable, performant and versatile framework for building web UIs."
-  - title: Atomic CSS Engine
-    icon: 🎨
-    details: "\"Blazingly fast utility-first CSS framework,\" Headwind. Easily create & manage your styles."
-  - title: Streamlined Testing
+    details: "Jobs, batches, schedules, events, notifications, and worker-ready background workflows."
+  - title: "Native apps"
+    icon: 📱
+    details: "The same STX UI ships as a web app, an iOS or Android app, and a desktop app with a system tray, from one codebase."
+  - title: "CMS"
+    icon: 📝
+    details: "Posts, pages, taxonomy, media, a real dashboard, and generated content APIs."
+  - title: "Auth"
+    icon: 🔐
+    details: "Sessions, tokens, passkeys, social login, magic links, policies, guards, and rate limiting."
+  - title: "Commerce"
+    icon: 🛒
+    details: "Products, orders, customers, coupons, payments, shipping, tax, and gift cards, as models you already know how to query."
+  - title: "Dashboard"
+    icon: 📊
+    details: "A generated admin panel for every model, plus analytics, operations, kanban, and marketing, in 300-plus components."
+  - title: "Storage"
+    icon: 🗂️
+    details: "Local, S3, signed URLs, uploads, visibility, and file utilities."
+  - title: "AI"
+    icon: 🧠
+    details: "Anthropic, OpenAI, and Ollama behind one chat driver, Bedrock alongside for AWS-hosted models, plus RAG, embeddings, and MCP."
+  - title: "Testing"
     icon: 🧪
-    details: A fast built-in testing framework. Enjoyable support for both unit & feature tests.
-  - title: Commerce
-    icon: 💴
-    details: "Products, orders, customers, coupons, shipping & tax. A full storefront backend, out-of-the-box."
-  - title: Realtime
-    icon: 🏃🏻
-    details: "Build real-time features with WebSockets. Add live updates, chat, notifications & collaborative features with ease."
+    details: "Unit, feature, HTTP, browser, and database tests with factories and helpers."
+  - title: "Realtime and search"
+    icon: 📡
+    details: "Channels, broadcasts, websocket drivers, and app-level search workflows."
+  - title: "Cloud deploys"
+    icon: ☁️
+    details: "Hetzner, AWS, or any box over SSH, with DNS, TLS, and mail, described in TypeScript config and shipped by Buddy."
+  - title: "Environment setup"
+    icon: 🧰
+    details: "Pantry installs Bun, the database, the mail server, and every tool a project declares, per project, then starts and migrates the database."
+  - title: "Automated updates"
+    icon: 🔁
+    details: "buddy-bot opens dependency pull requests on a schedule, and buddy upgrade moves the app to the next release, previewed first and never over your uncommitted edits."
 ---

@@ -8,7 +8,7 @@
  * each is a place the site can go on saying something after it has stopped
  * being true. These tests are what notices.
  */
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, test } from 'bun:test'
 import app from '../../config/app'
@@ -147,4 +147,41 @@ describe('breadcrumb structured data', () => {
       expect(source).toContain(`<a href="/${view}">${hub}</a>`)
     })
   }
+})
+
+describe('the docs home page', () => {
+  // stacksjs.com/docs is where "Read the docs" lands, and its hero is a
+  // second description of the product. It said "Coming Soon" for months
+  // after launch, over an image that answered 404.
+  const docsHome = readFileSync(join(root, 'docs/index.md'), 'utf8')
+
+  test('describes each feature in the words its own page uses', () => {
+    for (const feature of features) {
+      expect(docsHome).toContain(`title: ${JSON.stringify(feature.title)}`)
+      expect(docsHome).toContain(`details: ${JSON.stringify(feature.blurb)}`)
+    }
+  })
+
+  test('shows an image the docs build actually ships', () => {
+    const image = docsHome.match(/^\s+image: (\S+)$/m)?.[1]
+    expect(image).toBeDefined()
+    // The docs are mounted at /docs, so a root-relative image is served out
+    // of docs/public, not the site's public directory.
+    expect(existsSync(join(root, 'docs/public', image!))).toBe(true)
+  })
+
+  test('does not tell a visitor the framework is still coming', () => {
+    expect(docsHome.toLowerCase()).not.toContain('coming soon')
+  })
+})
+
+describe('/favicon.ico', () => {
+  test('exists, for the pages and clients that ask for it by convention', () => {
+    // The blog and the docs declare no icon of their own, so a browser asks
+    // for this path, and a 404 there is an error in every visitor's console.
+    const icon = readFileSync(join(root, 'public/favicon.ico'))
+    // ICONDIR: reserved 0, type 1 (icon), then the image count.
+    expect([icon.readUInt16LE(0), icon.readUInt16LE(2)]).toEqual([0, 1])
+    expect(icon.readUInt16LE(4)).toBeGreaterThan(0)
+  })
 })
