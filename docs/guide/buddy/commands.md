@@ -4350,7 +4350,7 @@ Migrates your database
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `-a`, `--auth` | Also migrate auth tables (oauth_clients, oauth_access_tokens, oauth_refresh_tokens, password_resets) | boolean, optional | `true` |
 | `--no-auth` | Skip auth/oauth table migrations | boolean, optional, negated | `true` |
-| `-f`, `--force` | Apply destructive changes (drop column/table, lossy type change) without confirmation | boolean, optional | `false` |
+| `-f`, `--force` | Apply destructive changes (drop column/table, lossy type change) without confirmation. Without it they are held back and everything else is applied | boolean, optional | `false` |
 | `--create-database` | Create the database if it does not exist, without asking | boolean, optional | `false` |
 | `--from-db` | Diff against the live database schema instead of the snapshot (self-heal drift) | boolean, optional | `false` |
 | `--no-rename` | Treat renamed columns as drop + add instead of a data-preserving rename | boolean, optional, negated | `true` |
