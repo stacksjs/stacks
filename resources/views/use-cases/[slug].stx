@@ -14,6 +14,7 @@
  */
 import { featureBySlug } from '../../data/features'
 import { highlight } from '../../data/highlight'
+import { breadcrumbJsonLd } from '../../data/schema'
 import { useCaseBySlug } from '../../data/use-cases'
 
 const requestedSlug = String(params?.slug || '')
@@ -28,6 +29,11 @@ const pageTitle = useCase
 
 const pageDescription = useCase ? useCase.blurb : 'That use case page does not exist.'
 const canonicalPath = useCase ? `/use-cases/${useCase.slug}` : '/use-cases'
+
+// The breadcrumb the page prints, for the readers that are not people.
+const jsonLd = useCase
+  ? breadcrumbJsonLd([{ name: 'Use cases', path: '/use-cases' }, { name: useCase.title, path: canonicalPath }])
+  : undefined
 
 // The data file holds plain source; it becomes tok-* spans here rather than
 // being written as markup by hand.

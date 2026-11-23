@@ -26,6 +26,7 @@
  */
 import { featureBySlug } from '../../data/features'
 import { highlight } from '../../data/highlight'
+import { breadcrumbJsonLd } from '../../data/schema'
 
 
 const requestedSlug = String(params?.slug || '')
@@ -40,6 +41,11 @@ const pageTitle = feature
 
 const pageDescription = feature ? feature.blurb : 'That feature page does not exist.'
 const canonicalPath = feature ? `/features/${feature.slug}` : '/features'
+
+// The breadcrumb the page prints, for the readers that are not people.
+const jsonLd = feature
+  ? breadcrumbJsonLd([{ name: 'Features', path: '/features' }, { name: feature.title, path: canonicalPath }])
+  : undefined
 
 // The code panel holds plain source in the data file; it becomes tok-* spans
 // here rather than being written as markup by hand.

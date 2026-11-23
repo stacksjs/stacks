@@ -1,0 +1,84 @@
+# Stacks
+
+> Stacks is a full-stack TypeScript framework that runs on Bun. One install gives you routing, an ORM whose migrations are generated from your models, auth, queues, mail, a CMS, commerce, AI drivers, an admin dashboard, tests, and deploys to servers you own. It is open source under the MIT license.
+
+Stacks is installed with Pantry and driven by the `buddy` CLI: `panx buddy new my-app` creates a project, `buddy dev` serves the frontend, API, docs, and dashboard, and `buddy deploy` ships them. Schema, validation, relationships, and the REST API of a model are declared once in `defineModel()`, and migrations are generated from it. Every page below is server-rendered HTML.
+
+## Start here
+
+- [Documentation](https://stacksjs.com/docs): Guides and the API reference for every package.
+- [AGENTS.md](https://github.com/stacksjs/stacks/blob/main/AGENTS.md): The conventions a coding agent follows in a Stacks app, and the skill to read for each subsystem.
+- [Source](https://github.com/stacksjs/stacks): The framework repository, MIT licensed.
+
+## Features
+
+- [Application core](https://stacksjs.com/features/application-core): Routing, STX views, models, actions, middleware, and validation in one typed application.
+- [Queues and mail](https://stacksjs.com/features/queues-and-mail): Jobs, batches, schedules, events, notifications, and worker-ready background workflows.
+- [Native apps](https://stacksjs.com/features/native-apps): The same STX UI ships as a web app, an iOS or Android app, and a desktop app with a system tray, from one codebase.
+- [CMS](https://stacksjs.com/features/cms): Posts, pages, taxonomy, media, a real dashboard, and generated content APIs.
+- [Auth](https://stacksjs.com/features/auth): Sessions, tokens, passkeys, social login, magic links, policies, guards, and rate limiting.
+- [Commerce](https://stacksjs.com/features/commerce): Products, orders, customers, coupons, payments, shipping, tax, and gift cards, as models you already know how to query.
+- [Dashboard](https://stacksjs.com/features/dashboard): A generated admin panel for every model, plus analytics, operations, kanban, and marketing, in 300-plus components.
+- [Storage](https://stacksjs.com/features/storage): Local, S3, signed URLs, uploads, visibility, and file utilities.
+- [AI](https://stacksjs.com/features/ai): Anthropic, OpenAI, and Ollama behind one chat driver, Bedrock alongside for AWS-hosted models, plus RAG, embeddings, and MCP.
+- [Testing](https://stacksjs.com/features/testing): Unit, feature, HTTP, browser, and database tests with factories and helpers.
+- [Realtime and search](https://stacksjs.com/features/realtime-and-search): Channels, broadcasts, websocket drivers, and app-level search workflows.
+- [Cloud deploys](https://stacksjs.com/features/cloud-deploys): Hetzner, AWS, or any box over SSH, with DNS, TLS, and mail, described in TypeScript config and shipped by Buddy.
+- [Environment setup](https://stacksjs.com/features/environment-setup): Pantry installs Bun, the database, the mail server, and every tool a project declares, per project, then starts and migrates the database.
+- [Automated updates](https://stacksjs.com/features/automated-upgrades): buddy-bot opens dependency pull requests on a schedule, and buddy upgrade moves the app to the next release, previewed first and never over your uncommitted edits.
+
+## Use cases
+
+- [SaaS applications](https://stacksjs.com/use-cases/saas): Accounts, teams, billing, jobs, and an admin panel on day one.
+- [Online stores](https://stacksjs.com/use-cases/ecommerce): Products, carts, checkout, payments, shipping, tax, and receipts.
+- [Marketplaces](https://stacksjs.com/use-cases/marketplaces): Two-sided products where sellers and payouts matter as much as sales.
+- [Content sites and blogs](https://stacksjs.com/use-cases/content-sites): Posts, authors, categories, comments, feeds, and sitemaps.
+- [Marketing sites](https://stacksjs.com/use-cases/marketing-sites): Fast pages with forms, analytics, and a CMS behind them.
+- [Documentation sites](https://stacksjs.com/use-cases/documentation): Markdown docs, search, and API references that ship with the code.
+- [Mobile and desktop apps](https://stacksjs.com/use-cases/mobile-and-desktop): Native iOS, Android, and desktop builds on the same typed API.
+- [APIs and backends](https://stacksjs.com/use-cases/apis): Typed REST endpoints, validation, auth, and a generated spec.
+- [Realtime apps](https://stacksjs.com/use-cases/realtime): WebSocket channels, presence, and live dashboards.
+- [Background workloads](https://stacksjs.com/use-cases/background-jobs): Queues, batches, schedules, retries, and workers.
+- [AI applications](https://stacksjs.com/use-cases/ai-apps): Anthropic, OpenAI, Bedrock, and Ollama, with RAG and embeddings.
+- [Internal tools and admin](https://stacksjs.com/use-cases/internal-tools): Dashboards and back offices generated from your models.
+- [Multi-tenant platforms](https://stacksjs.com/use-cases/multi-tenant-platforms): One deploy serving many customers, domains, and mail senders.
+- [Startups](https://stacksjs.com/use-cases/startups): Ship in days, and still be able to change it in year two.
+- [Agencies and studios](https://stacksjs.com/use-cases/agencies): One stack on every client project, and a clean handover.
+- [Enterprise teams](https://stacksjs.com/use-cases/enterprise): Typed boundaries, auditability, RBAC, and reviewable infrastructure.
+- [Solo developers](https://stacksjs.com/use-cases/solo-developers): One person, one stack, and no glue code to maintain.
+- [Open-source libraries](https://stacksjs.com/use-cases/open-source-libraries): Build, type, document, test, and publish framework-agnostic packages.
+
+## Comparisons
+
+- [Stacks vs Next.js](https://stacksjs.com/compare/nextjs): The React meta-framework. Stacks answers the backend questions Next.js deliberately leaves open. Checked against Next.js 16.4.
+- [Stacks vs Nuxt](https://stacksjs.com/compare/nuxt): Vue meta-framework with a strong module ecosystem. Stacks brings the application layer under it. Checked against Nuxt 4.6.
+- [Stacks vs SvelteKit](https://stacksjs.com/compare/sveltekit): Small bundles and a lovely reactivity model. Stacks adds everything behind the load function. Checked against SvelteKit 3.1.
+- [Stacks vs React Router (Remix)](https://stacksjs.com/compare/remix): Remix v2 lives on as React Router framework mode. Stacks shares its web-standards philosophy and ships more of the stack. Checked against React Router 8.5.
+- [Stacks vs Astro](https://stacksjs.com/compare/astro): The best content site framework there is. Stacks is for when the site becomes an application. Checked against Astro 7.4.
+- [Stacks vs RedwoodJS](https://stacksjs.com/compare/redwoodjs): Full-stack React and GraphQL, now split into Redwood GraphQL, RedwoodSDK, and the CedarJS fork. Different bets, same goal. Checked against Redwood GraphQL 8.9 and RedwoodSDK 1.7.
+- [Stacks vs The T3 Stack](https://stacksjs.com/compare/t3-stack): Best-in-class parts, assembled by you. Stacks is the same territory, maintained as one thing. Checked against create-t3-app 7.40 and tRPC 11.
+- [Stacks vs NestJS](https://stacksjs.com/compare/nestjs): Structured TypeScript backends with dependency injection. Stacks trades DI for conventions. Checked against NestJS 12.3.
+- [Stacks vs AdonisJS](https://stacksjs.com/compare/adonisjs): The other Laravel-inspired TypeScript framework. The closest comparison on this page. Checked against AdonisJS 7.
+- [Stacks vs Express and Fastify](https://stacksjs.com/compare/express): Minimal HTTP layers. Everything above the router is a decision you make and maintain. Checked against Express 5.3 and Fastify 5.12.
+- [Stacks vs Hono](https://stacksjs.com/compare/hono): A tiny, fast, edge-first router. Stacks is the application you would build on top of one. Checked against Hono 4.13.
+- [Stacks vs Elysia](https://stacksjs.com/compare/elysia): A high-performance Bun-first framework with end-to-end types. Stacks is the framework around one. Checked against Elysia 1.4.
+- [Stacks vs Encore.ts](https://stacksjs.com/compare/encore): Infrastructure from code, for distributed backends. Stacks does it for one application. Checked against Encore.ts 1.58.
+- [Stacks vs Laravel](https://stacksjs.com/compare/laravel): The framework Stacks is modelled on, rebuilt in TypeScript on Bun. Checked against Laravel 13.
+- [Stacks vs Ruby on Rails](https://stacksjs.com/compare/rails): Convention over configuration in Ruby. Same convictions, different runtime and type story. Checked against Rails 8.1.
+- [Stacks vs Django](https://stacksjs.com/compare/django): Batteries included, and the best free admin in the business. Stacks brings that idea to TypeScript. Checked against Django 6.1.
+- [Stacks vs Supabase](https://stacksjs.com/compare/supabase): A hosted Postgres platform, not a framework. The two are often used together. Checked against Supabase, October 2026.
+- [Stacks vs Firebase](https://stacksjs.com/compare/firebase): Client-first sync and mobile SDKs. Stacks is the server-first alternative you own. Checked against Firebase, October 2026.
+
+## Common questions
+
+- [Is Stacks ready for production?](https://stacksjs.com/#faq): It runs in production today: BugHQ, StatusHQ, AnalyticsHQ, LogHQ, and CommsHQ are Stacks applications, and so is this site. Stacks is still before version 1.0, so an API can change between releases. buddy upgrade exists for that: it previews the changes, then moves the app to the next release without touching your uncommitted edits.
+- [What does it need to run?](https://stacksjs.com/#faq): Stacks needs Bun, and a database: SQLite, MySQL, or Postgres. You do not install either by hand. Pantry reads the tools a project declares and installs them per project, then starts the database and migrates it, so a new machine is one command away from a running app.
+- [Do I have to use all of it?](https://stacksjs.com/#faq): No. Every config file is optional, and whole bundles such as commerce or the CMS install and uninstall with one command, so what you do not use is not loaded. A Stacks app can be a single API, a marketing site, or a library, and grow into the rest later.
+- [Where can I deploy a Stacks app?](https://stacksjs.com/#faq): A Stacks app deploys anywhere you can reach over SSH: Hetzner, AWS, another Linux server, or a Raspberry Pi. buddy deploy builds the site, docs, blog, and API, then sets up DNS, TLS, storage, and mail from config/cloud.ts. There is no hosting platform to subscribe to, and a bad release rolls back with one command.
+- [I know Laravel. How different is Stacks?](https://stacksjs.com/#faq): Not very, on purpose. Models, migrations, queues, mail, events, gates, and an expressive CLI are Laravel ideas, and Stacks keeps their shape. What changes is the language: the model, the route, the view, and the API client are all TypeScript, typed against each other from the database row to the rendered page.
+- [How does Stacks work with AI coding agents?](https://stacksjs.com/#faq): A Stacks app checks in one AGENTS.md, and buddy setup:ai turns it into the files Claude Code, Codex, Cursor, Copilot, and Gemini each read. It also ships a skill for every subsystem, so an agent works from the real API of the framework rather than guessing one, and buddy lint, typecheck, and test gate its changes the same way they gate yours.
+
+## Optional
+
+- [Blog](https://stacksjs.com/blog): Release notes and longer writing about the framework.
+- [Sitemap](https://stacksjs.com/sitemap.xml): Every indexable page.

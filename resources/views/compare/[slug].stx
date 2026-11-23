@@ -17,6 +17,7 @@
  * not-found body under a 200.
  */
 import { comparisonBySlug, matrixDimensions } from '../../data/comparisons'
+import { breadcrumbJsonLd } from '../../data/schema'
 
 const requestedSlug = String(params?.slug || '')
 const comparison = comparisonBySlug(requestedSlug)
@@ -33,6 +34,11 @@ const pageDescription = comparison
   : 'That comparison page does not exist.'
 
 const canonicalPath = comparison ? `/compare/${comparison.slug}` : '/compare'
+
+// The breadcrumb the page prints, for the readers that are not people.
+const jsonLd = comparison
+  ? breadcrumbJsonLd([{ name: 'Compare', path: '/compare' }, { name: comparison.name, path: canonicalPath }])
+  : undefined
 
 const levelLabel = {
   'built-in': 'In the box',

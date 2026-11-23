@@ -27,4 +27,32 @@ export default {
   locale: 'en',
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
+
+  seo: {
+    sitemap: {
+      /**
+       * The feature, use case, and comparison pages are three dynamic routes
+       * (`features/[slug].stx` and its two siblings), and a views scan cannot
+       * know which slugs exist, so the sitemap listed the three overview
+       * pages and none of the fifty pages under them. They are read from the
+       * same lists the views render, so a page added to a list is in the
+       * sitemap the moment it exists. Imported here rather than at the top of
+       * the file: config loads in every process, and only the views server
+       * ever asks for this.
+       */
+      entries: async () => {
+        const [{ features }, { useCases }, { comparisons }] = await Promise.all([
+          import('../resources/data/features'),
+          import('../resources/data/use-cases'),
+          import('../resources/data/comparisons'),
+        ])
+
+        return [
+          ...features.map(feature => ({ loc: `/features/${feature.slug}`, changefreq: 'monthly' as const, priority: 0.8 })),
+          ...useCases.map(useCase => ({ loc: `/use-cases/${useCase.slug}`, changefreq: 'monthly' as const, priority: 0.7 })),
+          ...comparisons.map(comparison => ({ loc: `/compare/${comparison.slug}`, changefreq: 'monthly' as const, priority: 0.7 })),
+        ]
+      },
+    },
+  },
 } satisfies AppConfig
