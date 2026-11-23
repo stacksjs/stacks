@@ -260,6 +260,7 @@ export const actions = {
   'Actions/Commerce/WaitlistRestaurantStoreAction': '../defaults/app/Actions/Commerce/WaitlistRestaurantStoreAction.ts',
   'Actions/Commerce/WaitlistRestaurantUpdateAction': '../defaults/app/Actions/Commerce/WaitlistRestaurantUpdateAction.ts',
   'Actions/Commerce/commerce-action': '../defaults/app/Actions/Commerce/commerce-action.ts',
+  'Actions/ConfirmSubscriptionAction': '../defaults/app/Actions/ConfirmSubscriptionAction.ts',
   'Actions/ContactAction': '../defaults/app/Actions/ContactAction.ts',
   'Actions/Dashboard/Actions/GetActions': '../defaults/app/Actions/Dashboard/Actions/GetActions.ts',
   'Actions/Dashboard/Analytics/BlogAnalyticsAction': '../defaults/app/Actions/Dashboard/Analytics/BlogAnalyticsAction.ts',
@@ -786,4 +787,5 @@ export const actions = {
   'Actions/UnsubscribeAction': '../defaults/app/Actions/UnsubscribeAction.ts',
   'Actions/UploadTestAction': '../defaults/app/Actions/UploadTestAction.ts',
   'Actions/form-return': '../defaults/app/Actions/form-return.ts',
+  'Actions/subscription-page': '../defaults/app/Actions/subscription-page.ts',
 } as const

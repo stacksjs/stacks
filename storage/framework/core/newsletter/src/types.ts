@@ -72,6 +72,14 @@ export interface SubscribeOptions {
    * always allowed.
    */
   publicOnly?: boolean
+  /**
+   * `'list'` honours the list's `double_opt_in`: on such a list a new or
+   * returning address is stored as `pending` until it confirms with the link
+   * in the confirmation email (see `confirm()`). `'skip'`, the default,
+   * subscribes at once whatever the list says, which is what an import or an
+   * admin adding someone wants. The public signup endpoint passes `'list'`.
+   */
+  confirmation?: 'list' | 'skip'
 }
 
 export interface SubscribeResult {
@@ -86,8 +94,23 @@ export interface SubscribeResult {
   listId: number
   /** The `subscribers` row the membership belongs to. */
   subscriberId: number
+  /**
+   * True when the membership waits on the address confirming (double opt-in).
+   * Send it the confirmation email with `token`; `confirm(token)` completes
+   * the subscription.
+   */
+  pending: boolean
   /** Per-list unsubscribe token — embed in the unsubscribe URL / mailto. */
   token: string
+}
+
+export interface ConfirmResult {
+  /** False for a token that names no membership, or one that has since unsubscribed. */
+  ok: boolean
+  email?: string
+  listId?: number
+  /** True when the membership was already confirmed; nothing changed. */
+  alreadyConfirmed?: boolean
 }
 
 export interface UnsubscribeResult {

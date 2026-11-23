@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 import { join } from 'node:path'
 import { db } from '@stacksjs/database/runtime'
 import { buildMigrationPlan, generateSql, loadModels } from 'bun-query-builder'
-import { emailAddress, lists, NewsletterListUnavailableError, subscribe, unsubscribe } from '../../src'
+import { confirm, emailAddress, lists, NewsletterListUnavailableError, subscribe, unsubscribe } from '../../src'
 
 const TABLES = ['email_list_subscribers', 'email_lists', 'subscribers']
 const plan = buildMigrationPlan(await loadModels({ modelsDir: join(import.meta.dir, '../../../../defaults/app/Models') }), { dialect: 'sqlite' })
@@ -61,5 +61,52 @@ await assert.rejects(subscribe('reader@example.com', { list: 'staff', publicOnly
 await assert.rejects(subscribe('reader@example.com', { list: 'nope', publicOnly: true }), NewsletterListUnavailableError)
 // Code that is not public-facing may still add to a private list.
 assert.equal((await subscribe('reader@example.com', { list: 'staff' })).created, true)
+
+// The default list made itself, so it is single opt-in.
+const defaultList = await db.selectFrom('email_lists').selectAll().where('slug', '=', 'default').executeTakeFirst() as { double_opt_in: unknown }
+assert.ok(!defaultList.double_opt_in || defaultList.double_opt_in === '0', 'the auto-created default list does not ask for confirmation')
+
+// Double opt-in, honoured only when the caller asks for the list's rule.
+await lists.create({ name: 'Digest', slug: 'digest', isPublic: true, doubleOptIn: true })
+const membership = async (token: string) => await db.selectFrom('email_list_subscribers').selectAll().where('uuid', '=', token).executeTakeFirst() as { status: string, subscribed_at: unknown }
+
+const asked = await subscribe('new@example.com', { list: 'digest', confirmation: 'list', publicOnly: true })
+assert.equal(asked.pending, true)
+assert.equal((await membership(asked.token)).status, 'pending')
+const waitingPerson = await db.selectFrom('subscribers').selectAll().where('id', '=', asked.subscriberId).executeTakeFirst() as { status: string }
+assert.equal(waitingPerson.status, 'pending')
+
+// Asking again while pending changes nothing and stays pending, so the
+// confirmation email can go out again.
+const askedAgain = await subscribe('new@example.com', { list: 'digest', confirmation: 'list' })
+assert.equal(askedAgain.pending, true)
+assert.equal(askedAgain.token, asked.token)
+
+// The link in the email.
+const confirmed = await confirm(asked.token)
+assert.equal(confirmed.ok, true)
+assert.equal(confirmed.email, 'new@example.com')
+assert.equal((await membership(asked.token)).status, 'subscribed')
+assert.ok((await membership(asked.token)).subscribed_at, 'confirming stamps subscribed_at')
+const confirmedPerson = await db.selectFrom('subscribers').selectAll().where('id', '=', asked.subscriberId).executeTakeFirst() as { status: string }
+assert.equal(confirmedPerson.status, 'subscribed')
+assert.equal((await confirm(asked.token)).alreadyConfirmed, true)
+
+// An old confirmation link cannot undo an opt-out, and coming back asks again.
+await unsubscribe(asked.token)
+assert.equal((await confirm(asked.token)).ok, false)
+const returning = await subscribe('new@example.com', { list: 'digest', confirmation: 'list' })
+assert.equal(returning.reactivated, true)
+assert.equal(returning.pending, true)
+assert.equal((await confirm('not-a-token')).ok, false)
+
+// Without asking for the list's rule (an import, an admin), it subscribes at once.
+const imported = await subscribe('imported@example.com', { list: 'digest' })
+assert.equal(imported.pending, false)
+assert.equal((await membership(imported.token)).status, 'subscribed')
+// And a pending membership added that way is subscribed.
+const promoted = await subscribe('new@example.com', { list: 'digest' })
+assert.equal(promoted.pending, false)
+assert.equal((await membership(promoted.token)).status, 'subscribed')
 
 console.log('newsletter subscribe OK')

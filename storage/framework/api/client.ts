@@ -3749,6 +3749,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * email.confirm
+   */
+  emailConfirm(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/email/confirm", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * email.subscribe
    */
   emailSubscribe(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

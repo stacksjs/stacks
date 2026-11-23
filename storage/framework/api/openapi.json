@@ -14653,6 +14653,31 @@
         }
       }
     },
+    "/api/email/confirm": {
+      "get": {
+        "summary": "email.confirm",
+        "operationId": "email.confirm",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/email/subscribe": {
       "post": {
         "summary": "email.subscribe",

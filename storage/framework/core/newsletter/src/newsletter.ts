@@ -1,6 +1,6 @@
 import { campaigns } from './campaigns'
 import { lists } from './lists'
-import { subscribe, unsubscribe, unsubscribeAll } from './subscriptions'
+import { confirm, subscribe, unsubscribe, unsubscribeAll } from './subscriptions'
 
 /**
  * Top-level Newsletter facade.
@@ -13,14 +13,16 @@ export const newsletter: {
   lists: typeof lists
   campaigns: typeof campaigns
   subscribe: typeof subscribe
+  confirm: typeof confirm
   unsubscribe: typeof unsubscribe
   unsubscribeAll: typeof unsubscribeAll
 } = {
   lists,
   campaigns,
   subscribe,
+  confirm,
   unsubscribe,
   unsubscribeAll,
 }
 
-export { campaigns, lists, subscribe, unsubscribe, unsubscribeAll }
+export { campaigns, confirm, lists, subscribe, unsubscribe, unsubscribeAll }

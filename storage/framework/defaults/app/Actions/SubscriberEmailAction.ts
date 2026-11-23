@@ -2,6 +2,7 @@ import { Action } from '@stacksjs/actions/runtime'
 import { emailAddress, NewsletterListUnavailableError, subscribe } from '@stacksjs/newsletter'
 import { SubscriberEmail } from '@stacksjs/orm'
 import { rateLimit } from '@stacksjs/router'
+import { sendSubscriptionConfirmRequest } from '../Mail/SubscriptionConfirmRequest'
 import { sendSubscriptionConfirmation } from '../Mail/SubscriptionConfirmation'
 import { formReturnLocation, wantsFormRedirect } from './form-return'
 
@@ -22,12 +23,14 @@ import { formReturnLocation, wantsFormRedirect } from './form-return'
  * a script gets the JSON beside it.
  *
  * - `subscribed`: a new address, or one that had unsubscribed and came back.
+ * - `pending`: the list has double opt-in on; a confirmation email went out
+ *   and the address joins once its link is opened (ConfirmSubscriptionAction).
  * - `already`: the address is on the list.
  * - `invalid`: not an email address.
  * - `busy`: too many attempts from this visitor in a minute.
  * - `error`: anything else. Logged here; the visitor is asked to try again.
  */
-type Outcome = 'subscribed' | 'already' | 'invalid' | 'busy' | 'error'
+type Outcome = 'subscribed' | 'pending' | 'already' | 'invalid' | 'busy' | 'error'
 
 /**
  * The tables this action writes, most of them through @stacksjs/newsletter
@@ -73,7 +76,18 @@ export default new Action({
       return answer('invalid', { success: false, message: 'A valid email is required' })
 
     try {
-      const result = await subscribe(email, { list, source, publicOnly: true })
+      // `confirmation: 'list'`: a list with double opt-in on holds the address
+      // as pending until it confirms; any other list subscribes it at once.
+      const result = await subscribe(email, { list, source, publicOnly: true, confirmation: 'list' })
+
+      if (result.pending) {
+        // New, returning, or asking again while still pending: (re)send the
+        // confirmation email. The rate limit above bounds how often.
+        if (result.created || result.reactivated)
+          await SubscriberEmail.create({ email, source, subscriber_id: result.subscriberId })
+        confirmRequest(email, result.token)
+        return answer('pending', { success: true, pending: true, message: 'Confirmation required' })
+      }
 
       if (!result.created && !result.reactivated)
         return answer('already', { success: true, message: 'Already subscribed' })
@@ -107,6 +121,14 @@ export default new Action({
     }
   },
 })
+
+/** Send the double opt-in email without holding up the response; a failure is logged. */
+function confirmRequest(to: string, token: string): void {
+  sendSubscriptionConfirmRequest({ to, token }).catch((err: unknown) => {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error(`Failed to send the confirmation request to ${to}:`, message)
+  })
+}
 
 /**
  * Send the welcome email without holding up the response; a failure is

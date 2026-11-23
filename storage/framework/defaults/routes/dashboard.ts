@@ -69,6 +69,8 @@ function guarded(prefix: string, base?: Parameters<typeof dashboardGroupMiddlewa
 // the subscriber list) is better handled with the rate limiter — at
 // the action layer — than with a token check the form can't satisfy.
 route.post('/api/email/subscribe', 'Actions/SubscriberEmailAction').name('email.subscribe').skipCsrf()
+// The button in the double opt-in email (lists with `double_opt_in` on).
+route.get('/api/email/confirm', 'Actions/ConfirmSubscriptionAction').name('email.confirm')
 route.get('/api/email/unsubscribe', 'Actions/UnsubscribeAction').name('email.unsubscribe')
 // RFC 8058 one-click endpoint. Mailbox providers (Gmail, Yahoo, Outlook)
 // POST here with body `List-Unsubscribe=One-Click` when the user clicks

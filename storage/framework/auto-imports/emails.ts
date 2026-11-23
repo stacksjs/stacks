@@ -13,6 +13,7 @@ export const emails = {
   'notification': '../defaults/resources/emails/notification.stx',
   'password-changed': '../defaults/resources/emails/password-changed.stx',
   'password-reset': '../defaults/resources/emails/password-reset.stx',
+  'subscription-confirm': '../defaults/resources/emails/subscription-confirm.stx',
   'team-invitation': '../defaults/resources/emails/team-invitation.stx',
   'welcome': '../defaults/resources/emails/welcome.stx',
   'layouts/base': '../defaults/resources/emails/layouts/base.html',

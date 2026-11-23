@@ -1,0 +1,31 @@
+<script server>
+// The double opt-in email: sent by SubscriptionConfirmRequest (defaults/app/Mail)
+// when someone signs up to a list that has `double_opt_in` on. The button
+// confirms the address; until then the list sends nothing to it. It speaks for
+// the app, from config, and an app overrides it with its own
+// resources/emails/subscription-confirm.stx.
+const email = props.email || ''
+const confirmUrl = props.confirmUrl || '#'
+const appName = props.appName || 'our newsletter'
+const appUrl = props.appUrl || ''
+const primaryColor = props.primaryColor || '#3451b2'
+const year = props.year || new Date().getFullYear()
+const subject = `Confirm your subscription to ${appName}`
+</script>
+
+<EmailLayout title="{{ subject }}" preheader="One click to confirm, and you are on the {{ appName }} list." brand="{{ appName }}" brandUrl="{{ appUrl }}" accent="{{ primaryColor }}">
+  <EmailText size="heading">Confirm your subscription</EmailText>
+  <EmailText>Someone, hopefully you, asked to get {{ appName }} by email at {{ email }}. Confirm the address and you are on the list.</EmailText>
+
+  <EmailButton href="{{ confirmUrl }}" bg="{{ primaryColor }}">Yes, subscribe me</EmailButton>
+
+  <EmailDivider />
+  <EmailText size="sm" spacing="8px">If you did not sign up, ignore this email and nothing happens: you will not get anything else from us.</EmailText>
+  <EmailText size="sm" spacing="0">If the button does not work, open this link: <a href="{{ confirmUrl }}" style="color:{{ primaryColor }};word-break:break-all;">{{ confirmUrl }}</a></EmailText>
+
+  <template #footer>
+    <tr>
+      <td class="email-muted" style="padding:16px 40px 20px;border-top:1px solid #e4e4e7;color:#a1a1aa;font-size:11px;text-align:center;">&copy; {{ year }} {{ appName }}</td>
+    </tr>
+  </template>
+</EmailLayout>

@@ -490,7 +490,8 @@ export function bypassCookieValue(secret: string, mode: SiteMode = 'maintenance'
  * Paths that are always allowed through maintenance/coming-soon mode.
  * - `/coming-soon` itself must render (else the redirect loops).
  * - `/api/email/subscribe` so the email-capture form on the holding
- *   page still works.
+ *   page still works, and `/api/email/confirm` and `/api/email/unsubscribe`
+ *   so the links in the emails that signup sends work too.
  * - Static assets used by the holding page (favicon, logo, etc.) so it
  *   renders correctly. The dev server serves these directly; in prod
  *   they're typically CDN'd — the allowlist is the safety net.
@@ -502,6 +503,8 @@ export function bypassCookieValue(secret: string, mode: SiteMode = 'maintenance'
 const ALWAYS_ALLOWED_PATHS = new Set([
   '/coming-soon',
   '/api/email/subscribe',
+  '/api/email/confirm',
+  '/api/email/unsubscribe',
   '/favicon.ico',
 ])
 

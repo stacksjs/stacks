@@ -15,6 +15,8 @@ describe('isAlwaysAllowed', () => {
   it('lets the holding page and its subscribe endpoint through', () => {
     expect(isAlwaysAllowed('/coming-soon')).toBe(true)
     expect(isAlwaysAllowed('/api/email/subscribe')).toBe(true)
+    expect(isAlwaysAllowed('/api/email/confirm')).toBe(true)
+    expect(isAlwaysAllowed('/api/email/unsubscribe')).toBe(true)
   })
 
   it('lets the tidy asset prefixes through', () => {
