@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.658...v0.75.659)
+
+## ✅ Tests
+
+- **migrate**: expect held-back destructive changes instead of a failed run ([24503f8](https://github.com/stacksjs/stacks/commit/24503f8)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.657...v0.75.658)
 
 ## 🐛 Bug Fixes
