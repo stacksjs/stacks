@@ -1,35 +1,36 @@
 {{-- The launch-list signup the blog pages share.
 
-  It is a plain form: it posts to /api/email/subscribe and the API sends the
-  browser back to `subscribeReturn` with `?subscribe=<outcome>`, which the
-  page turns into `notice`. No script, so no stx runtime on a page that
-  otherwise hydrates nothing (see tests/unit/marketing-assets.test.ts).
+  With JavaScript it submits in place: a spinner on the button and the
+  answer under the field, with no reload (resources/data/signup.ts, emitted
+  as text so the page still loads no stx runtime). Without it, it is a plain
+  form: it posts to /api/email/subscribe and the API sends the browser back
+  to `subscribeReturn` with `?subscribe=<outcome>`, which the page turns into
+  `notice`.
 
   The page declares `subscribeSource` (who signed up from where, for the
   subscribers table), `subscribeReturn` (its own path plus `#subscribe`) and
   `notice` (from subscribeNotice in resources/data/blog.ts). --}}
 <script server>
 import type { SubscribeNotice } from '../data/blog'
+import { signupScript } from '../data/signup'
 
 declare const subscribeSource: string
 declare const subscribeReturn: string
 declare const notice: SubscribeNotice | null
 </script>
 
-<form class="signup-form" action="/api/email/subscribe" method="POST">
+<form class="signup-form" action="/api/email/subscribe" method="POST" data-signup>
   <input type="hidden" name="source" value="{{ subscribeSource }}">
   <input type="hidden" name="return" value="{{ subscribeReturn }}">
   <label class="sr-only" for="signup-email">Email address</label>
   <div class="signup-row">
     <input id="signup-email" type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
-    <button class="button primary" type="submit">Get the launch email</button>
+    <button class="button primary signup-submit" type="submit">
+      <span class="signup-spinner" aria-hidden="true"></span>
+      <span class="signup-label">Get the launch email</span>
+    </button>
   </div>
-  @if (notice)
-    <p class="signup-notice signup-notice--{{ notice.tone }}" role="status">
-      <i class="{{ notice.tone === 'success' ? 'i-hugeicons-checkmark-circle-02' : 'i-hugeicons-alert-circle' }}" aria-hidden="true"></i>
-      {{ notice.text }}
-    </p>
-  @else
-    <p class="signup-fine">One email when Stacks opens up, then a build note now and then. Unsubscribe in one click.</p>
-  @endif
+  @include('signup-notice')
+  <p class="signup-fine" data-signup-fine {{ notice ? 'hidden' : '' }}>One email when Stacks opens up, then a build note now and then. Unsubscribe in one click.</p>
 </form>
+{!! signupScript !!}

@@ -827,6 +827,54 @@ input[type="email"]:focus {
   color: #dc2626;
 }
 
+/* The signup button while the in-place submit is out (resources/data/signup.ts):
+  a spinner beside the label, the label kept so the button keeps its width. */
+.signup-spinner {
+  display: none;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: signup-spin 0.7s linear infinite;
+}
+
+.is-loading .signup-spinner {
+  display: inline-block;
+}
+
+.is-loading .signup-submit {
+  cursor: progress;
+  opacity: 0.85;
+}
+
+.signup-submit:disabled {
+  transform: none;
+}
+
+/* A notice appears without pushing the page around: it fades and slides a
+  few pixels in the space the fine print held. */
+.signup-notice:not([hidden]) {
+  animation: signup-in 0.22s ease-out;
+}
+
+@keyframes signup-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes signup-in {
+  from { opacity: 0; transform: translateY(-3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signup-spinner { animation-duration: 1.6s; }
+  .signup-notice:not([hidden]) { animation: none; }
+}
+
+[hidden] {
+  display: none !important;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

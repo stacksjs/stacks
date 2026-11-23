@@ -7,6 +7,7 @@ import { stats } from '../data/stats'
 import { useCases } from '../data/use-cases'
 import { comparisonSpotlight } from '../data/nav'
 import { subscribeNotice } from '../data/blog'
+import { signupScript } from '../data/signup'
 
 const appName = 'Stacks'
 
@@ -665,16 +666,20 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
               <a class="button" href="https://github.com/stacksjs/stacks"><i class="i-hugeicons-github" aria-hidden="true"></i>Star on GitHub</a>
             </div>
 
-            <form class="cta-form" id="subscribe" action="/api/email/subscribe" method="POST">
+            <form class="cta-form" id="subscribe" action="/api/email/subscribe" method="POST" data-signup>
               <input type="hidden" name="source" value="homepage">
               <input type="hidden" name="return" value="/#subscribe">
               <label for="cta-email">Stacks is not out yet. Get one email the day it is, and early access before that.</label>
               <div class="cta-form-row">
                 <input id="cta-email" type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
-                <button class="button" type="submit">Get the launch email</button>
+                <button class="button signup-submit" type="submit">
+                  <span class="signup-spinner" aria-hidden="true"></span>
+                  <span class="signup-label">Get the launch email</span>
+                </button>
               </div>
               @include('signup-notice')
             </form>
+            {!! signupScript !!}
           </div>
         </section>
       </main>

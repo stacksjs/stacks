@@ -83,30 +83,31 @@ export interface SubscribeNotice {
   text: string
 }
 
+/** What /api/email/subscribe can answer, as `?subscribe=<outcome>`. */
+export type SubscribeOutcome = 'subscribed' | 'already' | 'invalid' | 'busy' | 'error'
+
 /**
- * What to tell a reader who has just submitted a signup form.
- *
- * The forms post to /api/email/subscribe without JavaScript, and the API
- * sends the browser back with `?subscribe=<outcome>` (see form-return.ts in
- * the default actions), so the page renders the answer itself, in place.
+ * What a reader is told for each outcome. One table for both paths: the
+ * page reads it when a plain form post comes back with `?subscribe=`, and
+ * the in-place script (resources/data/signup.ts) carries the same table, so
+ * the two can never say different things.
+ */
+export const subscribeMessages: Record<SubscribeOutcome, SubscribeNotice> = {
+  subscribed: { tone: 'success', text: 'Thanks, you are on the list. A welcome email is on its way to your inbox.' },
+  already: { tone: 'success', text: 'You are already on the list. We will write the day Stacks opens up.' },
+  invalid: { tone: 'error', text: 'That email address did not look right. Try it again?' },
+  busy: { tone: 'error', text: 'That was a lot of tries in a minute. Give it a moment and try again.' },
+  error: { tone: 'error', text: 'Something went wrong on our side and you are not on the list yet. Please try again.' },
+}
+
+/**
+ * What to tell a reader whose signup form posted without JavaScript and came
+ * back with `?subscribe=<outcome>` (see form-return.ts in the default
+ * actions). With JavaScript the form answers in place instead.
  */
 export function subscribeNotice(query: unknown): SubscribeNotice | null {
   const outcome = query && typeof query === 'object' ? String((query as Record<string, unknown>).subscribe || '') : ''
-
-  switch (outcome) {
-    case 'subscribed':
-      return { tone: 'success', text: 'Thanks, you are on the list. A welcome email is on its way to your inbox.' }
-    case 'already':
-      return { tone: 'success', text: 'You are already on the list. We will write the day Stacks opens up.' }
-    case 'invalid':
-      return { tone: 'error', text: 'That email address did not look right. Try it again?' }
-    case 'busy':
-      return { tone: 'error', text: 'That was a lot of tries in a minute. Give it a moment and try again.' }
-    case 'error':
-      return { tone: 'error', text: 'Something went wrong on our side and you are not on the list yet. Please try again.' }
-    default:
-      return null
-  }
+  return Object.hasOwn(subscribeMessages, outcome) ? subscribeMessages[outcome as SubscribeOutcome] : null
 }
 
 /** Share links for a post, built from its canonical URL. */

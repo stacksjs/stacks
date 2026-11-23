@@ -1,15 +1,26 @@
-{{-- What a signup form says after it posts and comes back with
-  ?subscribe=<outcome>. The page sets `notice` with subscribeNotice() from
-  resources/data/blog.ts; nothing renders when it is null. --}}
+{{-- The answer a signup form shows, in two variants that are always in the
+  page: a success line and an error line, hidden until needed.
+
+  Without JavaScript the form posts, comes back with ?subscribe=<outcome>,
+  and the page sets `notice` (subscribeNotice() in resources/data/blog.ts):
+  the matching variant renders visible with its text. With JavaScript,
+  resources/data/signup.ts fills and reveals one in place. Both variants
+  are rendered either way so their icons are in the page's CSS before the
+  script needs them. --}}
 <script server>
 import type { SubscribeNotice } from '../data/blog'
 
 declare const notice: SubscribeNotice | null
+
+const successText = notice && notice.tone === 'success' ? notice.text : ''
+const errorText = notice && notice.tone === 'error' ? notice.text : ''
 </script>
 
-@if (notice)
-  <p class="signup-notice signup-notice--{{ notice.tone }}" role="status">
-    <i class="{{ notice.tone === 'success' ? 'i-hugeicons-checkmark-circle-02' : 'i-hugeicons-alert-circle' }}" aria-hidden="true"></i>
-    {{ notice.text }}
-  </p>
-@endif
+<p class="signup-notice signup-notice--success" data-signup-notice="success" role="status" aria-live="polite" {{ successText ? '' : 'hidden' }}>
+  <i class="i-hugeicons-checkmark-circle-02" aria-hidden="true"></i>
+  <span data-signup-text>{{ successText }}</span>
+</p>
+<p class="signup-notice signup-notice--error" data-signup-notice="error" role="alert" {{ errorText ? '' : 'hidden' }}>
+  <i class="i-hugeicons-alert-circle" aria-hidden="true"></i>
+  <span data-signup-text>{{ errorText }}</span>
+</p>

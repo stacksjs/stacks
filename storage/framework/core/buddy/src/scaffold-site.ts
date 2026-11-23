@@ -43,6 +43,7 @@ export const SITE_ONLY_PATHS: readonly string[] = [
   'resources/data/llms.ts',
   'resources/data/nav.ts',
   'resources/data/schema.ts',
+  'resources/data/signup.ts',
   'resources/data/stats.ts',
   'resources/data/theme.ts',
   'resources/data/use-cases.ts',
