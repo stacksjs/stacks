@@ -1,17 +1,12 @@
 {{-- Same control and position as the blog's, so switching theme feels like
   one site rather than two that happen to share a palette. Icons rather than
-  emoji, so the glyphs take the theme's colour instead of the OS's art. --}}
+  emoji, so the glyphs take the theme's colour instead of the OS's art.
+
+  `stxTheme` and the `aria-pressed` each button carries both come from the
+  script in the head (resources/data/theme.ts). There is deliberately no
+  `<script>` here: one in a partial is compiled as an stx client script, and
+  that alone made every marketing page load the stx runtime. --}}
 <div class="theme-toggle" role="group" aria-label="Theme">
   <button type="button" data-t="light" title="Light theme" aria-label="Light theme" onclick="stxTheme('light')"><i class="i-hugeicons-sun-03" aria-hidden="true"></i></button>
   <button type="button" data-t="dark" title="Dark theme" aria-label="Dark theme" onclick="stxTheme('dark')"><i class="i-hugeicons-moon-02" aria-hidden="true"></i></button>
 </div>
-<script>
-  // Mark the active button once the toggle exists (the theme itself was
-  // applied pre-paint by the head script).
-  ;(function () {
-    var current = document.documentElement.getAttribute('data-theme')
-    document.querySelectorAll('.theme-toggle button').forEach(function (b) {
-      b.setAttribute('aria-pressed', String(b.getAttribute('data-t') === current))
-    })
-  })()
-</script>

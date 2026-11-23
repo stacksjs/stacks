@@ -19,6 +19,16 @@ export default {
   // which also exports this as STX_DIR for processes that never read a config.
   stateDir: 'storage/framework/stx',
 
+  // The utility and icon CSS stx generates for a page goes into the document
+  // itself while it is under this many bytes, instead of into a stylesheet
+  // the browser has to fetch before it may paint. On the marketing pages that
+  // sheet is almost entirely icons (each `i-hugeicons-*` class is an inline
+  // SVG mask) and was the last render-blocking request they made: with it
+  // inline, a first visit paints from one response. A page whose sheet is
+  // larger than this - the dashboard's - keeps the linked, immutably cached
+  // file, where a long-lived cache is worth more than one saved round trip.
+  inlineGeneratedCssBytes: 200_000,
+
   // Components, layouts and partials directories.
   //
   // These are resolved RELATIVE TO the explicit `resources` stx root.

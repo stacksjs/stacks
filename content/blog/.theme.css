@@ -18,7 +18,30 @@
  */
 
 /* ── Brand type: Geist + Geist Mono (matches the marketing site) ────────── */
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap');
+/*
+ * The same two files the marketing pages use, from this origin: the blog is
+ * served under stacksjs.com/blog, so `/assets/fonts/...` is the main site's
+ * public directory. They were an `@import` of Google Fonts, which is a
+ * stylesheet that blocks rendering and can only be discovered after this one
+ * has arrived, on a foreign origin, before any text is set. The names carry
+ * each file's content hash and have to match public/assets/styles/theme.css;
+ * tests/unit/marketing-assets.test.ts holds the two together.
+ */
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/assets/fonts/geist/geist-latin.9b6f5ff45b27.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/assets/fonts/geist/geist-mono-latin.5f3d6ad60f29.woff2") format("woff2");
+}
 
 /* ── Themes ─────────────────────────────────────────────────────────────── */
 :root,

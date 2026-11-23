@@ -4,12 +4,13 @@ import { features } from '../data/features'
 import { highlight } from '../data/highlight'
 import { stats } from '../data/stats'
 import { useCases } from '../data/use-cases'
-import { assetUrl } from '../data/assets'
 import { comparisonSpotlight } from '../data/nav'
 
 const appName = 'Stacks'
 
-const homeCss = assetUrl('/assets/styles/home.css')
+// The home page's own sheet, read by the shared head partial and inlined
+// after theme.css and marketing.css.
+const pageStyles = ['home']
 
 /*
  * Launched. Two gates gated this page and both had to open:
@@ -22,6 +23,11 @@ const homeCss = assetUrl('/assets/styles/home.css')
  * Flipping only the env var would have served this page with its own holding
  * card over it. Set siteMode back to 'coming-soon' to close it again; the
  * bypass token below is what /?preview= expects while it is closed.
+ *
+ * While the site is live the holding card and its unlock script are not
+ * rendered at all. They used to ship hidden on every visit: a second <h1>
+ * and a second subscribe form in the markup, and a script that existed only
+ * to find out it had nothing to do.
  */
 const siteMode = 'live'
 const comingSoonBypassEnabled = true
@@ -242,9 +248,9 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
 <html lang="en">
   <head>
     @include('marketing-head')
-    <link rel="stylesheet" href="{{ homeCss }}">
   </head>
   <body data-site-mode="{{ siteMode }}" data-coming-soon-bypass-enabled="{{ comingSoonBypassEnabled }}" data-coming-soon-bypass="{{ comingSoonBypassToken }}">
+    @if (siteMode !== 'live')
     <section class="mode-screen" aria-labelledby="coming-soon-heading">
       <div class="mode-card">
         <span class="mode-glow" aria-hidden="true"></span>
@@ -272,6 +278,7 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
         </div>
       </div>
     </section>
+    @endif
 
     <div class="site-content">
       @include('marketing-nav')
@@ -594,6 +601,8 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
     </div>
 
     @include('marketing-theme-toggle')
-    <script src="/assets/scripts/site-mode.js" defer></script>
+    @if (siteMode !== 'live')
+      <script src="/assets/scripts/site-mode.js" defer></script>
+    @endif
   </body>
 </html>

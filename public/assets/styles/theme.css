@@ -101,10 +101,56 @@
   --topo-opacity: 0.05;
 }
 
+/*
+ * The two faces, served from this origin.
+ *
+ * They used to come from Google Fonts, which is a render-blocking stylesheet
+ * on one foreign origin and the files themselves on a second: two extra DNS
+ * lookups and TLS handshakes before any text could be set in the brand face.
+ * These are the same two variable files (latin subset, the only one a page
+ * in English asks for), so one request each covers every weight the site
+ * uses, and the head partial preloads them. Each carries its content hash in
+ * its name, which is what earns it a year of immutable caching from the
+ * server; resources/data/assets.ts names them for the preload, and
+ * tests/unit/marketing-assets.test.ts fails if the three ever disagree.
+ *
+ * `swap` paints text at once in the fallback. "Geist Fallback" is Arial
+ * resized to Geist's measured advance and given Geist's own ascent and
+ * descent (1005 and 295 on a 1000 unit em), so the swap changes the letter
+ * shapes without moving a line. Geist Mono needs no such face: every
+ * monospace fallback in the stack is already 0.6em wide.
+ */
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/assets/fonts/geist/geist-latin.9b6f5ff45b27.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/assets/fonts/geist/geist-mono-latin.5f3d6ad60f29.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Geist Fallback";
+  src: local("Arial");
+  size-adjust: 101.4%;
+  ascent-override: 99.1%;
+  descent-override: 29.1%;
+  line-gap-override: 0%;
+}
+
 /* Font roles: Geist carries display and body (weight builds the
   hierarchy); Geist Mono carries the kicker, chips, code, terminal. */
 :root {
-  --font-body: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-body: "Geist", "Geist Fallback", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-hero: "Geist", var(--font-body);
   --font-head: "Geist", var(--font-body);
