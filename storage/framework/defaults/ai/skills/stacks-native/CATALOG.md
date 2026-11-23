@@ -965,9 +965,9 @@ Evidence directory: [26 retained tests](https://github.com/stacksjs/stacks/blob/
 
 Guidance: [`stacks-video`](../stacks-video/SKILL.md). Source: [storage/framework/core/video/src/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/index.ts).
 
-Declared runtime exports: `VideoBuilder`, `assertVideoPlanExecutable`, `colourFilters`, `createHlsMaster`, `createPreviewVtt`, `createProtectedVideoPlaylist`, `deriveVideoLadder`, `ffmpegCapabilities`, `fitInsideBox`, `inspectVideo`, `parseByteRange`, `parseProbe`, `posterFrame`, `probeVideo`, `processVideoPlan`, `resolveFfmpegBinaries`, `signVideoAsset`, `transcodeForWeb`, `verifyVideoAsset`, `video`, `videoAssetHeaders`, `videoContentType`, `videoFileResponse`, `videoResponseHeaders`, `webTranscodeArgs`.
+Declared runtime exports: `VideoBuilder`, `assertVideoPlanExecutable`, `createHlsMaster`, `createPreviewVtt`, `createProtectedVideoPlaylist`, `deriveVideoLadder`, `inspectVideo`, `parseByteRange`, `processVideoPlan`, `signVideoAsset`, `verifyVideoAsset`, `video`, `videoAssetHeaders`, `videoContentType`, `videoFileResponse`, `videoResponseHeaders`.
 
-Local source modules: [src/files.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/files.ts), [src/inspect.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/inspect.ts), [src/web.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/web.ts).
+Local source modules: [src/files.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/files.ts), [src/inspect.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/inspect.ts).
 
 Evidence directory: [3 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 

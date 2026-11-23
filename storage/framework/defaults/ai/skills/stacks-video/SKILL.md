@@ -25,37 +25,9 @@ protected delivery with separately authorized key access. Use videoFileResponse,
 parseByteRange and the content/cache header helpers for the file-serving contract;
 do not implement a second ad-hoc range parser around the same assets.
 
-## One web MP4 and a poster, with ffmpeg
-
-ts-videos cannot encode in Bun (no WebCodecs or OffscreenCanvas), so
-`transcodeForWeb(input, output, options)` and `posterFrame(input, output,
-options)` encode with ffmpeg. Use them to turn any upload, typically an iPhone
-HEVC .MOV with HLG or Dolby Vision HDR and a rotation matrix, into one H.264
-High@4.0 MP4 (yuv420p, BT.709, AAC 128k stereo 48 kHz, `+faststart`) plus a
-JPEG poster:
-
-- fits inside 1280x720, or 720x1280 for portrait (`maxBox`), never upscaled,
-  even sides; resampled to `fps` (30) only when the source is above it;
-- rotation applied to the frames, so no display matrix in the output;
-- HDR (PQ, HLG, Dolby Vision, detected by `probeVideo` through ffprobe)
-  tone-mapped to SDR with swscale colour management on ffmpeg 8 and later, else
-  zscale and tonemap, and refused when the build has neither;
-- every piece of metadata stripped, the GPS `location` atom included; every
-  upload is re-encoded, an H.264 MP4 too.
-
-ffmpeg and ffprobe come from the `ffmpeg`/`ffprobe` options, then
-`VIDEO_FFMPEG`/`VIDEO_FFPROBE`, then PATH. Both run under `nice` (default 10)
-in their own process group, killed on `timeoutMs`; output is written to a
-`.partial` file and renamed when complete. The returned width, height,
-duration and bytes are measured from the file written. `webTranscodeArgs` and
-`colourFilters` expose the exact arguments. Tests: web.test.ts, with
-fixtures/hlg-portrait.mov (made by make-hlg-portrait.sh); the encoding tests
-skip with a warning when ffmpeg is absent, and `STACKS_REQUIRE_FFMPEG=1` makes
-that a failure.
-
 Storage, source inspection, source paths, cache behavior and streaming need
 verification for the actual deployment target. Processing tests mock the native
 pipeline; they do not certify live encoding support on an arbitrary machine.
 Test invalid ranges, signatures/expiry, capabilities and file metadata.
-Source: core/video/src/index.ts, files.ts, inspect.ts and web.ts. Retained
-tests: video.test.ts, process.test.ts, files.test.ts and web.test.ts.
+Source: core/video/src/index.ts, files.ts and inspect.ts. Retained tests:
+video.test.ts, process.test.ts and files.test.ts.
