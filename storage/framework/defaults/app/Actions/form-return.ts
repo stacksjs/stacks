@@ -9,26 +9,6 @@
  * `fetch()` asks for anything (`Accept: *\/*`) and keeps getting JSON.
  */
 
-/**
- * An email address as a public form should store it, or null.
- *
- * Trimmed and lowercased, so `Ada@Example.com ` and `ada@example.com` are one
- * subscriber, and held to the shape every mail system accepts: one `@`, a
- * dot in the domain, no spaces or angle brackets, at most 254 characters.
- * Checking only for an `@` let `<b>@x` into the list and onto every page
- * that prints an address.
- */
-export function normalizeEmail(value: unknown): string | null {
-  if (typeof value !== 'string')
-    return null
-
-  const email = value.trim().toLowerCase()
-  if (email.length > 254)
-    return null
-
-  return /^[^\s@<>"'(),;:]+@[^\s@<>"'(),;:]+\.[^\s@<>"'(),;:]{2,}$/.test(email) ? email : null
-}
-
 /** Whether the request is a browser submitting a `<form>`, rather than a script. */
 export function wantsFormRedirect(headers: Headers): boolean {
   const accept = headers.get('accept') || ''

@@ -64,13 +64,28 @@ export interface SubscribeOptions {
   source?: string
   /** When true, returns even if the email was already subscribed (idempotent). */
   upsert?: boolean
+  /**
+   * Refuse a named list whose `is_public` is false, with
+   * `NewsletterListUnavailableError`. Set it for anything a visitor can
+   * reach, such as the public `/api/email/subscribe` endpoint: a form field
+   * must never be enough to join an internal list. The default list is
+   * always allowed.
+   */
+  publicOnly?: boolean
 }
 
 export interface SubscribeResult {
   /** True if a new pivot row was created; false if it already existed. */
   created: boolean
+  /**
+   * True when the address had opted out (of this list, or globally through
+   * the legacy unsubscribe link) and this call signed it back up.
+   */
+  reactivated: boolean
   email: string
   listId: number
+  /** The `subscribers` row the membership belongs to. */
+  subscriberId: number
   /** Per-list unsubscribe token — embed in the unsubscribe URL / mailto. */
   token: string
 }

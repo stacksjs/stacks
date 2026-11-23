@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { config } from '@stacksjs/config'
+import { unsubscribeAll } from '@stacksjs/newsletter'
 import { EmailList, EmailListSubscriber, Subscriber } from '@stacksjs/orm'
 
 export default new Action({
@@ -69,6 +70,9 @@ export default new Action({
         status: 'unsubscribed',
         unsubscribed_at: new Date().toISOString(),
       })
+      // The global link means every list. Campaigns send to list memberships,
+      // so marking only the subscriber row left them all still receiving.
+      await unsubscribeAll(subscriber.email)
 
       return new Response(unsubscribePage('Unsubscribed', `${subscriber.email} has been successfully unsubscribed. You will no longer receive emails from us.`, true), {
         headers: { 'Content-Type': 'text/html' },

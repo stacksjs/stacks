@@ -5,7 +5,14 @@ import { url } from '@stacksjs/router'
 
 export interface SubscriptionConfirmationOptions {
   to: string
-  subscriberUuid: string
+  /**
+   * The unsubscribe token for the link and the List-Unsubscribe headers: the
+   * list membership's uuid (`subscribe()`'s `token`), so unsubscribing leaves
+   * that list only.
+   */
+  token?: string
+  /** The subscriber's own uuid, the older global token. Used when `token` is not given. */
+  subscriberUuid?: string
 }
 
 /** The app's own address, with a scheme, for links in the email. */
@@ -38,10 +45,13 @@ function unsubscribeHeaders(unsubscribeUrl: string): Record<string, string> | un
  * to the framework's.
  */
 export async function sendSubscriptionConfirmation(options: SubscriptionConfirmationOptions): Promise<void> {
-  const { to, subscriberUuid } = options
+  const { to } = options
+  const unsubscribeToken = options.token || options.subscriberUuid
+  if (!unsubscribeToken)
+    throw new Error('[mail] sendSubscriptionConfirmation needs a token for the unsubscribe link')
 
   const appName = config.app.name || 'Stacks'
-  const unsubscribeUrl = url('email.unsubscribe', { token: subscriberUuid })
+  const unsubscribeUrl = url('email.unsubscribe', { token: unsubscribeToken })
   const subject = `You are on the ${appName} list`
 
   const { html, text } = await template('subscription-confirmation', {

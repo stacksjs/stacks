@@ -1,10 +1,23 @@
 import { Action } from '@stacksjs/actions/runtime'
-import { isUniqueViolation, Subscriber, SubscriberEmail } from '@stacksjs/orm'
+import { emailAddress, NewsletterListUnavailableError, subscribe } from '@stacksjs/newsletter'
+import { SubscriberEmail } from '@stacksjs/orm'
 import { rateLimit } from '@stacksjs/router'
 import { sendSubscriptionConfirmation } from '../Mail/SubscriptionConfirmation'
-import { formReturnLocation, normalizeEmail, wantsFormRedirect } from './form-return'
+import { formReturnLocation, wantsFormRedirect } from './form-return'
 
 /**
+ * The public newsletter signup, `POST /api/email/subscribe`, behind every
+ * `<SubscribeForm>` and any hand-written form.
+ *
+ * It goes through `@stacksjs/newsletter`'s `subscribe()`, so a signup joins a
+ * list (the default list, or a public one the form names in `list`) and
+ * campaigns reach it. It used to write only a `subscribers` row and join no
+ * list at all, so nobody who signed up on a website ever got a campaign.
+ *
+ * Fields: `email`, `source` (where they signed up, stored on the row), `list`
+ * (a public list's slug; private lists are refused), `return` (where a plain
+ * form post comes back to).
+ *
  * What a signup came to. A plain form gets it back as `?subscribe=<outcome>`;
  * a script gets the JSON beside it.
  *
@@ -18,7 +31,7 @@ type Outcome = 'subscribed' | 'already' | 'invalid' | 'busy' | 'error'
 
 export default new Action({
   name: 'SubscriberEmailAction',
-  description: 'Save emails from subscribe page and send confirmation email',
+  description: 'Subscribe an address to a newsletter list and send the welcome email',
   method: 'POST',
 
   async handle(request: RequestInstance) {
@@ -43,50 +56,40 @@ export default new Action({
       throw err
     }
 
-    const email = normalizeEmail(request.get('email'))
-    const source = String(request.get('source') || 'homepage').slice(0, 120)
+    const email = emailAddress(request.get('email'))
+    const source = String(request.get('source') || 'homepage').slice(0, 100)
+    const list = String(request.get('list') || '').trim() || undefined
 
     if (!email)
       return answer('invalid', { success: false, message: 'A valid email is required' })
 
     try {
-      const existing = await Subscriber.where('email', email).first()
+      const result = await subscribe(email, { list, source, publicOnly: true })
 
-      if (existing) {
-        if (existing.status !== 'unsubscribed')
-          return answer('already', { success: true, message: 'Already subscribed' })
+      if (!result.created && !result.reactivated)
+        return answer('already', { success: true, message: 'Already subscribed' })
 
-        // They left and came back. Telling them "already subscribed" while
-        // the row still says unsubscribed would keep them off every send.
-        await existing.update({ status: 'subscribed', unsubscribed_at: null, source })
-        await SubscriberEmail.create({ email, source })
-        welcome(email, existing.uuid)
-        return answer('subscribed', { success: true, message: 'Subscribed' })
-      }
+      // The signup log, tied to the person it belongs to.
+      await SubscriberEmail.create({ email, source, subscriber_id: result.subscriberId })
 
-      // Create subscriber record. The check above is a fast path; two requests
-      // for the same email can still both pass it and race into the
-      // subscribers.email unique index (#1957). Treat the loser's unique
-      // violation as the same "already subscribed" success — the response
-      // contract (and its enumeration semantics) is unchanged.
-      let subscriber: any
-      try {
-        subscriber = await Subscriber.create({ email, status: 'subscribed', source })
-      }
-      catch (err) {
-        if (isUniqueViolation(err))
-          return answer('already', { success: true, message: 'Already subscribed' })
-        throw err
-      }
+      welcome(email, result.token)
 
-      // Log the email event
-      await SubscriberEmail.create({ email, source })
-
-      welcome(email, subscriber.uuid)
-
-      return answer('subscribed', { success: true, subscriber })
+      return answer('subscribed', {
+        success: true,
+        message: result.reactivated ? 'Subscribed again' : 'Subscribed',
+        subscriber: { email, listId: result.listId },
+      })
     }
     catch (err) {
+      // A form naming a list that is missing or private: say so plainly, as
+      // a 422, rather than a 500 carrying the internal error's name.
+      if (err instanceof NewsletterListUnavailableError) {
+        console.error('[subscribe] signup refused:', err.message)
+        return backToForm
+          ? answer('error', {})
+          : response.json({ success: false, error: 'list_unavailable', message: 'That list is not open for signups.' }, 422)
+      }
+
       if (!backToForm)
         throw err
 
@@ -96,9 +99,13 @@ export default new Action({
   },
 })
 
-/** Send the welcome email without holding up the response; a failure is logged. */
-function welcome(to: string, subscriberUuid: string): void {
-  sendSubscriptionConfirmation({ to, subscriberUuid }).catch((err: unknown) => {
+/**
+ * Send the welcome email without holding up the response; a failure is
+ * logged. `token` is the list membership's own, so the unsubscribe link in
+ * the email leaves that list and nothing else.
+ */
+function welcome(to: string, token: string): void {
+  sendSubscriptionConfirmation({ to, token }).catch((err: unknown) => {
     const message = err instanceof Error ? err.message : String(err)
     console.error(`Failed to send confirmation email to ${to}:`, message)
   })

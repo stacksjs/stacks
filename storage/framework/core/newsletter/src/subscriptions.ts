@@ -19,6 +19,33 @@ export function normalizeEmail(email: string): string {
 }
 
 /**
+ * An address a subscription can be stored under, normalized, or null.
+ *
+ * One `@`, a dot in the domain, no spaces, quotes or angle brackets, at most
+ * 254 characters: the shape every mail system accepts. Checking only for an
+ * `@` let `<b>@x` onto lists and into every page that prints an address. The
+ * public signup endpoint and `subscribe()` share this check.
+ */
+export function emailAddress(value: unknown): string | null {
+  if (typeof value !== 'string')
+    return null
+
+  const email = normalizeEmail(value)
+  if (email.length > 254)
+    return null
+
+  return /^[^\s@<>"'(),;:]+@[^\s@<>"'(),;:]+\.[^\s@<>"'(),;:]{2,}$/.test(email) ? email : null
+}
+
+/** A named list that does not exist, or that a public caller may not join. */
+export class NewsletterListUnavailableError extends Error {
+  constructor(list: string | number, reason: 'missing' | 'private') {
+    super(reason === 'missing' ? `[newsletter] List '${String(list)}' not found` : `[newsletter] List '${String(list)}' is not public`)
+    this.name = 'NewsletterListUnavailableError'
+  }
+}
+
+/**
  * Every subscriber row for an address, oldest first, whatever case each was
  * stored in.
  *
@@ -67,8 +94,8 @@ export async function listStatusForEmail(email: string, listId: number): Promise
   return memberships.find(row => row.status === 'subscribed')?.status ?? memberships[0]?.status ?? null
 }
 
-async function resolveListId(listRef: string | number | undefined): Promise<number> {
-  if (listRef == null) {
+async function resolveListId(listRef: string | number | undefined, publicOnly = false): Promise<number> {
+  if (listRef == null || listRef === '') {
     // Default list — auto-create on first use so dev/staging works
     // out of the box without a "go seed a list first" step.
     let list = await lists.find('default')
@@ -78,17 +105,54 @@ async function resolveListId(listRef: string | number | undefined): Promise<numb
   }
   const list = await lists.find(listRef)
   if (!list)
-    throw new Error(`[newsletter] List '${String(listRef)}' not found`)
+    throw new NewsletterListUnavailableError(listRef, 'missing')
+  // `is_public` is stored as a number by some dialects and a boolean by others.
+  const isPublic = (list as { is_public?: unknown, isPublic?: unknown }).is_public ?? (list as { isPublic?: unknown }).isPublic
+  if (publicOnly && !(isPublic === true || isPublic === 1 || isPublic === '1' || isPublic === 'true'))
+    throw new NewsletterListUnavailableError(listRef, 'private')
   return list.id
 }
 
+/**
+ * Sign the person behind `subscriberId` back up globally when they had used
+ * the legacy unsubscribe link, which marks the `subscribers` row itself.
+ * Answers whether it did.
+ */
+async function reactivateSubscriber(subscriberId: number): Promise<boolean> {
+  const row = await db
+    .selectFrom('subscribers')
+    .select(['status'])
+    .where('id', '=', subscriberId)
+    .executeTakeFirst() as { status?: string } | undefined
+
+  if (row?.status !== 'unsubscribed')
+    return false
+
+  await db
+    .updateTable('subscribers')
+    .set({ status: 'subscribed', unsubscribed_at: null })
+    .where('id', '=', subscriberId)
+    .execute()
+  return true
+}
+
+/**
+ * Put an address on a list (the default list when none is named).
+ *
+ * One `subscribers` row per person, one `email_list_subscribers` row per
+ * list. A person who had opted out, of this list or globally, is signed back
+ * up and `reactivated` says so; they keep their original token, so an old
+ * unsubscribe link they kept still works. Calling it again for someone
+ * already on the list changes nothing and answers `created: false`.
+ */
 export async function subscribe(email: string, options: SubscribeOptions = {}): Promise<SubscribeResult> {
-  if (!email || !email.includes('@'))
+  const address = emailAddress(email)
+  if (!address)
     throw new Error('[newsletter] subscribe() requires a valid email address')
 
-  email = normalizeEmail(email)
-  const listId = await resolveListId(options.list)
-  const source = options.source ?? 'api'
+  email = address
+  const listId = await resolveListId(options.list, options.publicOnly)
+  const source = (options.source ?? 'api').slice(0, 100)
 
   // Upsert the Subscriber row — `subscribers.email` is unique, so the
   // same address shared across multiple lists points at one row.
@@ -103,6 +167,7 @@ export async function subscribe(email: string, options: SubscribeOptions = {}): 
     subscriberIds = await subscriberIdsForEmail(email)
   }
   const subscriberId = subscriberIds[0]!
+  let reactivated = await reactivateSubscriber(subscriberId)
 
   // Pivot row: one per (subscriber, list)
   const existing = (await listMemberships(subscriberIds, listId))[0]
@@ -116,11 +181,14 @@ export async function subscribe(email: string, options: SubscribeOptions = {}): 
         .set({ status: 'subscribed', unsubscribed_at: null })
         .where('id', '=', Number(existing.id))
         .execute()
+      reactivated = true
     }
     return {
       created: false,
+      reactivated,
       email,
       listId,
+      subscriberId,
       token: existing.uuid,
     }
   }
@@ -139,8 +207,10 @@ export async function subscribe(email: string, options: SubscribeOptions = {}): 
 
   return {
     created: true,
+    reactivated,
     email,
     listId,
+    subscriberId,
     token: uuid,
   }
 }
