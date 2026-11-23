@@ -25,18 +25,37 @@ a {
   text-decoration: none;
 }
 
-/* Entrance motion (MOTION 5): hero rises on load, sections rise into
-  view on scroll via CSS view() timelines. Transform + opacity only,
-  and everything collapses to static under reduced motion. */
+/*
+ * Entrance motion: the hero settles on load and each section settles as it
+ * scrolls into view, on a CSS view() timeline. Everything collapses to
+ * static under reduced motion.
+ *
+ * The sections move and do not fade. A fade tied to scroll position leaves
+ * whatever is crossing the bottom edge of the window partly transparent for
+ * as long as the reader stops there, which is dimmed text at rest: the
+ * comparison table's header row sat at 2.3:1 on a desktop window for exactly
+ * that reason. Position costs nothing to read, so it is the only thing the
+ * scroll drives. The distance is fixed rather than a share of the element,
+ * so a table taller than the window finishes settling after the same few
+ * pixels as a one-line card.
+ *
+ * `rise-in` still fades, and is for what enters once, on a clock rather
+ * than on the scroll: the holding card.
+ */
 @keyframes rise-in {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: none; }
 }
 
+@keyframes settle-in {
+  from { transform: translateY(18px); }
+  to { transform: none; }
+}
+
 .rise {
-  animation: rise-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: settle-in linear both;
   animation-timeline: view();
-  animation-range: entry 0% entry 45%;
+  animation-range: entry 0px entry 140px;
 }
 
 @supports not (animation-timeline: view()) {

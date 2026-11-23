@@ -93,8 +93,11 @@
   padding: clamp(3rem, 6vw, 5.5rem) 0 clamp(2.5rem, 4vw, 3.5rem);
 }
 
+/* The hero settles into place rather than fading in. It holds the largest
+   thing on the page, and a block that starts transparent is a block the
+   browser cannot count as painted until the fade is under way. */
 .home-hero-copy > * {
-  animation: rise-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: settle-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .home-hero-copy > *:nth-child(2) { animation-delay: 0.06s; }
@@ -171,7 +174,7 @@
 .home-hero-visual {
   position: relative;
   min-width: 0;
-  animation: rise-in 0.9s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: settle-in 0.7s 0.08s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .home-hero-visual::before {
