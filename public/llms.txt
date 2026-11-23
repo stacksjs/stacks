@@ -1,6 +1,6 @@
 # Stacks
 
-> Stacks is a full-stack TypeScript framework that runs on Bun. One install gives you routing, an ORM whose migrations are generated from your models, auth, queues, mail, a CMS, commerce, AI drivers, an admin dashboard, tests, and deploys to servers you own. It is open source under the MIT license.
+> Stacks is the all-in-one TypeScript framework, running on Bun. One install gives you routing, an ORM whose migrations are generated from your models, auth, queues, mail, a CMS, commerce, AI drivers, an admin dashboard, tests, and deploys to servers you own. It is open source under the MIT license.
 
 Stacks is installed with Pantry and driven by the `buddy` CLI: `panx buddy new my-app` creates a project, `buddy dev` serves the frontend, API, docs, and dashboard, and `buddy deploy` ships them. Schema, validation, relationships, and the REST API of a model are declared once in `defineModel()`, and migrations are generated from it. Every page below is server-rendered HTML.
 

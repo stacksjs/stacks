@@ -19,7 +19,7 @@ const footerYear = 2026
           <span class="brand-name">Stacks</span>
         </a>
         <p class="footer-blurb">
-          The full-stack TypeScript framework. Routing, models, auth, CMS, commerce, queues, mail, storage, realtime, search, tests, and cloud deploys in one install.
+          The all-in-one TypeScript framework. Routing, models, auth, CMS, commerce, queues, mail, storage, realtime, search, tests, and cloud deploys in one install.
         </p>
         <div class="footer-actions">
           <a class="button primary" href="/docs" data-no-router>Read the docs</a>

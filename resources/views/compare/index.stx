@@ -49,7 +49,7 @@ const matrixRows = [
   {
     slug: '',
     name: 'Stacks',
-    kind: 'Full-stack TypeScript framework',
+    kind: 'All-in-one TypeScript framework',
     icon: 'i-hugeicons-layers-01',
     isStacks: true,
     cells: cellsFor(stacksMatrix),

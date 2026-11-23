@@ -17,7 +17,7 @@ import { breadcrumbJsonLd } from '../data/schema'
 
 
 const pageTitle = 'Blog - Stacks'
-const pageDescription = 'Notes from building Stacks, a full-stack TypeScript framework on Bun, on the way to its first release.'
+const pageDescription = 'Notes from building Stacks, the all-in-one TypeScript framework, on the way to its first release.'
 const canonicalPath = '/blog'
 const pageStyles = ['blog']
 const jsonLd = breadcrumbJsonLd([{ name: 'Blog', path: '/blog' }])

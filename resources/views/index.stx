@@ -42,9 +42,9 @@ const comingSoonBypassToken = 'trailhead'
 const siteUrl = 'https://stacksjs.com'
 
 // Read by the shared marketing-head partial.
-const pageTitle = 'Stacks - Full-stack TypeScript framework'
+const pageTitle = 'Stacks - The all-in-one TypeScript framework'
 const canonicalPath = '/'
-const siteDescription = 'Stacks is a full-stack TypeScript framework. One UI ships to web, desktop, and mobile, with CMS, commerce, AI, auth, queues, and cloud deployment built in.'
+const siteDescription = 'Stacks is the all-in-one TypeScript framework. Auth, an ORM, a CMS, commerce, AI, queues, mail, an admin dashboard, and cloud deploys in one install, with one UI for web, desktop, and mobile.'
 
 // Structured data. Built as a string here so the @-prefixed schema.org keys
 // (@context, @type) never reach the stx directive scanner; emitted raw in the
@@ -329,7 +329,7 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
             </a>
             <h1 id="hero-heading" class="home-title">The whole stack, <span>one framework.</span></h1>
             <p class="home-lede">
-              Models, auth, CMS, commerce, AI, queues, and cloud deploys, in one typed codebase that ships to web, desktop, and mobile.
+              The all-in-one TypeScript framework. Models, auth, CMS, commerce, AI, queues, and cloud deploys in one typed codebase, with nothing to stitch together. Ship it to web, desktop, and mobile.
             </p>
             <div class="home-actions">
               <a class="button primary" href="#start">Get started<i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i></a>

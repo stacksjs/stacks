@@ -6,7 +6,7 @@ const performanceStats = [
 ]
 
 const features = [
-  'Full-stack TypeScript framework',
+  'All-in-one TypeScript framework',
   'Built on Bun—the fastest JavaScript runtime',
   'Elegant ORM with type-safe queries',
   'STX component system',

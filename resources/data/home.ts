@@ -56,7 +56,7 @@ export interface Faq {
 export const faqs: Faq[] = [
   {
     question: 'What is Stacks?',
-    answer: 'Stacks is a full-stack TypeScript framework that runs on Bun. One install gives you routing, an ORM whose migrations are generated from your models, auth, queues, mail, a CMS, commerce, AI drivers, an admin dashboard, tests, and deploys to servers you own. It is open source under the MIT license.',
+    answer: 'Stacks is the all-in-one TypeScript framework, running on Bun. One install gives you routing, an ORM whose migrations are generated from your models, auth, queues, mail, a CMS, commerce, AI drivers, an admin dashboard, tests, and deploys to servers you own. It is open source under the MIT license.',
     link: { label: 'See every feature', url: '/features' },
   },
   {

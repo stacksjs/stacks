@@ -1,9 +1,9 @@
 ---
 title: Introducing Stacks
-description: Stacks is a full-stack TypeScript framework for Bun, five years in the making. It is not out yet. Here is what it is, where it stands, why we wrote nearly every piece of it ourselves, and how to get in early.
+description: Stacks is the all-in-one TypeScript framework, five years in the making. It is not out yet. Here is what it is, where it stands, why we wrote nearly every piece of it ourselves, and how to get in early.
 date: 2026-06-12
 author: The Stacks Team
-authorBio: The team building Stacks, a full-stack TypeScript framework whose only dependencies are TypeScript and Bun.
+authorBio: The team building Stacks, the all-in-one TypeScript framework whose only dependencies are TypeScript and Bun.
 featured: true
 ---
 
@@ -15,11 +15,11 @@ We are writing about it now because the pieces are close, and we would like you 
 
 ## What Stacks is
 
-Stacks is a full-stack TypeScript framework. One codebase gives you routing, server-rendered views, an ORM, authentication, a CMS, queues, mail, storage, realtime, search, tests, documentation, a blog and cloud deployment. You scaffold with `buddy`, build your product, and ship every surface (marketing site, docs, blog, API, app server and infrastructure) with a single deploy.
+Stacks is the all-in-one TypeScript framework. One codebase gives you routing, server-rendered views, an ORM, authentication, a CMS, queues, mail, storage, realtime, search, tests, documentation, a blog and cloud deployment. You scaffold with `buddy`, build your product, and ship every surface (marketing site, docs, blog, API, app server and infrastructure) with a single deploy.
 
-If you have used Laravel, the shape will feel familiar: expressive routing, an Eloquent-style ORM with traits and relationships, factories and seeders, queues and jobs, a real CLI. That is deliberate. Laravel got the developer experience right. We wanted that same cohesion, native to TypeScript, running on Bun, with types flowing end to end and no context switching between a dozen unrelated packages.
+If you have used Laravel, the shape will feel familiar: expressive routing, an Eloquent-style ORM with traits and relationships, factories and seeders, queues and jobs, a real CLI. That is deliberate. Laravel got the developer experience right. We wanted that cohesion without the ecosystem hunt: no admin panel to buy, no queue dashboard to add, no hosting product to subscribe to. Everything in one framework, native to TypeScript, with types flowing end to end.
 
-> We are not trying to match the Laravel framework. We are trying to match the whole Laravel ecosystem: the framework, the first-party packages, the tooling, the deploy story and the docs platform.
+> Most frameworks hand you a starting point and an ecosystem to shop in. Stacks is the whole thing: the framework, the packages, the tooling, the deploy story and the docs platform, in one install.
 
 ## Where things stand
 

@@ -62,7 +62,7 @@ describe('the questions', () => {
     // /llms.txt quotes this answer as the site's summary, and an answer
     // engine lifts the first sentence of whatever it finds.
     expect(faqs[0]!.question).toBe('What is Stacks?')
-    expect(faqs[0]!.answer.startsWith('Stacks is a ')).toBe(true)
+    expect(faqs[0]!.answer).toMatch(/^Stacks is (a|an|the) /)
   })
 
   for (const faq of faqs) {

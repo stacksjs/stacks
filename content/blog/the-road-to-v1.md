@@ -3,7 +3,7 @@ title: The Road to v1.0s
 description: After five years of building in private, the work now is to ship in public - and to take every package in the Stacks catalog all the way to a stable, semver-backed 1.0. This is the map of that climb.
 date: 2026-06-12
 author: The Stacks Team
-authorBio: The team building Stacks - a full-stack TypeScript framework whose only dependencies are TypeScript and Bun.
+authorBio: The team building Stacks, the all-in-one TypeScript framework whose only dependencies are TypeScript and Bun.
 poster: /assets/images/marketing-park-summit.svg
 featured: false
 ---

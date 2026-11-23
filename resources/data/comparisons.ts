@@ -204,10 +204,10 @@ export const comparisons: Comparison[] = [
       lede: 'Next.js is a rendering framework with route handlers attached. Everything behind the request, the database layer, the auth, the queue, the mail, the admin, is a decision you make and maintain. Stacks makes those decisions and ships them typed against each other.',
       summary: 'Next.js is the default way to build a React application in 2026. App Router, server components, streaming, and the image and font pipelines are excellent, the ecosystem is the largest in the space, and Vercel makes deploying a React app close to effortless. It is a front end framework that grew server capabilities, and it is honest about stopping where your data layer starts.',
       theirStrengths: [
-        { title: 'The React ecosystem', text: 'Every component library, every hiring pool, every Stack Overflow answer. If your interface is React and your team is React, that gravity is real and it is worth something.' },
-        { title: 'Server components and streaming', text: 'The RSC model has the deepest production track record and tooling for partial rendering and client bundle size. STX has server components, streaming, and islands too, but React\'s version has far more teams and years behind it.' },
-        { title: 'Vercel', text: 'Preview deploys per pull request, edge rendering, and analytics with no infrastructure work at all. Stacks deploys to infrastructure you own, a Hetzner box, AWS, or any Linux server over SSH, which is more control and more responsibility.' },
-        { title: 'Asset pipelines', text: 'next/font self-hosts and subsets fonts with no layout shift, and next/image is heavily battle-tested. STX has an Image component with srcset and WebP/AVIF output, and fonts are declared in config, but Google families load from Google\'s servers and nothing subsets them or adjusts the fallback to stop the layout shifting.' },
+        { title: 'The React ecosystem', text: 'React\'s ecosystem is the largest there is, and a Next.js app leans on it: one library for auth, another for the database, another for email, another for jobs. Stacks ships all of those in the box, so the ecosystem you need is the one you already installed.' },
+        { title: 'Server components and streaming', text: 'React Server Components have the longest production record for partial rendering. STX has server components, streaming, and islands too, with the data layer already underneath instead of left for you to choose.' },
+        { title: 'Vercel', text: 'Vercel makes hosting a front end effortless, then meters it per seat, request, and function. Stacks deploys the whole product, front end, API, workers, and database, to a Hetzner box, AWS, or any Linux server you own, with one command.' },
+        { title: 'Asset pipelines', text: 'next/font and next/image are polished and heavily used. STX has an Image component with srcset and WebP/AVIF output and fonts declared in config, next to the rest of what a product needs.' },
       ],
       ourStrengths: [
         { title: 'The backend is not an exercise', text: 'Models, migrations, auth, roles, queues, mail, storage, search, realtime, and an admin dashboard are in the install, not in a list of packages to evaluate.' },
@@ -235,7 +235,7 @@ export const comparisons: Comparison[] = [
         { title: 'Start with the workloads', text: 'Moving queues, mail, and cron out of a Next.js app into Stacks is usually the first thing that pays for itself.' },
       ],
       verdict: {
-        pickThem: 'Your interface is React, your team knows it, and you want the largest ecosystem and the easiest hosting story in the industry. Next.js plus a few services is a completely reasonable stack and it is the safe choice.',
+        pickThem: 'Your team is all in on React, and you are happy to assemble the backend yourself: auth, a database, queues, mail, and hosting, each from a different vendor. Next.js is a strong front end to build that stack around.',
         pickStacks: 'You are tired of assembling and maintaining the backend half yourself, and you would rather have one typed application with the queue, the mail, the admin, and the deploy already in it, running on servers you own.',
       },
       related: ['t3-stack', 'remix', 'nuxt'],
@@ -267,10 +267,10 @@ export const comparisons: Comparison[] = [
       lede: 'Nuxt covers more of the stack than most meta-frameworks: Nitro gives it a real server, and there is a module for nearly everything. The difference is that a Nuxt application is assembled out of modules you selected, and a Stacks application is one thing that already fits together.',
       summary: 'Nuxt is the Vue answer to the meta-framework question, and it is a good one. File-based routing, auto-imports, layers, and a huge module registry cover auth, content, images, SEO, and testing. Nitro deploys the same application to Node, Deno, Bun, Cloudflare, and Lambda from one build, which is a genuinely useful property that Stacks does not match.',
       theirStrengths: [
-        { title: 'Deployment portability', text: 'Nitro presets target a dozen platforms from the same codebase. Stacks targets infrastructure you own (Hetzner, AWS, or any box over SSH) and that is the path it is good at.' },
-        { title: 'The module registry', text: 'Hundreds of maintained modules, and layers let a team share configuration across projects. Nothing in Stacks matches that breadth of community add-ons.' },
-        { title: 'Vue', text: 'If your team writes Vue, single-file components, the composition API, and the devtools are a real productivity story. STX reads Vue-style template syntax, but it is not Vue, and Vue component libraries do not run in it.' },
-        { title: 'Content and SEO tooling', text: 'Nuxt Content and the SEO modules are mature and well travelled for documentation and marketing sites.' },
+        { title: 'Deployment portability', text: 'Nitro presets target a dozen hosting platforms. Stacks takes the other road: one command deploys the whole product, app, API, workers, and mail, to Hetzner, AWS, or any server you can reach over SSH.' },
+        { title: 'The module registry', text: 'Nuxt has hundreds of community modules, and a production app needs a lot of them. In Stacks, auth, the CMS, queues, mail, search, and the dashboard are first-party and built in, so there is far less to install and keep in step.' },
+        { title: 'Vue', text: 'If your team writes Vue, single-file components and the composition API are a real productivity story. STX reads Vue-style template syntax and adds signals, server rendering, and a backend in the same project.' },
+        { title: 'Content and SEO tooling', text: 'Nuxt Content and the SEO modules are mature for documentation and marketing sites. Stacks ships a CMS, a blog, docs, sitemaps, and structured data without adding a module.' },
       ],
       ourStrengths: [
         { title: 'One decision instead of twenty', text: 'Auth, ORM, jobs, mail, storage, and admin arrive together and are maintained together, rather than as modules that version independently.' },
@@ -298,7 +298,7 @@ export const comparisons: Comparison[] = [
         { title: 'Move the server routes first', text: 'Nitro route handlers with real database work are the pieces that gain the most from moving into actions and models.' },
       ],
       verdict: {
-        pickThem: 'You are a Vue team, or you need one codebase that deploys to many different platforms. Nuxt is the most complete meta-framework in JavaScript and its module ecosystem is a genuine advantage.',
+        pickThem: 'You are a Vue team that wants a front end first, and you are comfortable choosing modules for auth, data, jobs, and mail and keeping them in step. Nuxt is a capable meta-framework for exactly that.',
         pickStacks: 'The parts you keep adding modules for, auth, database, jobs, mail, admin, are the parts you would rather have as one maintained thing.',
       },
       related: ['nextjs', 'sveltekit', 'adonisjs'],
@@ -329,10 +329,10 @@ export const comparisons: Comparison[] = [
       lede: 'SvelteKit is the most elegant front end story in this comparison and the most deliberately minimal backend one. Load functions, form actions, and adapters are the whole server surface; the database, the auth, the queue, and the admin are yours to select.',
       summary: 'Svelte compiles components away, so the runtime a browser downloads is small, and runes made the reactivity model clearer still. SvelteKit adds file routing, load functions, form actions with progressive enhancement, and adapters for many hosts. Teams that value bundle size and template ergonomics rate it highest of the meta-frameworks, and that judgement is well founded.',
       theirStrengths: [
-        { title: 'Bundle size and runtime cost', text: 'Compiled components with no virtual DOM is a real advantage on constrained devices, and STX makes different tradeoffs.' },
-        { title: 'Progressive enhancement', text: 'Form actions that work without JavaScript are a first-class idea in SvelteKit rather than an afterthought.' },
-        { title: 'Ergonomics', text: 'Runes and the template syntax are widely considered the nicest to write in this category, and that matters daily.' },
-        { title: 'Adapters', text: 'Deploy to Cloudflare, Vercel, Netlify, Node, or Bun by changing one adapter.' },
+        { title: 'Bundle size and runtime cost', text: 'Compiled components with no virtual DOM keep bundles small on constrained devices. STX sends no client runtime to a page that does not need one, and server renders the rest.' },
+        { title: 'Progressive enhancement', text: 'Form actions that work without JavaScript are first-class in SvelteKit. Stacks forms post to real server actions too, with validation and redirects handled for you.' },
+        { title: 'Ergonomics', text: 'Runes and Svelte\'s template syntax are pleasant to write every day. STX has the same feel with signals and directives, and sits on a backend you do not have to build.' },
+        { title: 'Adapters', text: 'One adapter change moves SvelteKit between Cloudflare, Vercel, Netlify, and Node. Stacks deploys the full product, database and workers included, to your own servers with one command.' },
       ],
       ourStrengths: [
         { title: 'The half SvelteKit leaves out', text: 'Models, migrations, auth, roles, queues, mail, storage, search, and an admin dashboard are already there and already typed together.' },
@@ -360,7 +360,7 @@ export const comparisons: Comparison[] = [
         { title: 'Expect to rewrite templates', text: 'Svelte components do not port to STX. Plan a page at a time rather than a big-bang rewrite.' },
       ],
       verdict: {
-        pickThem: 'The interface is the product, bundle size matters, and you are happy owning the backend decisions. SvelteKit is excellent at exactly what it set out to do.',
+        pickThem: 'The interface is the product, bundle size is the metric that matters most, and you are happy to choose and wire every backend piece yourself. SvelteKit is excellent at that front end job.',
         pickStacks: 'The backend decisions are the ones eating your time, and you want them made, maintained, and typed against your views.',
       },
       related: ['nextjs', 'nuxt', 'astro'],
@@ -391,10 +391,10 @@ export const comparisons: Comparison[] = [
       lede: 'Loaders, actions, forms, and nested routes are a genuinely good model, and Stacks shares most of the philosophy: server first, HTML first, no state library needed to show a list of rows. The difference is what happens after the response, where Remix stops and Stacks has a queue, a mailer, a scheduler, and an admin.',
       summary: 'Remix v2 became the framework mode of React Router 7, and React Router 8 (June 2026) continues it, with breaking changes small enough to make in v7 first. The Remix name now belongs to Remix 3, a separate full-stack framework with its own auth, sessions, and database integrations, built on its own component model rather than React and stable since October 2026; this page compares the React Router path. It is built around web standards: Request and Response, forms that post, nested routes that own their data and their errors. It runs anywhere a fetch handler runs, and the mental model is smaller than most of its peers. Teams that adopted it rarely wanted to go back to client-side data fetching, and that is a strong signal.',
       theirStrengths: [
-        { title: 'Nested routing and error boundaries', text: 'Data, pending state, and errors scoped per route segment is a better model than most frameworks offer. Stacks has layouts and @errorBoundary blocks, but no per-segment loader model.' },
-        { title: 'Standards all the way down', text: 'Request, Response, FormData, and fetch means less framework-specific knowledge to carry between jobs.' },
-        { title: 'React and its ecosystem', text: 'The component libraries, the tooling, and the hiring pool.' },
-        { title: 'Runs almost anywhere', text: 'Any platform with a fetch handler will host it, including workers and edge runtimes.' },
+        { title: 'Nested routing and error boundaries', text: 'Data, pending state, and errors scoped per route segment is a strong model. Stacks gives you layouts, @errorBoundary blocks, and typed actions, with the data layer already underneath.' },
+        { title: 'Standards all the way down', text: 'Request, Response, FormData, and fetch all the way down. Stacks runs on the same web standards on Bun, so that knowledge carries straight over.' },
+        { title: 'React and its ecosystem', text: 'The component libraries, the tooling, and the hiring pool. With Stacks you need fewer of them: the backend pieces a React Router app pulls in from npm are already built in.' },
+        { title: 'Runs almost anywhere', text: 'Any platform with a fetch handler will host it, including workers and edge runtimes. Stacks deploys to servers you own, with the database, queues, and mail beside the app.' },
       ],
       ourStrengths: [
         { title: 'A data layer, not a loader', text: 'Remix tells you where to fetch data. Stacks gives you the models, the migrations, the validation, and the factories that produce it.' },
@@ -422,7 +422,7 @@ export const comparisons: Comparison[] = [
         { title: 'Components are the cost', text: 'React components are the part that does not port. Consider keeping React Router on the front while the backend moves.' },
       ],
       verdict: {
-        pickThem: 'You want React with a standards-based server model, and nested routing with per-segment data and errors is worth building the rest around.',
+        pickThem: 'You want React with a standards-based server model, nested routing with per-segment data is worth building around, and you will bring your own database, auth, queues, and mail.',
         pickStacks: 'You like that philosophy but want the database, the queue, the mail, and the admin to come with it.',
       },
       related: ['nextjs', 'sveltekit', 't3-stack'],
@@ -453,10 +453,10 @@ export const comparisons: Comparison[] = [
       lede: 'For a marketing site, a blog, or documentation, Astro is hard to beat: almost no client JavaScript, content collections with type-checked frontmatter, and islands only where you need interactivity. Stacks is not trying to win that comparison. It is the answer when the site grows accounts, a dashboard, and a queue.',
       summary: 'Astro ships zero JavaScript by default, lets you drop React, Vue, or Svelte components in as islands, and has the most pleasant content pipeline in the ecosystem. Content collections, image optimisation, and the integrations catalogue make a docs or marketing site fast to build and fast to load. Actions, sessions, and on-demand rendering have extended it toward applications, but content remains its centre of gravity. Since January 2026 the Astro team has been part of Cloudflare, with the framework kept open source and multi-platform.',
       theirStrengths: [
-        { title: 'Content sites, decisively', text: 'Content collections, MDX, and the image pipeline are better than what Stacks offers for a pure content site, and the output is lighter.' },
-        { title: 'Bring any component library', text: 'React, Vue, Svelte, and Solid islands in one project is a genuinely useful escape hatch.' },
-        { title: 'Static output', text: 'A fully static build deployed to any CDN has an operational simplicity nothing here beats.' },
-        { title: 'Integrations catalogue', text: 'Sitemaps, RSS, analytics, and search are usually one integration away.' },
+        { title: 'Content sites, decisively', text: 'Content collections, MDX, and a light image pipeline make Astro excellent for a pure content site. Stacks covers content too, with a CMS, a blog, and docs, and keeps going when the site needs accounts or payments.' },
+        { title: 'Bring any component library', text: 'React, Vue, Svelte, and Solid islands in one project is a useful escape hatch. STX has islands of its own, and the server side to go with them.' },
+        { title: 'Static output', text: 'A fully static build on a CDN is operationally simple. Stacks serves its pages from the same deploy as the API, the jobs, and the database, so a dynamic feature is never a second project.' },
+        { title: 'Integrations catalogue', text: 'Sitemaps, RSS, analytics, and search are usually one integration away in Astro. In Stacks they are already in the box.' },
       ],
       ourStrengths: [
         { title: 'It is an application framework', text: 'Accounts, roles, billing, background work, and an admin dashboard are the things Astro is not trying to be.' },
@@ -484,7 +484,7 @@ export const comparisons: Comparison[] = [
         { title: 'Consider keeping both', text: 'An Astro marketing site in front of a Stacks application is a sensible arrangement, and the shared palette is the only coupling.' },
       ],
       verdict: {
-        pickThem: 'The project is content, its success is measured in page speed and publishing convenience, and it will not grow accounts or background work.',
+        pickThem: 'The project is purely content, it is measured in page speed and publishing convenience, and you are confident it will never need accounts, payments, or background work.',
         pickStacks: 'There is a product behind the marketing site, or there will be, and you would rather not run two stacks to serve one brand.',
       },
       related: ['nextjs', 'redwoodjs', 'sveltekit'],
@@ -516,10 +516,10 @@ export const comparisons: Comparison[] = [
       lede: 'Redwood set out to be the full-stack framework JavaScript never had, and much of it landed: generators, cells, Prisma-backed services, auth providers, and background jobs. Stacks wants the same thing and made different choices about the runtime, the transport, and how much of the infrastructure belongs in the repository.',
       summary: 'RedwoodJS paired a React front end with a GraphQL services layer, Prisma for data, several auth providers, a mailer, background jobs, and generators that scaffold both halves of a feature. In 2025 the core team renamed it Redwood GraphQL and moved its focus to RedwoodSDK, a separate React Server Components framework built for Cloudflare, saying the original stays fully supported; its most recent release, 8.9, came in March 2026. The community continues the GraphQL framework as CedarJS. Its opinionated, batteries-included stance is still the closest philosophical neighbour Stacks has in JavaScript.',
       theirStrengths: [
-        { title: 'React and GraphQL maturity', text: 'If you want React on the front and a schema-first API in the middle, Redwood has years of that path worn in.' },
-        { title: 'Prisma', text: 'Prisma is a superb, widely known ORM with excellent tooling, and Redwood is built around it.' },
-        { title: 'Established community', text: 'Redwood has shipped since 2020, with more production users and third-party writing than Stacks, and CedarJS continues the GraphQL framework with a documented upgrade path.' },
-        { title: 'Cells', text: 'The cell pattern for loading, empty, failure, and success states is a genuinely good idea for data-driven interfaces.' },
+        { title: 'React and GraphQL maturity', text: 'If you want React on the front and a schema-first GraphQL API in the middle, Redwood has walked that path for years. Stacks is REST-first with typed routes, with no schema layer between you and your models.' },
+        { title: 'Prisma', text: 'Prisma is a widely known ORM with strong tooling, and Redwood is built around it. The Stacks ORM goes further: describe a model once and its migrations are generated for you.' },
+        { title: 'Established community', text: 'Redwood has shipped since 2020, and CedarJS continues the GraphQL framework with a documented upgrade path. Stacks answers with first-party breadth: a CMS, commerce, queues, mail, and deploys in the same install.' },
+        { title: 'Cells', text: 'The cell pattern for loading, empty, failure, and success states is a good idea for data-driven interfaces. Stacks views render on the server and arrive with their data.' },
       ],
       ourStrengths: [
         { title: 'One runtime', text: 'Bun for the server, the tests, the CLI, and the build today, with more runtimes planned and no separate bundler configuration to reconcile.' },
@@ -577,10 +577,10 @@ export const comparisons: Comparison[] = [
       lede: 'T3 is Next.js, tRPC, Prisma or Drizzle, Tailwind, and NextAuth.js or Better Auth, chosen because each is the strongest in its category and typed end to end. It works. The cost is that you own the seams: five upgrade cadences, five sets of release notes, and every integration point is yours to keep working.',
       summary: 'The T3 Stack is less a framework than a well-argued set of defaults, delivered by create-t3-app. Its central insight, that types should flow from the database to the component without hand-written contracts, is correct and influential. tRPC in particular made typed calls without a code generation step feel normal.',
       theirStrengths: [
-        { title: 'Every part is best in class', text: 'Prisma, tRPC, and Tailwind are excellent tools with large communities and deep documentation.' },
-        { title: 'tRPC end-to-end types', text: 'tRPC infers every procedure with no opt-in, and adds batching, subscriptions, and TanStack Query integration. Stacks infers types only for routes registered through its typed router.' },
-        { title: 'Swap any piece', text: 'Nothing is welded together, so you can replace the ORM or the auth layer without leaving the stack.' },
-        { title: 'Enormous shared knowledge', text: 'Every problem you hit has been hit publicly by thousands of others.' },
+        { title: 'Every part is best in class', text: 'Prisma, tRPC, and Tailwind are each excellent, and each is another dependency to choose, configure, and keep in step. Stacks ships the equivalents as one framework, tested together.' },
+        { title: 'tRPC end-to-end types', text: 'tRPC infers every procedure and adds batching, subscriptions, and TanStack Query. Stacks gives you typed routes and a typed client with no generation step, beside the ORM, auth, and queues tRPC leaves to you.' },
+        { title: 'Swap any piece', text: 'Nothing is welded together, so any layer can be swapped out. In Stacks the layers are designed together, which is why there is so little glue to write in the first place.' },
+        { title: 'Enormous shared knowledge', text: 'Every problem you hit has been hit publicly by thousands of others, usually at the seams between the tools. Stacks has far fewer seams to hit.' },
       ],
       ourStrengths: [
         { title: 'One upgrade, not five', text: 'The pieces version together, and buddy upgrade moves the whole application forward. buddy-bot comes configured in every new app, opening dependency pull requests every two hours with a dashboard issue to track them, so staying current is not a sixth thing to set up.' },
@@ -638,9 +638,9 @@ export const comparisons: Comparison[] = [
       lede: 'NestJS brought Angular-style architecture to the Node backend and gave large teams something to standardise on. Stacks aims at the same problem from the Laravel direction: fewer abstractions to configure, more of the application already written, and no front end left as an exercise.',
       summary: 'Nest is the most widely adopted structured backend framework in TypeScript. Modules, providers, decorators, and dependency injection give large codebases a shape, and the official packages cover configuration, validation, queues via BullMQ, WebSockets, GraphQL, and microservice transports. It is deliberately unopinionated about the database and about the front end.',
       theirStrengths: [
-        { title: 'Dependency injection', text: 'For very large teams, constructor injection and testable providers are a real architectural benefit, and Stacks does not offer an equivalent container.' },
-        { title: 'Microservice transports', text: 'gRPC, Kafka, NATS, RabbitMQ, and MQTT are first-class in Nest, which matters if the system is many services rather than one application.' },
-        { title: 'Adoption and hiring', text: 'Nest is the safe enterprise answer in Node, with a large pool of engineers who already know it.' },
+        { title: 'Dependency injection', text: 'For very large teams, constructor injection and testable providers are an architectural benefit. Stacks stays flatter: actions, models, and jobs you call and test directly.' },
+        { title: 'Microservice transports', text: 'gRPC, Kafka, NATS, RabbitMQ, and MQTT are first-class in Nest, which matters when the system is many services. Stacks is built for the other case: one application that already has everything it needs.' },
+        { title: 'Adoption and hiring', text: 'Nest is the familiar enterprise answer in Node. Stacks reads like the Laravel many engineers already know, in TypeScript, so a new hire is productive on day one.' },
         { title: 'GraphQL', text: 'Code-first and schema-first GraphQL are properly supported, where Stacks is REST-first.' },
       ],
       ourStrengths: [
@@ -702,9 +702,9 @@ export const comparisons: Comparison[] = [
       lede: 'Adonis has been doing batteries-included TypeScript on the server for years, with a real ORM, auth, validation, mail, and templating. If you want that today with a track record behind it, Adonis is a serious answer. Stacks differs in runtime, in how migrations are produced, and in how far past the application it reaches.',
       summary: 'AdonisJS is a mature, well-documented, Laravel-inspired framework for Node. Lucid is a capable Active Record ORM with migrations and factories, the auth package covers sessions and tokens, VineJS handles validation, Edge handles templates, and the CLI scaffolds the lot. Its ecosystem is smaller than Nest but its coherence is much higher.',
       theirStrengths: [
-        { title: 'Maturity', text: 'Years of production use, stable releases, and thorough documentation. Stacks is younger and moving faster, which cuts both ways.' },
+        { title: 'Maturity', text: 'Years of production use, stable releases, and thorough documentation. Stacks is younger and covers more ground: a CMS, commerce, an admin dashboard, desktop builds, and cloud deploys in the same install.' },
         { title: 'Lucid', text: 'A well-designed ORM with hand-written migrations, which some teams prefer precisely because they are explicit, and since v7 the model columns are generated from the database.' },
-        { title: 'Node ecosystem', text: 'Runs on Node with the whole npm operational tooling story behind it, where Stacks runs on Bun today, with more runtimes planned.' },
+        { title: 'Node ecosystem', text: 'Runs on Node with the whole npm tooling story behind it. Stacks runs on Bun, which installs, starts, and tests faster, and still reads the npm registry.' },
         { title: 'Front end of your choice', text: 'Edge templates, Inertia with React or Vue and end-to-end types since v7, or API only, which suits a team keeping a front end it already has.' },
       ],
       ourStrengths: [
@@ -764,10 +764,10 @@ export const comparisons: Comparison[] = [
       lede: 'Express and Fastify do one job well: take a request, run some middleware, return a response. That minimalism is why they are everywhere and why every Express codebase is different. Stacks is the opposite trade: conventions and batteries, at the cost of doing things its way.',
       summary: 'Express is the most deployed HTTP framework in JavaScript and the reference implementation of the middleware pattern. Fastify is the modern take: faster, schema-driven, with a well-designed plugin system and first-class TypeScript. Neither has an opinion about data, auth, jobs, or views, and both are excellent when that is what you want.',
       theirStrengths: [
-        { title: 'Ubiquity', text: 'Every engineer knows Express, every integration documents it, and it will still be maintained long after most of this page is out of date.' },
+        { title: 'Ubiquity', text: 'Every engineer knows Express and every integration documents it. It is a starting point, though: everything past routing is yours to choose and wire.' },
         { title: 'Nothing in the way', text: 'For a proxy, a webhook receiver, or a small service, a framework with opinions is overhead you do not need.' },
         { title: 'Fastify performance and schemas', text: 'JSON schema validation and serialisation make Fastify both fast and strict, which is a good combination for high-volume APIs.' },
-        { title: 'Plugin ecosystems', text: 'More than fifteen years of Express middleware, plus the Fastify plugin set, for anything you might bolt on.' },
+        { title: 'Plugin ecosystems', text: 'More than fifteen years of Express middleware and the Fastify plugin set, for anything you might bolt on. Stacks starts with those pieces already bolted on.' },
       ],
       ourStrengths: [
         { title: 'The application above the router', text: 'Models, migrations, validation, auth, queues, mail, storage, search, and admin, rather than a directory structure you invent.' },
@@ -826,7 +826,7 @@ export const comparisons: Comparison[] = [
       summary: 'Hono has become the default choice for edge and worker runtimes, and deservedly so: a small API, excellent TypeScript inference, a useful set of built-in middleware, and portability across every JavaScript runtime that matters. Its RPC mode gives typed clients without code generation, which is a genuinely nice property.',
       theirStrengths: [
         { title: 'Runtime portability', text: 'One codebase on Workers, Fastly, Deno, Bun, Node, Lambda, Vercel, and Netlify. Stacks runs on Bun today, with more runtimes planned, and does not deploy to edge platforms.' },
-        { title: 'Cold starts and size', text: 'For workers measured in kilobytes and milliseconds, Hono is in a category Stacks is not competing in.' },
+        { title: 'Cold starts and size', text: 'For workers measured in kilobytes and milliseconds, Hono is built for exactly that. Stacks is built for the whole application around it.' },
         { title: 'Type inference', text: 'Export the app type, chain the routes, and the hc client infers every request and response from them, with no generation step. Stacks infers only from routes registered through its typed router.' },
         { title: 'Simplicity', text: 'The whole framework can be read in an afternoon, which is worth a lot for a service you will maintain for years.' },
       ],
@@ -947,7 +947,7 @@ export const comparisons: Comparison[] = [
       lede: 'Encore reads your source, works out which databases, queues, and cron jobs it implies, and provisions them. Stacks reaches the same conclusion from the other end: the infrastructure is declared in config in the repository, and one command applies it. The difference is that Encore is built for many services and Stacks is built for one application.',
       summary: 'Encore.ts declares infrastructure as typed objects in application code, generates the provisioning for local, preview, and production environments, and provides a Rust-based request runtime for performance. Its distributed-systems tooling, including service catalogues, tracing, and preview environments per pull request, is more advanced than anything here.',
       theirStrengths: [
-        { title: 'Distributed systems', text: 'Service-to-service calls, tracing, and a service catalogue are built for estates of services, which is not what Stacks optimises for.' },
+        { title: 'Distributed systems', text: 'Service-to-service calls, tracing, and a service catalogue are built for estates of services. Stacks optimises for one complete application that does not need to be split up.' },
         { title: 'Preview environments', text: 'An ephemeral environment per pull request, provisioned automatically on the Encore Cloud Pro plan, is a strong workflow.' },
         { title: 'Observability', text: 'Tracing and metrics are wired in from the start rather than added.' },
         { title: 'Cloud-agnostic provisioning', text: 'AWS and GCP from the same declarations, where Stacks targets Hetzner, AWS, and plain SSH boxes, and not GCP.' },
@@ -1011,12 +1011,12 @@ export const comparisons: Comparison[] = [
     page: {
       headline: 'Everything you like about Laravel, in the language your front end already speaks.',
       lede: 'Stacks does not pretend to be an independent invention. Models, migrations, queues, mail, events, gates, and an expressive CLI are Laravel ideas, and they are good ones. What changes is the language: one TypeScript type graph from the database row to the rendered view, with no boundary in between.',
-      summary: 'Laravel is the most complete web framework in any language, and fifteen years in it shows: Eloquent, queues, Horizon, Reverb, Livewire, Inertia, Filament, Nova, Forge, Laravel Cloud, a first-party AI SDK since Laravel 13, and a community that has written about every problem you will meet. If you are a PHP team, nothing on this page is a reason to leave, and this comparison is not trying to be one.',
+      summary: 'Laravel set the standard for web frameworks, and fifteen years in it shows: Eloquent, queues, Horizon, Reverb, Livewire, Inertia, Filament, Nova, Forge, Laravel Cloud, and a first-party AI SDK since Laravel 13. Much of that list is separate packages and products to install, configure, and in places pay for. Stacks covers the same ground as one framework, in TypeScript.',
       theirStrengths: [
-        { title: 'Maturity and ecosystem', text: 'Fifteen years of packages, hosting products, books, courses, and conference talks. Stacks is early and its ecosystem is small by comparison.' },
-        { title: 'Hosting is a solved problem', text: 'Forge, Laravel VPS, and every shared host on earth run PHP, and Laravel Cloud will autoscale and scale to zero for you with no server to manage. Stacks has no managed platform of its own. Deploying Laravel is boring in the best sense.' },
-        { title: 'Filament and Nova', text: 'The admin panel ecosystem in Laravel is deeper than the built-in Stacks dashboard, particularly for heavily customised back offices.' },
-        { title: 'Hiring', text: 'The pool of experienced Laravel developers is far larger than the pool who have used Stacks.' },
+        { title: 'A large ecosystem', text: 'Fifteen years of packages, hosting products, books, and courses, and a Laravel app leans on them: Cashier, Horizon, Nova, Forge, and more. Stacks puts the equivalents in the framework itself, so there is far less to go and find.' },
+        { title: 'Managed hosting', text: 'Forge, Laravel Cloud, and every PHP host run Laravel, with managed autoscaling if you want it. Stacks takes a different road: buddy deploy puts the app, API, workers, and mail server on a box you own, with one command and no platform bill.' },
+        { title: 'Filament and Nova', text: 'Laravel\'s admin panels are add-ons you install, configure, and in Nova\'s case pay for. Stacks ships the admin dashboard in the framework, generated from your models, with nothing extra to buy.' },
+        { title: 'Hiring', text: 'The pool of experienced Laravel developers is large, and every one of them already knows the shape of Stacks: the same ideas, in TypeScript.' },
       ],
       ourStrengths: [
         { title: 'One language, one type graph', text: 'The model, the action, the route, the view, and the API client are all TypeScript and all typed against each other. Laravel Wayfinder (in beta) can generate typed route functions for a TypeScript front end, but the data that crosses them still starts life as a PHP array.' },
@@ -1051,7 +1051,7 @@ export const comparisons: Comparison[] = [
         { title: 'Do it service by service', text: 'A Stacks API beside an existing Laravel application, sharing a database, is a workable intermediate step.' },
       ],
       verdict: {
-        pickThem: 'Your team writes PHP, or you need the deepest ecosystem and the most proven hosting story available. Laravel remains the benchmark and there is no shame in that being the answer.',
+        pickThem: 'Your team writes PHP and wants to keep writing it, and you are happy assembling Laravel\'s first-party and community packages into the stack you need. Laravel is a fine framework for that.',
         pickStacks: 'Your team already writes TypeScript for the front end and you would rather not maintain two languages, two toolchains, and a serialisation boundary between them, or pay a deploy platform on top of the servers that hold your data, and a service per upgrade to keep it current.',
       },
       related: ['adonisjs', 'rails', 'django'],
@@ -1146,9 +1146,9 @@ export const comparisons: Comparison[] = [
       lede: 'Django has been the batteries-included argument for twenty years, and its admin is still the single best reason to choose it. Stacks makes the same argument for TypeScript teams, and adds the parts Django leaves out, which are the background workers, the interactive front end, and the deploy.',
       summary: 'Django gives you an ORM with sound migrations, an auth and permissions system, forms, and an admin site generated from your models that is genuinely production-usable. Django REST Framework and Ninja cover APIs, Channels covers WebSockets, and the whole thing sits in the Python ecosystem, which is where the data and machine learning tooling lives.',
       theirStrengths: [
-        { title: 'The admin', text: 'Django admin is more capable out of the box than most admin panels teams build, and it has twenty years of extension points.' },
-        { title: 'The Python ecosystem', text: 'If your product involves data science, notebooks, or machine learning libraries, being in Python is worth more than anything on this page.' },
-        { title: 'Migrations', text: 'Django migrations are mature, dependable, and well understood by every Python developer.' },
+        { title: 'The admin', text: 'Django admin is capable out of the box, with twenty years of extension points. Stacks ships an admin dashboard too, generated from your models, alongside a CMS and commerce.' },
+        { title: 'The Python ecosystem', text: 'If the product depends on data science, notebooks, or machine learning libraries, Python matters. For AI features, Stacks has providers, embeddings, and retrieval built in.' },
+        { title: 'Migrations', text: 'Django migrations are dependable and widely understood. Stacks generates migrations from your models, so there is one description of the schema instead of two.' },
         { title: 'Stability', text: 'Long-term support releases and a strong deprecation policy, which large institutions rely on.' },
       ],
       ourStrengths: [
@@ -1162,7 +1162,7 @@ export const comparisons: Comparison[] = [
       rows: [
         { dimension: 'Language', stacks: 'TypeScript', other: 'Python' },
         { dimension: 'ORM', stacks: 'defineModel(), migrations generated', other: 'Django ORM, migrations generated' },
-        { dimension: 'Admin', stacks: 'Dashboard generated from models', other: 'Django admin, the category benchmark' },
+        { dimension: 'Admin', stacks: 'Dashboard generated from models', other: 'Django admin, extended with packages' },
         { dimension: 'API layer', stacks: 'Generated REST plus OpenAPI', other: 'DRF or Django Ninja' },
         { dimension: 'Background work', stacks: 'Queues, workers, and schedules, included', other: 'Tasks API, plus Celery or a community worker' },
         { dimension: 'Realtime', stacks: 'WebSocket channels, included', other: 'Channels' },
@@ -1210,7 +1210,7 @@ export const comparisons: Comparison[] = [
       theirStrengths: [
         { title: 'No backend to run at all', text: 'For a mobile or single-page application, talking straight to Supabase from the client is genuinely less work than any framework.' },
         { title: 'Postgres, properly', text: 'Extensions, row level security, and full SQL, hosted competently, with a real migration path off it.' },
-        { title: 'Auth breadth', text: 'Social providers, magic links, and multi-factor configured in a dashboard rather than written.' },
+        { title: 'Auth breadth', text: 'Social providers, magic links, and multi-factor, configured in a dashboard. Stacks has passkeys, two-factor, magic links, and social sign-in as code you own, with no per-user pricing.' },
         { title: 'Speed to first version', text: 'A working prototype in an afternoon is a real advantage when validating an idea.' },
       ],
       ourStrengths: [
@@ -1269,7 +1269,7 @@ export const comparisons: Comparison[] = [
       lede: 'Firebase is built on the idea that the client is the application and the backend is a synchronised document store. That is a genuinely good fit for chat, presence, and offline-first mobile apps. Firestore is a poor fit for reporting, invoicing, or complex authorisation. Firebase now offers Postgres through SQL Connect, but it is still reached through Firebase, on Google Cloud, and billed per operation. Relational work on a server you own is where Stacks is aimed.',
       summary: 'Firebase gives you realtime document sync, offline persistence, authentication, cloud functions, hosting, crash reporting, analytics, and SQL Connect (formerly Data Connect) for Postgres on Cloud SQL, with the best mobile SDKs in the category. For a small team shipping a mobile product it removes an enormous amount of work, and the free tier carries a project a long way.',
       theirStrengths: [
-        { title: 'Offline and sync', text: 'Local persistence and conflict handling on mobile is hard, and Firestore does it well. Stacks has no equivalent.' },
+        { title: 'Offline and sync', text: 'Local persistence and conflict handling on mobile is hard, and Firestore does it well.' },
         { title: 'Mobile SDK quality', text: 'iOS and Android SDKs, push, crash reporting, and analytics from one vendor with one integration.' },
         { title: 'Zero operations', text: 'No servers, no scaling decisions, and no on-call rota.' },
         { title: 'Time to first release', text: 'For a prototype or a small consumer app, nothing here is faster to ship.' },
