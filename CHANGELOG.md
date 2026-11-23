@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.657...v0.75.658)
+
+## 🐛 Bug Fixes
+
+- use the shared Chrome launcher for documentation captures ([7f54a53](https://github.com/stacksjs/stacks/commit/7f54a53)) _(by Chris Breuer)_
+- **migrate**: hold back destructive changes, apply the rest ([4571fb3](https://github.com/stacksjs/stacks/commit/4571fb3)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- refresh command and native skill catalogs ([370a980](https://github.com/stacksjs/stacks/commit/370a980)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.656...v0.75.657)
 
 ## 🐛 Bug Fixes
