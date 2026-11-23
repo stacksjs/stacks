@@ -14,7 +14,7 @@ export default defineModel({
     referredUserId: { required: true, unique: true, validation: { rule: schema.number().integer().min(1) } },
     code: { required: true, validation: { rule: schema.string().max(24) } },
     status: { required: true, default: 'registered', validation: { rule: schema.enum(['registered', 'qualified']) } },
-    qualifiedAt: { nullable: true, validation: { rule: schema.date() } },
+    qualifiedAt: { nullable: true, validation: { rule: schema.timestamp() } },
   },
 
   dashboard: {

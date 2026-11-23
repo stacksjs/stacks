@@ -81,7 +81,7 @@ export default defineModel({
     failed_at: {
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.timestamp(),
       },
       factory: () => '2024-12-23 13:32:19',
     },
