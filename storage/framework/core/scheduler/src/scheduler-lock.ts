@@ -34,6 +34,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
+import { frameworkPath } from '@stacksjs/path'
 
 export type Dialect = 'sqlite' | 'mysql' | 'postgres'
 
@@ -97,7 +98,7 @@ export function lockFileName(taskName: string): string {
  *                  `null` the function uses file-lock-only mode
  * @param adminDb - bun-query-builder connection for advisory SQL;
  *                  `null` falls back to file-lock-only
- * @param lockDir - file-lock directory; default is `storage/framework/locks`
+ * @param lockDir - file-lock directory; default is the project's `storage/framework/locks`
  */
 export async function acquireSchedulerLock(
   taskName: string,
@@ -106,7 +107,7 @@ export async function acquireSchedulerLock(
   adminDb: { unsafe: (sql: string) => Promise<unknown> } | null,
   lockDir?: string,
 ): Promise<SchedulerLockHandle | null> {
-  const resolvedDir = lockDir ?? join(process.cwd(), 'storage', 'framework', 'locks')
+  const resolvedDir = lockDir ?? frameworkPath('locks')
   const lockFile = join(resolvedDir, lockFileName(taskName))
 
   if (!existsSync(resolvedDir)) {

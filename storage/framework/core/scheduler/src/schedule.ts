@@ -4,11 +4,12 @@ import type { NotificationChannel, NotificationPayload, NotificationRecipient, N
 import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { closeSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { runNamedAction } from '@stacksjs/action-runner'
 import { log, runCommand } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { parse } from '@stacksjs/cron'
+import { frameworkPath } from '@stacksjs/path'
 import { job as queuedJob, runJob } from '@stacksjs/queue'
 import type { Dialect, SchedulerLockHandle } from './scheduler-lock'
 import { claimSchedulerSlot } from './scheduler-claims'
@@ -108,8 +109,10 @@ export class Schedule implements UntimedSchedule {
   /** Set by setTimeZone(); otherwise the task follows the app's, see zone(). */
   private timezone: Timezone | null = null
   private readonly task: (context?: any) => unknown
-  private static lockDir = join(process.cwd(), 'storage', 'framework', 'locks')
-  private static stateFile = join(process.cwd(), 'storage', 'framework', 'runtime', 'scheduler-state.json')
+  // The project's, not the working directory's: a process started elsewhere
+  // must read the same pauses and take the same locks (#3386).
+  private static lockDir = frameworkPath('locks')
+  private static stateFile = frameworkPath('runtime/scheduler-state.json')
   private static activeLocks = new Map<string, SchedulerLockHandle>()
   /** Each background task's run in this process, for `runNow(name, { inProcess: true })`. */
   private static inProcessRuns = new Map<string, () => Promise<void>>()
@@ -652,8 +655,7 @@ export class Schedule implements UntimedSchedule {
     else
       disabled.add(name)
 
-    const directory = join(process.cwd(), 'storage', 'framework', 'runtime')
-    mkdirSync(directory, { recursive: true })
+    mkdirSync(dirname(Schedule.stateFile), { recursive: true })
     const temporary = `${Schedule.stateFile}.${process.pid}.tmp`
     writeFileSync(temporary, `${JSON.stringify({ disabled: [...disabled].sort() }, null, 2)}\n`, { mode: 0o600 })
     renameSync(temporary, Schedule.stateFile)
