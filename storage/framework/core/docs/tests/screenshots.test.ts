@@ -55,6 +55,7 @@ test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' 
     await Bun.write(join(root, 'app/Models/Project.ts'), 'export default { name: "Project", traits: {useApi: {uri: "projects"}}, attributes: {} }')
     await Bun.write(join(root, 'screens.ts'), `export default {
       baseUrl: 'http://127.0.0.1:${server.port}', outDir: 'pictures', timeoutMs: 15000, fixtures: {Project: {id: 7}},
+      ${process.env.STACKS_BROWSER_TESTS ? "backend: 'chrome'," : ''}
       profiles: { runner: {prepare: async ({view,baseUrl}) => {await view.navigate(baseUrl+'/set')}}, visitor: {} },
       viewports: [{name:'mobile',width:390,height:844}],
       pages: [{id:'home',title:'Home',path:'/',description:'The role-specific home.',waitFor:'main[data-ready="yes"]',
@@ -132,7 +133,7 @@ test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' 
           const { tmpdir } = await import('node:os')
           const { readdir } = await import('node:fs/promises')
           const temporary = tmpdir()
-          const ownsProfile = (await readdir(temporary)).some(name => name.endsWith('.bun-chrome'))
+          const ownsProfile = (await readdir(temporary)).some(name => name.startsWith('stacks-browser-'))
           if (!ownsProfile) return false
           await Bun.write(${JSON.stringify(tempRecord)}, temporary)
           return httpStatus === 404
@@ -238,6 +239,7 @@ test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' 
       export default { baseUrl: 'http://127.0.0.1:${server.port}', outDir: 'docs/public/screens', timeoutMs: 15000, models: false,
         viewports: [{ name: 'mobile', width: 390, height: 844 }, { name: 'wide', width: 1000, height: 700 }], coverage: { directories: ['resources/views'] },
         film: { secondsPerScreen: 0.5, viewports: ['mobile'] }, docs: { page: 'docs/screens.md', base: '/screens', title: 'Every screen' },
+        ${process.env.STACKS_BROWSER_TESTS ? "backend: 'chrome'," : ''}
         pages: screensFromViews({ root: ${JSON.stringify(root)}, defaults: { waitFor: 'main', viewports: ['mobile'] }, routes: { '/': { viewports: ['mobile', 'wide'] } } }) }`)
     const report = await captureScreenshots({ root, config: 'screens.ts' })
     // Only the home page is pictured wide; every other screen is phone-only.

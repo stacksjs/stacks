@@ -565,7 +565,7 @@ The command needs a Bun with `Bun.WebView` and tells you to upgrade when it is m
 | macOS | System WebKit, nothing to download | Set `backend: 'chrome'` to render as CI does |
 | Linux, Windows | An installed Chrome-family browser | `BUN_CHROME_PATH` selects the executable |
 
-In CI, Chrome runs with `--no-sandbox` and `--disable-dev-shm-usage`. A capture always starts a fresh browser rather than attaching to a personal debugging session.
+Chrome captures and browser tests use the same Stacks launcher. Each capture profile starts a fresh owned browser with its own cookies and storage. The WebViews connect only to that browser’s loopback DevTools endpoint.
 
 Bun's WebView API is experimental, and font rasterization and layout differ by engine and operating system. Keep the backend and the Bun version the same when comparing pictures. See [Bun's WebView documentation](https://bun.sh/docs/runtime/webview) for its current capabilities.
 

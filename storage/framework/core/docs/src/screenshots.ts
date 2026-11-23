@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { captureMaskCss } from './capture-masks'
+import { captureBrowser } from './capture-browser'
 import { discoverScreenshotModels, screenshotFixturePath, type ScreenshotFixtures, type ScreenshotModelOptions, type ScreenshotModelPlan } from './screenshot-models'
 export { discoverScreenshotModels, planScreenshotModels, screenshotFixturePath } from './screenshot-models'
 export type { ScreenshotFixtures, ScreenshotModel, ScreenshotModelOptions, ScreenshotModelPlan } from './screenshot-models'
@@ -219,9 +220,9 @@ async function captureProfile(configFile: string, profile: string, options: Scre
   const output = resolve(root, options.outDir ?? config.outDir)
   const results: ScreenshotResult[] = []
   const models = await discoverScreenshotModels(root, config.models)
+  const browser = captureBrowser(config.backend ?? (process.platform === 'darwin' ? 'webkit' : 'chrome'))
   try {
   const fixtures = { ...config.fixtures, ...await config.data?.prepare(models) }
-  const backend = config.backend ?? (process.platform === 'darwin' ? 'webkit' : 'chrome')
   const timeout = config.timeoutMs ?? 30_000
   for (const viewport of config.viewports ?? defaults) {
     if (options.viewports?.length && !options.viewports.includes(viewport.name)) continue
@@ -236,8 +237,7 @@ async function captureProfile(configFile: string, profile: string, options: Scre
       let view: Bun.WebView | undefined
       let timer: ReturnType<typeof setTimeout> | undefined
       try {
-        if (typeof Bun.WebView !== 'function') throw new Error('This Bun has no WebView. Upgrade Bun before capturing screens.')
-        view = new Bun.WebView({ width: viewport.width, height: viewport.height, backend: backend === 'chrome' ? { type: 'chrome', url: false, argv: process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : [] } : 'webkit' })
+        view = await browser.view(viewport.width, viewport.height)
         await Promise.race([
           (async () => {
             const path = typeof page.path === 'function' ? await page.path({ fixtures, models, profile }) : screenshotFixturePath(page.path, page.model, fixtures, models)
@@ -296,7 +296,10 @@ async function captureProfile(configFile: string, profile: string, options: Scre
     }
   }
   return results
-  } finally { await config.data?.cleanup?.() }
+  } finally {
+    try { await browser.close() }
+    finally { await config.data?.cleanup?.() }
+  }
 }
 
 /** Capture the explicit inventory; failures remain in the report and fail CI. */

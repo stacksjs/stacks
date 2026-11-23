@@ -1,5 +1,6 @@
 /** A walkthrough video and a documentation page made from captured screens. */
 import { openBrowserFilm, serveFilmStudio } from './browser-film'
+import { captureBrowser } from './capture-browser'
 import type { ScreenshotReport, ScreenshotResult, ScreenshotViewport } from './screenshots'
 import { createHash } from 'node:crypto'
 import { lstat, mkdir, readFile, rename } from 'node:fs/promises'
@@ -53,7 +54,7 @@ export async function filmScreenshots(output: string, results: ScreenshotResult[
   const seconds = options.secondsPerScreen ?? 2
   const fps = options.fps ?? 12
   const hold = Math.max(1, Math.round(seconds * fps))
-  if (typeof Bun.WebView !== 'function') throw new Error('This Bun has no WebView. Upgrade Bun before filming screens.')
+  const browser = captureBrowser(backend)
   const room = serveFilmStudio()
   try {
     for (const viewport of viewports) {
@@ -61,16 +62,18 @@ export async function filmScreenshots(output: string, results: ScreenshotResult[
       const frames = results.filter(result => result.status === 'captured' && result.file && result.viewport.name === viewport.name)
       if (!frames.length) continue
       // A page per film: the encoder and its canvas are sized for one viewport.
-      const view = new Bun.WebView({ width: 320, height: 240, backend: backend === 'chrome' ? { type: 'chrome', url: false, argv: process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : [] } : 'webkit' })
       let bytes: Uint8Array
+      let view: Bun.WebView | undefined
       try {
-        await view.navigate(room.url)
-        const film = await openBrowserFilm(script => view.evaluate(script), { fps, width: viewport.width, height: viewport.height })
+        view = await browser.view(320, 240)
+        const frameView = view
+        await frameView.navigate(room.url)
+        const film = await openBrowserFilm(script => frameView.evaluate(script), { fps, width: viewport.width, height: viewport.height })
         for (const frame of frames) await film.add(new Uint8Array(await readFile(join(output, frame.file!))), hold)
         bytes = await film.finish()
       }
       catch (error) { throw new Error(`The ${viewport.name} screens could not be filmed: ${error instanceof Error ? error.message.slice(0, 400) : 'the browser failed'}`) }
-      finally { view.close() }
+      finally { view?.close() }
       const file = `film-${viewport.name}.mp4`
       await Bun.write(join(output, `${file}.tmp`), bytes)
       await rename(join(output, `${file}.tmp`), join(output, file))
@@ -78,7 +81,10 @@ export async function filmScreenshots(output: string, results: ScreenshotResult[
     }
     return films
   }
-  finally { room.stop() }
+  finally {
+    try { await browser.close() }
+    finally { room.stop() }
+  }
 }
 
 /** The page readers open: the films, then every screen with its explanation and pictures. */

@@ -6,6 +6,7 @@ import { randomUUID } from 'node:crypto'
 import { readFile, rm } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { type BrowserFilm, openBrowserFilm, serveFilmStudio } from './browser-film'
+import { captureBrowser } from './capture-browser'
 import { captureMaskCss } from './capture-masks'
 
 export interface BrowserStoryContext {
@@ -319,16 +320,22 @@ export function nativeStory(options: NativeStoryOptions): StoryDriver<NativeStor
         await stop!()
         // The device's recording is re-timed and marked by a browser and
         // written by ts-videos: system WebKit on a Mac, Chrome elsewhere.
-        if (typeof Bun.WebView !== 'function') throw new Error('This Bun has no WebView. Upgrade Bun before recording native stories.')
+        const browser = captureBrowser(process.platform === 'darwin' ? 'webkit' : 'chrome')
         const room = serveFilmStudio({ '/raw.mp4': rawPath })
-        const view = new Bun.WebView({ width: 320, height: 240, backend: process.platform === 'darwin' ? 'webkit' : { type: 'chrome', url: false, argv: process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : [] } })
+        let view: Bun.WebView | undefined
         try {
-          await view.navigate(room.url)
-          const film = await openBrowserFilm(script => view.evaluate(script), { fps })
+          view = await browser.view(320, 240)
+          const filmView = view
+          await filmView.navigate(room.url)
+          const film = await openBrowserFilm(script => filmView.evaluate(script), { fps })
           await film.addVideo('/raw.mp4', options.tapFeedback === false ? [] : taps.map(tap => ({ x: tap.x, y: tap.y, size: tapSize, color, start: tap.start, end: tap.end })))
           await Bun.write(videoPath, await film.finish())
         }
-        finally { view.close(); room.stop() }
+        finally {
+          room.stop()
+          try { view?.close() }
+          finally { await browser.close() }
+        }
         await rm(rawPath)
       })()
       return {
