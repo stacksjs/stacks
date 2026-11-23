@@ -63,8 +63,62 @@ export async function bootTestEnvironment(): Promise<void> {
   if (isFrameworkSuite())
     return
 
+  // Before anything loads the app's config: the connection is read from the
+  // environment when config/database.ts evaluates.
+  const releaseDatabase = await isolateTestDatabase()
+  if (releaseDatabase) {
+    const { afterAll } = await import('bun:test')
+    afterAll(releaseDatabase)
+  }
+
   const { injectGlobalAutoImports } = await import('@stacksjs/server')
   await injectGlobalAutoImports()
+}
+
+/**
+ * Give an app's test run a SQLite database of its own, in a temporary
+ * directory removed when the run ends.
+ *
+ * The suite used to run against whatever `.env` named: on a developer's
+ * machine their real database, which tests then wrote rows into and
+ * `refreshDatabase()` emptied (stacksjs/stacks#3362). The file is empty;
+ * `refreshDatabase()` migrates it the first time a test asks for one.
+ *
+ * Only SQLite is redirected. A Postgres or MySQL run keeps its configured
+ * database, which the reset refuses unless its name says it is for tests.
+ * `STACKS_TEST_DATABASE=configured` keeps the configured SQLite file too, for
+ * a run that deliberately uses one. Returns the cleanup, or nothing when the
+ * run was left alone.
+ */
+export async function isolateTestDatabase(): Promise<(() => Promise<void>) | undefined> {
+  if (process.env.STACKS_TEST_DATABASE === 'configured')
+    return
+  if ((process.env.DB_CONNECTION || 'sqlite').toLowerCase() !== 'sqlite')
+    return
+
+  const { createDisposableDatabase } = await import('./disposable-database')
+  const database = await createDisposableDatabase('sqlite', { prefix: 'stacks_test' })
+  Object.assign(process.env, database.env)
+  process.env.STACKS_TEST_DATABASE_PATH = database.path!
+
+  // A config that loaded before this (an import in tests/setup.ts) has read
+  // the old path already; point its live section at the new file too.
+  try {
+    const { config, overridesReady } = await import('@stacksjs/config') as { config: { database?: { connections?: { sqlite?: { database?: string } } } }, overridesReady?: Promise<unknown> }
+    await overridesReady
+    const sqlite = config.database?.connections?.sqlite
+    if (sqlite)
+      sqlite.database = database.path!
+  }
+  catch {
+    // No config layer in this process: the environment is all there is.
+  }
+
+  return async () => {
+    if (process.env.STACKS_TEST_DATABASE_PATH === database.path)
+      delete process.env.STACKS_TEST_DATABASE_PATH
+    await database.drop()
+  }
 }
 
 /**

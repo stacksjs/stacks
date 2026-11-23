@@ -37,6 +37,17 @@ auto-imported names exist in a test. Without it, loading an action written
 without imports throws "Action is not defined". `setupTestEnvironment()` still
 exists and only sets the env.
 
+For an app suite, `bootTestEnvironment()` also gives the run a throwaway SQLite
+database: a `stacks_test_*.sqlite` file in a temporary directory, set as
+`DB_DATABASE_PATH` before the app's config loads and removed when the run ends.
+`refreshDatabase()` migrates it the first time a test asks. The suite used to run
+against whatever `.env` named, which on a developer's machine is their real data.
+A Postgres or MySQL run keeps its configured database (the reset refuses one whose
+name doesn't say it's for tests), and `STACKS_TEST_DATABASE=configured` keeps a
+configured SQLite file too. The SQLite reset now acts on the connection's own file
+and refuses one the run didn't create, unless it's under the temporary directory or
+named for tests (`app_test.sqlite`).
+
 ```typescript
 import { refreshDatabase, setupDatabase, truncateMysql, truncatePostgres, truncateSqlite } from '@stacksjs/testing/database'
 
