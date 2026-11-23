@@ -33,8 +33,12 @@ export const SITE_ONLY_PATHS: readonly string[] = [
   'resources/data/comparisons.ts',
   'resources/data/features.ts',
   'resources/data/highlight.ts',
+  'resources/data/home.ts',
+  'resources/data/llms.ts',
   'resources/data/nav.ts',
+  'resources/data/schema.ts',
   'resources/data/stats.ts',
+  'resources/data/theme.ts',
   'resources/data/use-cases.ts',
   'resources/partials/marketing-footer.stx',
   'resources/partials/marketing-head.stx',
@@ -45,11 +49,17 @@ export const SITE_ONLY_PATHS: readonly string[] = [
   'public/assets/styles/home.css',
   'public/assets/styles/marketing.css',
   'public/assets/styles/theme.css',
+  // The site described to answer engines and agents. It is built from the
+  // lists above and names every stacksjs.com page.
+  'public/llms.txt',
 
-  // The brand: NPS type and park illustrations. The framework's own blog and
-  // maintenance pages read theirs from `defaults/resources/assets`, not these.
+  // The brand: its type and the park illustrations. The framework's own blog
+  // and maintenance pages read theirs from `defaults/resources/assets`, not
+  // these. Geist is what the site sets its text in today, and only
+  // public/assets/styles/theme.css, removed above, loads it.
   'resources/assets/fonts/nps',
   'public/assets/fonts/nps',
+  'public/assets/fonts/geist',
   'public/assets/images',
   'resources/assets/images/bg-img.png',
   'resources/assets/images/marketing-park-camp.svg',
