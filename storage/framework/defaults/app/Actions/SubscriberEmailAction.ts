@@ -29,6 +29,15 @@ import { formReturnLocation, wantsFormRedirect } from './form-return'
  */
 type Outcome = 'subscribed' | 'already' | 'invalid' | 'busy' | 'error'
 
+/**
+ * The tables this action writes, most of them through @stacksjs/newsletter
+ * rather than by model name. Stated here because frameworkRouteAdmission
+ * decides from this file's own source whether the route can be mounted: in an
+ * app without these tables the route is withheld instead of failing per
+ * request.
+ */
+export const subscriberTables = ['subscribers', 'email_lists', 'email_list_subscribers', 'subscriber_emails'] as const
+
 export default new Action({
   name: 'SubscriberEmailAction',
   description: 'Subscribe an address to a newsletter list and send the welcome email',
