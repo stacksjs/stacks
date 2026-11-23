@@ -119,3 +119,45 @@ it('keeps package-based applications inside another project storage directory as
     rmSync(fixture, { recursive: true, force: true })
   }
 })
+
+/**
+ * A framework package run from its own directory leaves machine-local runtime
+ * state there: `<package>/storage/framework/cache` and `runtime`, written
+ * through frameworkPath() by a test or tool. That directory used to make the
+ * package a project root of its own, so from then on every path resolved
+ * inside the package and the migration lock opened
+ * `<package>/database/.migration.lock`, which does not exist (ENOENT).
+ *
+ * Inside another project's storage tree only a declared application
+ * (`config/app.ts`, or `stacks.type: native`) is a root of its own.
+ */
+it('keeps a framework package with leftover runtime state inside its project', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'stacks-stray-runtime-'))
+  const parent = join(fixture, 'owner')
+  const frameworkPackage = join(parent, 'storage/framework/core/database')
+  for (const directory of [join(frameworkPackage, 'storage/framework/cache/models'), join(frameworkPackage, 'storage/framework/runtime')])
+    mkdirSync(directory, { recursive: true })
+  writeFileSync(join(parent, 'package.json'), JSON.stringify({ name: 'owner' }))
+  writeFileSync(join(frameworkPackage, 'package.json'), JSON.stringify({ name: '@stacksjs/database' }))
+
+  try {
+    const result = Bun.spawnSync([process.execPath, '-e', `
+      import assert from 'node:assert/strict'
+      import { realpathSync } from 'node:fs'
+      const [parent, frameworkPackage] = process.argv.slice(1).map(realpathSync)
+      const { findProjectRoot, isProjectRoot, projectPath } = await import(${JSON.stringify(new URL('../src/project.ts', import.meta.url).href)})
+      process.chdir(frameworkPackage)
+      assert.equal(projectPath(), parent)
+      assert.equal(projectPath('database/.migration.lock'), parent + '/database/.migration.lock')
+      assert.equal(isProjectRoot(frameworkPackage), false)
+      assert.equal(findProjectRoot(frameworkPackage), parent)
+      assert.equal(isProjectRoot(parent), true)
+      console.log('stray runtime state passed')
+    `, parent, frameworkPackage], { stdout: 'pipe', stderr: 'pipe' })
+    expect(result.exitCode, result.stderr.toString()).toBe(0)
+    expect(result.stdout.toString()).toContain('stray runtime state passed')
+  }
+  finally {
+    rmSync(fixture, { recursive: true, force: true })
+  }
+})

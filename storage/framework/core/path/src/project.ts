@@ -21,21 +21,31 @@ let cachedProjectRoot = ''
  * that root.
  */
 function projectRootFor(cwd: string): string {
-  // A running process is taken at its word: a directory holding
-  // `storage/framework` is where it was started to work.
-  if (existsSync(join(cwd, 'storage', 'framework')) || isProjectRoot(cwd))
+  const candidates = storageAncestors(cwd)
+  const enclosing = candidates.find(candidate => existsSync(join(candidate, 'storage', 'framework')))
+  // Inside another project's storage tree, a `storage/framework` that holds
+  // only cache and runtime state is what a tool left there (see
+  // isProjectRoot), not a project of its own.
+  if (isProjectRoot(cwd) || (existsSync(join(cwd, 'storage', 'framework')) && (enclosing === undefined || holdsFramework(cwd))))
     return cwd
 
-  const segments = cwd.split(sep)
+  return enclosing
+    ?? candidates.find(candidate => existsSync(join(candidate, 'package.json')))
+    ?? cwd
+}
+
+/**
+ * The directories above each path segment that is exactly `storage`, nearest
+ * first: the projects whose storage tree `directory` might be inside.
+ */
+function storageAncestors(directory: string): string[] {
+  const segments = directory.split(sep)
   const candidates: string[] = []
   for (let i = segments.length - 1; i > 0; i--) {
     if (segments[i] === 'storage')
       candidates.push(segments.slice(0, i).join(sep) || sep)
   }
-
-  return candidates.find(candidate => existsSync(join(candidate, 'storage', 'framework')))
-    ?? candidates.find(candidate => existsSync(join(candidate, 'package.json')))
-    ?? cwd
+  return candidates
 }
 
 /**
@@ -45,6 +55,12 @@ function projectRootFor(cwd: string): string {
  * It has a `package.json`, and beside it either `storage/framework`, or
  * `config/app.ts` (a package-based app that has not generated its storage
  * yet), or a manifest that declares a native app.
+ *
+ * Inside another project's storage tree, a `storage/framework` counts only
+ * when it holds the framework (`core` or `defaults`): a framework package's
+ * tests leave one with just `cache` and `runtime` in the package directory,
+ * and a package inside `<project>/storage/framework/core/` is part of
+ * `<project>`.
  *
  * The manifest is required because `storage/framework` alone proves nothing.
  * Any process started in the wrong directory leaves a `storage/framework/
@@ -62,16 +78,34 @@ export function isProjectRoot(directory: string): boolean {
   if (!existsSync(manifest))
     return false
 
-  if (existsSync(join(directory, 'storage', 'framework')) || existsSync(join(directory, 'config', 'app.ts')))
+  if (existsSync(join(directory, 'config', 'app.ts')))
     return true
 
   try {
-    return JSON.parse(readFileSync(manifest, 'utf8')).stacks?.type === 'native'
+    if (JSON.parse(readFileSync(manifest, 'utf8')).stacks?.type === 'native')
+      return true
   }
   catch {
     // Invalid or unreadable manifests cannot establish an app boundary.
     return false
   }
+
+  // Inside another project's storage tree, a `storage/framework` holding only
+  // cache and runtime state is what a package's own tests leave behind
+  // (written through frameworkPath() from the package directory), not a
+  // project.
+  return existsSync(join(directory, 'storage', 'framework'))
+    && (holdsFramework(directory) || !storageAncestors(directory).some(ancestor => existsSync(join(ancestor, 'storage', 'framework'))))
+}
+
+/**
+ * Whether `directory/storage/framework` holds the framework itself (its `core`
+ * packages, or the `defaults` an app links), rather than only the cache and
+ * runtime state any process writes there.
+ */
+function holdsFramework(directory: string): boolean {
+  const framework = join(directory, 'storage', 'framework')
+  return existsSync(join(framework, 'core')) || existsSync(join(framework, 'defaults'))
 }
 
 /**
