@@ -2,6 +2,7 @@ import { Action } from '@stacksjs/actions/runtime'
 import { isUniqueViolation, Subscriber, SubscriberEmail } from '@stacksjs/orm'
 import { rateLimit } from '@stacksjs/router'
 import { sendSubscriptionConfirmation } from '../Mail/SubscriptionConfirmation'
+import { formReturnLocation, wantsFormRedirect } from './form-return'
 
 export default new Action({
   name: 'SubscriberEmailAction',
@@ -18,14 +19,22 @@ export default new Action({
     const email = request.get('email')
     const source = request.get('source') || 'homepage'
 
+    // A plain <form> post goes back to its page with the outcome in the query
+    // string, `?subscribe=subscribed|already|invalid` (see ./form-return.ts),
+    // so a visitor never lands on raw JSON. A script keeps getting JSON.
+    const backToForm = wantsFormRedirect(request.headers)
+    const answer = (outcome: 'subscribed' | 'already' | 'invalid', json: Record<string, unknown>) => backToForm
+      ? response.redirect(formReturnLocation({ target: request.get('return'), referer: request.headers.get('referer'), param: 'subscribe', outcome }), 303)
+      : json
+
     if (!email || !email.includes('@')) {
-      return { success: false, message: 'A valid email is required' }
+      return answer('invalid', { success: false, message: 'A valid email is required' })
     }
 
     // Check if subscriber already exists
     const existingSubscriber = await Subscriber.where('email', email).first()
     if (existingSubscriber) {
-      return { success: true, message: 'Already subscribed' }
+      return answer('already', { success: true, message: 'Already subscribed' })
     }
 
     // Create subscriber record. The check above is a fast path; two requests
@@ -39,7 +48,7 @@ export default new Action({
     }
     catch (err) {
       if (isUniqueViolation(err))
-        return { success: true, message: 'Already subscribed' }
+        return answer('already', { success: true, message: 'Already subscribed' })
       throw err
     }
 
@@ -55,6 +64,6 @@ export default new Action({
       console.error(`Failed to send confirmation email to ${email}:`, message)
     })
 
-    return { success: true, subscriber }
+    return answer('subscribed', { success: true, subscriber })
   },
 })

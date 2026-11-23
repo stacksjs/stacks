@@ -785,4 +785,5 @@ export const actions = {
   'Actions/TestErrorAction': '../defaults/app/Actions/TestErrorAction.ts',
   'Actions/UnsubscribeAction': '../defaults/app/Actions/UnsubscribeAction.ts',
   'Actions/UploadTestAction': '../defaults/app/Actions/UploadTestAction.ts',
+  'Actions/form-return': '../defaults/app/Actions/form-return.ts',
 } as const
