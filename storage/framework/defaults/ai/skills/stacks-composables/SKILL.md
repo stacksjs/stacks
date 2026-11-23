@@ -31,11 +31,12 @@ compiler-delivered client surface.
      `browser-auto-imports.json`: that manifest is compile-time only, and 22 of
      the 27 `use*` it declares are absent from the runtime. -->
 
-`useAsync`, `useClickOutside`, `useColorMode`, `useCounter`, `useDark`,
-`useDebounce`, `useDebouncedValue`, `useEventListener`, `useFetch`, `useFocus`,
-`useHead`, `useInterval`, `useLocalStorage`, `useMutation`, `useQuery`,
-`useRef`, `useRoute`, `useSearchParams`, `useSeoMeta`, `useSessionStorage`,
-`useStore`, `useThrottle`, `useTimeout`, `useToggle`, `useWebSocket`.
+`useAsync`, `useAsyncData`, `useClickOutside`, `useColorMode`, `useCounter`,
+`useDark`, `useDebounce`, `useDebouncedValue`, `useEventListener`, `useFetch`,
+`useFocus`, `useHead`, `useInterval`, `useLocalStorage`, `useMutation`,
+`useQuery`, `useRef`, `useRoute`, `useSearchParams`, `useSeoMeta`,
+`useSessionStorage`, `useStore`, `useThrottle`, `useTimeout`, `useToggle`,
+`useWebSocket`.
 
 <!-- auto-imported:end -->
 

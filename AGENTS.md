@@ -243,12 +243,12 @@ delivery. Inspect the installed stx runtime, compiler and demand registry;
      browser-auto-imports.json; see #2585. -->
 
 - The `use*` composables, in full, because a half-remembered name is the
-  whole problem: `useAsync`, `useClickOutside`, `useColorMode`, `useCounter`,
-  `useDark`, `useDebounce`, `useDebouncedValue`, `useEventListener`, `useFetch`,
-  `useFocus`, `useHead`, `useInterval`, `useLocalStorage`, `useMutation`,
-  `useQuery`, `useRef`, `useRoute`, `useSearchParams`, `useSeoMeta`,
-  `useSessionStorage`, `useStore`, `useThrottle`, `useTimeout`, `useToggle`,
-  `useWebSocket`.
+  whole problem: `useAsync`, `useAsyncData`, `useClickOutside`, `useColorMode`,
+  `useCounter`, `useDark`, `useDebounce`, `useDebouncedValue`,
+  `useEventListener`, `useFetch`, `useFocus`, `useHead`, `useInterval`,
+  `useLocalStorage`, `useMutation`, `useQuery`, `useRef`, `useRoute`,
+  `useSearchParams`, `useSeoMeta`, `useSessionStorage`, `useStore`,
+  `useThrottle`, `useTimeout`, `useToggle`, `useWebSocket`.
 - Signals and lifecycle: `state`, `derived`, `effect`, `batch`, `memo`, `nextTick`,
   `onMount`, `onDestroy`, `provide`, `defineStore`, `stx`.
 - Shared asynchronous work: `sharedRequest`.
