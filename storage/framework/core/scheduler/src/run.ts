@@ -6,6 +6,7 @@ import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { schedule } from '@stacksjs/scheduler'
 import { globSync } from '@stacksjs/storage'
+import { scheduleFrameworkMaintenance } from './maintenance'
 
 export async function runScheduler(): Promise<Result<string, string>> {
   const jobFiles = globSync([path.appPath('Jobs/*.ts')], { absolute: true })
@@ -60,6 +61,16 @@ export async function runScheduler(): Promise<Result<string, string>> {
     catch (error) {
       log.error(`[scheduler] could not schedule ${jobFile}: ${error instanceof Error ? error.message : String(error)}`)
     }
+  }
+
+  // The framework's own housekeeping, last, so an app that scheduled any of
+  // it in app/Scheduler.ts keeps its own timing (#3360).
+  try {
+    const { config } = await import('@stacksjs/config')
+    scheduleFrameworkMaintenance({ auth: config.auth as { pruneTokens?: boolean, tokenRotation?: number } | undefined })
+  }
+  catch (error) {
+    log.error(`[scheduler] could not schedule the framework's maintenance: ${error instanceof Error ? error.message : String(error)}`)
   }
 
   return ok('Schedules ran successfully')

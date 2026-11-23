@@ -19,8 +19,10 @@ export interface AuthConfig {
   username: string
   password: string
   tokenExpiry: number
-  /** @deprecated Use explicit bearer rotation or a refresh-token exchange. */
+  /** @deprecated Read by nothing. Use explicit bearer rotation or a refresh-token exchange. */
   tokenRotation?: number
+  /** Whether the scheduler prunes expired and old revoked tokens daily. Default `true`. */
+  pruneTokens?: boolean
   defaultAbilities: string[]
   defaultTokenName: string
 }

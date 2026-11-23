@@ -271,10 +271,22 @@ export interface AuthOptions {
   oauthProvider?: OAuthProviderConfig
 
   /**
-   * @deprecated Automatic rotation cannot return the replacement bearer.
-   * Use `Auth.rotateToken()` or a refresh-token exchange instead.
+   * @deprecated Read by nothing: automatic rotation cannot return the
+   * replacement bearer, and the scheduler warns when this is set. Use
+   * `Auth.rotateToken()` or a refresh-token exchange instead.
    */
   tokenRotation?: number
+
+  /**
+   * **Prune Tokens**
+   *
+   * Whether the scheduler deletes expired tokens, and revoked ones older than
+   * 7 days, every day at 03:15 (what `buddy auth:prune` does). An app that
+   * schedules `auth/prune` itself keeps its own timing.
+   *
+   * @default true
+   */
+  pruneTokens?: boolean
 
   /**
    * The token abilities that are granted by default
