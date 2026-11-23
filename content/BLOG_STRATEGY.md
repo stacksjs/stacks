@@ -1,14 +1,26 @@
 # Stacks Blog — Content Strategy
 
-The blog lives at `/blog` and is **powered by BunPress** with a custom Stacks
-theme. Posts are markdown files in `content/blog/*.md`; the slug is the
-filename (`introducing-stacks.md` → `/blog/introducing-stacks`). BunPress
-renders the markdown (syntax highlighting, containers, heading anchors, GFM);
-the custom theme lives in `content/blog/.theme.css`; the renderer +
-integration is `storage/framework/core/actions/src/dev/blog.ts`.
+The blog lives at `/blog` and is rendered by the main app as two ordinary stx
+views on the marketing site's own nav, footer, palette and theme toggle:
+`resources/views/blog.stx` (the index) and `resources/views/blog/[slug].stx`
+(a post), with shared data in `resources/data/blog.ts` and styles in
+`public/assets/styles/blog.css`. Posts are markdown files in
+`content/blog/*.md`; the slug is the filename (`introducing-stacks.md` →
+`/blog/introducing-stacks`). They are read by `@stacksjs/cms/blog`, which also
+drives the RSS feed (`/blog/feed.xml`) and the blog's entries in
+`/sitemap.xml`, so all three agree on what is published.
 
-The RSS feed (`/blog/feed.xml`) and sitemap (`/blog/sitemap.xml`) are generated
-by BunPress's own `buildRssFeed` / `buildSitemap` from the same markdown.
+It used to be a separate BunPress build with its own theme (`.theme.css`).
+That is gone: `resources/views/blog.stx` existing is what tells the server to
+skip BunPress for /blog.
+
+## Stacks has not launched
+
+Until it does, no post may read as a launch announcement. Say plainly that
+Stacks is pre-release, describe what works today and what is left, promise no
+date, and point readers at the launch list. Every post page ends with the
+signup form (`resources/partials/blog-subscribe.stx`), and a body can link to
+it with `[join the launch list](#subscribe)`.
 
 ## Adding a post
 
@@ -19,8 +31,6 @@ by BunPress's own `buildRssFeed` / `buildSitemap` from the same markdown.
    description: One-line summary (used as excerpt + meta + RSS description).
    date: 2026-07-01
    author: The Stacks Team
-   authorBio: Optional — renders an author card at the foot of the post.
-   poster: /assets/images/marketing-park-trail.svg   # optional hero image
    featured: false                                   # one featured post at a time
    ---
    ```
@@ -47,14 +57,14 @@ reaches the summit (a stable `1.0`). Target **2 posts/week** — one "deep dive"
 
 ---
 
-## The launch post (LIVE)
+## The introduction post (published, pre-launch)
 
 ### 1. Introducing Stacks — `introducing-stacks`
-The thesis post. What Stacks is, the 5-year journey, the
+The thesis post. What Stacks is, where it stands before release, the
 own-the-stack philosophy, the catalog of first-party packages, the Laravel
 ecosystem comparison, and the Road-to-v1.0s announcement.
 
-**Planned follow-ups (each expands one thread from the launch post):**
+**Planned follow-ups (each expands one thread from the introduction post):**
 
 - **Why we wrote our own linter and formatter** → deep dive on `pickier`
   (replacing ESLint + Prettier), speed numbers, the single-tool argument.
@@ -92,7 +102,7 @@ Suggested order (highest "they actually built THAT?" factor first):
 Short, regular cadence posts. Each entry: what graduated to `1.0`, the changelog
 highlights, what's next on the climb. Cross-link to the relevant deep dive.
 
-- **Campaign index — `the-road-to-v1` — LIVE.** The pinned manifesto the launch
+- **Campaign index — `the-road-to-v1` — LIVE.** The pinned manifesto the introduction
   post links to (and which links back) — `content/blog/the-road-to-v1.md`.
   Future shipping-log entries should link back to it.
 

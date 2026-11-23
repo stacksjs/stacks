@@ -6,12 +6,17 @@ import { faqs, showcase } from '../data/home'
 import { stats } from '../data/stats'
 import { useCases } from '../data/use-cases'
 import { comparisonSpotlight } from '../data/nav'
+import { subscribeNotice } from '../data/blog'
 
 const appName = 'Stacks'
 
 // The home page's own sheet, read by the shared head partial and inlined
 // after theme.css and marketing.css.
 const pageStyles = ['home']
+
+// The signup posts without JavaScript and comes back with ?subscribe=<outcome>
+// (see subscribeNotice in resources/data/blog.ts), answered beside the form.
+const notice = subscribeNotice(typeof query !== 'undefined' ? query : undefined)
 
 /*
  * Launched. Two gates gated this page and both had to open:
@@ -318,7 +323,7 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
         <section class="home-hero site-shell" aria-labelledby="hero-heading">
           <div class="home-hero-copy">
             <a class="home-badge" href="/blog/introducing-stacks" data-no-router>
-              <span class="home-badge-tag">New</span>
+              <span class="home-badge-tag">Pre-release</span>
               Introducing Stacks
               <i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i>
             </a>
@@ -660,12 +665,15 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
               <a class="button" href="https://github.com/stacksjs/stacks"><i class="i-hugeicons-github" aria-hidden="true"></i>Star on GitHub</a>
             </div>
 
-            <form class="cta-form" action="/api/email/subscribe" method="POST">
-              <label for="cta-email">Release notes, occasionally. No noise.</label>
+            <form class="cta-form" id="subscribe" action="/api/email/subscribe" method="POST">
+              <input type="hidden" name="source" value="homepage">
+              <input type="hidden" name="return" value="/#subscribe">
+              <label for="cta-email">Stacks is not out yet. Get one email the day it is, and early access before that.</label>
               <div class="cta-form-row">
                 <input id="cta-email" type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
-                <button class="button" type="submit">Subscribe</button>
+                <button class="button" type="submit">Get the launch email</button>
               </div>
+              @include('signup-notice')
             </form>
           </div>
         </section>

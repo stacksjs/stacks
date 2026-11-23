@@ -8,7 +8,7 @@ poster: /assets/images/marketing-park-summit.svg
 featured: false
 ---
 
-In [our launch post](/blog/introducing-stacks) we said the quiet part out loud: after five years of building, the only runtime dependencies Stacks ships are TypeScript and Bun, and almost every other piece - the linter, the formatter, the type generator, the templating engine, the CSS engine, the query builder - is something we wrote and maintain ourselves. Building it was the hard part. The next part is harder in a different way: taking the whole catalog into the open, on a schedule, and all the way to a number we can stand behind. We're calling it **The Road to v1.0s** - plural, because there isn't one summit. There are more than a hundred.
+In [Introducing Stacks](/blog/introducing-stacks) we said the quiet part out loud: after five years of building, the only runtime dependencies Stacks ships are TypeScript and Bun, and almost every other piece - the linter, the formatter, the type generator, the templating engine, the CSS engine, the query builder - is something we wrote and maintain ourselves. Building it was the hard part. The next part is harder in a different way: taking the whole catalog into the open, on a schedule, and all the way to a number we can stand behind. We're calling it **The Road to v1.0s** - plural, because there isn't one summit. There are more than a hundred.
 
 ## What "1.0" means to us
 
@@ -44,11 +44,11 @@ The catalog spans the whole stack, and different parts of it are at different al
 
 ### Near the summit - stable and in daily use
 
-These run in production today and are closest to earning the number:
+These already run our own sites and tools, and are closest to earning the number:
 
 - `pickier` - our linter and formatter, replacing ESLint and Prettier with one fast tool.
 - `dtsx` - the `.d.ts` generator, built for isolated declarations and speed.
-- `bunpress` - the documentation engine. This very page is rendered by it.
+- `bunpress` - the documentation engine behind our docs.
 - `stx` - the templating engine: server-rendered, component-driven views with signals and directives.
 - `crosswind` - the CSS engine, a utility-first system in the Tailwind tradition.
 
@@ -79,7 +79,7 @@ Each one is independently useful. You can take `pickier` without adopting the fr
 
 We'll post here as packages reach the summit - a running shipping log alongside the deeper "why we built this" write-ups. The first deep dives are already queued: why we wrote our own linter and formatter, what it takes to emit `.d.ts` files correctly, and how the deploy path collapses into a single command.
 
-If you want the short version in your inbox, subscribe from the homepage. Otherwise: the docs are at [/docs](/docs), the source is on [GitHub](https://github.com/stacksjs/stacks), and the trailhead is [the launch post](/blog/introducing-stacks).
+Stacks itself is not released yet. If you want to know the day it opens up, [join the launch list](#subscribe): one email on launch day, early access before the public release, and an occasional build note. Otherwise, the source is on [GitHub](https://github.com/stacksjs/stacks), and the trailhead is [Introducing Stacks](/blog/introducing-stacks).
 
 The summit register is open. We're counting up from here.
 
