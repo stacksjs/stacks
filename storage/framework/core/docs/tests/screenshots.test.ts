@@ -2,6 +2,7 @@ import { afterAll, describe, expect, test } from 'bun:test'
 import { lstat, mkdtemp, mkdir, readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { captureWorkerTempTemplate } from '../src/capture-browser'
 import { captureScreenshots, publishScreenshots, type ScreenshotConfig, validateScreenshotConfig } from '../src/screenshots'
 
 const roots: string[] = []
@@ -10,6 +11,13 @@ async function fixture() { const root = await mkdtemp(join(tmpdir(), 'screen-cap
 const config = (): ScreenshotConfig => ({ baseUrl: 'https://example.test', outDir: 'pictures', pages: [{ id: 'home', title: 'Home', path: '/', description: 'Find today\'s work.', waitFor: 'main' }] })
 
 describe('documentation screenshot inventory', () => {
+  test('counts the worker directory when reserving space for the Chrome socket', () => {
+    const root = '/tmp/reviewos-job-12345-abcdef/.reviewos-runner/temp'
+    expect(captureWorkerTempTemplate(root, 'linux')).toBe('/tmp/stx-b-')
+    expect(captureWorkerTempTemplate(root, 'win32')).toBe(join(root, 'stx-b-'))
+    expect(captureWorkerTempTemplate('/tmp/reviewos', 'linux')).toBe(join('/tmp/reviewos', 'stx-b-'))
+  })
+
   test('fails on unknown roles, duplicate ids, unsafe paths and cross-origin screens', async () => {
     for (const modify of [
       (value: ScreenshotConfig) => { value.pages.push({ ...value.pages[0]! }) },

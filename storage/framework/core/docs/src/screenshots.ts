@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { captureMaskCss } from './capture-masks'
-import { captureBrowser } from './capture-browser'
+import { captureBrowser, captureWorkerTempTemplate } from './capture-browser'
 import { discoverScreenshotModels, screenshotFixturePath, type ScreenshotFixtures, type ScreenshotModelOptions, type ScreenshotModelPlan } from './screenshot-models'
 export { discoverScreenshotModels, planScreenshotModels, screenshotFixturePath } from './screenshot-models'
 export type { ScreenshotFixtures, ScreenshotModel, ScreenshotModelOptions, ScreenshotModelPlan } from './screenshot-models'
@@ -14,6 +14,7 @@ export { discoverViews, screensFromViews } from './screenshot-views'
 export type { ViewScreen, ViewScreenOptions, ViewScreenRule } from './screenshot-views'
 export type { ScreenshotDocsOptions, ScreenshotDocsPage, ScreenshotFilm, ScreenshotFilmOptions } from './screenshot-publish'
 import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
+import { ChromeLaunchError } from '@stacksjs/testing/browser'
 import { version as generatorVersion } from '../package.json'
 
 export interface ScreenshotViewport { name: string, width: number, height: number }
@@ -205,6 +206,11 @@ async function until(read: () => Promise<boolean>, timeout: number): Promise<voi
 }
 function redacted(error: unknown, config: ScreenshotConfig): string {
   let text = error instanceof Error ? error.message : 'Screenshot capture failed'
+  if (error instanceof ChromeLaunchError && error.diagnostics.stderrTail.trim()) {
+    const stderr = error.diagnostics.stderrTail.trim()
+    const diagnostic = stderr.split('\n').filter(line => /FATAL|Check failed/.test(line)).at(-1) ?? stderr.slice(-750)
+    text = `${text.split('\n', 1)[0]}\n${diagnostic}`
+  }
   for (const name of config.redactEnv ?? []) {
     const secret = process.env[name]
     if (secret) text = text.replaceAll(secret, '[redacted]')
@@ -379,11 +385,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
       const runtime = import.meta.path.startsWith('/$bunfs/') ? Bun.which('bun') : process.execPath
       if (!runtime) throw new Error('An installed Bun is required for screenshot workers')
       const entry = import.meta.path.startsWith('/$bunfs/') ? Bun.resolveSync('@stacksjs/docs/screenshots', root) : import.meta.path
-      // Chrome puts its profile and a Unix socket under the worker's temp
-      // root. A deep artifact directory can exceed the socket address limit.
-      const systemTemp = tmpdir()
-      const browserTempRoot = process.platform !== 'win32' && Buffer.byteLength(systemTemp) > 60 ? '/tmp' : systemTemp
-      const workerTemp = await mkdtemp(join(browserTempRoot, 'stx-b-'))
+      const workerTemp = await mkdtemp(captureWorkerTempTemplate(tmpdir(), process.platform))
       const env = { ...process.env, TMPDIR: workerTemp, TMP: workerTemp, TEMP: workerTemp }
       let worker: ReturnType<typeof spawnOwnedProcess> | undefined
       let timer: ReturnType<typeof setTimeout> | undefined

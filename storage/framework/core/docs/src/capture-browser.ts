@@ -1,4 +1,12 @@
+import { join } from 'node:path'
 import { launch, type LaunchedChrome } from '@stacksjs/testing/browser'
+
+/** Leave room in a Unix socket path for Chromium's temporary directory and socket name. */
+export function captureWorkerTempTemplate(root: string, platform: NodeJS.Platform): string {
+  const template = join(root, 'stx-b-')
+  // mkdtemp appends six bytes before Chromium starts and adds its own path.
+  return platform !== 'win32' && Buffer.byteLength(template) + 6 > 60 ? '/tmp/stx-b-' : template
+}
 
 /** Open WebViews inside the same isolated browser launcher that runs browser tests. */
 export function captureBrowser(backend: 'webkit' | 'chrome') {
