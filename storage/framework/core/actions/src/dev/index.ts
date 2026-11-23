@@ -58,3 +58,11 @@ export async function runDesktopDevServer(options: DevOptions): Promise<void> {
 export async function runDocsDevServer(options: DevOptions): Promise<void> {
   await runAction(Action.DevDocs, options)
 }
+
+/**
+ * The scheduler, run beside the dev servers: what `buddy schedule:run` runs,
+ * so app/Scheduler.ts and job rates fire during local use (#3366).
+ */
+export async function runScheduleDevServer(options: DevOptions): Promise<void> {
+  await runAction(Action.ScheduleRun, options)
+}

@@ -311,6 +311,8 @@ export type DevOption =
   | 'dashboard'
   /** `--detach`: let the dev servers outlive the process that started them. */
   | 'detach'
+  /** `--no-schedule` arrives as `schedule: false`: do not run the scheduler beside the servers. */
+  | 'schedule'
   | 'interactive'
   | 'browser'
   | 'site'
