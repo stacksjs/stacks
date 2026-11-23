@@ -98,7 +98,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/ui` | [`stacks-ui`](../stacks-ui/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/ui/src/index.ts) | 6 |
 | `@stacksjs/utils` | [`stacks-utils`](../stacks-utils/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/utils/src/index.ts) | 28 |
 | `@stacksjs/validation` | [`stacks-validation`](../stacks-validation/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/index.ts) | 26 |
-| `@stacksjs/video` | [`stacks-video`](../stacks-video/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/index.ts) | 3 |
+| `@stacksjs/video` | [`stacks-video`](../stacks-video/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/index.ts) | 4 |
 | `@stacksjs/waf` | [`stacks-security`](../stacks-security/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/waf/src/index.ts) | 2 |
 | `@stacksjs/whois` | [`stacks-whois`](../stacks-whois/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/whois/src/index.ts) | 5 |
 
@@ -965,11 +965,11 @@ Evidence directory: [26 retained tests](https://github.com/stacksjs/stacks/blob/
 
 Guidance: [`stacks-video`](../stacks-video/SKILL.md). Source: [storage/framework/core/video/src/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/index.ts).
 
-Declared runtime exports: `VideoBuilder`, `assertVideoPlanExecutable`, `createHlsMaster`, `createPreviewVtt`, `createProtectedVideoPlaylist`, `deriveVideoLadder`, `inspectVideo`, `parseByteRange`, `processVideoPlan`, `signVideoAsset`, `verifyVideoAsset`, `video`, `videoAssetHeaders`, `videoContentType`, `videoFileResponse`, `videoResponseHeaders`.
+Declared runtime exports: `VideoBuilder`, `assertVideoPlanExecutable`, `colourFilters`, `createHlsMaster`, `createPreviewVtt`, `createProtectedVideoPlaylist`, `deriveVideoLadder`, `ffmpegCapabilities`, `fitInsideBox`, `inspectVideo`, `parseByteRange`, `parseProbe`, `posterFrame`, `probeVideo`, `processVideoPlan`, `resolveFfmpegBinaries`, `signVideoAsset`, `transcodeForWeb`, `verifyVideoAsset`, `video`, `videoAssetHeaders`, `videoContentType`, `videoFileResponse`, `videoResponseHeaders`, `webTranscodeArgs`.
 
-Local source modules: [src/files.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/files.ts), [src/inspect.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/inspect.ts).
+Local source modules: [src/files.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/files.ts), [src/inspect.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/inspect.ts), [src/web.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/web.ts).
 
-Evidence directory: [3 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [4 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/waf
 
