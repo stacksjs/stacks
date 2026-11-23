@@ -187,7 +187,7 @@ export default defineModel({
       order: 13,
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.timestamp(),
       },
       factory: () => null,
     },

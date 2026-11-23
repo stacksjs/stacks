@@ -133,7 +133,7 @@ export default defineModel({
       order: 9,
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.timestamp(),
       },
       factory: faker => faker.date.future().toISOString().slice(0, 19).replace('T', ' '),
     },
@@ -141,7 +141,7 @@ export default defineModel({
       order: 10,
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.timestamp(),
       },
       factory: faker => faker.date.future().toISOString().slice(0, 19).replace('T', ' '),
     },
@@ -149,7 +149,7 @@ export default defineModel({
       order: 11,
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.timestamp(),
       },
       factory: faker => faker.date.future().toISOString().slice(0, 19).replace('T', ' '),
     },
