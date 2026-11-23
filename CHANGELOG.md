@@ -1,5 +1,82 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.661...v0.75.662)
+
+## ✨ Features
+
+- **marketing**: answer the launch-list signup in place ([a5f14dc](https://github.com/stacksjs/stacks/commit/a5f14dc)) _(by Chris Breuer)_
+- **orm**: encryptRow and decryptRow for query-builder writes and reads ([0660aa7](https://github.com/stacksjs/stacks/commit/0660aa7)) _(by glennmichael123)_ ([#3359](https://github.com/stacksjs/stacks/issues/3359))
+- **testing**: give an app's test run a throwaway SQLite database ([4042c1b](https://github.com/stacksjs/stacks/commit/4042c1b)) _(by glennmichael123)_ ([#3362](https://github.com/stacksjs/stacks/issues/3362))
+- **scheduler**: prune auth tokens daily by default ([06df645](https://github.com/stacksjs/stacks/commit/06df645)) _(by glennmichael123)_ ([#3360](https://github.com/stacksjs/stacks/issues/3360))
+- **marketing**: a Stacks-branded welcome email for the launch list ([b39dac8](https://github.com/stacksjs/stacks/commit/b39dac8)) _(by Chris Breuer)_
+- **video**: one web MP4 and a poster from any upload, with ffmpeg ([ddc642f](https://github.com/stacksjs/stacks/commit/ddc642f)) _(by glennmichael123)_ ([#3388](https://github.com/stacksjs/stacks/issues/3388), [stacksjs/ts-videos#1006](https://github.com/stacksjs/ts-videos/issues/1006), [#1007](https://github.com/stacksjs/stacks/issues/1007), [#1008](https://github.com/stacksjs/stacks/issues/1008))
+- **logging**: delete daily log files past a retention window ([a9a151b](https://github.com/stacksjs/stacks/commit/a9a151b)) _(by glennmichael123)_ ([#3365](https://github.com/stacksjs/stacks/issues/3365))
+- **dev**: run scheduled work under `buddy dev`, and say so ([9b1d977](https://github.com/stacksjs/stacks/commit/9b1d977)) _(by glennmichael123)_ ([#3366](https://github.com/stacksjs/stacks/issues/3366))
+- **dev**: the pieces to run the scheduler beside the dev servers ([04f3f5d](https://github.com/stacksjs/stacks/commit/04f3f5d)) _(by glennmichael123)_ ([#3366](https://github.com/stacksjs/stacks/issues/3366))
+- **blog**: render /blog as marketing pages, with a launch-list signup ([532934c](https://github.com/stacksjs/stacks/commit/532934c)) _(by Chris Breuer)_
+- **seo**: list all fifty inner pages, and describe the site to machines ([3da7c10](https://github.com/stacksjs/stacks/commit/3da7c10)) _(by Chris Breuer)_
+- **marketing**: say who runs on Stacks, and answer the first questions ([4d732a9](https://github.com/stacksjs/stacks/commit/4d732a9)) _(by Chris Breuer)_
+- **marketing**: a menu on phones in place of a sideways-scrolling nav ([43e96f4](https://github.com/stacksjs/stacks/commit/43e96f4)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **docs**: stream browser story frames through FFmpeg ([f78668c](https://github.com/stacksjs/stacks/commit/f78668c)) _(by Chris Breuer)_
+- **testing**: reset only the SQLite file the run owns ([63979ce](https://github.com/stacksjs/stacks/commit/63979ce)) _(by glennmichael123)_ ([#3362](https://github.com/stacksjs/stacks/issues/3362))
+- **email**: make the newsletter signup hold up end to end ([d81bcef](https://github.com/stacksjs/stacks/commit/d81bcef)) _(by Chris Breuer)_
+- **desktop**: keep the detached log private, token-free and bounded ([c4df0ca](https://github.com/stacksjs/stacks/commit/c4df0ca)) _(by glennmichael123)_ ([#3371](https://github.com/stacksjs/stacks/issues/3371))
+- **seeder**: never suffix a unique enum column past its allowed values ([a7f7693](https://github.com/stacksjs/stacks/commit/a7f7693)) _(by glennmichael123)_ ([#3363](https://github.com/stacksjs/stacks/issues/3363))
+- **scheduler**: keep pauses and locks in the project, not the cwd ([f989263](https://github.com/stacksjs/stacks/commit/f989263)) _(by glennmichael123)_ ([#3386](https://github.com/stacksjs/stacks/issues/3386))
+- **email**: send when the configured database does not exist ([4b946e1](https://github.com/stacksjs/stacks/commit/4b946e1)) _(by glennmichael123)_ ([#3387](https://github.com/stacksjs/stacks/issues/3387))
+- **path**: leftover runtime state no longer makes a package a project ([2c3c031](https://github.com/stacksjs/stacks/commit/2c3c031)) _(by glennmichael123)_ ([#3386](https://github.com/stacksjs/stacks/issues/3386))
+- **models**: record when a job failed, not only the day ([84853ab](https://github.com/stacksjs/stacks/commit/84853ab)) _(by glennmichael123)_ ([#3385](https://github.com/stacksjs/stacks/issues/3385))
+- **commerce**: keep the time on auction, bid and waitlist instants ([4bc6cc1](https://github.com/stacksjs/stacks/commit/4bc6cc1)) _(by glennmichael123)_ ([#3385](https://github.com/stacksjs/stacks/issues/3385))
+- **actions**: send a plain signup form back to its page instead of JSON ([d8ee651](https://github.com/stacksjs/stacks/commit/d8ee651)) _(by Chris Breuer)_
+- **buddy**: keep the marketing site's new files out of a scaffolded app ([879f6c1](https://github.com/stacksjs/stacks/commit/879f6c1)) _(by Chris Breuer)_
+- **docs**: a favicon that exists, and a docs home that says it launched ([75c4a03](https://github.com/stacksjs/stacks/commit/75c4a03)) _(by Chris Breuer)_
+- **marketing**: settle sections into place without dimming them ([708a40a](https://github.com/stacksjs/stacks/commit/708a40a)) _(by Chris Breuer)_
+
+## ⚡ Performance Improvements
+
+- **marketing**: nothing above the fold moves after the first frame ([31bd963](https://github.com/stacksjs/stacks/commit/31bd963)) _(by Chris Breuer)_
+- **marketing**: paint a page from the one response that carries it ([53620d3](https://github.com/stacksjs/stacks/commit/53620d3)) _(by Chris Breuer)_
+
+## ♻️ Code Refactoring
+
+- **marketing**: build the signup as an stx component ([6f66d28](https://github.com/stacksjs/stacks/commit/6f66d28)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **marketing**: position Stacks as the all-in-one framework ([c6be5b9](https://github.com/stacksjs/stacks/commit/c6be5b9)) _(by Chris Breuer)_
+- refresh the action count and the database test count ([13590c3](https://github.com/stacksjs/stacks/commit/13590c3)) _(by glennmichael123)_ ([#3385](https://github.com/stacksjs/stacks/issues/3385))
+- **blog**: say Stacks is pre-release, and ask for the launch email ([5390dbd](https://github.com/stacksjs/stacks/commit/5390dbd)) _(by Chris Breuer)_
+
+## ✅ Tests
+
+- **orm**: encrypted columns by table, through a real SQLite round trip ([997422c](https://github.com/stacksjs/stacks/commit/997422c)) _(by glennmichael123)_ ([#3359](https://github.com/stacksjs/stacks/issues/3359))
+- **scheduler**: pin the daily token prune and its opt-outs ([30419a6](https://github.com/stacksjs/stacks/commit/30419a6)) _(by glennmichael123)_ ([#3360](https://github.com/stacksjs/stacks/issues/3360))
+- **video**: encode an HLG portrait 4K 60 fps upload with GPS ([54d5563](https://github.com/stacksjs/stacks/commit/54d5563)) _(by glennmichael123)_ ([#3388](https://github.com/stacksjs/stacks/issues/3388))
+- **logging**: pin the retention window and the logger's own pruning ([028527e](https://github.com/stacksjs/stacks/commit/028527e)) _(by glennmichael123)_ ([#3365](https://github.com/stacksjs/stacks/issues/3365))
+- **scheduler**: pause a scratch file, not the project's real one ([2f35a0b](https://github.com/stacksjs/stacks/commit/2f35a0b)) _(by glennmichael123)_ ([#3386](https://github.com/stacksjs/stacks/issues/3386))
+
+## 💚 Continuous Integration
+
+- **waf**: build zig-waf at its shared-regex change ([9c3a5b9](https://github.com/stacksjs/stacks/commit/9c3a5b9)) _(by glennmichael123)_ ([#3338](https://github.com/stacksjs/stacks/issues/3338), [zig-utils/zig-waf#85](https://github.com/zig-utils/zig-waf/issues/85))
+
+## 🔧 Chores
+
+- **deps**: bunpress 0.2.32 ([3ae4522](https://github.com/stacksjs/stacks/commit/3ae4522)) _(by Chris Breuer)_
+- **deps**: stx 0.2.927 ([820a296](https://github.com/stacksjs/stacks/commit/820a296)) _(by Chris Breuer)_
+
+## ⏪ Reverts
+
+- "feat(video): one web MP4 and a poster from any upload, with ffmpeg" ([d75a118](https://github.com/stacksjs/stacks/commit/d75a118)) _(by glennmichael123)_ ([#3388](https://github.com/stacksjs/stacks/issues/3388), [stacksjs/ts-videos#1006](https://github.com/stacksjs/ts-videos/issues/1006), [#1007](https://github.com/stacksjs/stacks/issues/1007), [#1008](https://github.com/stacksjs/stacks/issues/1008))
+- "test(video): encode an HLG portrait 4K 60 fps upload with GPS" ([703df31](https://github.com/stacksjs/stacks/commit/703df31)) _(by glennmichael123)_ ([#3388](https://github.com/stacksjs/stacks/issues/3388))
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.660...v0.75.661)
 
 ## 🐛 Bug Fixes
