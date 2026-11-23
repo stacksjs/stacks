@@ -12,6 +12,7 @@ import { inspectDefaultsProvenance, libsPath, projectPath, stxPath } from '@stac
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
 import { resultFailed } from '../result'
+import { devSchedulerEnabled, hasScheduledWork } from './dev-scheduler'
 
 /** Lines printed before the ready banner (`blank`, `stacks … starting…`, `blank`). */
 const DEV_BOOT_STARTING_LINE_COUNT = 3
@@ -450,6 +451,7 @@ export function dev(buddy: CLI): void {
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
     detach: 'Keep the dev servers running after this process or its shell exits (for `nohup ./buddy dev --detach &`)',
+    noSchedule: 'Do not run scheduled tasks (app/Scheduler.ts, job rates) beside the dev servers; also STACKS_DEV_SCHEDULE=0',
   }
 
   buddy
@@ -469,6 +471,7 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--detach', descriptions.detach, { default: false })
+    .option('--no-schedule', descriptions.noSchedule)
     .action(async (server: string | undefined, options: DevOptions) => {
 
       // Read by every dev server's `exitWithParent` (inherited through the
@@ -832,6 +835,9 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // `STACKS_DEV_DASHBOARD=1 ./buddy dev` (or `./buddy dev:dashboard` to
   // run it standalone) when you actually want the dashboard up.
   const includeDashboard = process.env.STACKS_DEV_DASHBOARD === '1'
+  // On by default, unlike the dashboard: scheduled work that never runs locally
+  // is a bug nobody notices until production (#3366).
+  const includeSchedule = devSchedulerEnabled({ flag: options.schedule, env: process.env.STACKS_DEV_SCHEDULE, hasScheduledWork: hasScheduledWork(projectPath()) })
   const domain = resolvePrettyDevDomain(appUrl, nativeMode)
   const appLooksCustom = domain !== null
   // Pretty https URLs from APP_URL are the default dev experience, even when
@@ -1089,6 +1095,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
         apiPort,
         docsPort,
         includeDashboard,
+        includeSchedule,
         domain,
         dashboardPort,
         dashboardDomain,
@@ -1133,6 +1140,14 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
       ? a.runDashboardDevServer(quietOpts).catch((error) => {
         if (options.verbose)
           log.error(`Dashboard: ${error}`)
+      })
+      : Promise.resolve(),
+    // Not quiet, unlike the servers: their banner speaks for them, but a
+    // scheduled task's output and errors have nowhere else to go. Only
+    // --verbose is passed on; the dev flags mean nothing to it.
+    includeSchedule
+      ? a.runScheduleDevServer({ verbose: options.verbose }).catch((error) => {
+        log.error(`Scheduler: ${error instanceof Error ? error.message : error}`)
       })
       : Promise.resolve(),
     nativeWindowReady.catch((error) => {
@@ -1189,6 +1204,7 @@ function printDevReadyBanner(input: {
   apiPort: number
   docsPort: number
   includeDashboard: boolean
+  includeSchedule: boolean
   domain: string | null
   dashboardPort: number
   dashboardDomain: string | null
@@ -1208,6 +1224,7 @@ function printDevReadyBanner(input: {
     apiPort,
     docsPort,
     includeDashboard,
+    includeSchedule,
     domain,
     dashboardPort,
     dashboardDomain,
@@ -1239,6 +1256,8 @@ function printDevReadyBanner(input: {
     console.log(`  ${green('➜')}  ${bold('Blog')}:        ${cyan(blogUrl)}`)
   if (includeDashboard)
     console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dbUrl)}`)
+  if (includeSchedule)
+    console.log(`  ${green('➜')}  ${bold('Scheduler')}:   ${cyan('running')} ${dim('(--no-schedule to turn off)')}`)
   if (useProxy) {
     console.log(`  ${dim('➜')}  ${dim('Direct')}:      ${dim(`${developmentUrl(`http://localhost:${frontendPort}`, entryPath)} (bypasses the proxy)`)}`)
     if (includeDashboard && dashboardDomain)

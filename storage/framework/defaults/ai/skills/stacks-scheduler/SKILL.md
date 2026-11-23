@@ -302,6 +302,8 @@ process.on('SIGINT', () => {
 
 - `buddy schedule:run` -- Runs `Action.ScheduleRun`, which calls `runScheduler()`
   - Options: `-p, --project [project]`, `--verbose`
+- `buddy dev` -- Runs the same `Action.ScheduleRun` beside the dev servers whenever the app has an `app/Scheduler.ts` or a job in `app/Jobs/`, and says so in the ready banner. `--no-schedule` or `STACKS_DEV_SCHEDULE=0` turns it off, for an app whose tasks send email or post for real.
+  - A process whose only tasks are sub-minute (`everySecond()`) does not stay up: those interval timers are `unref()`'d. A minute-or-longer task keeps it running.
 
 ## Code Examples
 

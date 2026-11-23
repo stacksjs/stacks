@@ -1564,6 +1564,7 @@ Start development server
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 | `--detach` | Keep the dev servers running after this process or its shell exits (for `nohup ./buddy dev --detach &`) | boolean, optional | `false` |
+| `--no-schedule` | Do not run scheduled tasks (app/Scheduler.ts, job rates) beside the dev servers; also STACKS_DEV_SCHEDULE=0 | boolean, optional, negated | `true` |
 
 ### `dev:api`
 
