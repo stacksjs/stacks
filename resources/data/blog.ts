@@ -12,8 +12,6 @@
 
 import type { PostMeta } from '@stacksjs/cms/blog'
 import { formatPostDate, initialsOf, loadPost, loadPosts, renderPostBody } from '@stacksjs/cms/blog'
-import type { SubscribeOutcome } from './signup-messages'
-import { isSubscribeOutcome } from './signup-messages'
 
 export interface BlogCard {
   slug: string
@@ -81,15 +79,18 @@ export function otherPosts(slug: string, count = 2): BlogCard[] {
 }
 
 
+/** What /api/email/subscribe can send a plain form post back with. */
+const subscribeOutcomes = ['subscribed', 'already', 'invalid', 'busy', 'error'] as const
+
 /**
  * The `?subscribe=<outcome>` a page was loaded with, or ''. A signup form
  * that posted without JavaScript comes back with it (see form-return.ts in
- * the default actions), and the page hands it to the SignupForm component,
- * which shows the matching message.
+ * the default actions), and the page hands it to the framework's
+ * `<SubscribeForm outcome="...">`, which shows the matching message.
  */
-export function subscribeOutcomeFrom(query: unknown): SubscribeOutcome | '' {
+export function subscribeOutcomeFrom(query: unknown): string {
   const outcome = query && typeof query === 'object' ? (query as Record<string, unknown>).subscribe : ''
-  return isSubscribeOutcome(outcome) ? outcome : ''
+  return typeof outcome === 'string' && (subscribeOutcomes as readonly string[]).includes(outcome) ? outcome : ''
 }
 
 /** Share links for a post, built from its canonical URL. */

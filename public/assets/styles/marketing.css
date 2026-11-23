@@ -783,143 +783,29 @@ input[type="email"]:focus {
   outline: 3px solid rgba(var(--accent-rgb), 0.22);
 }
 
-/* The answer a signup form shows after it posts and comes back with
-  ?subscribe=<outcome>: the home page's closing form and the blog's. The
-  form is the #subscribe the browser returns to; the margin keeps its top
-  clear of the sticky nav. */
+/* The framework's newsletter signup, <SubscribeForm>
+  (storage/framework/defaults/resources/components/Marketing/SubscribeForm.stx),
+  on the home page and the blog, in the site's colours. Its own rules sit at
+  zero specificity, so these and the site's .button and email field styles win.
+  The form is the #subscribe a plain form post returns to; the margin keeps its
+  top clear of the sticky nav. */
 #subscribe {
   scroll-margin-top: 96px;
 }
 
-.signup-notice {
-  display: flex;
-  gap: 0.5rem;
-  align-items: flex-start;
-  margin: 0;
-  padding: 0.65rem 0.8rem;
-  border-radius: 10px;
-  font-size: 0.88rem;
-  line-height: 1.45;
+.subscribe-form {
+  --subscribe-accent: var(--accent);
+  --subscribe-on-accent: var(--on-accent);
+  --subscribe-text: var(--text);
+  --subscribe-muted: var(--muted);
+  --subscribe-border: var(--line-strong);
+  --subscribe-field: var(--field-bg);
+  --subscribe-success: rgba(var(--accent-rgb), 0.1);
+  --subscribe-error: rgba(220, 38, 38, 0.1);
 }
 
-.signup-notice i {
-  flex: 0 0 auto;
-  width: 1.1rem;
-  height: 1.1rem;
-  margin-top: 0.05rem;
-}
-
-.signup-notice--success {
-  color: var(--text);
-  background: rgba(var(--accent-rgb), 0.1);
-}
-
-.signup-notice--success i {
-  color: var(--accent);
-}
-
-.signup-notice--error {
-  color: var(--text);
-  background: rgba(220, 38, 38, 0.1);
-}
-
-.signup-notice--error i {
-  color: #dc2626;
-}
-
-/* The signup form (resources/components/SignupForm.stx), on the blog and
-  the home page. */
-.signup-form {
-  display: grid;
-  gap: 0.7rem;
-}
-
-.signup-row {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.signup-row input[type="email"] {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.signup-row .button {
-  flex: 0 0 auto;
+.subscribe-form__button.button {
   min-height: 46px;
-}
-
-.signup-fine {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.8rem;
-  line-height: 1.5;
-}
-
-.signup-intro {
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-@media (max-width: 560px) {
-  .signup-row {
-    flex-direction: column;
-  }
-
-  .signup-row .button {
-    width: 100%;
-  }
-}
-
-/* The signup button while the in-place submit is out (resources/data/signup.ts):
-  a spinner beside the label, the label kept so the button keeps its width. */
-.signup-spinner {
-  display: none;
-  width: 1em;
-  height: 1em;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: signup-spin 0.7s linear infinite;
-}
-
-.is-loading .signup-spinner {
-  display: inline-block;
-}
-
-.is-loading .signup-submit {
-  cursor: progress;
-  opacity: 0.85;
-}
-
-.signup-submit:disabled {
-  transform: none;
-}
-
-/* A notice appears without pushing the page around: it fades and slides a
-  few pixels in the space the fine print held. */
-.signup-notice:not(.signup-notice--empty) {
-  animation: signup-in 0.22s ease-out;
-}
-
-/* Nothing to say yet, or nothing left to say: the component keeps both
-  elements in the page and switches them with a class. */
-.signup-notice--empty,
-.signup-fine--gone {
-  display: none;
-}
-
-@keyframes signup-spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes signup-in {
-  from { opacity: 0; transform: translateY(-3px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .signup-spinner { animation-duration: 1.6s; }
-  .signup-notice:not(.signup-notice--empty) { animation: none; }
 }
 
 .sr-only {

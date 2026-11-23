@@ -15,7 +15,7 @@
 // them follows the reader to the others.
 //
 // The email form posts to the same rate-limited endpoint the framework form
-// used (/api/email/subscribe).
+// used (/api/email/subscribe), through the framework's <SubscribeForm>.
 import { assetUrl } from '../data/assets'
 
 const appName = 'Stacks'
@@ -205,43 +205,25 @@ const siteDescription = 'Stacks is the all-in-one TypeScript framework for web a
 
       /* ── Subscribe ────────────────────────────────────────────────── */
 
+      /* The framework's SubscribeForm component, in this page's colours. */
       .subscribe {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.6rem;
         max-width: 30rem;
         margin-top: 2rem;
       }
 
-      .cs-input {
-        flex: 1 1 15rem;
+      .subscribe .subscribe-form {
+        --subscribe-accent: var(--accent);
+        --subscribe-muted: var(--muted);
+        --subscribe-border: var(--line-strong);
+        --subscribe-field: var(--field-bg);
+        --subscribe-success: rgba(var(--accent-rgb), 0.1);
+      }
+
+      .subscribe .subscribe-form__field {
         min-height: 46px;
-        padding: 0 1rem;
-        border: 1px solid var(--line-strong);
         border-radius: 999px;
         color: var(--on-field);
-        font: inherit;
-        font-size: 0.92rem;
-        background: var(--field-bg);
       }
-
-      .cs-input::placeholder { color: var(--muted); }
-
-      .cs-input:focus-visible {
-        outline: 2px solid var(--accent);
-        outline-offset: 2px;
-      }
-
-      .form-note {
-        margin-top: 0.75rem;
-        min-height: 1.2rem;
-        color: var(--muted);
-        font-size: 0.88rem;
-      }
-
-      .form-note[data-state="ok"] { color: var(--accent); }
-      .form-note[data-state="err"] { color: #dc2626; }
-      :root[data-theme='dark'] .form-note[data-state="err"] { color: #fca5a5; }
 
       /* ── Footer ───────────────────────────────────────────────────── */
 
@@ -314,12 +296,9 @@ const siteDescription = 'Stacks is the all-in-one TypeScript framework for web a
           the last stretch. Leave your email and we will write the moment the trail opens.
         </p>
 
-        <form id="subscribe-form" class="subscribe" novalidate>
-          <label for="subscribe-email" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Email address</label>
-          <input id="subscribe-email" class="cs-input" type="email" name="email" autocomplete="email" placeholder="you@example.com" required>
-          <button class="button primary" type="submit">Notify me</button>
-        </form>
-        <p id="form-note" class="form-note" role="status" aria-live="polite"></p>
+        <div class="subscribe">
+          <SubscribeForm source="coming-soon" label="Notify me" buttonClass="button primary" successText="You are on the list. See you at the trailhead." alreadyText="You are already on the list. See you at the trailhead." />
+        </div>
       </div>
     </main>
 
@@ -346,61 +325,5 @@ const siteDescription = 'Stacks is the all-in-one TypeScript framework for web a
       <button type="button" data-t="dark" title="Dark theme" aria-label="Dark theme" onclick="stxTheme('dark')"><i class="i-hugeicons-moon-02" aria-hidden="true"></i></button>
     </div>
 
-    <script>
-      // Plain holding-page script (not an stx SFC block): posts the email to
-      // the same rate-limited endpoint the framework form used.
-      ;(function () {
-        /*
-         * `const`, not `var`, and the element types named.
-         *
-         * The `if (!form || !input || !note) return` guard below narrows all
-         * three - but only for straight-line code. A `var` can be reassigned,
-         * so TypeScript drops the narrowing inside the closures underneath and
-         * every use came back "possibly null". `const` cannot be reassigned, so
-         * the narrowing survives into them.
-         *
-         * `getElementById` answers `HTMLElement`, which has neither `.value`
-         * nor `.reset()`. Naming the real elements is what makes those reads
-         * checked rather than asserted.
-         */
-        const form = document.getElementById('subscribe-form') as HTMLFormElement | null
-        const input = document.getElementById('subscribe-email') as HTMLInputElement | null
-        const note = document.getElementById('form-note')
-        if (!form || !input || !note) return
-
-        /*
-         * An arrow assigned after the guard, not a hoisted `function`.
-         * A function declaration is callable before the `if (!note) return`
-         * above it, so TypeScript will not carry that narrowing inside it.
-         */
-        const setNote = (message: string, state: string) => {
-          note.textContent = message
-          note.setAttribute('data-state', state)
-        }
-
-        form.addEventListener('submit', function (event) {
-          event.preventDefault()
-          var email = input.value ? input.value.trim() : ''
-          if (!email || email.indexOf('@') === -1) {
-            setNote('Please enter a valid email address.', 'err')
-            return
-          }
-          setNote('Signing you up...', '')
-          fetch('/api/email/subscribe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email }),
-          })
-            .then(function (res) { return res.ok ? res.json().catch(function () { return {} }) : Promise.reject(res) })
-            .then(function () {
-              setNote('You are on the list. See you at the trailhead.', 'ok')
-              form.reset()
-            })
-            .catch(function () {
-              setNote('Something went wrong. Please try again in a moment.', 'err')
-            })
-        })
-      })()
-    </script>
   </body>
 </html>
