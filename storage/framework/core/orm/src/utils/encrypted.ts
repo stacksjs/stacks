@@ -39,6 +39,7 @@
 
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto'
 import { log } from '@stacksjs/logging'
+import { snakeCase } from '@stacksjs/strings'
 
 const PREFIX = 'enc:'
 const ALGO = 'aes-256-gcm'
@@ -296,4 +297,93 @@ export function collectEncryptedAttributes(
     if (def && typeof def === 'object' && def.encrypted === true) out.push(name)
   }
   return out
+}
+
+/**
+ * Every table a model defines, and which of its columns are encrypted, as
+ * `defineModel()` registers them.
+ *
+ * A model's `encrypted: true` attributes are encrypted on the model's own
+ * writes, but code that writes through the query builder
+ * (`db.insertInto('table').values(row)`) bypassed that and stored plaintext,
+ * and the query builder has no row hooks to put it back on the path
+ * (stacksjs/stacks#3359). These maps are what `encryptRow()` and
+ * `decryptRow()` read.
+ */
+const encryptedByTable = new Map<string, { model: string, columns: Map<string, string> }>()
+
+/** Called by `defineModel()`: `attributes` are the model's encrypted attribute names. */
+export function registerEncryptedTable(table: string, model: string, attributes: ReadonlyArray<string>): void {
+  const columns = new Map<string, string>()
+  for (const attribute of attributes) {
+    const column = snakeCase(attribute)
+    columns.set(column, column)
+    columns.set(attribute, column)
+  }
+  encryptedByTable.set(table, { model, columns })
+}
+
+function tableEncryption(table: string): { model: string, columns: Map<string, string> } {
+  const entry = encryptedByTable.get(table)
+  if (!entry) {
+    throw new Error(
+      `[orm] encryptRow/decryptRow: no model defines the table "${table}" in this process, so its encrypted columns are unknown. `
+      + 'Import the model before writing or reading its rows through the query builder.',
+    )
+  }
+  return entry
+}
+
+/**
+ * The encrypted columns of `table`, in their database spelling. Throws for a
+ * table no loaded model defines, rather than answering "none" and letting a
+ * write go out in plaintext.
+ */
+export function encryptedColumns(table: string): string[] {
+  return [...new Set(tableEncryption(table).columns.values())]
+}
+
+/**
+ * `row` with every encrypted column of `table` encrypted, ready for the query
+ * builder. Keys may be column names (`api_token`) or attribute names
+ * (`apiToken`). Idempotent, like `encryptValue()`. Returns a copy.
+ *
+ * @example
+ * ```ts
+ * await db.insertInto('social_accounts').values(await encryptRow('social_accounts', { user_id, api_token })).execute()
+ * ```
+ */
+export async function encryptRow<T extends Record<string, unknown>>(table: string, row: T): Promise<T> {
+  const { columns } = tableEncryption(table)
+  if (columns.size === 0 || !row || typeof row !== 'object') return row
+  const out: Record<string, unknown> = { ...row }
+  for (const key of Object.keys(out)) {
+    if (columns.has(key)) out[key] = await encryptValue(out[key])
+  }
+  return out as T
+}
+
+/**
+ * `row`, read through the query builder, with every encrypted column of
+ * `table` decrypted. Keys may be column or attribute names. Returns a copy;
+ * a value that fails to decrypt comes back null, as `decryptValue()` does.
+ *
+ * @example
+ * ```ts
+ * const account = await decryptRow('social_accounts', await db.selectFrom('social_accounts').where('id', '=', id).selectAll().executeTakeFirst())
+ * ```
+ */
+export async function decryptRow<T extends Record<string, unknown> | null | undefined>(table: string, row: T): Promise<T> {
+  const { columns } = tableEncryption(table)
+  if (columns.size === 0 || !row || typeof row !== 'object') return row
+  const out: Record<string, unknown> = { ...row }
+  for (const key of Object.keys(out)) {
+    if (columns.has(key)) out[key] = await decryptValue(out[key])
+  }
+  return out as T
+}
+
+/** `decryptRow()` for every row of a query-builder result. */
+export async function decryptRows<T extends Record<string, unknown>>(table: string, rows: ReadonlyArray<T>): Promise<T[]> {
+  return Promise.all(rows.map(row => decryptRow(table, row)))
 }

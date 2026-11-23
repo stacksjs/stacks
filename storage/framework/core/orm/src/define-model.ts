@@ -2775,7 +2775,7 @@ import { createTwoFactorMethods } from './traits/two-factor'
 import { createSoftDeleteMethods, resolveSoftDeleteOptions, cascadeSoftDelete } from './traits/soft-deletes'
 import { applyAudit, resolveAuditOptions } from './traits/audit'
 import { applyActivityLog, resolveActivityLogOptions } from './traits/activity-log'
-import { collectEncryptedAttributes, decryptValueInPlace, encryptValueInPlace, isEncrypted } from './utils/encrypted'
+import { collectEncryptedAttributes, decryptValueInPlace, encryptValueInPlace, isEncrypted, registerEncryptedTable } from './utils/encrypted'
 
 /**
  * Stacks-enhanced model definition.
@@ -3014,6 +3014,9 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // the decrypt step yields plaintext into the cast layer's `get` for
   // type coercion. Models with no `encrypted: true` attributes pay nothing.
   const encryptedKeys = collectEncryptedAttributes(definition)
+  // Every table, encrypted columns or not: encryptRow() refuses a table it has
+  // never heard of rather than taking it for one with none (#3359).
+  registerEncryptedTable(definition.table ?? snakeCase(`${definition.name}s`), definition.name, encryptedKeys)
   if (encryptedKeys.length > 0) {
     wrapWritesWithEncryption(baseModel, encryptedKeys)
     wrapReadsWithEncryption(baseModel, encryptedKeys)

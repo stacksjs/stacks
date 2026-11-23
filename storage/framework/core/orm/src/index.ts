@@ -19,8 +19,12 @@ export * from './utils/prunable'
 export type { PrunableOptions } from './utils/prunable'
 export {
   collectEncryptedAttributes,
+  decryptRow,
+  decryptRows,
   decryptValue,
   decryptValueInPlace,
+  encryptedColumns,
+  encryptRow,
   encryptValue,
   isEncrypted,
 } from './utils/encrypted'
