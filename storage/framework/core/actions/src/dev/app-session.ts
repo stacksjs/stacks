@@ -7,8 +7,9 @@ import { serveAppDevRestart } from './app-session-control'
 
 interface AppDevSessionOptions {
   root: string
-  frontendPort: number
-  apiPort: number
+  target?: 'frontend' | 'api'
+  frontendPort?: number
+  apiPort?: number
   verbose?: boolean
   waitForPort: (port: number, timeoutMs: number, signal: AbortSignal) => Promise<boolean>
   reportError: (message: string) => void
@@ -17,29 +18,56 @@ interface AppDevSessionOptions {
 interface AppService {
   name: string
   action: Action.Dev | Action.DevApi
-  port: number
+  port?: number
   worker?: OwnedProcess
 }
 
 const restartReadyTimeoutMs = 90_000
 
+function apiReadyPort(message: unknown): number | undefined {
+  if (message && typeof message === 'object' && 'type' in message && message.type === 'stacks:api-ready'
+    && 'port' in message && typeof message.port === 'number' && Number.isInteger(message.port)
+    && message.port > 0 && message.port <= 65535)
+    return message.port
+}
+
 export function startAppDevSession(options: AppDevSessionOptions): { finished: Promise<void>, stop: () => Promise<void> } {
-  const { root, frontendPort, apiPort, verbose, waitForPort, reportError } = options
-  const services: AppService[] = [
-    { name: 'Frontend', action: Action.Dev, port: frontendPort },
-    { name: 'API', action: Action.DevApi, port: apiPort },
-  ]
+  const { root, target, frontendPort, apiPort, verbose, waitForPort, reportError } = options
+  const services: AppService[] = []
+  if (target !== 'api')
+    services.push({ name: 'Frontend', action: Action.Dev, port: frontendPort })
+  if (target !== 'frontend')
+    services.push({ name: 'API', action: Action.DevApi, port: apiPort })
+  const configuredApiPort = Number(process.env.PORT_API?.trim() || 3008)
+  const apiProbePort = target === 'api' && Number.isInteger(configuredApiPort)
+    && configuredApiPort > 0 && configuredApiPort <= 65535 ? configuredApiPort : undefined
   const runtime = Bun.which('bun', { cwd: root })
   if (!runtime)
     throw new Error('Could not find Bun to start the app services.')
   const bun: string = runtime
 
-  const { promise: finished, resolve: finish } = Promise.withResolvers<void>()
+  const { promise: finished, resolve: finish, reject: fail } = Promise.withResolvers<void>()
   const shutdown = new AbortController()
   let stopping: Promise<void> | undefined
   let restarting: Promise<void> | undefined
+  let closeRestart: (() => void) | undefined
 
-  async function run(service: AppService): Promise<OwnedProcess | undefined> {
+  function onWorkerExit(error?: Error): void {
+    if (restarting || shutdown.signal.aborted)
+      return
+    if (target) {
+      closeRestart?.()
+      if (error)
+        fail(error)
+      else
+        finish()
+    }
+    else if (error) {
+      reportError(error.message)
+    }
+  }
+
+  async function run(service: AppService) {
     const entry = await resolveActionFile(service.action, root)
     if (shutdown.signal.aborted)
       return
@@ -48,19 +76,35 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
 
     // STX handles frontend HMR. Keep Bun's file watcher for the API.
     const watch = service.action === Action.DevApi ? developmentWatchFlag(service.action) : ''
+    const listening = target === 'api' ? Promise.withResolvers<number>() : undefined
+    const pinnedApiPort = target === 'api' ? service.port : undefined
     const worker = spawnOwnedProcess([bun, developmentConditionForProject(root), watch, entry].filter(Boolean), {
       ownerRuntime: bun,
       cwd: root,
       env: {
         ...process.env,
-        PORT: String(frontendPort),
-        PORT_API: String(apiPort),
+        ...(frontendPort !== undefined && { PORT: String(frontendPort) }),
+        ...(target === 'frontend' && { STACKS_DEV_FIXED_FRONTEND_PORT: '1' }),
+        ...(apiPort !== undefined && { PORT_API: String(apiPort) }),
+        // A standalone API may use config/ports.ts or bind to port zero on
+        // first launch. Once it announces the actual port, reuse it on restart.
+        ...(pinnedApiPort !== undefined && { PORT_API: String(pinnedApiPort) }),
         NODE_PATH: actionNodePath(root, process.env.NODE_PATH),
         STACKS_DEV_SERVER: '1',
       },
       stdin: 'ignore',
       stdout: verbose ? 'inherit' : 'ignore',
       stderr: verbose || service.action === Action.Dev ? 'inherit' : 'ignore',
+      ...(listening && {
+        ipc(message: unknown) {
+          const port = apiReadyPort(message)
+          if (port !== undefined && service.worker === worker) {
+            if (pinnedApiPort === undefined)
+              service.port = port
+            listening.resolve(port)
+          }
+        },
+      }),
       // Match the grace period of the unified dev command.
       stopGraceMs: 1500,
     })
@@ -68,31 +112,56 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
     void worker.exited.then(({ code }) => {
       if (service.worker === worker)
         delete service.worker
-      if (code && !restarting && !shutdown.signal.aborted)
-        reportError(`${service.name} exited with code ${code}.`)
+      onWorkerExit(code ? new Error(`${service.name} exited with code ${code}.`) : undefined)
     }, (error: unknown) => {
-      reportError(`${service.name}: ${error instanceof Error ? error.message : error}`)
+      onWorkerExit(new Error(`${service.name}: ${error instanceof Error ? error.message : error}`))
     })
-    return worker
+    return { worker, listening: listening?.promise }
   }
 
-  async function waitUntilReady(service: AppService, worker: OwnedProcess): Promise<void> {
+  async function waitUntilReady(service: AppService, port: number | undefined, { worker, listening }: NonNullable<Awaited<ReturnType<typeof run>>>): Promise<void> {
     const probe = new AbortController()
+    const probePort = listening ? (port === undefined ? apiProbePort : undefined) : port
+    const address = (port ?? probePort) === undefined ? '' : ` on port ${port ?? probePort}`
+    const error = new Error(`${service.name} did not come back${address}.`)
+    const signal = AbortSignal.any([probe.signal, shutdown.signal])
+    const timeout = setTimeout(() => probe.abort(), restartReadyTimeoutMs)
     try {
-      await worker.started
+      const ready = worker.started.then(() => {
+        const checks: Promise<void>[] = []
+        // The built-in API reports its actual listener. Fixed-port overrides
+        // can still be probed if the previous worker never sent that report.
+        if (listening) {
+          checks.push(listening.then((observed) => {
+            if (port !== undefined && observed !== port)
+              throw new Error(`${service.name} came back on port ${observed} instead of ${port}.`)
+          }))
+        }
+        if (probePort !== undefined) {
+          checks.push(waitForPort(probePort, restartReadyTimeoutMs, signal).then((ready) => {
+            if (!ready || signal.aborted)
+              throw error
+          }))
+        }
+        return Promise.race(checks)
+      })
       await Promise.race([
-        waitForPort(service.port, restartReadyTimeoutMs, AbortSignal.any([probe.signal, shutdown.signal])).then((ready) => {
-          if (!ready || shutdown.signal.aborted)
-            throw new Error(`${service.name} did not come back on port ${service.port}.`)
+        ready,
+        new Promise<never>((_, reject) => {
+          if (signal.aborted)
+            reject(error)
+          else
+            signal.addEventListener('abort', () => reject(error), { once: true })
         }),
         worker.exited.then(({ code }) => {
-          // A project may serve all its pages from the API and opt out of a frontend listener.
-          if (code || service.action === Action.DevApi)
-            throw new Error(`${service.name} exited before it was ready on port ${service.port} (code ${code}).`)
+          // A combined session can serve all its pages from the API.
+          if (code || target || service.action === Action.DevApi)
+            throw new Error(`${service.name} exited before it was ready${address} (code ${code}).`)
         }),
       ])
     }
     finally {
+      clearTimeout(timeout)
       probe.abort()
     }
   }
@@ -103,9 +172,10 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
       const stop = stopped[index]!
       if (stop.status === 'rejected')
         throw stop.reason
-      const worker = await run(service)
-      if (worker)
-        await waitUntilReady(service, worker)
+      const port = service.port
+      const started = await run(service)
+      if (started)
+        await waitUntilReady(service, port, started)
     }))
     if (shutdown.signal.aborted)
       throw new Error('The development session is shutting down.')
@@ -119,10 +189,9 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
       await run(service)
     }
     catch (error) {
-      reportError(error instanceof Error ? error.message : String(error))
+      onWorkerExit(error instanceof Error ? error : new Error(String(error)))
     }
   }))
-  let closeRestart: (() => void) | undefined
   try {
     closeRestart = serveAppDevRestart(root, () => {
       restarting ??= initialStart.then(restart).finally(() => { restarting = undefined })

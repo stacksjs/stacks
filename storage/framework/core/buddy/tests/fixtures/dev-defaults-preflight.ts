@@ -4,8 +4,8 @@ import { dev } from '../../src/commands/dev'
 const buddy = cli('buddy')
 dev(buddy)
 try {
-  // Exercise real command dispatch without ever selecting a server or watcher.
-  await buddy.parse(['bun', 'buddy', 'dev', 'fixture-unknown-server'])
+  const args = process.argv.slice(2)
+  await buddy.parse(['bun', 'buddy', ...(args.length ? args : ['dev', 'fixture-unknown-server'])])
 }
 catch (error) {
   console.error(error instanceof Error ? error.message : String(error))

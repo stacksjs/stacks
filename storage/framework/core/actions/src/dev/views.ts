@@ -202,6 +202,7 @@ async function startDefaultServer() {
     patterns: viewPatterns.patterns,
     exclude: viewPatterns.exclude,
     port: preferredPort,
+    autoIncrementPort: process.env.STACKS_DEV_FIXED_FRONTEND_PORT !== '1',
     // Wider than the dashboard subdir so both Dashboard/* and
     // Storefront/* (and any future <Namespace>/Component.stx) get
     // resolved. stx-serve walks one subdirectory deep, so this

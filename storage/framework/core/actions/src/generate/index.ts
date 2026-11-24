@@ -351,7 +351,7 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
  * either awaits (blocking, like `generate:types --watch`) or fires it
  * non-blocking (sidecar use, like `dev:api`).
  */
-export async function watchTypes(options?: GeneratorOptions): Promise<void> {
+export async function watchTypes(options?: GeneratorOptions, signal?: AbortSignal): Promise<void> {
   // Cheap pre-check: if `generate:types` isn't defined in the framework
   // package.json we will fail every single time a watched file changes
   // (models, config, migrations). Without this short-circuit each save
@@ -437,6 +437,8 @@ export async function watchTypes(options?: GeneratorOptions): Promise<void> {
     }, 200)
   }
 
+  if (signal?.aborted)
+    return
   const watchers: fs.FSWatcher[] = []
   for (const dir of watched) {
     try {
@@ -454,18 +456,20 @@ export async function watchTypes(options?: GeneratorOptions): Promise<void> {
     return
   }
 
-  // Hold the process open until SIGINT. When dev:api spawns this
-  // fire-and-forget, the parent's SIGINT handler (or a hard kill)
-  // tears down the watchers along with the dev server.
   await new Promise<void>((resolve) => {
-    process.once('SIGINT', () => {
+    const stop = () => {
       log.info('[generate:types --watch] stopping')
-      for (const w of watchers) {
-        try { w.close() }
-        catch { /* ignore */ }
+      if (pending) clearTimeout(pending)
+      for (const watcher of watchers) {
+        try { watcher.close() }
+        catch { /* best-effort teardown */ }
       }
       resolve()
-    })
+    }
+    if (signal)
+      signal.addEventListener('abort', stop, { once: true })
+    else
+      process.once('SIGINT', stop)
   })
 }
 

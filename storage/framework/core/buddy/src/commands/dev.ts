@@ -511,10 +511,10 @@ export function dev(buddy: CLI): void {
             await startDevelopmentServer({ ...serverOptions, native: true }, perf)
             break
           case 'frontend':
-            await a.runFrontendDevServer(serverOptions)
+            await startStandaloneDevelopmentServer('frontend', serverOptions)
             break
           case 'api':
-            await a.runApiDevServer(serverOptions)
+            await startStandaloneDevelopmentServer('api', serverOptions)
             break
           case 'components':
             await a.runComponentsDevServer(serverOptions)
@@ -550,8 +550,8 @@ export function dev(buddy: CLI): void {
         const a = await actions()
         const handled = await dispatchInteractiveDevSelection(selectedValue, {
           all: () => startDevelopmentServer(options, perf),
-          frontend: () => a.runFrontendDevServer(options),
-          api: () => a.runApiDevServer(options),
+          frontend: () => startStandaloneDevelopmentServer('frontend', options),
+          api: () => startStandaloneDevelopmentServer('api', options),
           dashboard: () => a.runDashboardDevServer(options),
           desktop: () => startDevelopmentServer({ ...options, native: true }, perf),
           native: () => startDevelopmentServer({ ...options, native: true }, perf),
@@ -570,7 +570,7 @@ export function dev(buddy: CLI): void {
       }
 
       outro('Exited', { startTime: perf, useSeconds: true })
-      process.exit(ExitCode.Success)
+      process.exit(process.exitCode ?? ExitCode.Success)
     })
 
   buddy
@@ -696,25 +696,7 @@ export function dev(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions & { watchTypes?: boolean }) => {
       await checkFrameworkDefaults()
-      const a = await actions()
-
-      // Spawn the model/config watcher as a sidecar. Fire-and-forget:
-      // `watchTypes()` returns a promise that only resolves on SIGINT,
-      // so awaiting would block the dev server from booting. When the
-      // user Ctrl-C's `dev:api`, the SIGINT handler inside watchTypes
-      // tears down its fs.watch listeners and the dev server exits in
-      // parallel — no orphan listeners, no zombie process.
-      //
-      // Default-on; pass `--no-watch-types` to skip (e.g. when running
-      // a separate `generate:types --watch` in another terminal and
-      // you don't want two regen passes per save).
-      if (options.watchTypes !== false) {
-        a.watchTypes(options).catch((err: unknown) => {
-          log.warn('[dev:api] type watcher exited:', err)
-        })
-      }
-
-      await a.runApiDevServer(options)
+      await startStandaloneDevelopmentServer('api', options, options.watchTypes !== false)
     })
 
   // buddy
@@ -734,14 +716,7 @@ export function dev(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       await checkFrameworkDefaults()
-      process.env.STACKS_DEV_ENTRY_PATH = resolveDevelopmentEntryPath({ site: options.site })
-      try {
-        await (await actions()).runFrontendDevServer(options)
-      }
-      catch (error) {
-        await log.error(error instanceof Error ? error.message : String(error))
-        process.exit(ExitCode.FatalError)
-      }
+      await startStandaloneDevelopmentServer('frontend', options)
     })
 
   buddy
@@ -765,6 +740,58 @@ export function dev(buddy: CLI): void {
     })
 
   onUnknownSubcommand(buddy, "dev")
+}
+
+async function startStandaloneDevelopmentServer(target: 'frontend' | 'api', options: DevOptions, watchTypes = false): Promise<void> {
+  const { startAppDevSession } = await import('@stacksjs/actions/dev/app-session')
+  let frontendPort: number | undefined
+  if (target === 'frontend') {
+    process.env.STACKS_DEV_ENTRY_PATH = resolveDevelopmentEntryPath({ site: options.site })
+    const preferred = Number(process.env.PORT) || 3000
+    const { ports, shifts } = await claimDevPorts([{ label: 'Frontend', preferred }], portIsFree)
+    frontendPort = ports[0]
+    if (shifts.length)
+      console.log(`  ${yellow('⚠')}  ${yellow('Port in use by another process')} ${dim(`- ${shifts[0]}`)}`)
+  }
+
+  const shutdown = new AbortController()
+  const session = startAppDevSession({
+    root: projectPath(),
+    target,
+    frontendPort,
+    verbose: true,
+    waitForPort,
+    reportError: message => { void log.error(message) },
+  })
+  const stop = () => {
+    shutdown.abort()
+    void session.stop()
+  }
+  const signals: NodeJS.Signals[] = process.env.STACKS_DEV_DETACH === '1'
+    ? ['SIGINT', 'SIGTERM']
+    : ['SIGINT', 'SIGTERM', 'SIGHUP']
+  for (const signal of signals)
+    process.on(signal, stop)
+
+  try {
+    if (watchTypes) {
+      // The dev:api sidecar stays attached across worker restarts.
+      void actions().then(a => a.watchTypes(options, shutdown.signal)).catch((error: unknown) => {
+        void log.warn('[dev:api] type watcher exited:', error)
+      })
+    }
+    await session.finished
+  }
+  catch (error) {
+    await log.error(error instanceof Error ? error.message : String(error))
+    process.exitCode = ExitCode.FatalError
+  }
+  finally {
+    shutdown.abort()
+    await session.stop()
+    for (const signal of signals)
+      process.off(signal, stop)
+  }
 }
 
 export async function startDevelopmentServer(_options: DevOptions, _startTime?: number): Promise<void> {

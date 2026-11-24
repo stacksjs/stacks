@@ -66,7 +66,7 @@ test('every dev command checks defaults before starting its actions or watchers'
   for (const [, name, body] of commands) {
     const check = body!.indexOf('await checkFrameworkDefaults()')
     expect(check, name).toBeGreaterThanOrEqual(0)
-    const work = body!.search(/await (?:intro\(|actions\(|runCommand\(|\(await actions\(\)\)|startDevelopmentServer\()/)
+    const work = body!.search(/await (?:intro\(|actions\(|runCommand\(|\(await actions\(\)\)|startDevelopmentServer\(|startStandaloneDevelopmentServer\()/)
     expect(work, name).toBeGreaterThan(check)
   }
 })
