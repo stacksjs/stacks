@@ -304,6 +304,45 @@ export async function appBundleFiles(root: string, extraSources: string[] = []):
   }
 }
 
+/** A page's `src` for one of the project's own scripts: `/assets/scripts/app.ts`. */
+const CLIENT_SCRIPT_SRC = /\bsrc\s*=\s*["'](\/assets\/[\w./-]+\.(?:ts|tsx|mts))["']/g
+
+/**
+ * The scripts the project's pages load from `resources/assets`, bundled for
+ * the browser, by the URL a page asks for: `/assets/scripts/app.ts` to the
+ * JavaScript file written under `outDir` (stacksjs/stacks#3368).
+ *
+ * The dev server transpiles a `.ts` asset as it serves it; a built app has no
+ * such server. Every `.stx` under `resources/` is read for those `src`
+ * attributes, and only the scripts a page names are built, each with what it
+ * imports. A page naming a script that is not there fails the build.
+ */
+export async function appClientScripts(root: string, outDir: string): Promise<Record<string, string>> {
+  const referenced = new Set<string>()
+  const resources = join(root, 'resources')
+  if (existsSync(resources)) {
+    for (const file of new Bun.Glob('**/*.stx').scanSync({ cwd: resources, absolute: true })) {
+      for (const match of readFileSync(file, 'utf8').matchAll(CLIENT_SCRIPT_SRC))
+        referenced.add(match[1]!)
+    }
+  }
+
+  const scripts: Record<string, string> = {}
+  for (const url of [...referenced].sort()) {
+    const source = join(resources, url)
+    if (!existsSync(source))
+      throw new Error(`A page loads ${url}, but resources${url} does not exist.`)
+    const built = await Bun.build({ entrypoints: [source], target: 'browser', format: 'esm', minify: true })
+    if (!built.success || built.outputs.length !== 1)
+      throw new Error(`Could not bundle resources${url} for the browser:\n${built.logs.map(entry => String(entry)).join('\n')}`)
+    const target = join(outDir, `${url.replace(/\.(?:ts|tsx|mts)$/, '')}.js`)
+    mkdirSync(dirname(target), { recursive: true })
+    writeFileSync(target, await built.outputs[0]!.text())
+    scripts[url] = target
+  }
+  return scripts
+}
+
 /** Runs `buddy migrate` for {@link appMigrationFiles}; tests stand in for it. */
 export type MigrateRunner = (command: string[], env: Record<string, string | undefined>) => { exitCode: number, output: string }
 

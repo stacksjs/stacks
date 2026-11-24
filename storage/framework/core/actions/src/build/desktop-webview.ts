@@ -38,7 +38,7 @@ import {
   windowsRuntimeCompanions,
 } from '@stacksjs/desktop-build'
 import { projectPath } from '@stacksjs/path'
-import { appBundleFiles, appMigrationFiles } from './macos-native'
+import { appBundleFiles, appClientScripts, appMigrationFiles } from './macos-native'
 
 /**
  * `buddy build:desktop` for a project whose `config/desktop.ts` declares a
@@ -223,6 +223,12 @@ if (existsSync(viewsDir)) {
   }
 }
 const viewFiles = collectViewFiles(builtViews)
+// The project's own scripts the pages load as /assets/....ts, bundled for the
+// browser and served at those URLs (stacksjs/stacks#3368). A built page's own
+// file wins over a script of the same path.
+const clientScripts = await appClientScripts(root, join(work, 'client-scripts'))
+for (const [url, file] of Object.entries(clientScripts)) viewFiles[url] ??= file
+if (Object.keys(clientScripts).length) await log.info(`Bundled ${Object.keys(clientScripts).length} client script(s) for the window`)
 if (!viewFiles['/index.html'] && !agentEntry)
   throw new Error(`Nothing for the window to open: ${config.agent.views} has no index.stx, and there is no agent module to answer /.`)
 await log.info(`Built ${Object.keys(viewFiles).length} view file(s) from ${config.agent.views}`)

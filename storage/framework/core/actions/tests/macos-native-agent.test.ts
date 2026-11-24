@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { resolveMacosDesktop } from '@stacksjs/desktop-build'
-import { appBundleFiles, appMigrationFiles, craftSupportsWebkit, macosAgentDevManifest, macosAgentEntry } from '../src/build/macos-native'
+import { appBundleFiles, appClientScripts, appMigrationFiles, craftSupportsWebkit, macosAgentDevManifest, macosAgentEntry } from '../src/build/macos-native'
 
 /**
  * The build side of `macos.agent` and `macos.webkit`: which routes the agent
@@ -183,6 +183,53 @@ describe('appMigrationFiles', () => {
         db.close()
         return { exitCode: 0, output: '' }
       })).rejects.toThrow('0000000009-gone.sql')
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+})
+
+// stacksjs/stacks#3368: the scripts a page loads as /assets/scripts/x.ts are
+// bundled for the browser, by the URL the page asks for.
+describe('appClientScripts', () => {
+  test('bundles each script a page names, with what it imports, and nothing it does not name', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-client-scripts-'))
+    const out = mkdtempSync(join(tmpdir(), 'stacks-client-scripts-out-'))
+    try {
+      const put = (path: string, body: string) => {
+        mkdirSync(dirname(join(root, path)), { recursive: true })
+        writeFileSync(join(root, path), body)
+      }
+      put('resources/layouts/default.stx', '<script type="module" src="/assets/scripts/app.ts"></script>\n')
+      put('resources/views/editor.stx', "<script type='module' src='/assets/scripts/editor/main.ts'></script>\n")
+      put('resources/assets/scripts/app.ts', "import { greet } from './greet'\ndocument.title = greet('desk')\n")
+      put('resources/assets/scripts/greet.ts', 'export const greet = (who: string): string => `hello ${who}`\n')
+      put('resources/assets/scripts/editor/main.ts', 'const lines: number = 3\nconsole.log(lines)\n')
+      put('resources/assets/scripts/unused.ts', 'console.log("never")\n')
+
+      const scripts = await appClientScripts(root, out)
+
+      expect(Object.keys(scripts).sort()).toEqual(['/assets/scripts/app.ts', '/assets/scripts/editor/main.ts'])
+      const app = readFileSync(scripts['/assets/scripts/app.ts']!, 'utf8')
+      expect(app).toContain('hello')
+      expect(app).not.toContain('./greet')
+      expect(scripts['/assets/scripts/app.ts']!.endsWith('.js')).toBe(true)
+      // Type annotations are gone: it is JavaScript.
+      expect(readFileSync(scripts['/assets/scripts/editor/main.ts']!, 'utf8')).not.toContain(': number')
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+      rmSync(out, { recursive: true, force: true })
+    }
+  })
+
+  test('fails the build when a page names a script that is not there', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-client-scripts-'))
+    try {
+      mkdirSync(join(root, 'resources/views'), { recursive: true })
+      writeFileSync(join(root, 'resources/views/home.stx'), '<script type="module" src="/assets/scripts/missing.ts"></script>\n')
+      await expect(appClientScripts(root, join(root, 'out'))).rejects.toThrow('resources/assets/scripts/missing.ts')
     }
     finally {
       rmSync(root, { recursive: true, force: true })

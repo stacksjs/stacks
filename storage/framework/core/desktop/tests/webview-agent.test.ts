@@ -189,6 +189,20 @@ describe('request handling', () => {
     expect((await fetch(`${agent.origin}/`, { headers: { cookie } })).headers.get('cache-control')).toBe('no-store')
   })
 
+  // stacksjs/stacks#3368: a page asks for /assets/scripts/app.ts and gets the
+  // JavaScript the build made from it. Typed by the request path, `.ts` went
+  // out as application/octet-stream, and the web view refuses a module script
+  // of that type.
+  test('an embedded script is typed by the file it is, not the path it is asked for by', async () => {
+    const directory = views()
+    writeFileSync(join(directory, 'app.js'), 'export const ok = true')
+    const agent = await started({ views: { kind: 'embedded', files: { '/index.html': join(directory, 'index.html'), '/assets/scripts/app.ts': join(directory, 'app.js') } } })
+    const { cookie } = await openWindow(agent)
+    const script = await fetch(`${agent.origin}/assets/scripts/app.ts`, { headers: { cookie } })
+    expect(script.headers.get('content-type')).toBe('text/javascript; charset=utf-8')
+    expect(await script.text()).toBe('export const ok = true')
+  })
+
   test('stx views are served through the same gate and handler', async () => {
     let stopped = false
     const serve: StxServe = async (options) => {

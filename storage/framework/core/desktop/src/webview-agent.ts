@@ -332,7 +332,12 @@ function embeddedFileResponse(files: Record<string, string>, pathname: string): 
   for (const candidate of clean === '/index' ? ['/index.html'] : [`${clean}.html`, `${clean}/index.html`, clean]) {
     const file = files[candidate]
     if (!file) continue
-    const headers: Record<string, string> = { 'content-type': staticContentType(candidate) }
+    // Typed by what the file is when that is known: a page asks for
+    // `/assets/scripts/app.ts` and gets the JavaScript the build made from it
+    // (stacksjs/stacks#3368). Typed by the request path, it was
+    // application/octet-stream, which a web view refuses to run as a module.
+    const ownType = staticContentType(file)
+    const headers: Record<string, string> = { 'content-type': ownType === 'application/octet-stream' ? staticContentType(candidate) : ownType }
     if (candidate.endsWith('.html')) headers['cache-control'] = 'no-store'
     return new Response(Bun.file(file), { headers })
   }
