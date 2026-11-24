@@ -1428,10 +1428,12 @@ export class Schedule implements UntimedSchedule {
     }
 
     const unfinished = [...new Set(Schedule.inFlight.values())]
+    // Awaited: stopOnSignals() exits as soon as this returns, and an
+    // unawaited log line is dropped by the exit.
     if (unfinished.length > 0)
-      log.warn(`[scheduler] stopped without waiting for: ${unfinished.join(', ')}`)
+      await log.warn(`[scheduler] stopped without waiting for: ${unfinished.join(', ')}`)
     else
-      log.info('All jobs have been stopped')
+      await log.info('All jobs have been stopped')
     return { unfinished }
   }
 
@@ -1447,14 +1449,19 @@ export class Schedule implements UntimedSchedule {
     if (Schedule.stoppingOnSignals) return
     Schedule.stoppingOnSignals = true
     let stopping = false
-    const stopAndExit = (signal: NodeJS.Signals): void => {
+    const stopAndExit = async (signal: NodeJS.Signals): Promise<void> => {
       if (stopping) return
       stopping = true
-      log.info(`[scheduler] ${signal}: stopping after the running jobs finish`)
-      void Schedule.gracefulShutdown(options).finally(() => process.exit(0))
+      try {
+        await log.info(`[scheduler] ${signal}: stopping after the running jobs finish`)
+        await Schedule.gracefulShutdown(options)
+      }
+      finally {
+        process.exit(0)
+      }
     }
-    process.on('SIGTERM', stopAndExit)
-    process.on('SIGINT', stopAndExit)
+    process.on('SIGTERM', signal => void stopAndExit(signal))
+    process.on('SIGINT', signal => void stopAndExit(signal))
   }
 }
 
