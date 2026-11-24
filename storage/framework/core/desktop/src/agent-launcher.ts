@@ -276,20 +276,32 @@ export async function stacksAgentHandler(options: StacksAgentHandlerOptions): Pr
  * route module by absolute path so the bundler can follow it: whatever that
  * module imports is inside the built app.
  */
-export function renderAgentEntry(options: { agentEntry?: string, launcherModule?: string, routes?: Array<{ file: string, prefix?: string, middleware?: string[] }>, actions?: Record<string, string>, middleware?: Record<string, string> } = {}): string {
+/** The app's route files, the actions they name and its middleware, as files on the build machine. */
+export interface AgentBundleFiles {
+  routes?: Array<{ file: string, prefix?: string, middleware?: string[] }>
+  actions?: Record<string, string>
+  middleware?: Record<string, string>
+}
+
+/**
+ * Source for the loaders a compiled entry carries: each file named in a
+ * static `import()` the bundler follows, so it is inside the executable.
+ * Shared by the macOS agent entry and the webview one (stacksjs/stacks#3368).
+ */
+export function agentBundleSource(files: AgentBundleFiles): { routes: string, actions: string, middleware: string } {
+  const routes = files.routes?.length
+    ? `[\n${files.routes.map(file => `    { load: () => import(${JSON.stringify(file.file)})${file.prefix ? `, prefix: ${JSON.stringify(file.prefix)}` : ''}${file.middleware?.length ? `, middleware: ${JSON.stringify(file.middleware)}` : ''} },`).join('\n')}\n  ]`
+    : '[]'
+  const loaders = (entries: Array<[string, string]>): string => entries.length
+    ? `{\n${entries.map(([name, file]) => `    ${JSON.stringify(name)}: () => import(${JSON.stringify(file)}),`).join('\n')}\n  }`
+    : '{}'
+  return { routes, actions: loaders(Object.entries(files.actions ?? {})), middleware: loaders(Object.entries(files.middleware ?? {})) }
+}
+
+export function renderAgentEntry(options: { agentEntry?: string, launcherModule?: string } & AgentBundleFiles = {}): string {
   const launcher = options.launcherModule ?? fileURLToPath(import.meta.url)
   const entry = options.agentEntry ? `() => import(${JSON.stringify(options.agentEntry)})` : 'undefined'
-  const routes = options.routes?.length
-    ? `[\n${options.routes.map(file => `    { load: () => import(${JSON.stringify(file.file)})${file.prefix ? `, prefix: ${JSON.stringify(file.prefix)}` : ''}${file.middleware?.length ? `, middleware: ${JSON.stringify(file.middleware)}` : ''} },`).join('\n')}\n  ]`
-    : '[]'
-  const actionEntries = Object.entries(options.actions ?? {})
-  const actions = actionEntries.length
-    ? `{\n${actionEntries.map(([name, file]) => `    ${JSON.stringify(name)}: () => import(${JSON.stringify(file)}),`).join('\n')}\n  }`
-    : '{}'
-  const middlewareEntries = Object.entries(options.middleware ?? {})
-  const middleware = middlewareEntries.length
-    ? `{\n${middlewareEntries.map(([name, file]) => `    ${JSON.stringify(name)}: () => import(${JSON.stringify(file)}),`).join('\n')}\n  }`
-    : '{}'
+  const { routes, actions, middleware } = agentBundleSource(options)
   return `// Written by buddy build:desktop and buddy dev:desktop (macos.agent). Do not edit.
 import process from 'node:process'
 import { findAgentManifest, readAgentManifest, runDesktopAgentApp, stacksAgentHandler } from ${JSON.stringify(launcher)}

@@ -1,3 +1,4 @@
+import type { AgentBundleFiles, StacksAgentHandlerOptions } from './agent-launcher'
 import type { BeforeDesktopUpdate, DesktopUpdater } from './update-install'
 import type { SecondInstanceLaunch, WebviewAgent, WebviewAgentContext, WebviewHandler, WebviewViews } from './webview-agent'
 import { createHash } from 'node:crypto'
@@ -6,7 +7,7 @@ import { dirname, isAbsolute, join, resolve } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { newAgentToken } from './agent'
-import { logToFileWhenDetached } from './agent-launcher'
+import { agentBundleSource, logToFileWhenDetached, stacksAgentHandler } from './agent-launcher'
 import { createDesktopUpdater, updateRequestHandler } from './update-install'
 import { applyWidenedPath, desktopAppPaths, INSTANCE_HEADER, INSTANCE_PATH, startWebviewAgent } from './webview-agent'
 
@@ -282,6 +283,13 @@ export interface RunWebviewAppOptions {
   platform?: string
   /** For tests: called with the agent once it serves. */
   onAgent?: (agent: WebviewAgent) => void
+  /**
+   * The app's own routes, the actions they name and its middleware, compiled
+   * in by the build (`agent.appRoutes`). Served after the agent module's
+   * `fetch`; a path no route matches goes on to the views
+   * (stacksjs/stacks#3368).
+   */
+  app?: Pick<StacksAgentHandlerOptions, 'routes' | 'actions' | 'middleware'>
 }
 
 function defaultArgv(): string[] {
@@ -358,6 +366,9 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
       })
     }
     const answerUpdate = updater ? updateRequestHandler(updater) : undefined
+    const answerApp = options.app
+      ? appRouteHandler(await stacksAgentHandler({ appRoutes: false, ...options.app }), (await import('@stacksjs/router')).isUnmatchedRouteResponse)
+      : undefined
     agent = await startWebviewAgent({
       appName: manifest.appName,
       version: manifest.version,
@@ -367,7 +378,7 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
       dataDir: paths.dataDir,
       publicPaths: manifest.publicPaths,
       instanceSecret: lock.record.secret,
-      handler: async (request, context) => (await answerUpdate?.(request)) ?? module.fetch?.(request, context),
+      handler: async (request, context) => (await answerUpdate?.(request)) ?? (await module.fetch?.(request, context)) ?? answerApp?.(request),
       onSecondInstance: next => module.secondInstance?.(next),
     })
     publishInstancePort(paths.lockFile, lock.record, agent.port)
@@ -421,6 +432,21 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
 }
 
 /**
+ * The app's routes as a webview handler: their answer, or nothing when no
+ * route matches, so the views answer the window's pages. A route's own 404
+ * (a record that is not there) is still the app's answer.
+ */
+export function appRouteHandler(
+  handler: (request: Request) => Response | Promise<Response>,
+  unmatched: (response: Response, request: Request) => boolean | Promise<boolean>,
+): (request: Request) => Promise<Response | undefined> {
+  return async (request) => {
+    const response = await handler(request)
+    return await unmatched(response, request) ? undefined : response
+  }
+}
+
+/**
  * The executable's entrypoint, written by the build and compiled (or, in
  * development, run) from there. The agent module, the manifest and every
  * built view are named statically, so the compiled executable carries them:
@@ -435,8 +461,9 @@ export function renderWebviewEntry(options: {
   stxViews?: { dir: string, components?: string[], root: string }
   embeddedRuntime?: string
   launcherModule?: string
-}): string {
+} & AgentBundleFiles): string {
   const launcher = options.launcherModule ?? fileURLToPath(import.meta.url)
+  const bundled = options.routes?.length ? agentBundleSource(options) : undefined
   const files = Object.entries(options.viewFiles ?? {})
   const imports = files.map(([, file], index) => `import view${index} from ${JSON.stringify(file)} with { type: 'file' }`)
   if (options.embeddedRuntime) imports.push(`import embeddedRuntime from ${JSON.stringify(options.embeddedRuntime)} with { type: 'file' }`)
@@ -453,7 +480,7 @@ ${imports.join('\n')}
 process.exit(await runWebviewApp({
   manifest: ${JSON.stringify(options.manifest, null, 2).replace(/\n/g, '\n  ')},
   views: ${views},
-  module: ${options.agentEntry ? `() => import(${JSON.stringify(options.agentEntry)})` : 'undefined'},${options.embeddedRuntime ? '\n  embeddedRuntime,' : ''}
+  module: ${options.agentEntry ? `() => import(${JSON.stringify(options.agentEntry)})` : 'undefined'},${options.embeddedRuntime ? '\n  embeddedRuntime,' : ''}${bundled ? `\n  app: {\n    routes: ${bundled.routes.replace(/\n/g, '\n  ')},\n    actions: ${bundled.actions.replace(/\n/g, '\n  ')},\n    middleware: ${bundled.middleware.replace(/\n/g, '\n  ')},\n  },` : ''}
 }))
 `
 }

@@ -449,6 +449,28 @@ describe('the entrypoint the build writes', () => {
     expect(entry).toContain('"appId": "org.f.app"')
   })
 
+  // stacksjs/stacks#3368: the app's own routes, the actions they name and the
+  // middleware travel inside the executable, as on the macOS agent path.
+  test('names the app\'s route files, actions and middleware statically, so they are compiled in', () => {
+    const entry = renderWebviewEntry({
+      manifest: { appName: 'F', appId: 'org.f.app', version: '0.1.0', runtime: 'embedded', window: { title: 'F', width: 1, height: 2 } },
+      viewFiles: { '/index.html': '/p/dist/index.html' },
+      routes: [{ file: '/p/routes/api.ts', prefix: '/api', middleware: ['auth'] }],
+      actions: { 'Actions/SaveAction': '/p/app/Actions/SaveAction.ts' },
+      middleware: { Auth: '/p/app/Middleware/Auth.ts' },
+      launcherModule: '@stacksjs/desktop-build',
+    })
+    expect(entry).toContain('{ load: () => import("/p/routes/api.ts"), prefix: "/api", middleware: ["auth"] },')
+    expect(entry).toContain('"Actions/SaveAction": () => import("/p/app/Actions/SaveAction.ts"),')
+    expect(entry).toContain('"Auth": () => import("/p/app/Middleware/Auth.ts"),')
+    expect(entry).toContain('app: {')
+  })
+
+  test('carries no app section when no route files are given', () => {
+    const entry = renderWebviewEntry({ manifest: { appName: 'F', appId: 'org.f.app', version: '0.1.0', runtime: '/bin/craft', window: { title: 'F', width: 1, height: 2 } } })
+    expect(entry).not.toContain('app: {')
+  })
+
   test('in development it serves the project\'s stx views instead', () => {
     const entry = renderWebviewEntry({ manifest: { appName: 'F', appId: 'org.f.app', version: '0.1.0', runtime: '/bin/craft', window: { title: 'F', width: 1, height: 2 } }, stxViews: { dir: '/p/resources/desktop', root: '/p' } })
     expect(entry).toContain('kind: \'stx\'')
@@ -505,6 +527,45 @@ describe('runWebviewApp', () => {
     expect(existsSync(at.lockFile)).toBe(false)
     expect(fetch(`${agent.origin}/`)).rejects.toThrow()
   })
+
+  test('serves the app\'s own routes, and leaves every other path to the views (stacksjs/stacks#3368)', async () => {
+    const at = paths()
+    let close!: (code: number) => void
+    let agent!: WebviewAgent
+    const commands: string[][] = []
+    const run = runWebviewApp({
+      manifest,
+      views: { kind: 'static', dir: views() },
+      paths: at,
+      argv: [],
+      logWhenDetached: false,
+      app: {
+        routes: [{
+          load: async () => {
+            const { route } = await import('@stacksjs/router')
+            route.get('/api/webview-app-route', () => Response.json({ from: 'app' }))
+          },
+        }],
+      },
+      onAgent: (started) => { agent = started },
+      spawn: (command) => {
+        commands.push(command)
+        return { exited: new Promise<number>((resolve) => { close = resolve }), kill: () => {} }
+      },
+    })
+    while (!commands.length) await Bun.sleep(5)
+    const trade = await fetch(commands[0]![2]!, { redirect: 'manual' })
+    const cookie = trade.headers.get('set-cookie')!.split(';')[0]!
+
+    expect(await (await fetch(`${agent.origin}/api/webview-app-route`, { headers: { cookie } })).json()).toEqual({ from: 'app' })
+    // No app route matches the home page, so the views answer it.
+    expect(await (await fetch(`${agent.origin}/`, { headers: { cookie } })).text()).toContain('<h1>Home</h1>')
+    // The app routes sit behind the session like everything else.
+    expect((await fetch(`${agent.origin}/api/webview-app-route`)).status).toBe(401)
+
+    close(0)
+    expect(await run).toBe(0)
+  }, 30_000)
 
   test('a second launch hands over its arguments and link, raises the window, and boots nothing', async () => {
     const at = paths()
