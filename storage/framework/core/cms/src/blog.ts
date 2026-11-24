@@ -45,6 +45,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { renderPostHtml } from './article'
+import { renderSafeMarkdown } from './markdown'
 
 export interface PostMeta {
   slug: string
@@ -261,13 +262,14 @@ export function loadPost(slug: unknown, options: BlogDirOptions = {}): Post | nu
 }
 
 /**
- * A post body as HTML: Bun's markdown parser, then `renderPostHtml`, which
- * turns a lone image into a captioned figure, consecutive images into a grid
- * and a bare video link into an embed. Pair it with `articleHead()` for the
- * figure and grid styles.
+ * A post body as HTML: `renderSafeMarkdown` (HTML in the post shows as text,
+ * unsafe links are dropped), then `renderPostHtml`, which turns a lone image
+ * into a captioned figure, consecutive images into a grid and a bare video
+ * link into an embed. Pair it with `articleHead()` for the figure and grid
+ * styles.
  */
 export function renderPostBody(markdown: string, options: { publicDir?: string } = {}): string {
-  return renderPostHtml(Bun.markdown.html(markdown), { publicDir: options.publicDir ?? join(process.cwd(), 'public') })
+  return renderPostHtml(renderSafeMarkdown(markdown, { headingIds: false }), { publicDir: options.publicDir ?? join(process.cwd(), 'public') })
 }
 
 /** "October 11, 2026". A post date is a calendar day, so it is read as UTC. */

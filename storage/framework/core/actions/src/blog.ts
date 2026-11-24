@@ -3,8 +3,11 @@
  *
  * The blog at `/blog` is rendered by BunPress (our docs engine) with a custom
  * Stacks theme — not by the stx view layer. Posts are markdown files in
- * `content/blog/*.md`; BunPress handles markdown → HTML (syntax highlighting,
- * containers, heading anchors, GFM) and wraps it in its themed document shell.
+ * `content/blog/*.md`. A post body is Markdown, not a BunPress docs page: it is
+ * rendered by `renderSafeMarkdown` from `@stacksjs/cms/markdown` (GFM, heading
+ * anchors, HTML in the post shown as text, unsafe links dropped), never through
+ * BunPress's docs pipeline, which evaluates templates and includes files.
+ * BunPress highlights its code blocks and wraps the page in its themed shell.
  * We style its BunPress theme via `content/blog/.theme.css` and add blog
  * chrome (post header, author card, share, listing cards). RSS + sitemap are
  * generated here from `listPosts()`, not by BunPress's `buildRssFeed` /
@@ -34,6 +37,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { articleCss, articleScript, renderPostHtml } from '@stacksjs/cms/article'
 import { loadPosts } from '@stacksjs/cms/blog'
+import { renderSafeMarkdown } from '@stacksjs/cms/markdown'
 import { usableOrigin } from './site-origin'
 
 // Re-exported: it lived here first, and callers import it from this module.
@@ -43,7 +47,7 @@ const CONTENT_DIR = join(process.cwd(), 'content/blog')
 const THEME_FILE = join(CONTENT_DIR, '.theme.css')
 
 interface BunPress {
-  markdownToHtml: (md: string, root?: string) => Promise<{ html: string, frontmatter: Record<string, any> }>
+  highlightCode: (code: string, language: string, theme?: string) => Promise<string>
   wrapInLayout: (content: string, config: any, currentPath: string, layout?: string) => Promise<string>
   buildRssFeed?: (docsDir: string, config: any, rssConfig?: any) => Promise<string>
   buildSitemap?: (docsDir: string, config: any) => Promise<string>
@@ -369,6 +373,43 @@ async function notFoundHtml(bp: BunPress): Promise<string> {
   return bp.wrapInLayout(await blogChrome() + body + await blogFooter(), await blogConfig(bp, { title: 'Not found' }), '/blog', 'page')
 }
 
+/** A post's YAML frontmatter and the Markdown after it. */
+function splitFrontmatter(raw: string): { frontmatter: Record<string, any>, body: string } {
+  const normalized = raw.replace(/\r\n/g, '\n')
+  const match = /^---\n([\s\S]*?)\n---(?:\n|$)/.exec(normalized)
+  if (!match)
+    return { frontmatter: {}, body: normalized }
+  let frontmatter: unknown
+  try {
+    frontmatter = Bun.YAML.parse(match[1] ?? '')
+  }
+  catch {
+    frontmatter = null
+  }
+  return {
+    frontmatter: frontmatter && typeof frontmatter === 'object' && !Array.isArray(frontmatter) ? frontmatter as Record<string, any> : {},
+    body: normalized.slice(match[0].length),
+  }
+}
+
+function unescapeHtml(s: string): string {
+  return s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, '\'').replace(/&amp;/g, '&')
+}
+
+/**
+ * Syntax-highlight the fenced code blocks in rendered post HTML. The
+ * highlighter escapes the code it is given, so `<` in code still shows as `<`.
+ */
+async function highlightCodeBlocks(bp: BunPress, html: string): Promise<string> {
+  const theme = bp.defaultConfig.markdown?.syntaxHighlightTheme || 'github-light'
+  const blocks = /<pre><code class="language-([\w+#.-]{1,30})">([\s\S]*?)<\/code><\/pre>/g
+  const highlighted: string[] = []
+  for (const [, lang = '', code = ''] of html.matchAll(blocks))
+    highlighted.push(await bp.highlightCode(unescapeHtml(code).replace(/\n$/, ''), lang, theme))
+  let index = 0
+  return html.replace(blocks, (_, lang: string) => `<pre data-lang="${lang}"><code class="language-${lang}">${highlighted[index++]}</code></pre>`)
+}
+
 /** Full HTML for a single post, or null if the markdown file doesn't exist. */
 async function postHtml(bp: BunPress, slug: string, origin: string): Promise<string | null> {
   const cfg = await site()
@@ -377,11 +418,10 @@ async function postHtml(bp: BunPress, slug: string, origin: string): Promise<str
     return null
 
   const raw = readFileSync(file, 'utf-8')
-  const rendered = await bp.markdownToHtml(raw, CONTENT_DIR)
-  const fm = rendered.frontmatter
+  const { frontmatter: fm, body } = splitFrontmatter(raw)
   // Figures, image grids sized from the files in public/, lazy loading,
   // click-to-zoom and embeds for bare links (see @stacksjs/cms/article).
-  const html = renderPostHtml(rendered.html)
+  const html = renderPostHtml(await highlightCodeBlocks(bp, renderSafeMarkdown(body)))
 
   // Only real posts (title + date) are served; prose docs in content/blog/
   // (e.g. STRATEGY.md) are not addressable as posts. `draft: true` 404s here as
