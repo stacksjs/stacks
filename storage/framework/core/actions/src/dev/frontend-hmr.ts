@@ -1,5 +1,7 @@
 import { dirname } from 'node:path'
 
+export const devRuntimeSource = /\.(?:[cm]?[jt]s|[jt]sx|json)$/i
+
 /**
  * Attach the serving worker's identity to STX's event stream. EventSource
  * sends the last ID when it reconnects. A new worker can then ask the loaded
@@ -13,28 +15,25 @@ export function frontendHmrResponse(request: Request, response: Response, worker
   const id = `stacks-worker:${worker}`
   const previous = request.headers.get('last-event-id')
   const handoff = previous?.startsWith('stacks-worker:') && previous !== id
-  let opening: string | undefined = ''
+  let pending = ''
+  let opening = true
   const body = response.body
     .pipeThrough(new TextDecoderStream())
     .pipeThrough(new TransformStream<string, string>({
       transform(chunk, controller) {
-        if (opening === undefined) {
-          controller.enqueue(chunk)
-          return
+        pending += chunk
+        let boundary: number
+        while ((boundary = pending.indexOf('\n\n')) !== -1) {
+          const event = refreshEvent(pending.slice(0, boundary), opening && Boolean(handoff))
+          // Set the ID on the opening event only. Later STX events retain it.
+          controller.enqueue((opening ? `retry: 250\nid: ${id}\n` : '') + event + '\n\n')
+          opening = false
+          pending = pending.slice(boundary + 2)
         }
-        opening += chunk
-        const boundary = opening.indexOf('\n\n')
-        if (boundary === -1)
-          return
-        const first = opening.slice(0, boundary)
-        const event = handoff ? first.replace(/("type"\s*:\s*)"connected"/, '$1"fragment"') : first
-        // Set the ID on the opening event only. Later STX events retain it.
-        controller.enqueue(`retry: 250\nid: ${id}\n${event}${opening.slice(boundary)}`)
-        opening = undefined
       },
       flush(controller) {
-        if (opening)
-          controller.enqueue(opening)
+        if (pending)
+          controller.enqueue(pending)
       },
     }))
     .pipeThrough(new TextEncoderStream())
@@ -42,6 +41,22 @@ export function frontendHmrResponse(request: Request, response: Response, worker
   headers.delete('content-length')
   return new Response(body, { headers, status: response.status, statusText: response.statusText })
 }
+
+function refreshEvent(frame: string, handoff: boolean): string {
+  if (!frame.startsWith('data:'))
+    return frame
+  try {
+    const event = JSON.parse(frame.slice('data:'.length))
+    // STX can see a code edit in the views tree before Buddy finishes the
+    // handoff. That notification should use the in-place refresh as well.
+    if ((handoff && event.type === 'connected')
+      || (event.type === 'reload' && typeof event.file === 'string' && devRuntimeSource.test(event.file)))
+      return 'data: ' + JSON.stringify({ ...event, type: 'fragment' })
+  }
+  catch { /* Keep protocol messages we do not recognize. */ }
+  return frame
+}
+
 /** Keep the fragment ABI stable across process swaps with the same STX runtime. */
 export function frontendBuildId(entry: string, session: string): string {
   let from = dirname(entry)

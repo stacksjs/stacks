@@ -9,7 +9,7 @@ import { Action } from '@stacksjs/enums'
 import { resolveApiHost, resolveApiPort } from '../helpers/api-host'
 import { actionNodePath, developmentConditionForProject, resolveActionFile } from '../helpers/utils'
 import { serveAppRestart } from './app-session-control'
-import { frontendBuildId } from './frontend-hmr'
+import { devRuntimeSource, frontendBuildId } from './frontend-hmr'
 
 interface AppDevSessionOptions {
   root: string
@@ -39,7 +39,6 @@ interface AppService {
 const readyTimeoutMs = 90_000
 const relayPreload = fileURLToPath(new URL(`../helpers/serve-relay-worker${extname(import.meta.path)}`, import.meta.url))
 const ignoredWatchPaths = /(?:^|\/)(?:\.(?!config\/)[^/]+|node_modules|dist|vendor|tests)(?:\/|$)|^storage\/(?!framework\/(?:api|core|defaults|models|server)\/)/i
-const runtimeSource = /\.(?:[cm]?[jt]s|[jt]sx|json)$/i
 
 export function startAppDevSession(options: AppDevSessionOptions): { finished: Promise<void>, stop: () => Promise<void> } {
   const { root, target, frontendPort, apiPort, verbose, waitForPort, reportError } = options
@@ -328,7 +327,7 @@ function sourceServices(filename: string | null, services: AppService[]): AppSer
   if (!filename)
     return services
   const path = filename.replaceAll('\\', '/').toLowerCase()
-  if (ignoredWatchPaths.test(path) || /\.d\.[cm]?ts$/.test(path) || (!runtimeSource.test(path) && path !== 'bunfig.toml'))
+  if (ignoredWatchPaths.test(path) || /\.d\.[cm]?ts$/.test(path) || (!devRuntimeSource.test(path) && path !== 'bunfig.toml'))
     return []
 
   // STX already refreshes templates, styles and browser-only modules in place.

@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { startAppDevSession } from '../../actions/src/dev/app-session'
 
 async function until(check: () => Promise<void>): Promise<void> {
@@ -23,6 +24,7 @@ test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('STX keeps an open page an
   const { launch } = await import('../../testing/src/browser')
   const root = await mkdtemp(join(tmpdir(), 'stacks-frontend-hmr-'))
   const source = join(root, 'app/version.ts')
+  const viewSource = join(root, 'resources/views/view-version.ts')
   const reservation = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response() })
   const port = reservation.port!
   await reservation.stop(true)
@@ -30,15 +32,18 @@ test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('STX keeps an open page an
   let session: ReturnType<typeof startAppDevSession> | undefined
   let browser: Awaited<ReturnType<typeof launch>> | undefined
   try {
-    await Promise.all(['app', 'config', 'resources/views'].map(dir => mkdir(join(root, dir), { recursive: true })))
+    await Promise.all(['app', 'config', 'resources/views', '.chrome'].map(dir => mkdir(join(root, dir), { recursive: true })))
     await Promise.all([
       writeFile(join(root, 'package.json'), '{"name":"frontend-hmr-fixture"}'),
       writeFile(join(root, 'bunfig.toml'), 'preload = []\n'),
       writeFile(join(root, 'config/app.ts'), 'export default {}'),
       writeFile(source, 'export default "before"'),
+      writeFile(viewSource, 'export default undefined'),
       writeFile(join(root, 'resources/views/index.stx'), `
 <script server>
-import version from '../../app/version'
+import appVersion from ${JSON.stringify(pathToFileURL(source).href)}
+import viewVersion from ${JSON.stringify(pathToFileURL(viewSource).href)}
+const version = viewVersion ?? appVersion
 const worker = process.pid
 </script>
 <script client>
@@ -80,7 +85,7 @@ function increment() { count.update(value => value + 1) }
       expect(await response.text()).toContain('data-stacks-dev-page-state')
     })
 
-    browser = await launch({ quietLiveReload: false, shared: false })
+    browser = await launch({ quietLiveReload: false, profile: join(root, '.chrome') })
     const { cdp } = browser
     await cdp.send('Network.enable')
     let liveReloadConnected = false
@@ -107,10 +112,11 @@ function increment() { count.update(value => value + 1) }
     })
     let pid = await cdp.evaluate<string>("document.querySelector('#worker').textContent")
 
-    for (const version of ['first edit', 'second edit']) {
-      await writeFile(source, 'export default ' + JSON.stringify(version))
+    for (const [file, version] of [[source, 'first edit'], [viewSource, 'second edit']] as const) {
+      await writeFile(file, 'export default ' + JSON.stringify(version))
       await until(async () => {
         expect(await cdp.evaluate("document.querySelector('#version')?.textContent")).toBe(version)
+        expect(await cdp.evaluate("document.querySelector('#worker')?.textContent")).not.toBe(pid)
       })
       const live = await cdp.evaluate<{ pid: string }>(`({
         pid: document.querySelector('#worker').textContent,
@@ -138,8 +144,12 @@ function increment() { count.update(value => value + 1) }
     })
   }
   finally {
-    await browser?.close()
-    await session?.stop()
-    await rm(root, { recursive: true, force: true })
+    try {
+      await browser?.close()
+    }
+    finally {
+      await session?.stop()
+      await rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 150 })
+    }
   }
-}, 60_000)
+}, 75_000)
