@@ -23,6 +23,7 @@ export function managedPortalTag(appName: string = app?.name || 'stacks'): Recor
 export function portalConfigurationParams(portal: SaasPortal, appName?: string): Stripe.BillingPortal.ConfigurationCreateParams {
   const emailUpdate = portal.emailUpdate !== false
   const cancel = portal.cancel ?? 'at_period_end'
+  const subscriptionUpdate = portal.subscriptionUpdate
   const businessProfile: Stripe.BillingPortal.ConfigurationCreateParams.BusinessProfile = {}
   if (portal.headline)
     businessProfile.headline = portal.headline
@@ -37,11 +38,56 @@ export function portalConfigurationParams(portal: SaasPortal, appName?: string):
       invoice_history: { enabled: portal.invoiceHistory !== false },
       payment_method_update: { enabled: portal.paymentMethodUpdate !== false },
       subscription_cancel: cancel === false ? { enabled: false } : { enabled: true, mode: cancel },
+      ...(subscriptionUpdate !== undefined && {
+        subscription_update: subscriptionUpdate === false
+          ? { enabled: false }
+          : {
+              enabled: true,
+              default_allowed_updates: subscriptionUpdate.allowedUpdates,
+              proration_behavior: subscriptionUpdate.prorationBehavior,
+              products: subscriptionUpdate.products.map(({ product, prices, adjustableQuantity }) => ({
+                product,
+                prices,
+                adjustable_quantity: adjustableQuantity ? { enabled: true, ...adjustableQuantity } : { enabled: false },
+              })),
+            },
+      }),
     },
     ...(Object.keys(businessProfile).length ? { business_profile: businessProfile } : {}),
     ...(portal.returnUrl ? { default_return_url: portal.returnUrl } : {}),
     metadata: managedPortalTag(appName),
   }
+}
+
+function sameStrings(actual: string[], expected: string[]): boolean {
+  const sorted = actual.toSorted()
+  return actual.length === expected.length && expected.toSorted().every((value, index) => sorted[index] === value)
+}
+
+function subscriptionUpdateMatches(
+  live: Stripe.BillingPortal.Configuration.Features.SubscriptionUpdate,
+  desired: Stripe.BillingPortal.ConfigurationCreateParams.Features.SubscriptionUpdate | undefined,
+): boolean {
+  if (!desired)
+    return true
+  if (live.enabled !== desired.enabled)
+    return false
+  if (!desired.enabled)
+    return true
+  const products = live.products ?? []
+  const allowedProducts = desired.products || []
+  return live.proration_behavior === desired.proration_behavior
+    && sameStrings(live.default_allowed_updates, desired.default_allowed_updates || [])
+    && products.length === allowedProducts.length
+    && allowedProducts.every((product) => {
+      const current = products.find(candidate => candidate.product === product.product)
+      const quantity = product.adjustable_quantity
+      return current !== undefined
+        && sameStrings(current.prices, product.prices)
+        && current.adjustable_quantity.enabled === Boolean(quantity?.enabled)
+        && (!quantity?.enabled || (current.adjustable_quantity.minimum === quantity.minimum
+          && current.adjustable_quantity.maximum === quantity.maximum))
+    })
 }
 
 /**
@@ -57,6 +103,7 @@ export function portalConfigurationMatches(live: Stripe.BillingPortal.Configurat
     && have.customer_update.enabled === want.customer_update?.enabled
     && have.subscription_cancel.enabled === cancelWanted?.enabled
     && (!cancelWanted?.enabled || have.subscription_cancel.mode === cancelWanted.mode)
+    && subscriptionUpdateMatches(have.subscription_update, want.subscription_update)
     && (live.default_return_url ?? undefined) === (params.default_return_url || undefined)
     && (live.business_profile.headline ?? undefined) === (params.business_profile?.headline || undefined)
 }

@@ -85,4 +85,18 @@ export interface SaasPortal {
   invoiceHistory?: boolean
   /** Change the email on the customer. Default true. */
   emailUpdate?: boolean
+  /** Manage subscription changes, disable them with false, or omit to preserve Stripe's settings. */
+  subscriptionUpdate?: false | SaasPortalSubscriptionUpdate
+}
+
+export interface SaasPortalSubscriptionUpdate {
+  allowedUpdates: Array<'price' | 'quantity'>
+  prorationBehavior: 'none' | 'create_prorations' | 'always_invoice'
+  products: Array<{
+    /** Stripe product ID and the prices customers may choose for it. */
+    product: string
+    prices: string[]
+    /** Required on each product whose seat count customers may change. */
+    adjustableQuantity?: { minimum: number, maximum: number }
+  }>
 }
