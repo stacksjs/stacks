@@ -3,6 +3,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, posix, win32 } from 'node:path'
 import process from 'node:process'
+import { internalServerErrorBody } from '@stacksjs/router/error-body'
 import { isAgentHost, newAgentToken, rememberedPort, sessionCookie, staticContentType, staticFileResponse } from './agent'
 
 /**
@@ -379,7 +380,8 @@ export async function startWebviewAgent(options: WebviewAgentOptions): Promise<W
     catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       console.error(`[agent] ${request.method} ${new URL(request.url).pathname}: ${message}`)
-      return new Response(JSON.stringify({ error: message }), { status: 500, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
+      // The cause goes to the log, not to the page (stacksjs/stacks#3361).
+      return new Response(JSON.stringify(internalServerErrorBody()), { status: 500, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
     }
     // A public path is the app's to answer; the views are the window's.
     return decision.allow === 'public' ? new Response('Not found', { status: 404 }) : undefined

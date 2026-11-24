@@ -161,7 +161,11 @@ describe('request handling', () => {
     const { cookie } = await openWindow(agent)
     const response = await fetch(`${agent.origin}/api/x`, { headers: { cookie } })
     expect(response.status).toBe(500)
-    expect(await response.json()).toEqual({ error: 'boom' })
+    // The standard error shape, without the cause, as the desktop agent
+    // answers since stacksjs/stacks#3361. The cause stays in the log.
+    const body = await response.json()
+    expect(Object.keys(body).sort()).toEqual(['error', 'message', 'status', 'timestamp'])
+    expect(body).toMatchObject({ error: 'Internal Server Error', message: 'An unexpected error occurred.', status: 500 })
   })
 
   test('windowReady resolves on the first authorized request', async () => {
