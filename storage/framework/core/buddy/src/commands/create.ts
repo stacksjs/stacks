@@ -792,7 +792,7 @@ function linkFrameworkDefaults(path: string) {
  *
  * The template ships its generated barrels (`storage/framework/auto-imports/
  * jobs.ts`, `functions.ts`, ...) for the full kitchen-sink tree, so they name
- * files the strip just deleted - `app/Jobs/Inspire.ts` among them. Every boot
+ * files the strip just deleted. Every boot
  * of a minimal app then warned that `jobs.ts failed to load` and dropped
  * every job it exports, before the user had written a line. Runs last, once
  * `./buddy` boots from whichever framework the project ended up on.

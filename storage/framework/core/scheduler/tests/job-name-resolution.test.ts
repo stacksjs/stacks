@@ -47,6 +47,12 @@ describe('the job name the runner schedules', () => {
 })
 
 describe('resolving a job to a file', () => {
+  it('loads the default scheduler’s Inspire job from the packaged defaults', async () => {
+    const { resolveJobFile } = await import('../../queue/src/job')
+    const defaultJob = join(import.meta.dir, '../../../defaults/app/Jobs/Inspire.ts')
+    expect(await resolveJobFile('Inspire')).toBe(defaultJob)
+  })
+
   it('looks for the name exactly as given', async () => {
     const { resolveJobFile } = await import('../../queue/src/job')
     const resolved = await resolveJobFile('DefinitelyNotAJobThatExists')

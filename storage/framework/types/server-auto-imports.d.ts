@@ -169,7 +169,7 @@ declare global {
   const FormField: typeof import('../defaults/app/Models/Forms/FormField')['default']
   const FormSubmission: typeof import('../defaults/app/Models/Forms/FormSubmission')['default']
   const Websocket: typeof import('../defaults/app/Models/realtime/Websocket')['default']
-  const Inspire: typeof import('../../../app/Jobs/Inspire')['default']
+  const Inspire: typeof import('../defaults/app/Jobs/Inspire')['default']
   const SendWelcomeEmail: typeof import('../../../app/Jobs/SendWelcomeEmail')['default']
   const ExampleJob: typeof import('../defaults/app/Jobs/ExampleJob')['default']
   const ExampleTwoJob: typeof import('../defaults/app/Jobs/ExampleTwoJob')['default']
