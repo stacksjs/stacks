@@ -1,9 +1,41 @@
 import type { BunPressOptions } from '@stacksjs/bunpress'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+// The Stacks theme (brand palette, Geist type, component polish), layered
+// over bunpress's default theme. Kept as plain CSS beside the content it
+// styles, the way the blog keeps content/blog/.theme.css.
+const themeCss = readFileSync(resolve(import.meta.dir, '../docs/.theme.css'), 'utf8')
 
 const config: BunPressOptions = {
   verbose: false,
   docsDir: './docs',
   outDir: './dist/docs',
+
+  // Matches stacksjs.com: Geist for text, Geist Mono for code and labels.
+  fonts: {
+    google: ['Geist:wght@400;500;600;700', 'Geist Mono:wght@400;500;600'],
+  },
+
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/images/logos/favicon.svg' }],
+    ['meta', { name: 'theme-color', content: '#1747c9' }],
+  ],
+
+  // Read from the top level only for the navbar logo, so it lives here
+  // rather than under `markdown`.
+  themeConfig: {
+    logo: '/images/logos/logo.svg',
+    footer: {
+      message: 'Released under the MIT License.',
+      copyright: 'Copyright 2024-present Stacks.js, Inc.',
+    },
+    socialLinks: [
+      { icon: 'twitter', link: 'https://twitter.com/stacksjs' },
+      { icon: 'github', link: 'https://github.com/stacksjs/stacks' },
+      { icon: 'discord', link: 'https://stacksjs.com/discord' },
+    ],
+  },
 
   // Navigation
   nav: [
@@ -36,6 +68,7 @@ const config: BunPressOptions = {
       author: 'Stacks.js',
     },
     syntaxHighlightTheme: 'github-dark',
+    css: themeCss,
     toc: {
       enabled: true,
       minDepth: 2,
@@ -501,18 +534,6 @@ const config: BunPressOptions = {
             { text: 'Video', link: '/skills/utilities/video' },
           ],
         },
-      ],
-    },
-    themeConfig: {
-      logo: '/images/logos/logo-transparent.svg',
-      footer: {
-        message: 'Released under the MIT License.',
-        copyright: 'Copyright 2024-present Stacks.js, Inc.',
-      },
-      socialLinks: [
-        { icon: 'twitter', link: 'https://twitter.com/stacksjs' },
-        { icon: 'github', link: 'https://github.com/stacksjs/stacks' },
-        { icon: 'discord', link: 'https://stacksjs.com/discord' },
       ],
     },
   },
