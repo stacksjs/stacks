@@ -194,6 +194,11 @@ describe('receiving an upload in an action', () => {
     const whole = new File([file], 'small.mov', { type: 'video/quicktime' })
     const fromRequest = await receiveUpload({ method: 'POST', headers: { get: () => null }, get: () => undefined, file: name => name === 'video' ? whole : undefined }, { owner: 7, sessions: uploads, field: 'video' })
     expect(fromRequest).toMatchObject({ name: 'small.mov', fromSession: false, size: file.byteLength })
+    // As the router hands it over: its UploadedFile, wrapping the File.
+    const { UploadedFile } = await import('../src/uploaded-file')
+    const wrapped = await receiveUpload({ method: 'POST', headers: { get: () => null }, get: () => undefined, file: () => new UploadedFile(whole) }, { owner: 7, sessions: uploads })
+    expect(wrapped).toMatchObject({ name: 'small.mov', type: 'video/quicktime', fromSession: false })
+    expect(new Uint8Array(await wrapped!.blob.arrayBuffer())).toEqual(file)
     expect(await receiveUpload({ method: 'POST', headers: { get: () => null }, get: () => undefined, file: () => undefined }, { owner: 7, sessions: uploads })).toBeNull()
     const error = await receiveUpload({ method: 'POST', headers: { get: () => null }, get: () => 'f'.repeat(32) }, { owner: 7, sessions: uploads }).catch(cause => cause)
     expect(uploadSessionResponse(error).status).toBe(404)

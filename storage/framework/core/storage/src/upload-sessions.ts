@@ -451,8 +451,13 @@ export async function receiveUpload(request: UploadRouteRequest, options: Receiv
     const done = await options.sessions.complete(session.trim(), String(options.owner))
     return { name: done.name, size: done.size, type: done.type, path: done.path, blob: Bun.file(done.path), fromSession: true, discard: done.discard }
   }
-  const upload = request.file?.(options.field ?? 'file') as (Blob & { name?: string, isValid?: () => boolean }) | undefined
-  if (!upload || (typeof upload.isValid === 'function' && !upload.isValid()))
+  const upload = request.file?.(options.field ?? 'file') as { name?: string, size?: number, type?: string, mimeType?: string, file?: Blob, isValid?: () => boolean } | Blob | undefined
+  if (!upload || (typeof (upload as { isValid?: unknown }).isValid === 'function' && !(upload as { isValid: () => boolean }).isValid()))
     return null
-  return { name: String(upload.name ?? ''), size: upload.size, type: upload.type ?? '', blob: upload, fromSession: false, discard: async () => {} }
+  // The router hands actions its UploadedFile, which wraps the File; a plain Blob or File is taken as it is.
+  const blob = upload instanceof Blob ? upload : (upload as { file?: Blob }).file
+  if (!(blob instanceof Blob))
+    return null
+  const name = String((upload as { name?: unknown }).name ?? (blob as { name?: unknown }).name ?? '')
+  return { name, size: blob.size, type: blob.type || String((upload as { mimeType?: unknown }).mimeType ?? ''), blob, fromSession: false, discard: async () => {} }
 }
