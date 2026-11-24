@@ -117,6 +117,22 @@ through it. PublishPostInput/PublishedPost/SocialPublishingDriver are exported
 contracts. Read their driver methods before using media, metrics, deletion,
 refresh or profile functionality; support differs per provider.
 
+Each driver measures its limit the way its network counts (countText and
+exceedsLimit in text.ts: graphemes on Bluesky and Threads, X's weighted count,
+Mastodon's link and mention rules) and sends several images with alt text: X up
+to four, carousels on Threads and Instagram, multiImage on LinkedIn. An image
+given by URL is downloaded through fetchPostImage (the outbound guard in
+@stacksjs/security) and a URL that gives no image throws PostImageError; tests
+replace a driver's fetchImage. Mastodon's publish takes a third argument
+(idempotencyKey, visibility, spoilerText, language) and reads the instance's
+limits. Bluesky uploads external.thumb for link cards. PublishedPost.warnings
+lists what went out without failing the post. The LinkedIn version is
+LINKEDIN_API_VERSION unless a configured one is still supported.
+
+A driver error's isAuthError is narrow; classifySocialError in
+publish-errors.ts sorts any failure by status and body, and only `expired`
+means the account must sign in again (a duplicate post on X is a 403).
+
 ## Authorization and operational limits
 
 The native terminal consent helper in authorize.ts currently supports X only.
@@ -133,8 +149,10 @@ conformance or successful publication for arbitrary accounts.
 ## Source and evidence
 
 `storage/framework/core/socials/src/index.ts`, registry.ts, abstract.ts, flows.ts,
-handoff.ts, identities.ts, publish.ts, authorize.ts, meta-graph.ts and drivers/.
+handoff.ts, identities.ts, publish.ts, authorize.ts, meta-graph.ts, text.ts,
+media.ts, publish-errors.ts and drivers/.
 Tests: registry.test.ts, apple.test.ts, session-handoff.test.ts, oauth-flows.test.ts,
 provider-flow-state.test.ts, auth/tests/social-callback-flow.test.ts,
 identities.test.ts, publish.test.ts, authorize.test.ts,
-credentials-stay-out-of-output.test.ts and meta-graph.test.ts.
+credentials-stay-out-of-output.test.ts, meta-graph.test.ts,
+publishing-drivers.test.ts, text.test.ts and publish-errors.test.ts.

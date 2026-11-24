@@ -9,6 +9,42 @@ import type {
   TimelineQuery,
   TimelineResult,
 } from '../types'
+import { fetchPostImage, resolvePostImage } from '../media'
+import { exceedsLimit } from '../text'
+
+/**
+ * The `LinkedIn-Version` sent unless a driver is given another.
+ *
+ * LinkedIn publishes a version every month and retires each one a year
+ * later. A retired version is answered with an error, so every LinkedIn call
+ * fails at once: the previous default, 202405, had been retired since May
+ * 2025. A test fails two months before this one is retired, while there is
+ * still time to move.
+ */
+export const LINKEDIN_API_VERSION = '202611'
+
+/** When LinkedIn retires a `YYYYMM` version: a year on, mid-month. */
+export function linkedInVersionSunset(version: string): Date {
+  const year = Number(version.slice(0, 4))
+  const month = Number(version.slice(4, 6))
+  return new Date(Date.UTC(year + 1, month - 1, 15))
+}
+
+/**
+ * The version to send. One that is configured is honoured unless LinkedIn
+ * has already retired it: a stale line left in configuration would otherwise
+ * break every LinkedIn call with no hint as to why.
+ */
+export function resolveLinkedInVersion(wanted: unknown, nowMs: number = Date.now()): string {
+  const version = String(wanted ?? '').trim()
+  if (!/^\d{6}$/.test(version)) return LINKEDIN_API_VERSION
+  return linkedInVersionSunset(version).getTime() > nowMs ? version : LINKEDIN_API_VERSION
+}
+
+/** Images LinkedIn takes in one multi-image post. */
+export const LINKEDIN_MAX_IMAGES = 20
+/** LinkedIn's limit for an image's alt text. */
+export const LINKEDIN_MAX_ALT_TEXT = 4086
 
 /**
  * `x-restli-protocol-version`: the Rest.li wire protocol LinkedIn's API speaks.
@@ -36,7 +72,10 @@ export class LinkedInApiError extends Error {
 }
 
 export interface LinkedInDriverOptions {
-  /** Monthly REST API version header, e.g. `202405`. */
+  /**
+   * Monthly REST API version header, e.g. `202611`. A retired one is
+   * replaced by {@link LINKEDIN_API_VERSION}.
+   */
   apiVersion?: string
   authBase?: string
   apiBase?: string
@@ -60,6 +99,15 @@ export interface LinkedInTokenResponse {
   accessToken: string
   expiresIn?: number
   scope?: string
+  /** Present only when the app is enrolled in LinkedIn's refresh-token program. */
+  refreshToken?: string
+  refreshTokenExpiresIn?: number
+}
+
+export interface LinkedInRefreshInput {
+  clientId: string
+  clientSecret: string
+  refreshToken: string
 }
 
 export interface LinkedInProfile {
@@ -80,13 +128,17 @@ export interface LinkedInProfile {
 export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver {
   readonly provider: 'linkedin' = 'linkedin'
   characterLimit = 3000
+  /** Images attached per post. LinkedIn's own ceiling; an app may lower it. */
+  maxImages = LINKEDIN_MAX_IMAGES
+  /** Downloads an image given by address. Guarded against private addresses; replace it in a test. */
+  fetchImage = fetchPostImage
 
   protected apiVersion: string
   protected authBase: string
   protected apiBase: string
 
   constructor(options: LinkedInDriverOptions = {}) {
-    this.apiVersion = options.apiVersion || '202405'
+    this.apiVersion = resolveLinkedInVersion(options.apiVersion)
     this.authBase = options.authBase || 'https://www.linkedin.com'
     this.apiBase = options.apiBase || 'https://api.linkedin.com'
   }
@@ -114,23 +166,46 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
       client_secret: input.clientSecret,
     })
 
-    const payload = await this.request<{ access_token: string, expires_in?: number, scope?: string }>(
-      `${this.authBase}/oauth/v2/accessToken`,
-      {
-        method: 'POST',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: body.toString(),
-      },
-    )
+    return this.tokenRequest(body, 'LinkedIn did not return an access token.')
+  }
+
+  /**
+   * Mint a fresh access token from a stored refresh token. LinkedIn issues
+   * refresh tokens only to apps in its refresh-token program; without one, an
+   * expired connection has to be made again.
+   */
+  async refreshAccessToken(input: LinkedInRefreshInput): Promise<LinkedInTokenResponse> {
+    return this.tokenRequest(new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: input.refreshToken,
+      client_id: input.clientId,
+      client_secret: input.clientSecret,
+    }), 'LinkedIn did not return a refreshed access token.')
+  }
+
+  protected async tokenRequest(body: URLSearchParams, missing: string): Promise<LinkedInTokenResponse> {
+    const payload = await this.request<{
+      access_token?: string
+      expires_in?: number
+      scope?: string
+      refresh_token?: string
+      refresh_token_expires_in?: number
+    }>(`${this.authBase}/oauth/v2/accessToken`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: body.toString(),
+    })
 
     if (!payload.access_token) {
-      throw new LinkedInApiError('LinkedIn did not return an access token.', 400, JSON.stringify(payload))
+      throw new LinkedInApiError(missing, 400, JSON.stringify(payload))
     }
 
     return {
       accessToken: payload.access_token,
       expiresIn: payload.expires_in,
       scope: payload.scope,
+      refreshToken: payload.refresh_token,
+      refreshTokenExpiresIn: payload.refresh_token_expires_in,
     }
   }
 
@@ -150,6 +225,51 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
     return { sub: payload.sub, name: payload.name, picture: payload.picture }
   }
 
+  /**
+   * Upload one image through the versioned Images API and return its
+   * `urn:li:image:...` id: `initializeUpload` for an upload URL, then a PUT
+   * of the bytes. `owner` is the author URN (`urn:li:person:{sub}`).
+   */
+  async uploadImage(accessToken: string, owner: string, bytes: Uint8Array, mimeType?: string): Promise<string> {
+    const initialized = await this.request<{ value?: { uploadUrl?: string, image?: string } }>(
+      `${this.apiBase}/rest/images?action=initializeUpload`,
+      {
+        method: 'POST',
+        headers: {
+          'authorization': `Bearer ${accessToken}`,
+          'content-type': 'application/json',
+          'linkedin-version': this.apiVersion,
+          'x-restli-protocol-version': RESTLI_PROTOCOL_VERSION,
+        },
+        body: JSON.stringify({ initializeUploadRequest: { owner } }),
+      },
+    )
+
+    const uploadUrl = initialized.value?.uploadUrl
+    const image = initialized.value?.image
+    if (!uploadUrl || !image) {
+      throw new LinkedInApiError('LinkedIn did not return an image upload URL.', 400, JSON.stringify(initialized))
+    }
+
+    const upload = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'authorization': `Bearer ${accessToken}`, 'content-type': mimeType || 'image/jpeg' },
+      body: new Uint8Array(bytes),
+    })
+
+    if (!upload.ok) {
+      const text = await upload.text().catch(() => '')
+      throw new LinkedInApiError(`LinkedIn image upload failed (${upload.status}): ${text || upload.statusText}`, upload.status, text)
+    }
+
+    return image
+  }
+
+  /**
+   * Publish a member share: text, with one image (`content.media`), two or
+   * more (`content.multiImage`), or an article link card. `content` holds one
+   * of these, so images win over a link card, as on Bluesky.
+   */
   async publish(identity: SocialIdentityCredentials, post: PublishPostInput): Promise<PublishedPost> {
     if (!identity.accessToken) throw new Error('LinkedIn access token is missing for this identity.')
 
@@ -157,8 +277,17 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
     const author = identity.did
     if (!author) throw new Error('LinkedIn member URN is required to publish.')
 
-    if (post.text.length > this.characterLimit) {
+    if (exceedsLimit('linkedin', post.text, this.characterLimit)) {
       throw new Error(`LinkedIn posts must be ${this.characterLimit} characters or fewer.`)
+    }
+
+    const images: Array<{ id: string, altText?: string }> = []
+    for (const item of (post.media ?? []).slice(0, this.maxImages)) {
+      const image = await resolvePostImage(item, url => this.fetchImage(url))
+      if (!image) continue
+      const id = await this.uploadImage(identity.accessToken, author, image.bytes, image.mimeType)
+      const altText = item.altText?.trim()
+      images.push({ id, ...(altText ? { altText: altText.slice(0, LINKEDIN_MAX_ALT_TEXT) } : {}) })
     }
 
     const record: Record<string, unknown> = {
@@ -174,7 +303,13 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
       isReshareDisabledByAuthor: false,
     }
 
-    if (post.external) {
+    if (images.length === 1) {
+      record.content = { media: images[0] }
+    }
+    else if (images.length > 1) {
+      record.content = { multiImage: { images } }
+    }
+    else if (post.external) {
       record.content = {
         article: {
           source: post.external.uri,
@@ -329,8 +464,23 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
 /**
  * Escape the reserved characters of LinkedIn's "little text" commentary format
  * so the literal text renders as typed. Without this, characters like `(` `)`
- * `@` `#` cause the share to be rejected with a 400.
+ * `@` cause the share to be rejected with a 400.
+ *
+ * A hashtag is the exception: `#word` is itself an element of the format, so
+ * escaping its `#` turned every hashtag into plain text. A `#` that does not
+ * start a word (as in "issue # 4", "#1" or "C#") is still escaped.
  */
 export function escapeLinkedInText(text: string): string {
-  return text.replace(/[\\|{}@[\]()<>#*_~]/g, '\\$&')
+  return text.replace(/[\\|{}@[\]()<>#*_~]/g, (char, offset: number) => {
+    if (char === '#' && startsHashtag(text, offset)) return char
+    return `\\${char}`
+  })
+}
+
+function startsHashtag(text: string, offset: number): boolean {
+  const before = offset === 0 ? '' : text[offset - 1]!
+  if (before && /[\p{L}\p{N}_#&/]/u.test(before)) return false
+  const word = /^[\p{L}\p{N}_]+/u.exec(text.slice(offset + 1))?.[0]
+  // A tag needs a letter: "#1" is a number, not a hashtag.
+  return Boolean(word && /\p{L}/u.test(word))
 }

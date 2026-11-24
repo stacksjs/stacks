@@ -157,6 +157,11 @@ export interface PublishPostInput {
     uri: string
     title: string
     description?: string
+    /**
+     * The card's picture, already fetched. Bluesky uploads it as a blob; a
+     * card without one is a grey box. Left off when too large or refused.
+     */
+    thumb?: { bytes: Uint8Array, mimeType: string }
   }
   /**
    * Reply references for thread chaining (ATProto shape). `root` is the
@@ -188,6 +193,12 @@ export interface PublishedPost {
   uri: string
   cid?: string
   url?: string
+  /**
+   * What went out differently from what was asked, without failing the post:
+   * an image X would not take a description for, a link card Bluesky would
+   * not take a picture for. For the app to log or show.
+   */
+  warnings?: string[]
 }
 
 export interface TimelineQuery {

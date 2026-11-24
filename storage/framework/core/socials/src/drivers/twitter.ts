@@ -18,6 +18,8 @@ import { fetcher } from '@stacksjs/api'
 import { config } from '@stacksjs/config'
 import { AbstractProvider } from '../abstract'
 import { ConfigException } from '../exceptions'
+import { fetchPostImage, resolvePostImage } from '../media'
+import { exceedsLimit } from '../text'
 
 export class TwitterProvider extends AbstractProvider implements ProviderInterface {
   protected baseUrl = 'https://twitter.com'
@@ -161,6 +163,11 @@ export interface TwitterDriverOptions {
   authorizeBase?: string
 }
 
+/** X attaches up to four images to a post. */
+export const X_MAX_IMAGES = 4
+/** X's limit for an image description. */
+export const X_MAX_ALT_TEXT = 1000
+
 export interface TwitterAuthUrlInput {
   clientId: string
   redirectUrl: string
@@ -205,6 +212,10 @@ function base64Url(bytes: Uint8Array): string {
 export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver {
   readonly provider: 'twitter' = 'twitter'
   characterLimit = 280
+  /** Images attached per post. X's own ceiling; an app may lower it. */
+  maxImages = X_MAX_IMAGES
+  /** Downloads an image given by address. Guarded against private addresses; replace it in a test. */
+  fetchImage = fetchPostImage
 
   protected apiBase: string
   protected authorizeBase: string
@@ -286,26 +297,49 @@ export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDe
     return mediaId
   }
 
+  /**
+   * Describe an uploaded image (`POST /2/media/metadata`). Best effort: a post
+   * without its alt text is still better than no post, so a refusal returns
+   * false rather than throwing.
+   */
+  async describeMedia(accessToken: string, mediaId: string, altText: string): Promise<boolean> {
+    try {
+      await this.request(`${this.apiBase}/2/media/metadata`, {
+        method: 'POST',
+        headers: { 'authorization': `Bearer ${accessToken}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ id: mediaId, metadata: { alt_text: { text: altText.slice(0, X_MAX_ALT_TEXT) } } }),
+      })
+      return true
+    }
+    catch {
+      return false
+    }
+  }
+
+  /**
+   * Post a tweet with up to four images, each with its alt text.
+   *
+   * The length is X's weighted count (CJK and emoji count two, a link 23),
+   * not UTF-16 units. An image given by address is downloaded through the
+   * outbound guard, and one that cannot be read fails the post rather than
+   * going out without it.
+   */
   async publish(identity: SocialIdentityCredentials, post: PublishPostInput): Promise<PublishedPost> {
     if (!identity.accessToken) throw new Error('Twitter access token is missing for this identity.')
-    if (post.text.length > this.characterLimit) {
+    if (exceedsLimit('twitter', post.text, this.characterLimit)) {
       throw new Error(`Twitter posts must be ${this.characterLimit} characters or fewer.`)
     }
 
-    // Uploaded files arrive as bytes; a bare URL is fetched first.
     const mediaIds: string[] = []
-    const media = post.media?.[0]
-    if (media) {
-      let bytes = media.bytes
-      let mimeType = media.mimeType
-      if (!bytes?.length && media.url) {
-        const response = await fetch(media.url)
-        if (response.ok) {
-          bytes = new Uint8Array(await response.arrayBuffer())
-          mimeType = mimeType || response.headers.get('content-type') || 'image/jpeg'
-        }
-      }
-      if (bytes?.length) mediaIds.push(await this.uploadMedia(identity.accessToken, bytes, mimeType || 'image/jpeg'))
+    const warnings: string[] = []
+    for (const item of (post.media ?? []).slice(0, this.maxImages)) {
+      const image = await resolvePostImage(item, url => this.fetchImage(url))
+      if (!image) continue
+      const mediaId = await this.uploadMedia(identity.accessToken, image.bytes, image.mimeType)
+      const altText = item.altText?.trim()
+      if (altText && !await this.describeMedia(identity.accessToken, mediaId, altText))
+        warnings.push(`X did not take the description for image ${mediaIds.length + 1}.`)
+      mediaIds.push(mediaId)
     }
 
     const body: Record<string, unknown> = { text: post.text }
@@ -333,6 +367,7 @@ export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDe
       url: identity.handle
         ? `https://x.com/${identity.handle}/status/${id}`
         : `https://x.com/i/web/status/${id}`,
+      ...(warnings.length ? { warnings } : {}),
     }
   }
 

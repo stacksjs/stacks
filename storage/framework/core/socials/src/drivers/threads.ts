@@ -6,6 +6,17 @@ import type {
   TimelineQuery,
   TimelineResult,
 } from '../types'
+import { exceedsLimit } from '../text'
+
+/** Items Threads takes in one carousel. */
+export const THREADS_MAX_IMAGES = 20
+/** Threads' limit for an image description. */
+export const THREADS_MAX_ALT_TEXT = 1000
+
+export interface ThreadsLongLivedToken {
+  accessToken: string
+  expiresIn?: number
+}
 
 export class ThreadsApiError extends Error {
   constructor(
@@ -66,6 +77,8 @@ export interface ThreadsAccount {
 export class ThreadsPublishingDriver implements SocialPublishingDriver {
   readonly provider: 'threads' = 'threads'
   characterLimit = 500
+  /** Images attached per post. Threads' own ceiling; an app may lower it. */
+  maxImages = THREADS_MAX_IMAGES
 
   protected graphVersion: string
   protected authBase: string
@@ -155,6 +168,41 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver {
     }
   }
 
+  /**
+   * Exchange a short-lived token (about an hour, what {@link exchangeCode}
+   * returns) for a long-lived one of about sixty days. Needs the app secret.
+   */
+  async exchangeLongLivedToken(clientSecret: string, shortLivedToken: string): Promise<ThreadsLongLivedToken> {
+    return this.tokenRequest('/access_token', new URLSearchParams({
+      grant_type: 'th_exchange_token',
+      client_secret: clientSecret,
+      access_token: shortLivedToken,
+    }))
+  }
+
+  /**
+   * Refresh a long-lived token for another sixty days. Threads requires it
+   * to be at least a day old and not yet expired.
+   */
+  async refreshLongLivedToken(accessToken: string): Promise<ThreadsLongLivedToken> {
+    return this.tokenRequest('/refresh_access_token', new URLSearchParams({
+      grant_type: 'th_refresh_token',
+      access_token: accessToken,
+    }))
+  }
+
+  /**
+   * Publish one post: text, one image, or a carousel of two or more, each
+   * image with its alt text.
+   *
+   * A post that continues a thread is sent with `reply_to_id`, and the post
+   * id comes back as both `uri` and `cid`, which is what chaining the next
+   * segment needs; without them every segment went out as a separate post.
+   * The length is counted in graphemes, as Threads counts it.
+   *
+   * Threads fetches each image from its address, so an image with only bytes
+   * is refused rather than dropped from the post.
+   */
   async publish(identity: SocialIdentityCredentials, post: PublishPostInput): Promise<PublishedPost> {
     if (!identity.accessToken) throw new Error('Threads access token is missing for this identity.')
 
@@ -162,50 +210,61 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver {
     const threadsUserId = identity.did
     if (!threadsUserId) throw new Error('Threads account id is required to publish.')
 
-    if (post.text.length > this.characterLimit) {
+    if (exceedsLimit('threads', post.text, this.characterLimit)) {
       throw new Error(`Threads posts must be ${this.characterLimit} characters or fewer.`)
     }
 
-    // 1) Create the media container. Text-only by default; if an image is
-    // attached, create an IMAGE container instead (Threads also supports VIDEO,
-    // but we only surface images from the composer today).
-    const media = post.media?.[0]
-    const containerBody = new URLSearchParams({
-      text: post.text,
+    const images = (post.media ?? []).slice(0, this.maxImages)
+    if (images.some(image => !image.url))
+      throw new ThreadsApiError('Threads fetches images from a public address, and this image has none.', 422, '')
+
+    const accessToken = identity.accessToken
+    const create = async (fields: Record<string, string>): Promise<string> => {
+      const container = await this.graph<{ id?: string }>(
+        `/${threadsUserId}/threads`,
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(fields).toString(),
+        },
+        accessToken,
+      )
+      if (!container.id)
+        throw new ThreadsApiError('Threads did not return a media container id.', 400, JSON.stringify(container))
+      return container.id
+    }
+
+    const parent = post.reply?.parent?.uri
+    const postFields: Record<string, string> = { text: post.text, ...(parent ? { reply_to_id: parent } : {}) }
+    const imageFields = (image: { url?: string, altText?: string }): Record<string, string> => ({
+      media_type: 'IMAGE',
+      image_url: image.url!,
+      ...(image.altText?.trim() ? { alt_text: image.altText.trim().slice(0, THREADS_MAX_ALT_TEXT) } : {}),
     })
-    if (media?.url) {
-      containerBody.set('media_type', 'IMAGE')
-      containerBody.set('image_url', media.url)
+
+    // 1) Create the container: one per carousel item, then one that holds them.
+    let creationId: string
+    if (images.length > 1) {
+      const children: string[] = []
+      for (const image of images) children.push(await create({ ...imageFields(image), is_carousel_item: 'true' }))
+      creationId = await create({ media_type: 'CAROUSEL', children: children.join(','), ...postFields })
+    }
+    else if (images.length === 1) {
+      creationId = await create({ ...imageFields(images[0]!), ...postFields })
     }
     else {
-      containerBody.set('media_type', 'TEXT')
-    }
-
-    const container = await this.graph<{ id: string }>(
-      `/${threadsUserId}/threads`,
-      {
-        method: 'POST',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: containerBody.toString(),
-      },
-      identity.accessToken,
-    )
-
-    if (!container.id) {
-      throw new ThreadsApiError('Threads did not return a media container id.', 400, JSON.stringify(container))
+      creationId = await create({ media_type: 'TEXT', ...postFields })
     }
 
     // 2) Publish the container.
-    const published = await this.graph<{ id: string }>(
+    const published = await this.graph<{ id?: string }>(
       `/${threadsUserId}/threads_publish`,
       {
         method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          creation_id: container.id,
-        }).toString(),
+        body: new URLSearchParams({ creation_id: creationId }).toString(),
       },
-      identity.accessToken,
+      accessToken,
     )
 
     if (!published.id) {
@@ -215,12 +274,14 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver {
     const permalink = await this.graph<{ permalink?: string }>(
       `/${published.id}?fields=permalink`,
       { method: 'GET' },
-      identity.accessToken,
+      accessToken,
     ).catch(() => undefined)
 
     return {
       provider: this.provider,
+      // The post id doubles as uri and cid so a thread can chain replies to it.
       uri: published.id,
+      cid: published.id,
       url: permalink?.permalink,
     }
   }
@@ -228,6 +289,36 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver {
   // The Content Publishing scope does not grant a readable home timeline.
   async timeline(_identity: SocialIdentityCredentials, _query: TimelineQuery = {}): Promise<TimelineResult> {
     return { items: [] }
+  }
+
+  /**
+   * The two long-lived token endpoints. They are unversioned, so they do not
+   * go through {@link graph}. The token goes in a POST body, never the URL,
+   * for the reason {@link graph} gives. Probed live: a bad token in the body
+   * answers `Cannot parse access token`, as the documented query form does,
+   * while a body with none answers `Invalid OAuth 2.0 Access Token`.
+   */
+  protected async tokenRequest(path: string, body: URLSearchParams): Promise<ThreadsLongLivedToken> {
+    const response = await fetch(`${this.graphBase}${path}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: body.toString(),
+    })
+    const text = await response.text()
+    let json: any = {}
+    try {
+      json = text ? JSON.parse(text) : {}
+    }
+    catch {
+      json = {}
+    }
+
+    if (!response.ok || json?.error || !json?.access_token) {
+      const message = json?.error?.message || json?.error_message || text || response.statusText
+      throw new ThreadsApiError(`Threads token request failed (${response.status}): ${message}`, response.status, text)
+    }
+
+    return { accessToken: json.access_token, expiresIn: json.expires_in }
   }
 
   /**

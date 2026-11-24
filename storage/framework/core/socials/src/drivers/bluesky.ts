@@ -11,6 +11,7 @@ import type {
   TimelineQuery,
   TimelineResult,
 } from '../types'
+import { exceedsLimit } from '../text'
 
 /** The ATProto collection every Bluesky post record lives in. */
 const POST_COLLECTION = 'app.bsky.feed.post'
@@ -35,9 +36,39 @@ export class BlueskyApiError extends Error {
     this.name = 'BlueskyApiError'
   }
 
+  /**
+   * Whether the session is no longer good. A 400 counts only when Bluesky
+   * names the token: counting every 400 made a post rejected as invalid look
+   * like an expired session, so an app refreshed it and could mark a healthy
+   * account as signed out.
+   */
   get isAuthError(): boolean {
-    return this.status === 400 || this.status === 401 || this.status === 403
+    if (this.status === 401 || this.status === 403) return true
+    if (this.status !== 400) return false
+    try {
+      return BLUESKY_SESSION_ERRORS.includes(String(JSON.parse(this.body)?.error))
+    }
+    catch {
+      return false
+    }
   }
+}
+
+/** The XRPC error names that mean the access token itself is the problem. */
+const BLUESKY_SESSION_ERRORS = ['ExpiredToken', 'InvalidToken']
+
+/** Bluesky refuses a blob over this size. */
+export const BLUESKY_MAX_BLOB_BYTES = 1_000_000
+
+/** Bluesky holds up to four images in one post. */
+export const BLUESKY_MAX_IMAGES = 4
+
+/** Bluesky keeps up to three languages on a post. */
+export const BLUESKY_MAX_LANGS = 3
+
+/** Whether `error` means the Bluesky session has to be refreshed or the account reconnected. */
+export function isBlueskySessionError(error: unknown): boolean {
+  return error instanceof BlueskyApiError && error.isAuthError
 }
 
 export interface BlueskyDriverOptions {
@@ -179,7 +210,8 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
     const repo = identity.did || identity.handle
     if (!identity.accessToken) throw new Error('Bluesky access token is missing for this identity.')
     if (!repo) throw new Error('Bluesky identity DID or handle is required.')
-    if (post.text.length > this.characterLimit) {
+    // Bluesky counts graphemes: 300 emoji are 300, not 600 UTF-16 units.
+    if (exceedsLimit('bluesky', post.text, this.characterLimit)) {
       throw new Error(`Bluesky posts must be ${this.characterLimit} characters or fewer.`)
     }
 
@@ -189,26 +221,17 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
       createdAt: post.scheduledAt || new Date().toISOString(),
     }
 
-    if (post.langs?.length) record.langs = post.langs
+    if (post.langs?.length) record.langs = post.langs.slice(0, BLUESKY_MAX_LANGS)
     if (post.reply) record.reply = post.reply
 
     const facets = post.facets ?? await this.buildFacets(post.text)
     if (facets.length) record.facets = facets
 
-    if (post.external) {
-      record.embed = {
-        $type: 'app.bsky.embed.external',
-        external: {
-          uri: post.external.uri,
-          title: post.external.title,
-          description: post.external.description || '',
-        },
-      }
-    }
-
-    // Bluesky records hold a single embed; attached images win over a link
-    // card (the link is still clickable via its facet).
-    const imageMedia = (post.media || []).filter(item => item.bytes?.length).slice(0, 4)
+    const warnings: string[] = []
+    // A record holds one embed. Attached images win over a link card: they are
+    // what the author attached on purpose, and the link stays clickable
+    // through its facet.
+    const imageMedia = (post.media || []).filter(item => item.bytes?.length).slice(0, BLUESKY_MAX_IMAGES)
     if (imageMedia.length) {
       const images = []
       for (const item of imageMedia) {
@@ -216,6 +239,31 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
         images.push({ image: blob, alt: item.altText || '' })
       }
       record.embed = { $type: 'app.bsky.embed.images', images }
+    }
+    else if (post.external) {
+      const external: Record<string, unknown> = {
+        uri: post.external.uri,
+        title: post.external.title,
+        description: post.external.description || '',
+      }
+      // Without its thumbnail uploaded and attached, a card is a grey box. A
+      // picture that is too large or refused leaves the card without one
+      // rather than failing the post.
+      const thumb = post.external.thumb
+      if (thumb?.bytes?.length) {
+        if (thumb.bytes.length > BLUESKY_MAX_BLOB_BYTES) {
+          warnings.push('The link card\'s picture is larger than Bluesky takes, so the card went out without it.')
+        }
+        else {
+          try {
+            external.thumb = await this.uploadBlob(identity, thumb.bytes, thumb.mimeType)
+          }
+          catch {
+            warnings.push('Bluesky did not take the link card\'s picture, so the card went out without it.')
+          }
+        }
+      }
+      record.embed = { $type: 'app.bsky.embed.external', external }
     }
 
     const payload = await this.post<CreateRecordResponse>(
@@ -235,6 +283,7 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
       uri: payload.uri,
       cid: payload.cid,
       url: this.toPostUrl(identity.handle, payload.uri),
+      ...(warnings.length ? { warnings } : {}),
     }
   }
 
@@ -370,7 +419,7 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
   /** Upload raw image bytes and return the blob ref for embeds. */
   async uploadBlob(identity: SocialIdentityCredentials, bytes: Uint8Array, mimeType: string): Promise<unknown> {
     if (!identity.accessToken) throw new Error('Bluesky access token is missing for this identity.')
-    if (bytes.length > 1_000_000)
+    if (bytes.length > BLUESKY_MAX_BLOB_BYTES)
       throw new Error('Bluesky images must be 1MB or smaller.')
 
     const payload = await this.request<{ blob: unknown }>(

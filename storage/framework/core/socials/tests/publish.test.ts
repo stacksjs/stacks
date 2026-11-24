@@ -125,8 +125,14 @@ describe('publishingDriver', () => {
     const bluesky = publishingDriver('bluesky', { service: 'https://pds.example' }) as unknown as { service: string }
     expect(bluesky.service).toBe('https://pds.example')
 
-    const linkedin = publishingDriver('linkedin', { apiVersion: '202501' }) as unknown as { apiVersion: string }
-    expect(linkedin.apiVersion).toBe('202501')
+    // Last month's version: LinkedIn has not retired it, so the driver keeps
+    // it. A fixed one would be retired, and replaced, a year on.
+    const lastMonth = new Date()
+    lastMonth.setUTCDate(1)
+    lastMonth.setUTCMonth(lastMonth.getUTCMonth() - 1)
+    const version = `${lastMonth.getUTCFullYear()}${String(lastMonth.getUTCMonth() + 1).padStart(2, '0')}`
+    const linkedin = publishingDriver('linkedin', { apiVersion: version }) as unknown as { apiVersion: string }
+    expect(linkedin.apiVersion).toBe(version)
   })
 
   it('covers every platform the credential type declares', () => {

@@ -60,7 +60,8 @@
     "@stacksjs/api": "workspace:*",
     "@stacksjs/composables": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/database": "workspace:*"
+    "@stacksjs/database": "workspace:*",
+    "@stacksjs/security": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/error-handling": "workspace:*",

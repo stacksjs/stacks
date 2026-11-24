@@ -128,9 +128,13 @@ const DEFAULT_PINS: DefaultPin[] = [
   {
     integration: 'LinkedIn',
     file: 'socials/src/drivers/linkedin.ts',
-    version: '202405',
+    version: '202611',
     overridableVia: 'options.apiVersion',
-    blockedOn: 'LinkedIn answers 401 for every version, valid or not, so no probe can confirm it. May 2024, so it looks stale, but a wrong guess breaks posting. Needs a real credential',
+    // 202405 was retired in May 2025: LinkedIn retires each monthly version a
+    // year on. The driver now replaces a configured version past that point
+    // (resolveLinkedInVersion) and socials/tests/publishing-drivers.test.ts
+    // fails two months before this default is retired.
+    blockedOn: 'LinkedIn answers 401 for every version, valid or not, so no unauthenticated probe can confirm it. The sunset schedule is known, whether a given month is live is not without a real credential',
   },
   // Was at five call sites, none of which had heard of `anthropicVersion`, so
   // an application configuring a version got it on chat and streaming and was

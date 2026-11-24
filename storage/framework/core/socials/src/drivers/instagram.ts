@@ -7,6 +7,15 @@ import type {
   TimelineResult,
 } from '../types'
 import { META_GRAPH_VERSION } from '../meta-graph'
+import { exceedsLimit } from '../text'
+
+/** Items Instagram takes in one carousel. */
+export const INSTAGRAM_MAX_IMAGES = 10
+
+export interface InstagramLongLivedToken {
+  accessToken: string
+  expiresIn?: number
+}
 
 export class InstagramApiError extends Error {
   constructor(
@@ -64,6 +73,8 @@ export interface InstagramAccount {
 export class InstagramPublishingDriver implements SocialPublishingDriver {
   readonly provider: 'instagram' = 'instagram'
   characterLimit = 2200
+  /** Images attached per post. Instagram's own ceiling; an app may lower it. */
+  maxImages = INSTAGRAM_MAX_IMAGES
 
   protected graphVersion: string
   protected authBase: string
@@ -149,6 +160,41 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
     }
   }
 
+  /**
+   * Exchange a short-lived user token for a long-lived one of about sixty
+   * days. A Page token minted from a long-lived user token does not expire on
+   * its own, so this, before {@link resolveAccount}, is what keeps an
+   * Instagram connection alive: there is no refresh grant.
+   *
+   * POST, so neither the client secret nor the token is in a URL.
+   */
+  async exchangeLongLivedUserToken(clientId: string, clientSecret: string, shortLivedToken: string): Promise<InstagramLongLivedToken> {
+    const payload = await this.graph<{ access_token?: string, expires_in?: number }>(
+      '/oauth/access_token',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'fb_exchange_token',
+          client_id: clientId,
+          client_secret: clientSecret,
+          fb_exchange_token: shortLivedToken,
+        }).toString(),
+      },
+    )
+
+    if (!payload.access_token) {
+      throw new InstagramApiError('Facebook did not return a long-lived token.', 400, JSON.stringify(payload))
+    }
+
+    return { accessToken: payload.access_token, expiresIn: payload.expires_in }
+  }
+
+  /**
+   * Publish a post: one image, or a carousel of two or more. Instagram has no
+   * text-only posts, and fetches each image from its address, so an image
+   * with only bytes is refused rather than left out.
+   */
   async publish(identity: SocialIdentityCredentials, post: PublishPostInput): Promise<PublishedPost> {
     if (!identity.accessToken) throw new Error('Instagram access token is missing for this identity.')
 
@@ -156,48 +202,61 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
     const igUserId = identity.did
     if (!igUserId) throw new Error('Instagram account id is required to publish.')
 
-    const media = post.media?.[0]
-    if (!media?.url) throw new Error('Instagram requires an image to post.')
+    const images = (post.media ?? []).slice(0, this.maxImages)
+    if (!images.length) throw new Error('Instagram requires an image to post.')
+    if (images.some(image => !image.url))
+      throw new InstagramApiError('Instagram fetches images from a public address, and this image has none.', 422, '')
 
-    if (post.text.length > this.characterLimit) {
+    if (exceedsLimit('instagram', post.text, this.characterLimit)) {
       throw new Error(`Instagram captions must be ${this.characterLimit} characters or fewer.`)
     }
 
-    // 1) Create the media container.
-    const container = await this.graph<{ id: string }>(
-      `/${igUserId}/media`,
-      {
-        method: 'POST',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          image_url: media.url,
-          caption: post.text,
-        }).toString(),
-      },
-      identity.accessToken,
-    )
+    const accessToken = identity.accessToken
+    const create = async (fields: Record<string, string>): Promise<string> => {
+      const container = await this.graph<{ id?: string }>(
+        `/${igUserId}/media`,
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(fields).toString(),
+        },
+        accessToken,
+      )
+      if (!container.id)
+        throw new InstagramApiError('Instagram did not return a media container id.', 400, JSON.stringify(container))
+      return container.id
+    }
 
-    if (!container.id) {
-      throw new InstagramApiError('Instagram did not return a media container id.', 400, JSON.stringify(container))
+    // 1) Create the container: one per carousel item, then one that holds them.
+    let creationId: string
+    if (images.length > 1) {
+      const children: string[] = []
+      for (const image of images) children.push(await create({ image_url: image.url!, is_carousel_item: 'true' }))
+      creationId = await create({ media_type: 'CAROUSEL', children: children.join(','), caption: post.text })
+    }
+    else {
+      creationId = await create({ image_url: images[0]!.url!, caption: post.text })
     }
 
     // 2) Publish the container.
-    const published = await this.graph<{ id: string }>(
+    const published = await this.graph<{ id?: string }>(
       `/${igUserId}/media_publish`,
       {
         method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          creation_id: container.id,
-        }).toString(),
+        body: new URLSearchParams({ creation_id: creationId }).toString(),
       },
-      identity.accessToken,
+      accessToken,
     )
+
+    if (!published.id) {
+      throw new InstagramApiError('Instagram did not return a published post id.', 400, JSON.stringify(published))
+    }
 
     const permalink = await this.graph<{ permalink?: string }>(
       `/${published.id}?fields=permalink`,
       { method: 'GET' },
-      identity.accessToken,
+      accessToken,
     ).catch(() => undefined)
 
     return {

@@ -9,6 +9,8 @@ import type {
   TimelineQuery,
   TimelineResult,
 } from '../types'
+import { fetchPostImage, resolvePostImage } from '../media'
+import { exceedsLimit } from '../text'
 
 export class MastodonApiError extends Error {
   constructor(
@@ -31,6 +33,40 @@ export interface MastodonAccount {
   displayName?: string
   url: string
 }
+
+export type MastodonVisibility = 'public' | 'unlisted' | 'private' | 'direct'
+
+/** What only Mastodon takes, as the third argument to `publish`. */
+export interface MastodonPublishOptions {
+  /**
+   * Sent as `Idempotency-Key`. Mastodon answers a repeated key with the status
+   * it already created, so a publish whose answer was lost can be retried
+   * without posting twice. Use the same key for the same post to the same
+   * account, and a new one when the text changes.
+   */
+  idempotencyKey?: string
+  /** `public` unless given. */
+  visibility?: MastodonVisibility
+  /** A content warning. The text is hidden behind it. */
+  spoilerText?: string
+  /** An ISO 639 code, such as `en`. Defaults to the post's first `langs` entry. */
+  language?: string
+}
+
+/** One instance's posting limits, from `/api/v2/instance`. */
+export interface MastodonLimits {
+  characters: number
+  /** What a link counts as, whatever its real length. */
+  charactersPerUrl: number
+  mediaAttachments: number
+}
+
+/** Mastodon's own defaults, for an instance that does not say. */
+export const MASTODON_DEFAULT_LIMITS: MastodonLimits = { characters: 500, charactersPerUrl: 23, mediaAttachments: 4 }
+
+const LIMITS_TTL_MS = 60 * 60 * 1000
+/** How soon an instance that could not be asked is asked again. */
+const LIMITS_RETRY_MS = 60 * 1000
 
 /** Normalize "mastodon.social" / "https://mastodon.social/" → "https://mastodon.social". */
 export function normalizeInstance(value: string): string {
@@ -61,8 +97,47 @@ export function normalizeInstance(value: string): string {
  */
 export class MastodonPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver {
   readonly provider: 'mastodon' = 'mastodon'
-  // Mastodon's default; instances can raise it, but 500 is the safe floor.
-  characterLimit = 500
+  /**
+   * Mastodon's default. An instance can raise it, and many do, so `publish`
+   * goes by {@link instanceLimits} and this is only the fallback.
+   */
+  characterLimit = MASTODON_DEFAULT_LIMITS.characters
+  /** Downloads an image given by address. Guarded against private addresses; replace it in a test. */
+  fetchImage = fetchPostImage
+
+  private readonly limits = new Map<string, { value: MastodonLimits, expires: number }>()
+
+  /**
+   * The instance's limits, from `/api/v2/instance`, remembered for an hour.
+   * An instance that cannot be reached, or an older one without that
+   * endpoint, gets Mastodon's defaults: a publish must not fail because a
+   * courtesy lookup did. Those are remembered for a minute only, so the real
+   * figure is picked up soon.
+   */
+  async instanceLimits(identity: SocialIdentityCredentials): Promise<MastodonLimits> {
+    const instance = this.instanceOf(identity)
+    const cached = this.limits.get(instance)
+    if (cached && Date.now() < cached.expires) return cached.value
+
+    try {
+      const response = await fetch(`${instance}/api/v2/instance`, { signal: AbortSignal.timeout(5_000) })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const json = await response.json() as { configuration?: { statuses?: Record<string, unknown> } }
+      const statuses = json.configuration?.statuses ?? {}
+      const positive = (raw: unknown, fallback: number): number => Number(raw) > 0 ? Math.floor(Number(raw)) : fallback
+      const value = {
+        characters: positive(statuses.max_characters, MASTODON_DEFAULT_LIMITS.characters),
+        charactersPerUrl: positive(statuses.characters_reserved_per_url, MASTODON_DEFAULT_LIMITS.charactersPerUrl),
+        mediaAttachments: positive(statuses.max_media_attachments, MASTODON_DEFAULT_LIMITS.mediaAttachments),
+      }
+      this.limits.set(instance, { value, expires: Date.now() + LIMITS_TTL_MS })
+      return value
+    }
+    catch {
+      this.limits.set(instance, { value: MASTODON_DEFAULT_LIMITS, expires: Date.now() + LIMITS_RETRY_MS })
+      return MASTODON_DEFAULT_LIMITS
+    }
+  }
 
   /** The instance this identity posts to. */
   protected instanceOf(identity: SocialIdentityCredentials): string {
@@ -99,7 +174,8 @@ export class MastodonPublishingDriver implements SocialPublishingDriver, SocialD
   ): Promise<string> {
     const form = new FormData()
     form.set('file', new Blob([new Uint8Array(bytes)], { type: mimeType || 'image/jpeg' }), 'upload')
-    if (altText) form.set('description', altText)
+    // Mastodon keeps up to 1,500 characters of description.
+    if (altText?.trim()) form.set('description', altText.trim().slice(0, 1500))
 
     const media = await this.request<{ id: string }>(
       `${this.instanceOf(identity)}/api/v2/media`,
@@ -108,38 +184,43 @@ export class MastodonPublishingDriver implements SocialPublishingDriver, SocialD
     return media.id
   }
 
-  async publish(identity: SocialIdentityCredentials, post: PublishPostInput): Promise<PublishedPost> {
+  /**
+   * Post a status, measured against the instance's own limits, with as many
+   * images as the instance takes (each with its alt text), and the
+   * Mastodon-only options in {@link MastodonPublishOptions}.
+   */
+  async publish(
+    identity: SocialIdentityCredentials,
+    post: PublishPostInput,
+    options: MastodonPublishOptions = {},
+  ): Promise<PublishedPost> {
     const instance = this.instanceOf(identity)
     const accessToken = this.tokenOf(identity)
-    if (post.text.length > this.characterLimit)
-      throw new Error(`Mastodon posts must be ${this.characterLimit} characters or fewer.`)
+    const limits = await this.instanceLimits(identity)
+    if (exceedsLimit('mastodon', post.text, limits.characters, { linkLength: limits.charactersPerUrl }))
+      throw new Error(`Mastodon posts on this instance must be ${limits.characters} characters or fewer.`)
 
     const mediaIds: string[] = []
-    for (const item of (post.media || []).slice(0, 4)) {
-      let bytes = item.bytes
-      let mimeType = item.mimeType
-      if (!bytes?.length && item.url) {
-        const response = await fetch(item.url)
-        if (!response.ok) continue
-        bytes = new Uint8Array(await response.arrayBuffer())
-        mimeType = mimeType || response.headers.get('content-type') || 'image/jpeg'
-      }
-      if (bytes?.length)
-        mediaIds.push(await this.uploadMedia(identity, bytes, mimeType || 'image/jpeg', item.altText))
+    for (const item of (post.media || []).slice(0, limits.mediaAttachments)) {
+      const image = await resolvePostImage(item, url => this.fetchImage(url))
+      if (image)
+        mediaIds.push(await this.uploadMedia(identity, image.bytes, image.mimeType, item.altText))
     }
 
-    const body: Record<string, unknown> = { status: post.text, visibility: 'public' }
+    const body: Record<string, unknown> = { status: post.text, visibility: options.visibility ?? 'public' }
     if (mediaIds.length) body.media_ids = mediaIds
     // Mastodon threads via the parent status id, carried in reply.parent.uri.
     if (post.reply?.parent?.uri) body.in_reply_to_id = post.reply.parent.uri
+    if (options.spoilerText?.trim()) body.spoiler_text = options.spoilerText.trim()
+    const language = options.language ?? post.langs?.[0]
+    if (language) body.language = language
+
+    const headers: Record<string, string> = { 'authorization': `Bearer ${accessToken}`, 'content-type': 'application/json' }
+    if (options.idempotencyKey) headers['idempotency-key'] = options.idempotencyKey
 
     const status = await this.request<{ id: string, url?: string, uri?: string }>(
       `${instance}/api/v1/statuses`,
-      {
-        method: 'POST',
-        headers: { 'authorization': `Bearer ${accessToken}`, 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-      },
+      { method: 'POST', headers, body: JSON.stringify(body) },
     )
 
     return {
