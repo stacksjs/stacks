@@ -1,5 +1,48 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.677...v0.75.678)
+
+## ✨ Features
+
+- **buddy**: preserve STX page state through frontend worker swaps ([a706ca7](https://github.com/stacksjs/stacks/commit/a706ca7)) _(by Chris Breuer)_
+- **new**: install new apps from the Pantry registry, again ([e4e32b7](https://github.com/stacksjs/stacks/commit/e4e32b7)) _(by Chris Breuer)_
+- **buddy**: roll dev workers automatically on source edits ([962c3e6](https://github.com/stacksjs/stacks/commit/962c3e6)) _(by Chris Breuer)_
+- **desktop**: a built web view app serves the project's own scripts ([4a703d4](https://github.com/stacksjs/stacks/commit/4a703d4)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+- **buddy**: roll development services without downtime ([70a7ebe](https://github.com/stacksjs/stacks/commit/70a7ebe)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **buddy**: preserve state during overlapping STX source notifications ([a6acff0](https://github.com/stacksjs/stacks/commit/a6acff0)) _(by Chris Breuer)_
+- **buddy**: keep custom frontend serving after a failed reload ([46c5433](https://github.com/stacksjs/stacks/commit/46c5433)) _(by Chris Breuer)_
+- **buddy**: preserve dev API entrypoint port compatibility ([c4a1420](https://github.com/stacksjs/stacks/commit/c4a1420)) _(by Chris Breuer)_
+- **desktop**: the web view agent answers a 500 without the cause ([6408ad8](https://github.com/stacksjs/stacks/commit/6408ad8)) _(by glennmichael123)_ ([stacksjs/stacks#3361](https://github.com/stacksjs/stacks/issues/3361))
+- **scheduler**: ship the default Inspire job ([3e4f31d](https://github.com/stacksjs/stacks/commit/3e4f31d)) _(by Chris)_
+- **buddy**: let Windows bind dev API worker ports ([05348af](https://github.com/stacksjs/stacks/commit/05348af)) _(by Chris Breuer)_
+- **buddy**: preserve dev relay IPC on Windows ([d0f9fa4](https://github.com/stacksjs/stacks/commit/d0f9fa4)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **skills**: a built web view app bundles the scripts its pages load ([b485874](https://github.com/stacksjs/stacks/commit/b485874)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+
+## ✅ Tests
+
+- **buddy**: make frontend HMR browser fixture portable on Windows ([476580f](https://github.com/stacksjs/stacks/commit/476580f)) _(by Chris Breuer)_
+- **dashboard**: hold the native settings work to its own design ([524743a](https://github.com/stacksjs/stacks/commit/524743a)) _(by Chris Breuer)_
+
+## 💚 Continuous Integration
+
+- **release**: publish with pantry 0.11.230 ([e44292b](https://github.com/stacksjs/stacks/commit/e44292b)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- regenerate auto-imports and the native catalog ([6d01864](https://github.com/stacksjs/stacks/commit/6d01864)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.676...v0.75.677)
 
 ## ✨ Features
