@@ -10,7 +10,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { APP_PUBLISH_RULE, appEnvValues, appIdentity, applyAppAgentsTemplate, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, removeFrameworkLicense, renderTemplate } from '../src/scaffold-app'
+import { APP_PUBLISH_RULE, APP_REGISTRY_LINE, appEnvValues, appIdentity, applyAppAgentsTemplate, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, applyAppRegistryTemplate, removeFrameworkLicense, renderTemplate } from '../src/scaffold-app'
 
 const REPO = join(import.meta.dir, '../../../../..')
 const CREATE_COMMAND = join(import.meta.dir, '../src/commands/create.ts')
@@ -155,6 +155,12 @@ describe('buddy new wiring', () => {
     expect(source).toContain('applyAppPackage(path)')
   })
 
+  test('points the app at the Pantry registry before anything is installed', () => {
+    expect(source).toContain('applyAppRegistry(path)')
+    expect(source.indexOf('applyAppRegistry(path)'))
+      .toBeLessThan(source.indexOf('await ensureEnv(path, options)'))
+  })
+
   test('names the app before .env is copied from the example', () => {
     expect(source).toContain('applyAppEnv(path)')
     expect(source.indexOf('applyAppEnv(path)'))
@@ -199,6 +205,61 @@ describe('the app AGENTS.md', () => {
       expect(original.length - agents.length).toBeLessThan(400)
       expect(agents).toContain('### Requirements')
       expect(applyAppAgentsTemplate(app)).toBe(false)
+    }
+    finally {
+      rmSync(app, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('the app install registry', () => {
+  const pantry = 'https://registry.pantry.dev/npm/'
+
+  // Run over the real file, so a reshaped [install] table fails here.
+  test('installs from the Pantry registry, without the framework\'s publish token', () => {
+    const app = mkdtempSync(join(tmpdir(), 'stacks-app-registry-'))
+    try {
+      copyFileSync(join(REPO, 'bunfig.toml'), join(app, 'bunfig.toml'))
+
+      expect(applyAppRegistryTemplate(app)).toEqual(['bunfig.toml', '.npmrc'])
+      const bunfig = readFileSync(join(app, 'bunfig.toml'), 'utf8')
+      expect(APP_REGISTRY_LINE).toBe(`registry = "${pantry}"`)
+      expect(bunfig).not.toContain('registry.npmjs.org')
+      expect(bunfig).not.toContain('BUN_AUTH_TOKEN')
+      // The preloads and the hoisted linker stay.
+      expect(bunfig).toContain('linker = "hoisted"')
+      expect(bunfig).toContain('preload = [')
+      const parsed = Bun.TOML.parse(bunfig) as { install: Record<string, unknown> }
+      expect(parsed.install.registry).toBe(pantry)
+      // Named too: a user-level .npmrc scope outranks a project's default registry.
+      expect(parsed.install.scopes).toEqual({ '@stacksjs': pantry })
+      // Pantry's installer reads .npmrc, not bunfig.toml.
+      expect(readFileSync(join(app, '.npmrc'), 'utf8')).toBe(`registry=${pantry}\n@stacksjs:registry=${pantry}\n`)
+      expect(applyAppRegistryTemplate(app)).toEqual([])
+    }
+    finally {
+      rmSync(app, { recursive: true, force: true })
+    }
+  })
+
+  test('adds the tables it needs and keeps every other setting', () => {
+    const app = mkdtempSync(join(tmpdir(), 'stacks-app-registry-'))
+    try {
+      writeFileSync(join(app, 'bunfig.toml'), '[install]\nlinker = "hoisted"\n\n[install.scopes]\n"@acme" = "https://npm.acme.dev/"\n\n[test]\nroot = "tests"\n')
+      writeFileSync(join(app, '.npmrc'), 'save-exact=true\nregistry=https://registry.npmjs.org/\n@stacksjs:registry=https://registry.npmjs.org/')
+      expect(applyAppRegistryTemplate(app)).toEqual(['bunfig.toml', '.npmrc'])
+      expect(Bun.TOML.parse(readFileSync(join(app, 'bunfig.toml'), 'utf8'))).toEqual({
+        install: { registry: pantry, linker: 'hoisted', scopes: { '@stacksjs': pantry, '@acme': 'https://npm.acme.dev/' } },
+        test: { root: 'tests' },
+      })
+      expect(readFileSync(join(app, '.npmrc'), 'utf8')).toBe(`save-exact=true\nregistry=${pantry}\n@stacksjs:registry=${pantry}`)
+
+      writeFileSync(join(app, 'bunfig.toml'), 'preload = ["./a.ts"]\n')
+      expect(applyAppRegistryTemplate(app)).toEqual(['bunfig.toml'])
+      expect(Bun.TOML.parse(readFileSync(join(app, 'bunfig.toml'), 'utf8'))).toEqual({ preload: ['./a.ts'], install: { registry: pantry, scopes: { '@stacksjs': pantry } } })
+
+      rmSync(join(app, 'bunfig.toml'))
+      expect(applyAppRegistryTemplate(app)).toEqual([])
     }
     finally {
       rmSync(app, { recursive: true, force: true })
