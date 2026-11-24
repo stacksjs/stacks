@@ -19,7 +19,18 @@ describe('the generated app config template', () => {
     // shipping stacksjs.com: each named the site (its description and redirect
     // domain, "The Stacks Blog", stacksjs.com/docs, the @stacksjs npm scope,
     // com.stacksjs.app) or counted its pages (lint baselines).
-    expect(templates.sort()).toEqual(['analytics.ts', 'app.ts', 'blog.ts', 'buddy-bot.ts', 'cloud.ts', 'dns.ts', 'docs.ts', 'email.ts', 'library.ts', 'lint.ts', 'mobile.ts', 'team.ts'])
+    // `server.ts` joined when stacksjs.com turned on a render cache shared
+    // between visitors (`cache.renderVary: 'url'`). That is a claim about this
+    // site's pages, every one the same for everybody, and a new app has made
+    // no such claim about pages it has not written yet.
+    expect(templates.sort()).toEqual(['analytics.ts', 'app.ts', 'blog.ts', 'buddy-bot.ts', 'cloud.ts', 'dns.ts', 'docs.ts', 'email.ts', 'library.ts', 'lint.ts', 'mobile.ts', 'server.ts', 'team.ts'])
+  })
+
+  test('does not hand a new app the site\'s shared render cache', () => {
+    const source = readFileSync(join(APP_CONFIG, 'server.ts'), 'utf8')
+    expect(source).not.toContain('renderVary')
+    expect(source).not.toMatch(/^\s*cache:/m)
+    expect(source).toContain('satisfies ServerConfig')
   })
 
   test('contains no Stacks production ownership', () => {
