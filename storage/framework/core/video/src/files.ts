@@ -53,8 +53,10 @@ export interface VideoFileResponseOptions {
   range?: string | null
   etag?: string
   contentType?: string
-  /** A manifest of protected media is not cached publicly. */
+  /** Protected media is cached by the browser only, and its manifests not at all. */
   protectedMedia?: boolean
+  /** Replaces the computed Cache-Control. */
+  cacheControl?: string
 }
 
 /** A Response for a stored video, 206 for a range, 416 past the end. */
@@ -65,12 +67,12 @@ export function videoFileResponse(file: Blob, name: string, options: VideoFileRe
   if (range === 'unsatisfiable')
     return new Response(null, { status: 416, headers: { 'Content-Range': `bytes */${size}` } })
   if (!range)
-    return new Response(file, { status: 200, headers: { ...videoAssetHeaders(name, size, options.etag, options.protectedMedia), 'Content-Type': type } })
+    return new Response(file, { status: 200, headers: { ...videoAssetHeaders(name, size, options.etag, options.protectedMedia, options.cacheControl), 'Content-Type': type } })
   const length = range.end - range.start + 1
   return new Response(file.slice(range.start, range.end + 1), {
     status: 206,
     headers: {
-      ...videoAssetHeaders(name, length, options.etag, options.protectedMedia),
+      ...videoAssetHeaders(name, length, options.etag, options.protectedMedia, options.cacheControl),
       'Content-Type': type,
       'Content-Range': `bytes ${range.start}-${range.end}/${size}`,
     },

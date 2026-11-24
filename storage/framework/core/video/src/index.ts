@@ -140,9 +140,19 @@ export async function createProtectedVideoPlaylist(segments: VideoSegment[], pro
   lines.push('#EXT-X-ENDLIST', '')
   return { playlist: lines.join('\n'), files, encrypted: !!protection }
 }
-export function videoAssetHeaders(path: string, bytes?: number, etag?: string, protectedMedia = false): Record<string, string> {
+/**
+ * Headers for a stored video asset. A manifest of protected media is never
+ * stored; a protected media file is cached by the browser only (`private`):
+ * a shared cache or CDN must not keep what the app's access check guards, and
+ * one that does answered a `Range` probe with the whole file, which iOS Safari
+ * refuses to play. `cacheControl` replaces the computed value.
+ */
+export function videoAssetHeaders(path: string, bytes?: number, etag?: string, protectedMedia = false, cacheControl?: string): Record<string, string> {
   const manifest = /\.(?:m3u8|mpd|vtt)$/i.test(path)
-  const headers: Record<string, string> = { 'Accept-Ranges': 'bytes', 'Cache-Control': protectedMedia && manifest ? 'private, no-store' : manifest ? 'public, max-age=5, s-maxage=30' : 'public, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff' }
+  const computed = manifest
+    ? (protectedMedia ? 'private, no-store' : 'public, max-age=5, s-maxage=30')
+    : (protectedMedia ? 'private, max-age=31536000, immutable' : 'public, max-age=31536000, immutable')
+  const headers: Record<string, string> = { 'Accept-Ranges': 'bytes', 'Cache-Control': cacheControl || computed, 'X-Content-Type-Options': 'nosniff' }
   if (bytes !== undefined) headers['Content-Length'] = String(bytes)
   if (etag) headers.ETag = `"${etag}"`
   return headers
