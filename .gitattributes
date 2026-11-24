@@ -30,6 +30,10 @@
 *.mp4  binary
 *.mov  binary
 *.mp3  binary
+*.m4a  binary
+*.ogg  binary
+*.opus binary
+*.webm binary
 *.wav  binary
 *.dmg  binary
 *.wasm binary
