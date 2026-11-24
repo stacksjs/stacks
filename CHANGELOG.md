@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.669...v0.75.670)
+
+## ✨ Features
+
+- **uploads**: send files in parts, and make a clip web-ready first ([e444658](https://github.com/stacksjs/stacks/commit/e444658)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **skills**: refresh the native catalog for the upload helpers ([d3d6ef1](https://github.com/stacksjs/stacks/commit/d3d6ef1)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **deps**: ts-videos 0.2.2 for the video upload helpers ([e59a2ff](https://github.com/stacksjs/stacks/commit/e59a2ff)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.668...v0.75.669)
 
 ## ✨ Features
