@@ -543,7 +543,9 @@ export async function complete(input: CompleteInput, runtime: CompleteRuntime = 
     system: prepared.system,
     model,
     maxTokens: prepared.maxTokens,
-    temperature: 0.3,
+    // No sampling temperature: current Claude models refuse a non-default
+    // one with a 400 (stacksjs/stacks#3380), and the prompt already keeps
+    // the suggestion short and literal.
     signal: input.signal,
     maxRetries: 0,
     usageMetadata: { feature: 'completion', kind: prepared.kind },
@@ -622,7 +624,7 @@ export async function* completeStream(input: CompleteInput, runtime: CompleteRun
     system: prepared.system,
     model,
     maxTokens: prepared.maxTokens,
-    temperature: 0.3,
+    // No sampling temperature, as in complete() above (stacksjs/stacks#3380).
     signal: input.signal,
     maxRetries: 0,
     usageMetadata: { feature: 'completion', kind: prepared.kind },

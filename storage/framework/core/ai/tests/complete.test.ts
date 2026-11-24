@@ -147,6 +147,8 @@ describe('complete()', () => {
     expect(options.system).toContain('ONLY the text to insert')
     expect(options.maxTokens).toBe(48)
     expect(options.maxRetries).toBe(0)
+    // Current models refuse a non-default temperature (stacksjs/stacks#3380).
+    expect(options.temperature).toBeUndefined()
   })
 
   test('uses a fast model, from config first', async () => {
@@ -316,6 +318,7 @@ describe('complete() through the real drivers', () => {
     expect(body.model).toBe(DEFAULT_ANTHROPIC_FAST_MODEL)
     expect(body.max_tokens).toBe(48)
     expect(body.system).toContain('inline autocomplete')
+    expect(Object.keys(body)).not.toContain('temperature')
     expect(records).toHaveLength(1)
     expect(records[0]).toMatchObject({ provider: 'anthropic', promptTokens: 30, completionTokens: 6, metadata: { feature: 'completion', kind: 'note' } })
   })
@@ -400,6 +403,19 @@ describe('completeStream()', () => {
 
     expect(seen.at(-1)).toBe(' jumps over the lazy dog.')
     expect(seen[0]).toBe(' jumps')
+  })
+
+  test('sets no sampling temperature (stacksjs/stacks#3380)', async () => {
+    const sent: Array<Record<string, unknown>> = []
+    const events = async function* (_messages: unknown, options: Record<string, unknown>) {
+      sent.push(options)
+      yield { type: 'done' as const, result: { content: ' jumps.', finishReason: 'end_turn' } }
+    }
+    for await (const _chunk of completeStream({ before: 'The fox' }, { config, stream: events as never }))
+      void _chunk
+
+    expect(sent).toHaveLength(1)
+    expect(sent[0]!.temperature).toBeUndefined()
   })
 })
 

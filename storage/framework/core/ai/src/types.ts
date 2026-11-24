@@ -89,9 +89,10 @@ export interface AITool {
 }
 
 /**
- * Structured-output / JSON-mode response format. Modeled after
- * OpenAI's `response_format` but the Anthropic driver maps it to
- * the tools-as-json pattern internally (stacksjs/stacks#1878 A-1).
+ * Structured-output / JSON-mode response format, modeled after OpenAI's
+ * `response_format`. The Anthropic driver sends `json_schema` as the Messages
+ * API's own JSON mode (`output_config.format`) and `json_object` as a system
+ * instruction; the JSON comes back as text either way (stacksjs/stacks#3380).
  */
 export type AIResponseFormat =
   | { type: 'text' }
@@ -130,8 +131,10 @@ export interface ChatCompletionOptions {
   tools?: AITool[]
   /**
    * Force the model to call a specific tool, or any tool, or no
-   * tool. OpenAI semantics. Anthropic supports the same via
-   * `tool_choice` field in Messages API.
+   * tool. OpenAI semantics. On Anthropic, current models (Opus 5.5,
+   * Sonnet 5.5) refuse `'required'` and `{ name }` with a 400; use
+   * `'auto'` and name the tool in the prompt, or `responseFormat`
+   * when the call only existed to get JSON back.
    */
   toolChoice?: 'auto' | 'required' | 'none' | { name: string }
   /**
@@ -148,8 +151,7 @@ export interface AIResult {
   content: string
   /**
    * The tools the model asked to call, in order. Absent when it called none.
-   * The structured-output tool `responseFormat` uses is internal: its JSON is
-   * `content`, and it never appears here.
+   * Structured output from `responseFormat` is `content`, never a call here.
    */
   toolCalls?: AIToolCall[]
   model: string

@@ -95,8 +95,13 @@ messages.push(assistantTurn(result), toolResultsTurn(
 ```
 
 - `content` is the model's text, `''` when it only called tools.
-- The `responseFormat` structured-output tool is internal: its JSON is
-  `content`, never a tool call.
+- `responseFormat` JSON is `content`, never a tool call. On Anthropic,
+  `json_schema` uses the Messages API's own JSON mode: every object in the
+  schema is sent closed (`additionalProperties: false`), and numeric and length
+  limits are left out of what is sent; `generateObject()` still checks them.
+- Current Claude models (Opus 5.5, Sonnet 5.5) refuse a forced
+  `toolChoice` (`'required'` / `{ name }`) and a non-default `temperature` or
+  `topP` with a 400. The framework sets neither itself; leave them unset.
 - Ollama refuses `toolChoice: 'required'` / `{ name }`; it cannot force a call.
 - Streaming takes the same `tools`. `streamChat()` yields text and returns the
   full `AIResult` (with `toolCalls`) when it ends; `streamChatEvents()` yields
