@@ -9,6 +9,9 @@ import { globSync } from '@stacksjs/storage'
 import { scheduleFrameworkMaintenance } from './maintenance'
 
 export async function runScheduler(): Promise<Result<string, string>> {
+  // A deploy's SIGTERM lets running jobs finish rather than killing them (#3364).
+  schedule.stopOnSignals()
+
   const jobFiles = globSync([path.appPath('Jobs/*.ts')], { absolute: true })
 
   // `app/Scheduler.ts` runs FIRST, before the `rate` fields are read.

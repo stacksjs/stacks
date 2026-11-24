@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { closeSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import process from 'node:process'
 import { runNamedAction } from '@stacksjs/action-runner'
 import { log, runCommand } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
@@ -114,6 +115,8 @@ export class Schedule implements UntimedSchedule {
   private static lockDir = frameworkPath('locks')
   private static stateFile = frameworkPath('runtime/scheduler-state.json')
   private static activeLocks = new Map<string, SchedulerLockHandle>()
+  /** Runs in progress in this process, by task, so a shutdown can wait for them. */
+  private static inFlight = new Map<Promise<void>, string>()
   /** Each background task's run in this process, for `runNow(name, { inProcess: true })`. */
   private static inProcessRuns = new Map<string, () => Promise<void>>()
   private shouldPreventOverlap = false
@@ -1085,6 +1088,9 @@ export class Schedule implements UntimedSchedule {
       runCount++
       running = true
       lastStartedAt = now
+      let settle: () => void = () => {}
+      const tracked = new Promise<void>((resolve) => { settle = resolve })
+      Schedule.inFlight.set(tracked, taskName)
       try {
         const result = body()
         // Handle promise-returning tasks: a rejection from an async task
@@ -1109,6 +1115,8 @@ export class Schedule implements UntimedSchedule {
       }
       finally {
         running = false
+        Schedule.inFlight.delete(tracked)
+        settle()
       }
     }
     const reportFailure = (error: unknown): void => {
@@ -1339,20 +1347,62 @@ export class Schedule implements UntimedSchedule {
   }
 
   /**
-   * Gracefully shutdown all scheduled jobs.
+   * Stop every schedule, then wait for the runs already in progress to finish,
+   * for up to `timeoutMs` (default 30 seconds). Resolves with the tasks still
+   * running when it gave up.
+   *
+   * It used to stop the timers and return at once, so a process that exited
+   * after it killed a job halfway through (stacksjs/stacks#3364).
    */
-  static async gracefulShutdown(): Promise<void> {
+  static async gracefulShutdown(options: { timeoutMs?: number } = {}): Promise<{ unfinished: string[] }> {
     log.info('Gracefully shutting down scheduled jobs...')
 
     for (const [name, job] of Schedule.jobs) {
-      log.info(`Stopping job: ${name}`)
+      log.debug(`Stopping job: ${name}`)
       job.stop()
     }
 
     Schedule.jobs.clear()
     Schedule.inProcessRuns.clear()
     Schedule.scheduledKeys.clear()
-    log.info('All jobs have been stopped')
+
+    const running = [...Schedule.inFlight.keys()]
+    if (running.length > 0) {
+      log.info(`[scheduler] waiting for ${running.length} running job(s) to finish...`)
+      let timer: ReturnType<typeof setTimeout> | undefined
+      const deadline = new Promise<void>((resolve) => { timer = setTimeout(resolve, options.timeoutMs ?? 30_000) })
+      await Promise.race([Promise.allSettled(running), deadline])
+      clearTimeout(timer)
+    }
+
+    const unfinished = [...new Set(Schedule.inFlight.values())]
+    if (unfinished.length > 0)
+      log.warn(`[scheduler] stopped without waiting for: ${unfinished.join(', ')}`)
+    else
+      log.info('All jobs have been stopped')
+    return { unfinished }
+  }
+
+  private static stoppingOnSignals = false
+
+  /**
+   * On SIGTERM or SIGINT, stop the scheduler gracefully and exit: running jobs
+   * finish first, up to `timeoutMs`. `runScheduler()` installs this; it is safe
+   * to call twice. Nothing handled SIGTERM before, so a deploy killed a job
+   * halfway through (stacksjs/stacks#3364).
+   */
+  static stopOnSignals(options: { timeoutMs?: number } = {}): void {
+    if (Schedule.stoppingOnSignals) return
+    Schedule.stoppingOnSignals = true
+    let stopping = false
+    const stopAndExit = (signal: NodeJS.Signals): void => {
+      if (stopping) return
+      stopping = true
+      log.info(`[scheduler] ${signal}: stopping after the running jobs finish`)
+      void Schedule.gracefulShutdown(options).finally(() => process.exit(0))
+    }
+    process.on('SIGTERM', stopAndExit)
+    process.on('SIGINT', stopAndExit)
   }
 }
 

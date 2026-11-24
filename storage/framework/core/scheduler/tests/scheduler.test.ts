@@ -477,7 +477,8 @@ describe('@stacksjs/scheduler', () => {
     })
 
     it('should not throw when no jobs are registered', async () => {
-      await expect(Schedule.gracefulShutdown()).resolves.toBeUndefined()
+      // It reports the jobs it could not wait for: none, with nothing running.
+      await expect(Schedule.gracefulShutdown()).resolves.toEqual({ unfinished: [] })
     })
   })
 })
