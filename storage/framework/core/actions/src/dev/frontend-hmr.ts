@@ -72,4 +72,3 @@ export function frontendBuildId(entry: string, session: string): string {
   }
   return `${session}-${Bun.hash(runtime.join('\n')).toString(36)}`
 }
-

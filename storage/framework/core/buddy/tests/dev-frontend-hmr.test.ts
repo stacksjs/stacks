@@ -23,6 +23,7 @@ async function until(check: () => Promise<void>): Promise<void> {
 test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('STX keeps an open page and its edits across successive frontend worker swaps', async () => {
   const { launch } = await import('../../testing/src/browser')
   const root = await mkdtemp(join(tmpdir(), 'stacks-frontend-hmr-'))
+  const profile = await mkdtemp(join(tmpdir(), 'stacks-frontend-hmr-chrome-'))
   const source = join(root, 'app/version.ts')
   const viewSource = join(root, 'resources/views/view-version.ts')
   const reservation = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response() })
@@ -32,7 +33,7 @@ test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('STX keeps an open page an
   let session: ReturnType<typeof startAppDevSession> | undefined
   let browser: Awaited<ReturnType<typeof launch>> | undefined
   try {
-    await Promise.all(['app', 'config', 'resources/views', '.chrome'].map(dir => mkdir(join(root, dir), { recursive: true })))
+    await Promise.all(['app', 'config', 'resources/views'].map(dir => mkdir(join(root, dir), { recursive: true })))
     await Promise.all([
       writeFile(join(root, 'package.json'), '{"name":"frontend-hmr-fixture"}'),
       writeFile(join(root, 'bunfig.toml'), 'preload = []\n'),
@@ -41,9 +42,9 @@ test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('STX keeps an open page an
       writeFile(viewSource, 'export default undefined'),
       writeFile(join(root, 'resources/views/index.stx'), `
 <script server>
-import appVersion from ${JSON.stringify(pathToFileURL(source).href)}
-import viewVersion from ${JSON.stringify(pathToFileURL(viewSource).href)}
-const version = viewVersion ?? appVersion
+const appModuleUrl = ${JSON.stringify(pathToFileURL(source).href)}
+const viewModuleUrl = ${JSON.stringify(pathToFileURL(viewSource).href)}
+const version = (await import(viewModuleUrl)).default ?? (await import(appModuleUrl)).default
 const worker = process.pid
 </script>
 <script client>
@@ -85,7 +86,7 @@ function increment() { count.update(value => value + 1) }
       expect(await response.text()).toContain('data-stacks-dev-page-state')
     })
 
-    browser = await launch({ quietLiveReload: false, profile: join(root, '.chrome') })
+    browser = await launch({ quietLiveReload: false, profile })
     const { cdp } = browser
     await cdp.send('Network.enable')
     let liveReloadConnected = false
@@ -145,11 +146,17 @@ function increment() { count.update(value => value + 1) }
   }
   finally {
     try {
+      await browser?.cdp.send('Browser.close').catch(() => {})
       await browser?.close()
     }
     finally {
       await session?.stop()
-      await rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 150 })
+      await rm(root, { recursive: true, force: true })
+      await rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 150 }).catch((error: NodeJS.ErrnoException) => {
+        // The disposable profile can still be locked briefly by Windows.
+        if (process.platform !== 'win32' || !['EBUSY', 'EPERM'].includes(error.code ?? ''))
+          throw error
+      })
     }
   }
 }, 75_000)
