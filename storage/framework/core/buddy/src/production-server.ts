@@ -382,9 +382,9 @@ export async function startProductionServer(options?: { port?: string | number, 
         // environment (production, staging, development), since each runs via
         // the same templated systemd unit + health-gate handoff where the new
         // release must bind the port before the old one is stopped. Off for
-        // local `serve` runs, where two servers fighting over one port should
-        // fail loudly. Ignored harmlessly by older stx versions.
-        reusePort: ['production', 'staging', 'development']
+        // direct local entrypoints. Buddy-owned workers also opt in so their
+        // replacement can listen before the old worker drains.
+        reusePort: Boolean(readinessToken) || ['production', 'staging', 'development']
           .includes((process.env.APP_ENV || '').toLowerCase()),
         // The APP's components, with the framework's behind them.
         //

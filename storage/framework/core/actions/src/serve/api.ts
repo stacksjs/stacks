@@ -193,15 +193,15 @@ disableViewRouting(route.bunRouter)
 // instance bind the same port while the old one still serves — the
 // overlap ts-cloud's zero-downtime cutover relies on. Enabled for every
 // *deployed* environment (production, staging, development), each of which
-// cuts over via the same templated systemd unit; off for local runs, where
-// two servers fighting over one port should fail loudly with EADDRINUSE.
-// bun-router spreads these options into Bun.serve verbatim.
+// cuts over via the same templated systemd unit. Buddy-owned workers also
+// opt in for Software Update restarts.
 const isDeployed = ['production', 'staging', 'development'].includes((process.env.APP_ENV || '').toLowerCase())
+const isManaged = process.env.STACKS_SERVE_WORKER === '1' && typeof process.send === 'function'
 const server = await route.serve({
   ...serverRequestBodyOptions(config.server?.maxRequestBodySize),
   port,
   hostname,
-  reusePort: isDeployed,
+  reusePort: isDeployed || isManaged,
 } as Parameters<typeof route.serve>[0])
 
 // Graceful drain for the zero-downtime cutover: when systemd stops the

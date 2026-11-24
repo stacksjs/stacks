@@ -13,7 +13,22 @@ export function isServeWorker(): boolean {
   return process.env.STACKS_SERVE_WORKER === '1' && typeof process.send === 'function'
 }
 
-async function waitForWebServer(host: string | undefined, port: number, token: string, signal: AbortSignal): Promise<number> {
+async function ownsMacListener(pid: number, port: number, signal: AbortSignal): Promise<boolean> {
+  try {
+    const probe = Bun.spawn(['/usr/sbin/lsof', '-nP', '-a', '-p', String(pid), `-iTCP:${port}`, '-sTCP:LISTEN', '-t'], {
+      stdout: 'pipe',
+      stderr: 'ignore',
+      signal,
+    })
+    const [code, output] = await Promise.all([probe.exited, new Response(probe.stdout).text()])
+    return code === 0 && output.trim() === String(pid)
+  }
+  catch {
+    return false
+  }
+}
+
+async function waitForWebServer(pid: number, host: string | undefined, port: number, token: string, signal: AbortSignal): Promise<number> {
   const address = !host || host === '0.0.0.0' ? '127.0.0.1' : host === '::' ? '::1' : host
   const hostname = address.includes(':') && !address.startsWith('[') ? `[${address}]` : address
   const url = `http://${hostname}:${port}${serveReadyPath}`
@@ -25,6 +40,12 @@ async function waitForWebServer(host: string | undefined, port: number, token: s
       signal: AbortSignal.any([signal, AbortSignal.timeout(750)]),
     }).catch(() => null)
     if (response?.status === 204 && response.headers.get(serveReadyHeader) === token)
+      return port
+
+    // macOS can send every request on a shared port to the old listener.
+    // STX binds after installing its request handler. Check the owned
+    // replacement PID for that listening socket when HTTP hits the old one.
+    if (process.platform === 'darwin' && await ownsMacListener(pid, port, signal))
       return port
     await Bun.sleep(100)
   }
@@ -45,12 +66,13 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
   const grace = Number.isFinite(requestedGrace) && requestedGrace > 0 ? requestedGrace : 15_000
   const shutdown = new AbortController()
   const { promise: finished, resolve: finish, reject: fail } = Promise.withResolvers<void>()
-  let worker: OwnedProcess | undefined
+  const children = new Set<OwnedProcess>()
+  let worker: ReturnType<typeof startWorker> | undefined
   let apiPort: number | undefined
   let restarting: Promise<void> | undefined
   let closeControl: (() => void) | undefined
 
-  function startWorker() {
+  function startWorker(pinnedPort?: number) {
     const entry = projectCliEntry(root)
     // Resolve the project's CLI again after each update. Keep the current
     // Bun flags so sources and dist packages resolve as in the original run.
@@ -60,7 +82,6 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
         ? [process.execPath]
         : [process.execPath, ...process.execArgv, Bun.main]
     const token = crypto.randomUUID()
-    const pinnedPort = apiPort
     const apiReady = Promise.withResolvers<number>()
     const child = spawnOwnedProcess([...executable, command, ...(options?.verbose ? ['--verbose'] : [])], {
       cwd: root,
@@ -80,59 +101,86 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
         if (!web && message && typeof message === 'object' && 'type' in message && message.type === 'stacks:api-ready'
           && 'port' in message && typeof message.port === 'number' && Number.isInteger(message.port)
           && message.port > 0 && message.port <= 65535) {
-          apiPort ??= message.port
           apiReady.resolve(message.port)
         }
       },
     })
-    worker = child
+    children.add(child)
     void child.exited.then(({ code }) => {
-      if (shutdown.signal.aborted || restarting)
+      children.delete(child)
+      if (shutdown.signal.aborted || worker?.child !== child)
         return
       if (code)
         fail(new Error(`Buddy ${command} exited with status ${code}.`))
       else
         finish()
     }, (error: unknown) => {
-      if (!shutdown.signal.aborted && !restarting)
+      if (!shutdown.signal.aborted && worker?.child === child)
         fail(error)
     })
-    return { child, token, apiReady: apiReady.promise, pinnedPort }
+    return { child, token, apiReady: apiReady.promise }
   }
 
-  async function restart(): Promise<void> {
-    await worker?.stop()
-    shutdown.signal.throwIfAborted()
-    const { child, token, apiReady, pinnedPort } = startWorker()
+  async function waitForWorker({ child, token, apiReady }: ReturnType<typeof startWorker>): Promise<number> {
     const wait = new AbortController()
     const signal = AbortSignal.any([wait.signal, shutdown.signal, AbortSignal.timeout(90_000)])
     const timeout = new Promise<never>((_, reject) => {
-      signal.addEventListener('abort', () => reject(new Error(`Buddy ${command} did not come back after restarting.`)), { once: true })
+      const abort = () => reject(new Error(`The replacement for buddy ${command} did not become ready.`))
+      if (signal.aborted)
+        abort()
+      else
+        signal.addEventListener('abort', abort, { once: true })
     })
     try {
-      const port = await Promise.race([
-        child.started.then(() => web ? waitForWebServer(process.env.HOST?.trim(), webPort, token, signal) : apiReady),
+      return await Promise.race([
+        child.started.then(pid => web ? waitForWebServer(pid, process.env.HOST?.trim(), webPort, token, signal) : apiReady),
         child.exited.then(({ code }) => { throw new Error(`Buddy ${command} exited before it was ready (status ${code}).`) }),
         timeout,
       ])
-      if (pinnedPort !== undefined && port !== pinnedPort)
-        throw new Error(`Buddy ${command} came back on port ${port} instead of ${pinnedPort}.`)
     }
     finally {
       wait.abort()
     }
   }
 
+  async function restart(): Promise<void> {
+    // The Windows process owner terminates its Job Object without a drain.
+    if (process.platform === 'win32')
+      throw new Error('Buddy cannot drain served workers on Windows. The current server is still running.')
+    const previous = worker!
+    // Resolve the API's configured port from its first worker if a restart
+    // was requested before the initial ready message arrived.
+    if (!web)
+      apiPort ??= await waitForWorker(previous)
+    shutdown.signal.throwIfAborted()
+    const candidate = startWorker(apiPort)
+    try {
+      const port = await waitForWorker(candidate)
+      if (apiPort !== undefined && port !== apiPort)
+        throw new Error(`Buddy ${command} came back on port ${port} instead of ${apiPort}.`)
+      shutdown.signal.throwIfAborted()
+      worker = candidate
+    }
+    catch (error) {
+      await candidate.child.stop()
+      throw error
+    }
+    await previous.child.stop()
+  }
+
+  const stopChildren = () => Promise.all([...children].map(child => child.stop()))
   const stop = () => {
     shutdown.abort()
     closeControl?.()
-    void worker?.stop().then(finish, fail)
+    void stopChildren().then(() => finish(), fail)
   }
   const signals = ['SIGINT', 'SIGTERM'] as const
   for (const signal of signals)
     process.on(signal, stop)
   try {
-    startWorker()
+    worker = startWorker()
+    if (!web)
+      void worker.apiReady.then((port) => { apiPort ??= port })
     try {
       closeControl = serveAppRestart(root, 'serve', () => {
         restarting ??= restart().finally(() => { restarting = undefined })
@@ -149,6 +197,6 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
     closeControl?.()
     for (const signal of signals)
       process.off(signal, stop)
-    await worker?.stop()
+    await stopChildren()
   }
 }
