@@ -4,8 +4,10 @@
  *
  * The registry answers `/packages/{name}/{version}` for a version it does not
  * hold by falling back to npm, so a 200 alone proves nothing: a package that
- * never reached Pantry would pass on npm's copy. Pantry's own publications
- * carry a tarball URL on the registry itself; a fallback carries npm's.
+ * never reached Pantry would pass on npm's copy. A fallback carries npm's
+ * tarball URL; Pantry's own publications carry one on Pantry, under the
+ * server's public base URL (https://pantry.dev in production, not the
+ * registry.pantry.dev host this reads from).
  *
  * Pantry answers a publish with the version already readable, so there is no
  * propagation to wait out here: one pass, a short retry for a network blip.
@@ -18,6 +20,12 @@ import type { Publishable } from './promote-latest'
 import { inParallel, publishables } from './promote-latest'
 
 export const PANTRY_REGISTRY = 'https://registry.pantry.dev'
+
+/** A tarball npm serves, which is what the registry's npm fallback returns. */
+export function isNpmTarball(url: string): boolean {
+  try { return /(^|\.)npmjs\.(org|com)$/.test(new URL(url).hostname) }
+  catch { return true }
+}
 
 export type PublicationCheck = { pkg: Publishable, ok: true } | { pkg: Publishable, ok: false, reason: string }
 
@@ -41,7 +49,7 @@ export async function checkPantryPublication(
         const metadata = await response.json() as { name?: string, version?: string, tarballUrl?: string }
         if (metadata.name !== pkg.name || metadata.version !== pkg.version)
           return { pkg, ok: false, reason: `the registry answered ${metadata.name}@${metadata.version}` }
-        if (!metadata.tarballUrl?.startsWith(`${base}/`))
+        if (!metadata.tarballUrl || isNpmTarball(metadata.tarballUrl))
           return { pkg, ok: false, reason: `only npm's copy (${metadata.tarballUrl ?? 'no tarball'}) is served; Pantry holds no publication of it` }
         return { pkg, ok: true }
       }

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { checkPantryPublication } from './verify-pantry-publication'
+import { checkPantryPublication, isNpmTarball } from './verify-pantry-publication'
 
 const pkg = { name: '@stacksjs/buddy', version: '0.75.700', dir: 'storage/framework/core/buddy' }
 let server: ReturnType<typeof Bun.serve>
@@ -18,7 +18,7 @@ beforeAll(() => {
       if (mode === 'flaky' && calls < 2) return new Response('busy', { status: 503 })
       const tarballUrl = mode === 'npm-fallback'
         ? 'https://registry.npmjs.org/@stacksjs/buddy/-/buddy-0.75.700.tgz'
-        : `${base}/packages/%40stacksjs%2Fbuddy/0.75.700/tarball`
+        : 'https://pantry.dev/packages/%40stacksjs%2Fbuddy/0.75.700/tarball'
       return Response.json({ name: pkg.name, version: pkg.version, tarballUrl })
     },
   })
@@ -52,5 +52,12 @@ describe('Pantry publication check', () => {
     mode = 'flaky'
     calls = 0
     expect((await checkPantryPublication(pkg, base, 3, 0)).ok).toBe(true)
+  })
+
+  it('tells npm\'s tarballs from Pantry\'s, whatever host Pantry serves under', () => {
+    expect(isNpmTarball('https://registry.npmjs.org/stacks/-/stacks-0.75.600.tgz')).toBe(true)
+    expect(isNpmTarball('https://pantry.dev/packages/stacks/0.75.700/tarball')).toBe(false)
+    expect(isNpmTarball('https://registry.pantry.dev/packages/stacks/0.75.700/tarball')).toBe(false)
+    expect(isNpmTarball('not a url')).toBe(true)
   })
 })
