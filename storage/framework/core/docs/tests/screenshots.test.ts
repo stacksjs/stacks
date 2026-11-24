@@ -271,6 +271,17 @@ test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' 
     expect(republished.films).toMatchObject([{ viewport: 'mobile', screens: 2 }])
     await captureScreenshots({ root, config: 'screens.ts', check: true })
 
+    // A partial run into a fresh folder pictures a few screens without
+    // replacing the films and page, which describe the whole app.
+    const pageBefore = await Bun.file(join(root, 'docs/screens.md')).text()
+    const trial = await captureScreenshots({ root, config: 'screens.ts', only: ['pricing'], outDir: 'trial' })
+    expect(trial.results.map(result => result.status)).toEqual(['captured'])
+    expect(trial.films).toBeUndefined()
+    expect(trial.docsPage).toBeUndefined()
+    expect(await Bun.file(join(root, 'trial/film-mobile.mp4')).exists()).toBe(false)
+    expect(await Bun.file(join(root, 'docs/screens.md')).text()).toBe(pageBefore)
+    await expect(publishScreenshots({ root, config: 'screens.ts', outDir: 'trial' })).rejects.toThrow('only part of the inventory')
+
     // A second file name, because one process caches the imported config module.
     await rm(join(root, 'resources/views/pricing.stx'))
     await Bun.write(join(root, 'next.ts'), await Bun.file(join(root, 'screens.ts')).text())

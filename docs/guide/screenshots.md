@@ -409,7 +409,7 @@ film: {
 
 - The frame is the viewport's size, rounded up to even numbers as H.264 requires. A picture of another size is scaled to fit and padded with white.
 - Only captured screens are filmed. Gaps and failures are skipped, so a failed screen never puts a stale picture in the video.
-- The film is rebuilt from the whole manifest on every run, including a partial `--only` refresh.
+- The film is rebuilt from the whole manifest on every run, including a partial `--only` refresh, once the manifest has a result for every screen.
 - There is no audio and no pointer.
 - The video is H.264 in an MP4 container, which every current browser plays.
 
@@ -451,7 +451,7 @@ Publishing every capture is a choice. With synthetic accounts, masks on private 
 
 ### Partial captures
 
-`--only` and `--viewport` merge into a previous manifest only when the config, the inputs and the `@stacksjs/docs` version are unchanged. After changing any of them, run a complete capture first. A first partial run into an empty directory stays incomplete, and `--check` fails until every screen, profile and viewport has been captured.
+`--only` and `--viewport` merge into a previous manifest only when the config, the inputs and the `@stacksjs/docs` version are unchanged. After changing any of them, run a complete capture first. A first partial run into an empty directory stays incomplete, and `--check` fails until every screen, profile and viewport has been captured. It writes no films and leaves the docs page alone, since both describe the whole inventory, and `--publish` refuses such a manifest. That makes `--only … --out <scratch folder>` a safe way to try a few new screens.
 
 A failed refresh keeps the previous picture's file so that a retry can replace it, but its failed status keeps that stale picture out of the films and the docs page.
 

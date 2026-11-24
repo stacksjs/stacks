@@ -443,7 +443,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
     // and documents the whole inventory. A film failure keeps the manifest.
     let publishing: unknown
     try {
-      if (options.publish !== false) {
+      if (options.publish !== false && coversInventory(report)) {
         if (config.film) report.films = await filmScreenshots(output, report.results, config.viewports ?? defaults, config.film === true ? {} : config.film, config.backend)
         if (config.docs) report.docsPage = await writeScreensPage(root, report, config.docs)
       }
@@ -464,6 +464,16 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
 }
 
 /**
+ * Whether every screen in the inventory has a result, captured or skipped.
+ * Films and the docs page describe the whole app, so a partial run into a
+ * fresh folder (`--only` with `--out`) must not replace them with a handful.
+ */
+function coversInventory(report: ScreenshotReport): boolean {
+  const pictured = new Set(report.results.map(result => result.id))
+  return report.inventory.every(screen => pictured.has(screen.id))
+}
+
+/**
  * Rebuild the films and the docs page from the saved manifest, without
  * opening a browser. For a wrapper that captures in batches with
  * `publish: false`, and for changing film or page settings after a capture.
@@ -477,6 +487,7 @@ export async function publishScreenshots(options: Pick<ScreenshotOptions, 'confi
   if ((await lstat(file)).isSymbolicLink()) throw new Error('Screenshot manifest must not be a symlink')
   const report = JSON.parse(await readFile(file, 'utf8')) as ScreenshotReport
   if (report.generator !== '@stacksjs/docs/screenshots') throw new Error('This is not a Stacks screenshot manifest')
+  if (!coversInventory(report)) throw new Error('This manifest pictures only part of the inventory; capture every screen before publishing its films and page')
   delete report.films
   delete report.docsPage
   if (config.film) report.films = await filmScreenshots(output, report.results, config.viewports ?? defaults, config.film === true ? {} : config.film, config.backend)
