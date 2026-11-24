@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { BlueskyPublishingDriver } from '../src/drivers/bluesky'
+import { blueskyRecordKey, BlueskyPublishingDriver, detectFacetCandidates } from '../src/drivers/bluesky'
 import { InstagramPublishingDriver } from '../src/drivers/instagram'
 import {
   escapeLinkedInText,
@@ -205,6 +205,90 @@ describe('Bluesky', () => {
     })
     expect(sent.filter(s => s.url.includes('uploadBlob'))).toHaveLength(1)
     expect(json(sent.at(-1)!).record.embed).toEqual({ $type: 'app.bsky.embed.images', images: [{ image: { ref: 'blob1' }, alt: 'a cat' }] })
+  })
+
+  // stacksjs/stacks#3376: the card used to be dropped without a word.
+  it('says so when images leave the link card out', async () => {
+    api()
+    const result = await new BlueskyPublishingDriver().publish(identity, {
+      text: 'look',
+      media: [{ bytes: PNG, mimeType: 'image/png' }],
+      external: { uri: 'https://example.com', title: 'Example' },
+    })
+    expect(result.warnings).toEqual([expect.stringContaining('link card')])
+  })
+
+  it('sends the record key it is given, so a retry cannot post twice', async () => {
+    const rkey = blueskyRecordKey()
+    const sent = api()
+    await new BlueskyPublishingDriver().publish(identity, { text: 'once' }, { rkey })
+    expect(json(sent.at(-1)!).rkey).toBe(rkey)
+  })
+
+  it('answers a retry whose first attempt went through with the post that exists', async () => {
+    const rkey = blueskyRecordKey()
+    const sent = mockFetch((url) => {
+      if (url.includes('createRecord'))
+        return new Response('{"error":"InvalidRequest","message":"Record already exists"}', { status: 400 })
+      if (url.includes('getRecord'))
+        return { uri: `at://did:plc:abc/app.bsky.feed.post/${rkey}`, cid: 'cid-first', value: { text: 'once' } }
+      return {}
+    })
+    const result = await new BlueskyPublishingDriver().publish(identity, { text: 'once' }, { rkey })
+
+    expect(result.uri).toBe(`at://did:plc:abc/app.bsky.feed.post/${rkey}`)
+    expect(result.cid).toBe('cid-first')
+    const lookup = new URL(sent.find(s => s.url.includes('getRecord'))!.url)
+    expect(Object.fromEntries(lookup.searchParams)).toEqual({ repo: 'did:plc:abc', collection: 'app.bsky.feed.post', rkey })
+  })
+
+  it('still fails a refused post when nothing went out under its key', async () => {
+    mockFetch((url) => {
+      if (url.includes('createRecord'))
+        return new Response('{"error":"InvalidRequest","message":"Invalid record"}', { status: 400 })
+      if (url.includes('getRecord'))
+        return new Response('{"error":"RecordNotFound"}', { status: 400 })
+      return {}
+    })
+    await expect(new BlueskyPublishingDriver().publish(identity, { text: 'x' }, { rkey: blueskyRecordKey() })).rejects.toThrow('Invalid record')
+  })
+})
+
+describe('Bluesky record keys', () => {
+  it('are TIDs: 13 sortable base32 characters, later keys sorting later', () => {
+    const first = blueskyRecordKey(1_764_000_000_000, 0)
+    const later = blueskyRecordKey(1_764_000_000_001, 0)
+    expect(first).toMatch(/^[234567abcdefghij][234567abcdefghijklmnopqrstuvwxyz]{12}$/)
+    expect(later > first).toBe(true)
+    expect(blueskyRecordKey()).not.toBe(blueskyRecordKey())
+  })
+})
+
+// stacksjs/stacks#3376: tags were ASCII only, so #café stopped at the é and
+// #日本 was no tag at all.
+describe('Bluesky hashtags', () => {
+  const tags = (text: string) => detectFacetCandidates(text).filter(c => c.type === 'tag').map(c => c.value)
+
+  it('takes letters from any script', () => {
+    expect(tags('#café and #日本 and #Ünïcode')).toEqual(['café', '日本', 'Ünïcode'])
+  })
+
+  it('takes the full-width hash sign', () => {
+    expect(tags('＃東京')).toEqual(['東京'])
+  })
+
+  it('leaves trailing punctuation out, and skips a number or a bare hash', () => {
+    expect(tags('#launch! #2024 # nothing #v2.')).toEqual(['launch', 'v2'])
+  })
+
+  it('measures its range in UTF-8 bytes', () => {
+    const [tag] = detectFacetCandidates('hi #café')
+    expect(tag).toMatchObject({ type: 'tag', byteStart: 3, byteEnd: 3 + new TextEncoder().encode('#café').length })
+  })
+
+  it('skips a tag longer than 64 characters', () => {
+    expect(tags(`#${'a'.repeat(65)}`)).toEqual([])
+    expect(tags(`#${'a'.repeat(64)}`)).toEqual(['a'.repeat(64)])
   })
 })
 

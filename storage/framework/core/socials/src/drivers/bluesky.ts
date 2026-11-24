@@ -122,17 +122,24 @@ export function detectFacetCandidates(text: string): FacetCandidate[] {
   const insideLink = (start: number, end: number): boolean =>
     candidates.some(candidate => candidate.type === 'link' && start < candidate.byteEnd && end > candidate.byteStart)
 
-  const tagPattern = /(^|\s)(#[A-Za-z0-9_]+)/g
+  // A tag as Bluesky's own client reads one (stacksjs/stacks#3376): `#` or the
+  // full-width `＃`, then letters from any script, ending before whitespace
+  // and trailing punctuation, with at least one character that is not a
+  // digit, and at most 64 characters. This was `[A-Za-z0-9_]`, so `#café`
+  // stopped at the `é` and `#日本` was no tag at all.
+  const tagPattern = /(^|\s)([#＃])([^\s\u00AD\u2060\u200A-\u200D\u20E2]+)/gu
   for (const match of text.matchAll(tagPattern)) {
     const prefix = match[1]
-    const tag = match[2]
-    if (prefix === undefined || tag === undefined) continue
-    if (/^#\d+$/.test(tag)) continue
+    const sign = match[2]
+    const raw = match[3]
+    if (prefix === undefined || sign === undefined || raw === undefined) continue
+    const value = raw.replace(/\p{P}+$/u, '')
+    if (!value || !/[^\d\p{P}]/u.test(value) || [...value].length > 64) continue
     const charStart = (match.index ?? 0) + prefix.length
     const byteStart = byteLength(text.slice(0, charStart))
-    const byteEnd = byteStart + byteLength(tag)
+    const byteEnd = byteStart + byteLength(sign + value)
     if (insideLink(byteStart, byteEnd)) continue
-    candidates.push({ byteStart, byteEnd, type: 'tag', value: tag.slice(1) })
+    candidates.push({ byteStart, byteEnd, type: 'tag', value })
   }
 
   // Handles are domain-shaped (user.bsky.social), so require a dot.
@@ -149,6 +156,35 @@ export function detectFacetCandidates(text: string): FacetCandidate[] {
   }
 
   return candidates.sort((a, b) => a.byteStart - b.byteStart)
+}
+
+/** What only Bluesky takes, as the third argument to `publish`. */
+export interface BlueskyPublishOptions {
+  /**
+   * The post's record key, from {@link blueskyRecordKey}. Bluesky refuses a
+   * second record under a key it already has, so a publish whose answer was
+   * lost can be retried with the same key without posting twice: the retry
+   * answers with the post that went out. Keep one key per post, and make a
+   * new one when the text changes, as with Mastodon's `idempotencyKey`.
+   */
+  rkey?: string
+}
+
+const TID_ALPHABET = '234567abcdefghijklmnopqrstuvwxyz'
+
+/**
+ * A new record key in Bluesky's TID form: 13 base32 characters encoding the
+ * time in microseconds and a random clock id, so keys sort by when they were
+ * made. `now` and `clockId` are for tests.
+ */
+export function blueskyRecordKey(now: number = Date.now(), clockId: number = Math.floor(Math.random() * 1024)): string {
+  let value = ((BigInt(Math.floor(now)) * 1000n) << 10n) | BigInt(clockId & 1023)
+  let key = ''
+  for (let i = 0; i < 13; i++) {
+    key = TID_ALPHABET[Number(value & 31n)] + key
+    value >>= 5n
+  }
+  return key
 }
 
 export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver {
@@ -206,7 +242,7 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
     }
   }
 
-  async publish(identity: SocialIdentityCredentials, post: PublishPostInput): Promise<PublishedPost> {
+  async publish(identity: SocialIdentityCredentials, post: PublishPostInput, options: BlueskyPublishOptions = {}): Promise<PublishedPost> {
     const repo = identity.did || identity.handle
     if (!identity.accessToken) throw new Error('Bluesky access token is missing for this identity.')
     if (!repo) throw new Error('Bluesky identity DID or handle is required.')
@@ -239,6 +275,8 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
         images.push({ image: blob, alt: item.altText || '' })
       }
       record.embed = { $type: 'app.bsky.embed.images', images }
+      if (post.external)
+        warnings.push('A Bluesky post holds one attachment, so the images went out and the link card did not. The link in the text still works.')
     }
     else if (post.external) {
       const external: Record<string, unknown> = {
@@ -266,17 +304,7 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
       record.embed = { $type: 'app.bsky.embed.external', external }
     }
 
-    const payload = await this.post<CreateRecordResponse>(
-      '/xrpc/com.atproto.repo.createRecord',
-      {
-        repo,
-        collection: POST_COLLECTION,
-        record,
-      },
-      {
-        authorization: `Bearer ${identity.accessToken}`,
-      },
-    )
+    const payload = await this.createPostRecord(identity, repo, record, options.rkey)
 
     return {
       provider: this.provider,
@@ -478,6 +506,40 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
   }
 
   /** Permanently delete one post record from the account's repo. */
+  /**
+   * Create the post record. With a record key, a refusal is checked against
+   * what is already stored under that key: when the post is there, an earlier
+   * attempt went through and its answer was lost, so this answers with it
+   * rather than failing the retry (stacksjs/stacks#3376).
+   */
+  protected async createPostRecord(
+    identity: SocialIdentityCredentials,
+    repo: string,
+    record: Record<string, unknown>,
+    rkey?: string,
+  ): Promise<CreateRecordResponse> {
+    const authorization = `Bearer ${identity.accessToken}`
+    try {
+      return await this.post<CreateRecordResponse>(
+        '/xrpc/com.atproto.repo.createRecord',
+        { repo, collection: POST_COLLECTION, ...(rkey ? { rkey } : {}), record },
+        { authorization },
+      )
+    }
+    catch (error) {
+      if (!rkey || !(error instanceof BlueskyApiError) || error.status >= 500)
+        throw error
+      const url = new URL(`${this.service}/xrpc/com.atproto.repo.getRecord`)
+      url.searchParams.set('repo', repo)
+      url.searchParams.set('collection', POST_COLLECTION)
+      url.searchParams.set('rkey', rkey)
+      const existing = await this.request<{ uri?: string, cid?: string, value?: { text?: unknown } }>(url, { headers: { authorization } }).catch(() => undefined)
+      if (existing?.uri && existing.cid && existing.value?.text === record.text)
+        return { uri: existing.uri, cid: existing.cid }
+      throw error
+    }
+  }
+
   async deletePost(identity: SocialIdentityCredentials, ref: RemotePostRef): Promise<void> {
     if (!identity.accessToken) throw new Error('Bluesky access token is missing for this identity.')
     const { repo, collection, rkey } = parseAtUri(ref.uri)

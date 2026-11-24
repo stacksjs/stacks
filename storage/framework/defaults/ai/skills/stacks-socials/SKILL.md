@@ -125,7 +125,11 @@ given by URL is downloaded through fetchPostImage (the outbound guard in
 @stacksjs/security) and a URL that gives no image throws PostImageError; tests
 replace a driver's fetchImage. Mastodon's publish takes a third argument
 (idempotencyKey, visibility, spoilerText, language) and reads the instance's
-limits. Bluesky uploads external.thumb for link cards. PublishedPost.warnings
+limits. Bluesky uploads external.thumb for link cards, and its publish takes a
+third argument too: { rkey } from blueskyRecordKey(), kept per post, so a retry
+answers with the post that already went out instead of posting twice. Bluesky
+hashtags take letters from any script (#café, #日本), and images leave a link
+card out with a warning, since a post holds one attachment. PublishedPost.warnings
 lists what went out without failing the post. The LinkedIn version is
 LINKEDIN_API_VERSION unless a configured one is still supported.
 
