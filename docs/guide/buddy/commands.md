@@ -4502,7 +4502,7 @@ Create a new Stacks project
 | `--native` | Create a minimal offline Craft desktop app | boolean, optional | `false` |
 | `--desktop` | Also make it a native Mac app: stx screens drawn by AppKit, with the API running inside the app (config/desktop.ts, macos.agent) | boolean, optional | `false` |
 | `--adopt` | Integrate an existing native app without replacing its source (requires --native) | boolean, optional | `false` |
-| `--with-core` | Keep the framework vendored in `storage/framework/core` as a Bun workspace, for working ON Stacks. Apps that only work WITH Stacks want the default, which resolves every @stacksjs/* package from the Pantry registry. | boolean, optional | `false` |
+| `--with-core` | Keep the framework vendored in `storage/framework/core` as a Bun workspace, for working ON Stacks. Apps that only work WITH Stacks want the default, which resolves every @stacksjs/* package from npm. | boolean, optional | `false` |
 | `--vendor-defaults` | Commit a copy of the framework defaults in `storage/framework/defaults` instead of linking it to node_modules/@stacksjs/defaults. Implied by --with-core. | boolean, optional | `false` |
 | `--no-provision` | Install JavaScript dependencies without provisioning system packages | boolean, optional, negated | `true` |
 | `--ref` | Scaffold from an explicit Stacks tag, branch or commit | value, required | - |

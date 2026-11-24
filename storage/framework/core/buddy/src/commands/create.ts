@@ -10,7 +10,7 @@ import { ExitCode } from '@stacksjs/types'
 import { uninstallAllFeatures } from './features'
 import { attemptPantryDependencies, optimizePantryDeps } from './setup'
 import { resultFailed } from '../result'
-import { appIdentity, applyAppAgentsTemplate, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, applyAppRegistryTemplate, removeFrameworkLicense, renderTemplate } from '../scaffold-app'
+import { appIdentity, applyAppAgentsTemplate, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, removeFrameworkLicense, renderTemplate } from '../scaffold-app'
 import { applyAppSiteTemplate } from '../scaffold-site'
 import { adoptPackagedDefaults, applyAppPackageOverrides, applyAppPackageScripts, applyPackageAppTsconfig, pruneFrameworkOnlyFiles, rewriteCoreContentPaths, stripFrameworkManifestCredits } from '../scaffold-package-app'
 import { fetchPublishedVersions } from '../registry'
@@ -34,7 +34,7 @@ export function create(buddy: CLI): void {
     name: 'The name of the project',
     command: 'Create a new Stacks project',
     minimal: 'Skip optional feature bundles (cms, commerce, dashboard, marketing, monitoring, realtime, queue) - bare-bones API/SPA starter that can re-add them later via `./buddy <feature>:install`.',
-    withCore: 'Keep the framework vendored in `storage/framework/core` as a Bun workspace, for working ON Stacks. Apps that only work WITH Stacks want the default, which resolves every @stacksjs/* package from the Pantry registry.',
+    withCore: 'Keep the framework vendored in `storage/framework/core` as a Bun workspace, for working ON Stacks. Apps that only work WITH Stacks want the default, which resolves every @stacksjs/* package from npm.',
     vendorDefaults: 'Commit a copy of the framework defaults in `storage/framework/defaults` instead of linking it to node_modules/@stacksjs/defaults. Implied by --with-core.',
     verbose: 'Enable verbose output',
   }
@@ -97,7 +97,6 @@ export function create(buddy: CLI): void {
   applyAppConfigTemplate(path)
   applyAppEnv(path)
   applyAppPackage(path)
-  applyAppRegistry(path)
   applyAppReadme(path)
   applyAppAgents(path)
   replaceFrameworkSite(path)
@@ -453,21 +452,6 @@ function applyAppPackage(path: string) {
 }
 
 /**
- * Install the app's packages from the Pantry registry, before anything is
- * installed. See `applyAppRegistryTemplate` in `../scaffold-app`.
- */
-function applyAppRegistry(path: string) {
-  try {
-    const changed = applyAppRegistryTemplate(path)
-    if (changed.length > 0)
-      log.success(`Pointed the app's installs at the Pantry registry (${changed.join(', ')})`)
-  }
-  catch (error) {
-    log.warn(`Could not point the app's installs at the Pantry registry: ${error instanceof Error ? error.message : String(error)}`)
-  }
-}
-
-/**
  * Take the framework maintainers' publishing rule out of the app's AGENTS.md.
  * See `applyAppAgentsTemplate` in `../scaffold-app`.
  */
@@ -696,7 +680,7 @@ async function install(path: string, options: CreateOptions): Promise<boolean> {
 /**
  * The template ships the whole framework source under `storage/framework/core`
  * wired up as a Bun workspace. That layout is for working ON Stacks; an app that
- * only works WITH Stacks wants the same packages from the Pantry registry, which is what the
+ * only works WITH Stacks wants the same packages from npm, which is what the
  * single `stacks` dependency in package.json pulls in. So the default is to
  * unvendor right after install, and `--with-core` opts back into the workspace.
  *
@@ -711,7 +695,7 @@ async function install(path: string, options: CreateOptions): Promise<boolean> {
  * vendored framework files out of the repository's history for good.
  */
 async function unvendorCore(path: string, options: NewOptions, withBun: boolean) {
-  log.info('Resolving the framework from the Pantry registry (pass --with-core to keep it vendored)...')
+  log.info('Resolving the framework from npm (pass --with-core to keep it vendored)...')
 
   // Pantry already failed on the system dependencies, so install the published
   // packages with Bun rather than retrying Pantry for eight minutes (#3209).
@@ -723,7 +707,7 @@ async function unvendorCore(path: string, options: NewOptions, withBun: boolean)
       ? (result.error.stack ?? result.error.message)
       : String(result.error ?? '').trim()
 
-    log.error('Could not resolve the framework from the Pantry registry.')
+    log.error('Could not resolve the framework from npm.')
     log.error(reason.length > 0 ? reason : 'The step failed without reporting a reason.')
     log.error('')
     log.error(`The project at ${path} is half converted: the vendored framework has been`)
@@ -736,7 +720,7 @@ async function unvendorCore(path: string, options: NewOptions, withBun: boolean)
     process.exit(ExitCode.FatalError)
   }
 
-  log.success('Framework resolved from the Pantry registry')
+  log.success('Framework resolved from npm')
 }
 
 /**

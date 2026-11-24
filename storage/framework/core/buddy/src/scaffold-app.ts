@@ -1,6 +1,5 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { PANTRY_NPM_REGISTRY } from '@stacksjs/actions/framework-registry'
 
 /** The names a new app goes by, all derived from the directory `buddy new` created. */
 export interface AppIdentity {
@@ -209,79 +208,4 @@ export function applyAppChangelogTemplate(root: string, identity: AppIdentity): 
 
   writeFileSync(file, `# ${identity.displayName} Changelog\n`)
   return true
-}
-
-/** The registry line a new app's `bunfig.toml` carries. */
-export const APP_REGISTRY_LINE = `registry = "${PANTRY_NPM_REGISTRY}/"`
-
-/** The framework's scope, pinned to Pantry in a new app's install config. */
-export const FRAMEWORK_SCOPE = '@stacksjs'
-
-/**
- * Install the app's packages from the Pantry registry.
- *
- * The framework publishes every release to Pantry (and to npm), and Pantry's
- * `/npm/` endpoint speaks npm's registry protocol: it serves the framework's
- * packages and redirects every other name to npm. The registry itself moves,
- * because the app also depends on the unscoped `stacks` package, and the
- * `@stacksjs` scope is named as well: a user-level `.npmrc` that pins the
- * scope to npm (`@stacksjs:registry=...`, common on a machine that has
- * published Stacks packages) outranks a project's default registry but not
- * its scope entry.
- *
- * Two files, because the app has two installers. Bun reads `bunfig.toml`,
- * whose template is the framework repository's and points at npm with the
- * token the framework's release publishes with (an app has no use for it).
- * Pantry's installer reads `.npmrc`, not `bunfig.toml`. Returns the files it
- * changed.
- */
-export function applyAppRegistryTemplate(root: string): string[] {
-  const changed: string[] = []
-  const registry = `${PANTRY_NPM_REGISTRY}/`
-
-  const bunfigFile = join(root, 'bunfig.toml')
-  if (existsSync(bunfigFile)) {
-    const raw = readFileSync(bunfigFile, 'utf8')
-    let next = setTomlKey(raw, 'install', 'registry', `"${registry}"`)
-    next = setTomlKey(next, 'install.scopes', `"${FRAMEWORK_SCOPE}"`, `"${registry}"`)
-    if (next !== raw) {
-      writeFileSync(bunfigFile, next)
-      changed.push('bunfig.toml')
-    }
-  }
-
-  const npmrcFile = join(root, '.npmrc')
-  const npmrc = existsSync(npmrcFile) ? readFileSync(npmrcFile, 'utf8') : ''
-  let nextNpmrc = setNpmrcKey(npmrc, 'registry', registry)
-  nextNpmrc = setNpmrcKey(nextNpmrc, `${FRAMEWORK_SCOPE}:registry`, registry)
-  if (nextNpmrc !== npmrc) {
-    writeFileSync(npmrcFile, nextNpmrc)
-    changed.push('.npmrc')
-  }
-
-  return changed
-}
-
-function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-/** Set `key = value` in `[table]`, adding the key, or the table, when missing. */
-function setTomlKey(raw: string, table: string, key: string, value: string): string {
-  const line = `${key} = ${value}`
-  const header = new RegExp(`^\\[${escapeRegExp(table)}\\][^\\n]*\\n(?:(?!\\[)[^\\n]*\\n?)*`, 'm')
-  const section = raw.match(header)
-  if (!section)
-    return `${raw.endsWith('\n') || raw === '' ? raw : `${raw}\n`}\n[${table}]\n${line}\n`
-  const existing = new RegExp(`^${escapeRegExp(key)}\\s*=.*$`, 'm')
-  const body = existing.test(section[0])
-    ? section[0].replace(existing, line)
-    : section[0].replace(/^[^\n]*\n/, match => `${match}${line}\n`)
-  return raw.replace(section[0], body)
-}
-
-/** Set `key=value` in an `.npmrc`, keeping every other line. */
-function setNpmrcKey(raw: string, key: string, value: string): string {
-  const existing = new RegExp(`^${escapeRegExp(key)}\\s*=.*$`, 'm')
-  return existing.test(raw) ? raw.replace(existing, `${key}=${value}`) : `${raw}${raw === '' || raw.endsWith('\n') ? '' : '\n'}${key}=${value}\n`
 }
