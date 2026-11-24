@@ -751,6 +751,7 @@ recordProjectService(projectPath(), {
   port: dashboardPort,
   url: dashboardBrowserUrl,
   startedAt: new Date().toISOString(),
+  ...(servicePid !== process.pid && process.platform !== 'win32' ? { restartInstance: dashboardInstance } : {}),
   ...(idleExitMs > 0 ? { idleExitMs } : {}),
 })
 dashboardPublished = true

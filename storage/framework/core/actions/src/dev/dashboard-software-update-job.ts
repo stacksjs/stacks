@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { isProcessAlive, isProjectRoot, projectCliEntry } from '@stacksjs/path'
 import { machineEnvironment } from '../daemon/environment'
+import { canRestartDashboard, restartProjectDashboard } from './dashboard-restart'
 
 export interface SoftwareUpdateProject {
   id: string
@@ -16,11 +17,19 @@ export interface SoftwareUpdateTarget extends SoftwareUpdateProject {
 }
 
 type StepStatus = 'queued' | 'updating' | 'complete' | 'failed' | 'interrupted'
+type RestartStatus = 'queued' | 'restarting' | 'complete' | 'failed' | 'interrupted'
 
 export interface SoftwareUpdateReport {
   id: string
   running: boolean
-  projects: Array<SoftwareUpdateProject & { status: StepStatus, message?: string }>
+  restarting?: boolean
+  restartAvailable?: boolean
+  projects: Array<SoftwareUpdateProject & {
+    status: StepStatus
+    message?: string
+    restartStatus?: RestartStatus
+    restartMessage?: string
+  }>
   logFile: string
 }
 
@@ -69,19 +78,33 @@ function currentJob(db: Database): Job | null {
     return job
 
   job.report.running = false
+  job.report.restarting = false
   for (const project of job.report.projects) {
     if (project.status === 'queued' || project.status === 'updating')
       project.status = 'interrupted'
+    if (project.restartStatus === 'queued' || project.restartStatus === 'restarting')
+      project.restartStatus = 'interrupted'
   }
   writeJob(db, job)
   return job
+}
+
+function restartTargets(job: Job): SoftwareUpdateReport['projects'] {
+  return job.report.projects.filter((project, index) =>
+    project.status === 'complete' && project.restartStatus !== 'complete' && canRestartDashboard(job.targets[index]!.root),
+  )
 }
 
 export function readSoftwareUpdate(file: string): SoftwareUpdateReport | null {
   mkdirSync(dirname(file), { recursive: true, mode: 0o700 })
   const db = openState(file)
   try {
-    return db.transaction(() => currentJob(db)?.report ?? null).immediate()
+    return db.transaction(() => {
+      const job = currentJob(db)
+      if (!job)
+        return null
+      return { ...job.report, restartAvailable: !job.report.running && restartTargets(job).length > 0 }
+    }).immediate()
   }
   finally {
     db.close()
@@ -102,31 +125,86 @@ export function startSoftwareUpdate(file: string, targets: SoftwareUpdateTarget[
         projects: targets.map(({ id, name, version }) => ({ id, name, version, status: 'queued' })),
         logFile: join(dirname(file), 'buddy-upgrade.log'),
       }
-      const log = openSync(report.logFile, 'w', 0o600)
-      try {
-        // This worker lives outside the dashboard supervisor. A project upgrade
-        // can replace framework files and restart the window that launched it.
-        const worker = Bun.spawn([process.execPath, '--no-env-file', '--no-install', import.meta.path, file, report.id], {
-          env: {
-            ...machineEnvironment(),
-            ...(process.env.STACKS_FRAMEWORK_REGISTRY && { STACKS_FRAMEWORK_REGISTRY: process.env.STACKS_FRAMEWORK_REGISTRY }),
-          },
-          stdin: 'ignore',
-          stdout: log,
-          stderr: log,
-        })
-        writeJob(db, { workerPid: worker.pid, targets, report })
-        worker.unref()
-      }
-      finally {
-        closeSync(log)
-      }
+      launchWorker(file, db, { workerPid: 0, targets, report }, 'w')
       return report
     }).immediate()
   }
   finally {
     db.close()
   }
+}
+
+export function startSoftwareRestart(file: string, id: string): SoftwareUpdateReport | null {
+  const db = openState(file)
+  try {
+    return db.transaction(() => {
+      const job = currentJob(db)
+      if (!job || job.report.id !== id || job.report.running)
+        return null
+      const targets = restartTargets(job)
+      if (!targets.length)
+        return null
+
+      for (const project of targets) {
+        project.restartStatus = 'queued'
+        delete project.restartMessage
+      }
+      job.report.running = true
+      job.report.restarting = true
+      launchWorker(file, db, job, 'a')
+      return job.report
+    }).immediate()
+  }
+  finally {
+    db.close()
+  }
+}
+
+function launchWorker(file: string, db: Database, job: Job, mode: 'a' | 'w'): void {
+  const log = openSync(job.report.logFile, mode, 0o600)
+  try {
+    // Keep the worker alive when an upgrade or restart closes the dashboard.
+    const worker = Bun.spawn([process.execPath, '--no-env-file', '--no-install', import.meta.path, file, job.report.id], {
+      env: {
+        ...machineEnvironment(),
+        ...(process.env.STACKS_FRAMEWORK_REGISTRY && { STACKS_FRAMEWORK_REGISTRY: process.env.STACKS_FRAMEWORK_REGISTRY }),
+      },
+      stdin: 'ignore',
+      stdout: log,
+      stderr: log,
+      detached: true,
+    })
+    job.workerPid = worker.pid
+    writeJob(db, job)
+    worker.unref()
+  }
+  finally {
+    closeSync(log)
+  }
+}
+
+async function runSoftwareRestart(db: Database, job: Job): Promise<void> {
+  for (const [index, target] of job.targets.entries()) {
+    const project = job.report.projects[index]!
+    if (project.restartStatus !== 'queued')
+      continue
+    project.restartStatus = 'restarting'
+    writeJob(db, job)
+    console.log(`\n${target.name}: restarting dashboard\n`)
+    try {
+      await restartProjectDashboard(target.root)
+      project.restartStatus = 'complete'
+    }
+    catch (error) {
+      project.restartStatus = 'failed'
+      project.restartMessage = error instanceof Error ? error.message : 'Buddy could not restart this dashboard.'
+      console.error(project.restartMessage)
+    }
+    writeJob(db, job)
+  }
+  job.report.running = false
+  job.report.restarting = false
+  writeJob(db, job)
 }
 
 async function runSoftwareUpdate(file: string, id: string): Promise<void> {
@@ -136,6 +214,9 @@ async function runSoftwareUpdate(file: string, id: string): Promise<void> {
     const job = db.transaction(() => readJob(db)).immediate()
     if (!job || job.report.id !== id || job.workerPid !== process.pid)
       return
+
+    if (job.report.restarting)
+      return await runSoftwareRestart(db, job)
 
     const { report } = job
     for (const [index, target] of job.targets.entries()) {

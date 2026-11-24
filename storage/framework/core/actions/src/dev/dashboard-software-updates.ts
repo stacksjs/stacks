@@ -6,7 +6,7 @@ import { installedDefaultsVersion, isProjectRoot, listProjects, registerProject,
 import { frameworkRegistryFetch, NPM_REGISTRY } from '../framework-registry'
 import { readVersion, resolveLatestStableTag } from '../upgrade/framework-utils'
 import { hasStacksDependency, installedStacksVersion } from '../upgrade/packages'
-import { readSoftwareUpdate, startSoftwareUpdate } from './dashboard-software-update-job'
+import { readSoftwareUpdate, startSoftwareRestart, startSoftwareUpdate } from './dashboard-software-update-job'
 import { isTrustedTrayRequest, trayOrigins } from './tray-origin'
 
 type Source = 'vendored' | 'package'
@@ -139,18 +139,24 @@ export function dashboardSoftwareUpdateRoutes(options: UpdateRoutesOptions) {
     })
   }
 
-  async function install(request: Request): Promise<Response> {
+  async function guardWrite(request: Request): Promise<Response | null> {
     if (request.method !== 'POST')
       return response({ error: 'Method not allowed.' }, 405)
     if (!trusted(request))
-      return response({ error: 'Open the local Buddy dashboard to install software updates.' }, 403)
+      return response({ error: 'Open the local Buddy dashboard to manage software updates.' }, 403)
     try {
       await options.validateWrite(request)
     }
     catch {
       return response({ error: 'This request did not come from the dashboard.' }, 403)
     }
+    return null
+  }
 
+  async function install(request: Request): Promise<Response> {
+    const refused = await guardWrite(request)
+    if (refused)
+      return refused
     const body = await request.json().catch(() => null) as { projects?: unknown } | null
     if (!Array.isArray(body?.projects) || !body.projects.length || !body.projects.every(id => typeof id === 'string'))
       return response({ error: 'Select at least one registered project.' }, 400)
@@ -177,8 +183,29 @@ export function dashboardSoftwareUpdateRoutes(options: UpdateRoutesOptions) {
     }
   }
 
+  async function restart(request: Request): Promise<Response> {
+    const refused = await guardWrite(request)
+    if (refused)
+      return refused
+
+    const body = await request.json().catch(() => null) as { updateId?: unknown } | null
+    if (typeof body?.updateId !== 'string' || !body.updateId)
+      return response({ error: 'An installed update is required.' }, 400)
+
+    try {
+      const update = startSoftwareRestart(stateFile, body.updateId)
+      return update
+        ? response({ update }, 202)
+        : response({ error: 'There are no updated dashboards ready to restart.' }, 409)
+    }
+    catch {
+      return response({ error: 'Buddy could not start the restart.' }, 500)
+    }
+  }
+
   return {
     '/__buddy/software-update': inspect,
     '/__buddy/software-update/install': install,
+    '/__buddy/software-update/restart': restart,
   }
 }

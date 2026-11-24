@@ -53,6 +53,8 @@ export interface ProjectService {
   /** The address a person opens. */
   url: string
   startedAt: string
+  /** The ready instance of a dashboard whose supervisor handles a restart signal. */
+  restartInstance?: string
   /** Set when the server stops itself after this long without a request. */
   idleExitMs?: number
 }

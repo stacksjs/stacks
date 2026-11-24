@@ -2,7 +2,7 @@ import type { FSWatcher } from 'node:fs'
 import { existsSync, readdirSync, watch } from 'node:fs'
 import process from 'node:process'
 import { join } from 'node:path'
-import { clearProjectService, defaultsPath, projectPath, storagePath } from '@stacksjs/path'
+import { clearProjectService, defaultsPath, projectPath, readProjectService, storagePath } from '@stacksjs/path'
 
 const BACKEND_SOURCE_RE = /\.(?:[cm]?[jt]sx?|json)$/i
 const DECLARATION_RE = /\.d\.[cm]?ts$/i
@@ -40,6 +40,8 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
   let stopping = false
   let restartTimer: ReturnType<typeof setTimeout> | undefined
   let settled = false
+  let restartPort: number | undefined
+  const root = projectPath()
 
   return new Promise<number>((resolve) => {
     const finish = (code: number) => {
@@ -55,6 +57,7 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
       clearProjectService(projectPath(), 'dashboard')
       process.off('SIGINT', stop)
       process.off('SIGTERM', stop)
+      process.off('SIGUSR2', restartFromSettings)
       resolve(code)
     }
 
@@ -62,7 +65,12 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
       const currentGeneration = ++generation
       child = Bun.spawn([process.execPath, entry, ...args], {
         cwd: process.cwd(),
-        env: { ...process.env, STACKS_DASHBOARD_WORKER: '1', STACKS_DASHBOARD_SUPERVISOR_PID: String(process.pid) },
+        env: {
+          ...process.env,
+          ...(restartPort === undefined ? {} : { PORT_ADMIN: String(restartPort) }),
+          STACKS_DASHBOARD_WORKER: '1',
+          STACKS_DASHBOARD_SUPERVISOR_PID: String(process.pid),
+        },
         stdin: 'inherit',
         stdout: 'inherit',
         stderr: 'inherit',
@@ -77,6 +85,9 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
       if (restarting || stopping)
         return
       restarting = true
+      const service = readProjectService(root, 'dashboard')
+      if (service?.pid === process.pid)
+        restartPort = service.port
       const previous = child
       generation++
       if (previous) {
@@ -95,6 +106,12 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
         console.log('\n  Backend source changed. Restarting the dashboard server.\n')
         void restart()
       }, 100)
+    }
+
+    function restartFromSettings(): void {
+      if (restartTimer)
+        clearTimeout(restartTimer)
+      void restart()
     }
 
     function stop(): void {
@@ -129,5 +146,7 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
 
     process.once('SIGINT', stop)
     process.once('SIGTERM', stop)
+    if (process.platform !== 'win32')
+      process.on('SIGUSR2', restartFromSettings)
   })
 }

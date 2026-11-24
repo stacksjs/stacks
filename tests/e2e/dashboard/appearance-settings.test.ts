@@ -296,7 +296,7 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     }
   }, 120_000)
 
-  test('Software Update shows available releases and submits only the selected projects', async () => {
+  test('Software Update installs selected projects and offers Restart Now once finished', async () => {
     const { cdp } = e2e!.browser
     const origin = e2e!.origin
     const projects = [
@@ -305,21 +305,32 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     ]
     let selected: string[] = []
     let started = false
-    const report = (running: boolean) => ({
+    let restarting = false
+    let restartedUpdate: string | undefined
+    const report = (running: boolean, restartStatus?: 'complete') => ({
       id: 'fixture',
       running,
-      projects: projects.map(project => ({ id: project.id, name: project.name, version: '1.1.0', status: running ? 'updating' : 'complete' })),
+      restartAvailable: !running && !restartStatus,
+      projects: projects.map(project => ({ id: project.id, name: project.name, version: '1.1.0', status: running ? 'updating' : 'complete', restartStatus })),
       logFile: '/tmp/buddy-upgrade.log',
     })
     const stop = await cdp.intercept([{ urlPattern: `${origin}/__buddy/software-update*` }], async ({ requestId, request }, session) => {
-      const install = request.method === 'POST'
+      const install = request.method === 'POST' && request.url.endsWith('/install')
+      const restart = request.method === 'POST' && request.url.endsWith('/restart')
       if (install) {
         started = true
         selected = JSON.parse(request.postData ?? '{}').projects
       }
+      if (restart) {
+        restarting = true
+        restartedUpdate = JSON.parse(request.postData ?? '{}').updateId
+        // Restarting the dashboard can drop the POST before its response arrives.
+        await session.send('Fetch.failRequest', { requestId, errorReason: 'ConnectionReset' })
+        return
+      }
       const payload = install
         ? { update: report(true) }
-        : { checked: true, projects, update: started ? report(false) : null }
+        : { checked: true, projects, update: started ? report(false, restarting ? 'complete' : undefined) : null }
       await session.send('Fetch.fulfillRequest', {
         requestId,
         responseCode: install ? 202 : 200,
@@ -338,8 +349,14 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
 
       await click(cdp, 'button[aria-label="Update Site"]')
       await click(cdp, { selector: 'button', text: 'Update Now' })
-      await waitFor(() => cdp.evaluate(`document.querySelector('[data-dashboard-settings-content]').textContent.includes('Restart any running projects')`), 10_000)
+      const restartButton = '[data-setting="restart-updated-dashboards"] button'
+      await waitFor(() => cdp.evaluate(`document.querySelector('${restartButton}')?.textContent.trim() === 'Restart Now'`), 10_000)
       expect(selected).toEqual(['shop', 'site'])
+
+      await click(cdp, restartButton)
+      await waitFor(() => cdp.evaluate(`document.querySelector('[data-dashboard-settings-content]').textContent.includes('The updated dashboards restarted.')`), 10_000)
+      expect(restartedUpdate).toBe('fixture')
+      expect(await cdp.evaluate(`Boolean(document.querySelector('${restartButton}'))`)).toBe(false)
     }
     finally {
       await stop()

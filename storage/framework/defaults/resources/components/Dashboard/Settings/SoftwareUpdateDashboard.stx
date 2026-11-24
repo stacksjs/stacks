@@ -6,7 +6,7 @@ defineClientPayload({ localUpdates })
 </script>
 
 <script client>
-import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
+import { dashboardApi, DashboardApiError } from '@stacksjs/defaults/functions/dashboard-api'
 
 interface UpdateProject {
   id: string
@@ -18,9 +18,14 @@ interface UpdateProject {
   supported: boolean
 }
 
+type RestartStatus = 'queued' | 'restarting' | 'complete' | 'failed' | 'interrupted'
+
 interface UpdateReport {
+  id: string
   running: boolean
-  projects: Array<{ id: string, name: string, version: string, status: 'queued' | 'updating' | 'complete' | 'failed' | 'interrupted', message?: string }>
+  restarting?: boolean
+  restartAvailable?: boolean
+  projects: Array<{ id: string, name: string, version: string, restartStatus?: RestartStatus, restartMessage?: string, status: 'queued' | 'updating' | 'complete' | 'failed' | 'interrupted', message?: string }>
   logFile: string
 }
 
@@ -36,22 +41,28 @@ const snapshot = state<UpdateStatus | null>(null)
 const selection = state<string[]>([])
 const checking = state(false)
 const starting = state(false)
+const requestingRestart = state(false)
 const failure = state('')
 const report = derived(() => snapshot()?.update ?? null)
 const running = derived(() => Boolean(report()?.running))
-const busy = derived(() => checking() || starting() || running())
+const restarting = derived(() => Boolean(report()?.restarting))
+const busy = derived(() => checking() || starting() || requestingRestart() || running())
 const projects = derived(() => snapshot()?.projects ?? [])
 const current = derived(() => projects().find(project => project.current))
 const selectedProjects = derived(() => projects().filter(project => project.available && selection().includes(project.id)))
 const availableCount = derived(() => projects().filter(project => project.available).length)
 
-const willNeedRestart = derived(() => report()?.projects.some(project => project.status === 'complete') === true)
+const restartAvailable = derived(() => report()?.restartAvailable === true)
+const updatesInstalled = derived(() => report()?.projects.some(project => project.status === 'complete') === true)
+const dashboardsRestarted = derived(() => report()?.projects.some(project => project.restartStatus === 'complete') === true)
+const restartFailed = derived(() => report()?.projects.some(project => project.restartStatus === 'failed' || project.restartStatus === 'interrupted') === true)
 const reportHasErrors = derived(() => report()?.projects.some(project => project.status === 'failed' || project.status === 'interrupted') === true)
 const reportProjects = derived(() => report()?.projects ?? [])
 const statuses = { queued: 'Waiting', updating: 'Updating…', complete: 'Updated', failed: 'Failed', interrupted: 'Interrupted' }
+const restartStatuses = { queued: 'Waiting', restarting: 'Restarting…', complete: 'Restarted', failed: 'Restart failed', interrupted: 'Restart interrupted' }
 
-function statusLabel(status: keyof typeof statuses): string {
-  return statuses[status]
+function statusLabel(project: UpdateReport['projects'][number]): string {
+  return project.restartStatus ? restartStatuses[project.restartStatus] : statuses[project.status]
 }
 
 let initialized = false
@@ -80,7 +91,7 @@ async function checkUpdates(): Promise<void> {
 }
 
 async function pollUpdate(): Promise<void> {
-  if (!running() || checking() || starting())
+  if (!running() || checking() || starting() || requestingRestart())
     return
   try {
     await refresh()
@@ -112,6 +123,32 @@ async function installUpdates(): Promise<void> {
   }
   finally {
     starting.set(false)
+  }
+}
+
+async function restartDashboards(): Promise<void> {
+  const previous = snapshot()
+  const update = previous?.update
+  if (!update || !restartAvailable() || busy())
+    return
+  requestingRestart.set(true)
+  failure.set('')
+  try {
+    const result = await dashboardApi<{ update: UpdateReport }>(endpoint + '/restart', { method: 'POST', body: { updateId: update.id } })
+    snapshot.set({ ...previous, update: result.update })
+  }
+  catch (error) {
+    if (error instanceof DashboardApiError) {
+      failure.set(error.message)
+    }
+    else {
+      // Buddy can accept the restart just before this connection goes down.
+      // Keep polling until the dashboard can report what happened.
+      snapshot.set({ ...previous, update: { ...update, running: true, restarting: true } })
+    }
+  }
+  finally {
+    requestingRestart.set(false)
   }
 }
 
@@ -171,13 +208,21 @@ onMount(() => {
     <div :if="report()">
       <SettingsGroup header="Update progress">
         <div :for="project in reportProjects()" :key="project.id" class="dashboard-settings-section-toggle">
-          <SettingsRow :label="project.name" :description="project.message || 'Stacks ' + project.version" multiline>
-            <span :text="statusLabel(project.status)"></span>
+          <SettingsRow :label="project.name" :description="project.restartMessage || project.message || 'Stacks ' + project.version" multiline>
+            <span :text="statusLabel(project)"></span>
           </SettingsRow>
         </div>
-        <p :if="running()" class="p-3 text-neutral-600 text-xs dark:text-neutral-300" role="status">Buddy is installing updates. You can close this window.</p>
-        <p :if="!running() && willNeedRestart()" class="p-3 text-neutral-600 text-xs dark:text-neutral-300" role="status">Restart any running projects to load the updated framework.</p>
-        <p :if="reportHasErrors()" class="p-3 break-all text-red-700 text-xs dark:text-red-300" role="alert">Buddy log <code :text="report()?.logFile"></code></p>
+        <p :if="running() && !restarting()" class="p-3 text-neutral-600 text-xs dark:text-neutral-300" role="status">Buddy is installing updates. You can close this window.</p>
+        <div :if="restartAvailable() || restarting()" class="dashboard-settings-section-toggle">
+          <SettingsRow label="Restart required" description="Restart the updated dashboards to load the new framework." setting="restart-updated-dashboards">
+            <Button size="sm" class="whitespace-nowrap" :loading="requestingRestart() || restarting()" :disabled="busy()" @click="restartDashboards()">
+              {{ restarting() ? 'Restarting…' : 'Restart Now' }}
+            </Button>
+          </SettingsRow>
+        </div>
+        <p :if="!running() && !restartAvailable() && updatesInstalled() && !dashboardsRestarted() && !restartFailed()" class="p-3 text-neutral-600 text-xs dark:text-neutral-300" role="status">The updated framework will load the next time these dashboards start.</p>
+        <p :if="!running() && dashboardsRestarted() && !restartFailed()" class="p-3 text-neutral-600 text-xs dark:text-neutral-300" role="status">The updated dashboards restarted.</p>
+        <p :if="reportHasErrors() || restartFailed()" class="p-3 break-all text-red-700 text-xs dark:text-red-300" role="alert">Buddy log <code :text="report()?.logFile"></code></p>
       </SettingsGroup>
     </div>
   @endif
