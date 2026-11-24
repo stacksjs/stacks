@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.670...v0.75.671)
+
+## 💚 Continuous Integration
+
+- **release**: publish with pantry 0.11.226 ([3fd85fb](https://github.com/stacksjs/stacks/commit/3fd85fb)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.669...v0.75.670)
 
 ## ✨ Features
