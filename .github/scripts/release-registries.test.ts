@@ -37,7 +37,7 @@ describe('release registries', () => {
 
     const pantry = steps.filter(step => step.if?.includes('steps.registries.outputs.pantry'))
     expect(pantry.map(step => step.name)).toEqual(['Publish Framework to Pantry', 'Verify Pantry publication'])
-    expect(pantry[0]!.env!.PANTRY_REGISTRY_TOKEN).toBe('${{ secrets.PANTRY_REGISTRY_TOKEN }}')
+    expect(pantry[0]!.env!.PANTRY_TOKEN).toBe('${{ secrets.PANTRY_TOKEN }}')
     expect(steps.find(step => step.name === 'Resolve release registries')!.env!.RELEASE_REGISTRIES).toBe('${{ vars.RELEASE_REGISTRIES }}')
   })
 })

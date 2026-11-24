@@ -297,11 +297,11 @@ jobs:
       - name: Publish Framework to Pantry
         if: steps.registries.outputs.pantry == 'true'
         env:
-          PANTRY_REGISTRY_TOKEN: ${{ secrets.PANTRY_REGISTRY_TOKEN }}
+          PANTRY_TOKEN: ${{ secrets.PANTRY_TOKEN }}
         run: |
           set -euo pipefail
-          if [ -z "${PANTRY_REGISTRY_TOKEN:-}" ]; then
-            echo "::error title=Pantry publish::PANTRY_REGISTRY_TOKEN is not set. Mint a token in the Pantry backend with publish access to @stacksjs/* and stacks, and add it as a repository secret of that name."
+          if [ -z "${PANTRY_TOKEN:-}" ]; then
+            echo "::error title=Pantry publish::PANTRY_TOKEN is not set. Add a Pantry token with publish access to @stacksjs/* and stacks as a repository secret of that name (pantry token sync --repo stacksjs/stacks)."
             exit 1
           fi
           pantry publish --ignore-scripts --concurrency 32 'storage/framework/core/*' 'storage/framework/core'
