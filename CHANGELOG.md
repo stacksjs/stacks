@@ -1,5 +1,56 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.663...v0.75.664)
+
+## ✨ Features
+
+- **upgrade**: read framework releases from Pantry first, npm as fallback ([93f8938](https://github.com/stacksjs/stacks/commit/93f8938)) _(by Chris Breuer)_
+- **release**: publish to the Pantry registry by default, npm opt-in ([5f289be](https://github.com/stacksjs/stacks/commit/5f289be)) _(by Chris Breuer)_
+- **payments**: configure subscription changes in the Stripe portal ([222f063](https://github.com/stacksjs/stacks/commit/222f063)) _(by Chris Breuer)_
+- **defaults**: SubscribeForm answers a double opt-in signup ([e88e7ed](https://github.com/stacksjs/stacks/commit/e88e7ed)) _(by Chris Breuer)_
+- **newsletter**: double opt-in for lists that ask for it ([8c0b13b](https://github.com/stacksjs/stacks/commit/8c0b13b)) _(by Chris Breuer)_
+- **defaults**: a SubscribeForm component for any Stacks app ([dc489f0](https://github.com/stacksjs/stacks/commit/dc489f0)) _(by Chris Breuer)_
+- **newsletter**: public signups join a list, and opt-outs agree ([b72c77c](https://github.com/stacksjs/stacks/commit/b72c77c)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **socials**: count, attach and thread posts the way each network does ([9178225](https://github.com/stacksjs/stacks/commit/9178225)) _(by Chris Breuer)_
+- **release**: accept Pantry publications served under pantry.dev ([a615cf6](https://github.com/stacksjs/stacks/commit/a615cf6)) _(by Chris Breuer)_
+- **payments**: integrate Stripe checkout and portal updates ([dfe7c78](https://github.com/stacksjs/stacks/commit/dfe7c78)) _(by Chris)_
+- **payments**: replay a Stripe checkout attempt by key ([b49c317](https://github.com/stacksjs/stacks/commit/b49c317)) _(by Chris Breuer)_
+- **newsletter**: register the email.confirm route name ([e8f2bb0](https://github.com/stacksjs/stacks/commit/e8f2bb0)) _(by Chris Breuer)_
+- **newsletter**: keep route admission and the native catalog current ([7ede902](https://github.com/stacksjs/stacks/commit/7ede902)) _(by Chris Breuer)_
+- **email**: send stacksjs.com mail through the real mail server ([be5ebfb](https://github.com/stacksjs/stacks/commit/be5ebfb)) _(by Chris Breuer)_
+
+## ⚡ Performance Improvements
+
+- **server**: render each page once per address, not once per request ([e96728e](https://github.com/stacksjs/stacks/commit/e96728e)) _(by Chris Breuer)_
+
+## ♻️ Code Refactoring
+
+- **marketing**: use the framework's SubscribeForm on stacksjs.com ([55d776e](https://github.com/stacksjs/stacks/commit/55d776e)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **payments**: refresh checkout retry test evidence ([df2eb96](https://github.com/stacksjs/stacks/commit/df2eb96)) _(by Chris Breuer)_
+- **payments**: refresh portal test evidence ([77dd950](https://github.com/stacksjs/stacks/commit/77dd950)) _(by Chris Breuer)_
+- **skills**: refresh the native catalog after the newsletter changes ([502a3e4](https://github.com/stacksjs/stacks/commit/502a3e4)) _(by Chris Breuer)_
+
+## ✅ Tests
+
+- **database**: the newsletter route is withheld for its SubscriberEmail table ([319b085](https://github.com/stacksjs/stacks/commit/319b085)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **docs**: count the framework-registry test in the native catalog ([a271361](https://github.com/stacksjs/stacks/commit/a271361)) _(by Chris Breuer)_
+- **deps**: stx 0.2.930 ([34240d4](https://github.com/stacksjs/stacks/commit/34240d4)) _(by Chris Breuer)_
+- **deps**: bunpress 0.2.33 ([f6e54eb](https://github.com/stacksjs/stacks/commit/f6e54eb)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.662...v0.75.663)
 
 ## 🐛 Bug Fixes
