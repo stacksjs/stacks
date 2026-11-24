@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.673...v0.75.674)
+
+## 🐛 Bug Fixes
+
+- **release**: keep verifying the original workflow during delivery ([aa1602b](https://github.com/stacksjs/stacks/commit/aa1602b)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.672...v0.75.673)
 
 ## ✨ Features
