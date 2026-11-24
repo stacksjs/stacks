@@ -241,6 +241,14 @@ It needs `@stacksjs/ts-cloud` 0.16.126 or newer and says so on an older one.
   are stripped. See `stacks-env` for the private-source precedence.
 - A failover replica bucket (`infrastructure.storage.<name>.failover`) lives outside the stack, so
   `buddy cloud:remove` leaves it, and its data, behind on purpose
+- On Hetzner and SSH, each deploy is a new release directory, and only the database and
+  `storage/logs` carry over. Anything else an app writes on the box (uploads in `storage/app`,
+  generated media, a file cache) is gone from the next release. Keep a directory with the
+  site's `sharedPaths` in `config/cloud.ts`, or write it outside the release (`STORAGE_ROOT`, a
+  remote disk). The deploy warns before upload when the local storage disk would write inside
+  the release, and on the box it lists what the outgoing release wrote while it was live
+  (`core/buddy/src/release-writes.ts`, stacksjs/stacks#3367)
+- The framework's health route is `GET /api/health`, not `/health`; point `healthCheck` there
 - For infrastructure details, see the `stacks-cloud` skill
 
 

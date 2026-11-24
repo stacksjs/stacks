@@ -27,6 +27,7 @@ import { dnsCredentialFix, envFileForEnvironment, resolveZoneNameservers } from 
 import { assertComputeResidency } from '@stacksjs/ts-cloud'
 import { resultFailed } from '../result'
 import { deploymentRetirements, explicitDeploymentEnvFile, validateDeploymentProviderInputs } from '../deployment-inputs'
+import { applyReleaseWriteCheck, releaseTreeStorageWarnings } from '../release-writes'
 import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
 import { applySecurityWaf } from '../waf-config'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
@@ -3114,7 +3115,10 @@ async function runSshDeploy(args: {
   // Migrations are injected FIRST, so everything downstream sees them: the
   // persistent-state pass reads `migrate` to decide which site owns the
   // database, and the backup splices itself in front of that same step.
-  const sitesWithResolvedEnv = applyPreMigrationBackup(
+  // The release-writes check goes last of all, so it ends preStart: it marks
+  // the new release live, and what preStart itself wrote must predate that
+  // mark (stacksjs/stacks#3367).
+  const sitesWithResolvedEnv = applyReleaseWriteCheck(applyPreMigrationBackup(
     applyScheduledWork(
       applyPersistentStatePaths(
         applyAutomaticMigrations(mergeSiteDeployEnv(sites, resolvedDeployEnv)),
@@ -3123,7 +3127,12 @@ async function runSshDeploy(args: {
       p.projectPath('app/Scheduler.ts'),
     ),
     projectDatabaseTarget(slug, 'backups'),
-  )
+  ))
+
+  // Files the configuration will write inside the release, where the next
+  // deploy cannot see them. A warning: what to keep is the app's call.
+  for (const warning of releaseTreeStorageWarnings(sitesWithResolvedEnv))
+    log.warn(warning)
 
   /*
    * Checked here rather than earlier: `env` is only final after the merge
