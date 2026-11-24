@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto'
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { commitWorkflowRelease, evaluateProjectWorkflow, nextWorkflowRelease, requireQualifiedWorkflow } from '../src/workflow-release'
+import { commitWorkflowRelease, evaluateProjectWorkflow, nextWorkflowRelease, requireQualifiedWorkflow, waitForWorkflowRelease } from '../src/workflow-release'
 import { writeWorkflowReleaseState } from '../src/workflow-project'
 import { renderReviewOsWorkflow } from '../src/workflow-template'
 
@@ -90,6 +90,8 @@ test('release upload uses the real tag and checkout, including detached CI check
     process.env.GITHUB_REF = 'refs/heads/topic'
     await expect(writeWorkflowReleaseState(root)).rejects.toThrow('release tag')
     process.env.GITHUB_REF = 'refs/heads/main'
+    writeFileSync(join(root, 'package.json'), '{"version":"1.0.0-build.35","dependencies":{}}')
+    await expect(writeWorkflowReleaseState(root)).rejects.toThrow('package.json')
     writeFileSync(join(root, 'product.json'), '{"version":"1.0.0","build":36}')
     await expect(writeWorkflowReleaseState(root)).rejects.toThrow()
   }
@@ -97,6 +99,29 @@ test('release upload uses the real tag and checkout, including detached CI check
     for (const [key, value] of Object.entries({ GITHUB_OUTPUT: previous.output, GITHUB_REF: previous.ref, WORKFLOW_UPLOAD_REQUESTED: previous.requested })) { if (value === undefined) delete process.env[key]; else process.env[key] = value }
     rmSync(root, { recursive: true, force: true })
   }
+})
+
+test('release waiting keeps verifying its original commit after main advances', async () => {
+  const { root, config, git, run } = fixture()
+  try {
+    const release = run.head_sha
+    for (const job of run.jobs) {
+      for (const step of job.steps) Object.assign(step, { state: 'succeeded', exit_code: 0 })
+    }
+    const client = {
+      runs: async (_workflow: string, { sha }: { sha: string }) => {
+        expect(sha).toBe(release)
+        writeFileSync(join(root, 'README.md'), 'Documentation refreshed.\n')
+        git('add', 'README.md')
+        git('commit', '-m', 'docs: refresh the screenshots')
+        expect(git('rev-parse', 'HEAD')).not.toBe(release)
+        return [{ number: 7 }]
+      },
+      run: async () => run,
+    } as any
+    expect(await waitForWorkflowRelease(root, config, 0, client)).toBe(7)
+  }
+  finally { rmSync(root, { recursive: true, force: true }) }
 })
 
 test('a normal workflow release atomically publishes aligned metadata, notes and its immutable tag', () => {

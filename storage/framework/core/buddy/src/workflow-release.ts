@@ -11,8 +11,7 @@ import { renderReviewOsWorkflow } from './workflow-template'
 
 type Client = ReturnType<typeof projectWorkflowClient>
 
-/** Every configured job must have executed its real acceptance steps. */
-export function evaluateProjectWorkflow(root: string, config: WorkflowConfig, run: unknown, upload = false): 'pending' | 'accepted' {
+function projectWorkflowEvidence(root: string, config: WorkflowConfig, upload: boolean) {
   const path = '.reviewos/workflows/ci.yml'
   const source = readFileSync(join(root, path), 'utf8')
   if (source !== renderReviewOsWorkflow(config)) throw new Error('The committed workflow differs from config/workflows.ts. Run buddy workflow:setup and qualify that source first')
@@ -21,12 +20,24 @@ export function evaluateProjectWorkflow(root: string, config: WorkflowConfig, ru
   const [owner, repository] = config.repository.split('/') as [string, string]
   const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim()
   const digest = createHash('sha256').update(source).digest('hex')
-  for (const [job, definition] of Object.entries(workflow.jobs)) {
+  const jobs = Object.entries(workflow.jobs).map(([job, definition]) => {
     const steps = definition.steps.filter(step => !step.if || step.if === 'always()' || upload).map(step => step.name)
-    const decision = evaluateReviewOsEvidence({ origin: config.origin, owner, repository, commit, workflow: path, workflowDigest: digest, job, labels: definition['runs-on'], steps }, { workflow_run: run })
-    if (decision.state === 'pending') return 'pending'
+    return { origin: config.origin, owner, repository, commit, workflow: path, workflowDigest: digest, job, labels: definition['runs-on'], steps }
+  })
+  return {
+    commit,
+    evaluate(run: unknown): 'pending' | 'accepted' {
+      for (const job of jobs) {
+        if (evaluateReviewOsEvidence(job, { workflow_run: run }).state === 'pending') return 'pending'
+      }
+      return 'accepted'
+    },
   }
-  return 'accepted'
+}
+
+/** Every configured job must have executed its real acceptance steps. */
+export function evaluateProjectWorkflow(root: string, config: WorkflowConfig, run: unknown, upload = false): 'pending' | 'accepted' {
+  return projectWorkflowEvidence(root, config, upload).evaluate(run)
 }
 
 /** Allocate from both the committed number and all immutable build tags. */
@@ -79,11 +90,11 @@ export function commitWorkflowRelease(root: string, config: WorkflowConfig, iden
 /** Await the exact committed release; retrying delivery never uploads again. */
 export async function waitForWorkflowRelease(root: string, config: WorkflowConfig, minutes: number, client: Client = projectWorkflowClient(config)): Promise<number> {
   const deadline = Date.now() + minutes * 60000
-  const sha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim()
+  const evidence = projectWorkflowEvidence(root, config, true)
   do {
-    const runs = await client.runs('ci.yml', { branch: 'main', sha })
+    const runs = await client.runs('ci.yml', { branch: 'main', sha: evidence.commit })
     const newest = runs.sort((a, b) => b.number - a.number)[0]
-    if (newest && evaluateProjectWorkflow(root, config, await client.run(newest.number), true) === 'accepted') return newest.number
+    if (newest && evidence.evaluate(await client.run(newest.number)) === 'accepted') return newest.number
     if (Date.now() >= deadline) break
     await Bun.sleep(Math.min(10000, deadline - Date.now()))
   } while (Date.now() <= deadline)

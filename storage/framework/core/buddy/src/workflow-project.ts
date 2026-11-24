@@ -95,7 +95,8 @@ export async function writeWorkflowReleaseState(root: string): Promise<boolean> 
     try { tagged = git('rev-parse', '--verify', '--quiet', `${identity.tag}^{commit}`) === git('rev-parse', 'HEAD') }
     catch { /* No tag is an ordinary unpublished candidate, not an upload. */ }
     if (!main || !tagged) throw new Error('An upload needs its actual release tag on the configured main branch')
-    if (git('status', '--porcelain', '--untracked-files=no')) throw new Error('An upload needs the unchanged release checkout')
+    const changes = git('status', '--porcelain', '--untracked-files=no')
+    if (changes) throw new Error(`An upload needs the unchanged release checkout. Modified tracked files:\n${changes}`)
     upload = true
   }
   if (!process.env.GITHUB_OUTPUT) throw new Error('The workflow must provide its step output file')
