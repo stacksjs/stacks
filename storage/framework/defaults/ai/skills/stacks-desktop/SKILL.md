@@ -127,6 +127,19 @@ unprotected HTTP server. Web middleware declarations are refused by this native
 adapter instead of silently skipped. Writes use the model's validation, fillable
 allowlist and hidden-field serialization; index requests have bounded pagination.
 
+### Migrating a compiled app's own database
+
+A build that ships the framework's generated `.sql` migrations (rather than the
+native model planner above) applies them at launch with
+`migrateCompiledDatabase({ databasePath, migrations, backupDir?, keepBackups? })`
+from `@stacksjs/database/compiled-migrations`, before any framework module loads.
+It runs table rebuilds (`PRAGMA foreign_keys=OFF; BEGIN; ... COMMIT;`) as written,
+backs up with `VACUUM INTO` so writes still in the WAL are kept, refuses a
+database a newer build changed (`NewerSchemaError`, nothing touched), restores the
+backup when a file fails (`MigrationRestoredError`), keeps three backups, and
+records the framework's `migrations` ledger plus `PRAGMA user_version`. Show the
+user the error's message: it says the data was put back and where the copy is.
+
 The launcher Stacks compiles opens a Craft window on the URL in `desktop.json`,
 which is what a hosted Stacks application wants. An app whose subject is the
 machine it runs on - a disk cleaner, a log viewer, a device tool - has no such
