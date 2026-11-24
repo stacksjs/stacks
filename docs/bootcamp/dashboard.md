@@ -33,3 +33,37 @@ and runtime cache cleanup. They are saved on the machine serving the dashboard.
 Keep team navigation in `config/dashboard.ts` and model metadata such as
 `dashboard.highlight` and `dashboard.icon`. Personal ordering changes identifiers
 only, preserving the team's labels, access rules and model grouping.
+
+## Dashboard themes
+
+Open **Settings → Appearance** to switch between **The Original** and **System
+Cleaner**. The Original keeps the macOS and Arc sidebar options. Each theme
+follows your light, dark or system preference.
+
+To make a theme, choose **Download starter theme**, edit the JSON file, and
+choose **Install theme**. Install selects the theme immediately. Installing
+another file with the same custom ID updates that theme. Select an installed
+theme to export it or remove it. Removing the active theme returns you to
+The Original. Resetting appearance keeps your installed themes available.
+
+Theme files use version 1 of the format:
+
+| Field | Value |
+| --- | --- |
+| `version` | `1` |
+| `id` | A unique ID of up to 48 lowercase letters, digits and hyphens. Start with a letter. `original` and `system-cleaner` are reserved. |
+| `name`, `description` | The visible name (up to 64 characters) and an optional description (up to 180 characters). |
+| `layout` | `flush` or `inset`. Both use the full-width content area on mobile. |
+| `navigation` | `plain` or `tiles`. |
+| `overview` | `panel` for a gradient header, or `immersive` to extend the gradient behind the entire overview. Defaults to `panel`. |
+| `radius` | A whole number from 0 to 24, in pixels. |
+| `light`, `dark` | Both palettes from the starter file, with six-digit hex colors. |
+
+The palettes cover the window (`window`), page background (`canvas`), shared
+panels (`surface`, `surfaceMuted`), foregrounds (`text`, `muted`), dividers
+(`border`), and controls (`accent`, `accentFill`, `accentText`). Use
+`heroStart`, `heroEnd`, and `heroText` for the dashboard overview.
+Check legibility in both modes before sharing your JSON file.
+
+Themes and the active choice are stored per browser and dashboard origin.
+Export an installed theme to share it or use it on another dashboard.

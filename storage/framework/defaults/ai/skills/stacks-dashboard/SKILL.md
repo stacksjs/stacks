@@ -541,6 +541,20 @@ Persisted shell appearance is applied with STX's
 storage key and defaults aligned with `composables/useAppearance.ts`. Never
 replace it with raw `window`, `document`, or `localStorage` code in the layout.
 
+Dashboard themes are selected in Settings → Appearance. The Original
+retains both existing sidebar styles. System Cleaner and imported version 1
+JSON themes apply validated light and dark palettes to the shared shell and
+components. Keep theme definitions in `views/dashboard/composables/dashboard-themes.ts`
+and reusable styling in `styles/dashboard-theme.css`. Extend shared components
+with semantic styling hooks or dashboard theme CSS variables so every theme
+can use the same STX navigation, controls and page markup. Use fallbacks that
+match The Original when referencing optional theme variables.
+
+Both dashboard servers expose the same theme stylesheet and synchronous
+bootstrap. The bootstrap and the appearance picker share the same manifest
+validator and read browser-local state. Keep both assets in the head when
+publishing a custom dashboard layout that supports themes.
+
 At widths below 1024px:
 
 - Hide the fixed desktop sidebar and reset `[data-stx-content]` to
@@ -553,9 +567,9 @@ At widths below 1024px:
 - Verify `document.documentElement.scrollWidth <= innerWidth` at phone and
   tablet sizes.
 
-At 1024px and wider, the desktop sidebar must retain its existing theme,
-250px width, fixed placement, persisted collapse state, and
-`--stx-sidebar-width` content-shell contract.
+At 1024px and wider, the desktop sidebar keeps its 250px width, fixed
+placement, persisted collapse state, and `--stx-sidebar-width` content-shell
+contract across themes.
 
 ### Reactive page components
 

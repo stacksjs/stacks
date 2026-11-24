@@ -63,7 +63,7 @@ const cardClass = [
 const liveSubtitle = useReactiveProp('subtitle', '')
 </script>
 
-<article class="{{ cardClass }}" @if(clickable) role="button" tabindex="0" @endif>
+<article data-dashboard-card="{{ variant }}" class="{{ cardClass }}" @if(clickable) role="button" tabindex="0" @endif>
   @if($slots.header)
     <header class="px-5 py-4 border-b border-stone-200/80 dark:border-white/5">
       <slot name="header" />

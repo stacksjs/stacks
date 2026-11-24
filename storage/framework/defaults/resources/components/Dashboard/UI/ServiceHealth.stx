@@ -21,11 +21,11 @@ function statusClass(status: string): string {
 }
 </script>
 
-<section class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+<section data-dashboard-card="default" class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
   <header class="flex items-center justify-between p-5 border-b border-neutral-200/60 dark:border-white/5">
     <div>
-      <h2 class="font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">System health</h2>
-      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Native application health probes.</p>
+      <h2 data-dashboard-ink class="font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">System health</h2>
+      <p data-dashboard-muted class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Native application health probes.</p>
     </div>
     <Badge :if="allHealthy()" variant="success" size="xs" dot>All systems operational</Badge>
     <Badge :if="!loading() && services().length > 0 && !allHealthy()" variant="warning" size="xs" dot>Attention required</Badge>
@@ -42,8 +42,8 @@ function statusClass(status: string): string {
     <article :for="service in services()" class="px-5 py-3.5">
       <div class="flex gap-4 items-center justify-between">
         <div>
-          <p class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ service.name }}</p>
-          <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">{{ service.latency }}</p>
+          <p data-dashboard-ink class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ service.name }}</p>
+          <p data-dashboard-muted class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">{{ service.latency }}</p>
         </div>
         <span :class="'px-2 py-0.5 font-medium text-[11px] rounded-full capitalize ' + statusClass(service.status)">
           {{ service.status }}
@@ -55,6 +55,6 @@ function statusClass(status: string): string {
 
   <div :if="!loading() && services().length === 0" class="px-5 py-12 text-center">
     <span aria-hidden="true" class="inline-block h-7 w-7 text-neutral-300 dark:text-neutral-600 i-hugeicons-health"></span>
-    <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">No health checks were returned.</p>
+    <p data-dashboard-muted class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">No health checks were returned.</p>
   </div>
 </section>

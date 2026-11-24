@@ -6,8 +6,18 @@
   <link rel="icon" href="/images/logos/favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="/images/logos/favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
   <title>Stacks Dashboard</title>
+  <link rel="stylesheet" href="/__deps/dashboard-theme.css" />
+  <script src="/__deps/dashboard-theme.js"></script>
+  @appearanceBootstrap({
+    storageKey: 'stacks-dashboard-appearance',
+    colorMode: {
+      key: 'colorMode',
+      attribute: 'color-mode',
+      default: 'system',
+    },
+  })
 </head>
-<body class="min-h-screen bg-neutral-100 dark:bg-neutral-950">
+<body data-dashboard-guest class="min-h-screen bg-neutral-100 dark:bg-neutral-950">
   <main data-stx-content>
     @yield('content')
   </main>

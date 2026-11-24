@@ -34,11 +34,11 @@ function statusIcon(status: string): string {
 }
 </script>
 
-<section class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+<section data-dashboard-card="default" class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
   <header class="flex items-center justify-between p-5 border-b border-neutral-200/60 dark:border-white/5">
     <div>
-      <h2 class="font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">{{ title() }}</h2>
-      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ description() }}</p>
+      <h2 data-dashboard-ink class="font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">{{ title() }}</h2>
+      <p data-dashboard-muted class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ description() }}</p>
     </div>
     <slot name="actions" />
   </header>
@@ -59,8 +59,8 @@ function statusIcon(status: string): string {
         <span :class="'h-4 w-4 ' + statusIcon(activity.status)" aria-hidden="true"></span>
       </div>
       <div class="flex-1 min-w-0">
-        <p class="font-medium text-neutral-900 text-sm truncate dark:text-white">{{ activity.title }}</p>
-        <p class="text-neutral-500 text-xs dark:text-neutral-400">
+        <p data-dashboard-ink class="font-medium text-neutral-900 text-sm truncate dark:text-white">{{ activity.title }}</p>
+        <p data-dashboard-muted class="text-neutral-500 text-xs dark:text-neutral-400">
           <span :if="activity.source">{{ activity.source }} · </span>{{ activity.time }}
         </p>
       </div>
@@ -70,7 +70,7 @@ function statusIcon(status: string): string {
 
   <div :if="!loading() && activities().length === 0" class="py-12 text-center">
     <span aria-hidden="true" class="inline-block h-7 w-7 text-neutral-300 dark:text-neutral-600 i-hugeicons-activity-01"></span>
-    <p class="mt-2 font-medium text-neutral-900 text-sm dark:text-white">No recent activity</p>
-    <p class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400">Persisted activity will appear here.</p>
+    <p data-dashboard-ink class="mt-2 font-medium text-neutral-900 text-sm dark:text-white">No recent activity</p>
+    <p data-dashboard-muted class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400">Persisted activity will appear here.</p>
   </div>
 </section>

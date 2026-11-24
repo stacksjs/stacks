@@ -189,15 +189,29 @@ export function sidebarThemeFor(style: SidebarStyle, knownThemes: Record<string,
  * under `APPEARANCE_STORAGE_KEY`.
  */
 export const appearanceStore = defineStore('appearance', () => {
-  const sidebarStyle = state<SidebarStyle>(DEFAULT_APPEARANCE.sidebarStyle)
-  const colorMode = state<ColorMode>(DEFAULT_APPEARANCE.colorMode)
-  const hiddenSections = state<string[]>([...DEFAULT_APPEARANCE.hiddenSections])
+  const saved = readStoredAppearance()
+  const sidebarStyle = state(saved.sidebarStyle)
+  const colorMode = state(saved.colorMode)
+  const hiddenSections = state(saved.hiddenSections)
 
   function snapshot(): AppearancePreferences {
     return {
       sidebarStyle: sidebarStyle(),
       colorMode: colorMode(),
       hiddenSections: hiddenSections(),
+    }
+  }
+
+  function persist(): void {
+    if (typeof window === 'undefined')
+      return
+    try {
+      // Save during the interaction so an immediate navigation sees the new
+      // value in the synchronous appearance bootstrap.
+      window.localStorage.setItem(APPEARANCE_STORAGE_KEY, JSON.stringify(snapshot()))
+    }
+    catch {
+      // The appearance still works in this document if storage is disabled.
     }
   }
 
@@ -238,6 +252,7 @@ export const appearanceStore = defineStore('appearance', () => {
     if (!isSidebarStyle(style))
       return
     sidebarStyle.set(style)
+    persist()
     apply()
   }
 
@@ -245,6 +260,7 @@ export const appearanceStore = defineStore('appearance', () => {
     if (!isColorMode(mode))
       return
     colorMode.set(mode)
+    persist()
     apply()
   }
 
@@ -253,6 +269,7 @@ export const appearanceStore = defineStore('appearance', () => {
     if (!visible)
       next.push(id)
     hiddenSections.set(next)
+    persist()
   }
 
   function isSectionHidden(id: string): boolean {
@@ -263,6 +280,7 @@ export const appearanceStore = defineStore('appearance', () => {
     sidebarStyle.set(DEFAULT_APPEARANCE.sidebarStyle)
     colorMode.set(DEFAULT_APPEARANCE.colorMode)
     hiddenSections.set([])
+    persist()
     apply()
   }
 
@@ -277,12 +295,6 @@ export const appearanceStore = defineStore('appearance', () => {
     reset,
     apply,
   }
-}, {
-  persist: {
-    storage: 'localStorage',
-    key: APPEARANCE_STORAGE_KEY,
-    pick: ['sidebarStyle', 'colorMode', 'hiddenSections'],
-  },
 })
 
 /*

@@ -81,7 +81,7 @@ effect(() => {
   @cancel="handleCancel"
 >
   <div class="flex justify-end min-h-full" @click="handleBackdropClick">
-    <section class="flex relative flex-col h-dvh w-full bg-white dark:bg-neutral-950 border-neutral-200 border-l dark:border-neutral-800 shadow-2xl {{ sizeClasses[size] }}" @click.stop>
+    <section data-dashboard-overlay="drawer" class="flex relative flex-col h-dvh w-full bg-white dark:bg-neutral-950 border-neutral-200 border-l dark:border-neutral-800 shadow-2xl {{ sizeClasses[size] }}" @click.stop>
       <header class="flex gap-4 items-start px-5 py-4 border-b border-neutral-200 dark:border-neutral-800">
         <slot name="header-leading" />
         <div class="flex-1 min-w-0">

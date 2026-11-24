@@ -20,13 +20,18 @@ defineClientPayload({ navSections })
 
 <script client>
 import type { ColorMode, SidebarStyle } from '@stacksjs/defaults/views/dashboard/composables/useAppearance'
+import { ORIGINAL_DASHBOARD_THEME } from '@stacksjs/defaults/views/dashboard/composables/dashboard-themes'
 import {
   COLOR_MODE_OPTIONS,
   SIDEBAR_STYLE_OPTIONS,
   useAppearance,
 } from '@stacksjs/defaults/views/dashboard/composables/useAppearance'
+import { useDashboardThemes } from '@stacksjs/defaults/views/dashboard/composables/useDashboardThemes'
 
 const appearance = useAppearance()
+const themes = useDashboardThemes()
+const usesOriginalTheme = derived(() => themes.active() === ORIGINAL_DASHBOARD_THEME)
+const resetError = state('')
 
 // Every control writes straight through to the preference. There is no Save
 // button and no draft state: the shell restyles under the cursor, which is both
@@ -59,7 +64,15 @@ function toggleSection(id: string, visible: boolean) {
 }
 
 function resetAll() {
-  appearance.reset()
+  resetError.set('')
+  try {
+    if (!usesOriginalTheme())
+      themes.select(ORIGINAL_DASHBOARD_THEME)
+    appearance.reset()
+  }
+  catch (error) {
+    resetError.set((error as Error).message)
+  }
 }
 
 // Selected state travels as a data attribute rather than as a swapped class
@@ -224,8 +237,10 @@ const selected = (a: unknown, b: unknown) => String(a === b)
     backLabel="Settings"
   />
 
+  <DashboardThemePicker />
+
   <!-- ===================== Sidebar style ===================== -->
-  <Card variant="default" padding="none">
+  <Card :if="usesOriginalTheme()" variant="default" padding="none">
     <div class="px-6 py-5 border-b border-neutral-200/60 dark:border-white/5">
       <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Sidebar style</h2>
       <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
@@ -318,11 +333,12 @@ const selected = (a: unknown, b: unknown) => String(a === b)
   <!-- ===================== Reset ===================== -->
   <div class="flex items-center justify-between px-1">
     <p class="text-neutral-500 text-xs dark:text-neutral-400">
-      Preferences are stored in this browser only, and sync across its tabs.
+      Themes and appearance preferences are stored in this browser.
     </p>
     <Button variant="secondary" size="sm" @click="resetAll()">
       Reset to defaults
     </Button>
   </div>
+  <p :if="resetError()" class="text-red-700 text-sm dark:text-red-300" role="alert" :text="resetError()"></p>
 </div>
 </template>

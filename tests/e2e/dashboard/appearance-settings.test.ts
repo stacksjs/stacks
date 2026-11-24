@@ -1,8 +1,8 @@
 /**
  * Settings, Appearance: what a viewer picks applies to the page at once and
  * is still there on the next page. Nothing here goes to the server: the
- * choices are kept in this browser (`stacks-dashboard-appearance` in
- * localStorage) and written onto `<html>`, where the shell's CSS reads them.
+ * choices are kept in this browser and written onto `<html>`, where the
+ * shell's CSS reads them.
  *
  * What this does not see: the layout also stamps them before the first paint
  * so a reload never flashes the defaults, and the page's own script applies
@@ -12,6 +12,7 @@ import type { Cdp } from '@stacksjs/testing/browser'
 import type { DashboardE2E } from './harness'
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { click, navigate, waitFor } from '@stacksjs/testing/browser'
+import { join } from 'node:path'
 import { dashboardE2EAvailable, signIn, startDashboardE2E } from './harness'
 
 describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
@@ -59,6 +60,79 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     }, 5_000, { label: 'the defaults back on the page' })
   }, 120_000)
 
+  test('selects, imports, updates and removes themes across real dashboard pages', async () => {
+    const { cdp } = e2e!.browser
+    const origin = e2e!.origin
+
+    await openAppearance(cdp, origin)
+    const original = 'button[data-theme-id="original"]'
+    const cleaner = 'button[data-theme-id="system-cleaner"]'
+    await waitFor(() => cdp.evaluate(`!!document.querySelector('${cleaner}')`), 10_000)
+    expect(await pressed(cdp, 'The Original')).toBe('true')
+    const starterUrl = await cdp.evaluate<string>(`document.querySelector('a[download="my-dashboard.json"]')?.href`)
+    expect(starterUrl).toStartWith('data:application/json;')
+    const starter = JSON.parse(decodeURIComponent(starterUrl.slice(starterUrl.indexOf(',') + 1)))
+
+    await click(cdp, cleaner)
+    await waitFor(() => themeApplied(cdp, 'system-cleaner', 14), 5_000)
+    expect(await pressed(cdp, 'System Cleaner')).toBe('true')
+
+    await navigate(cdp, origin)
+    expect(await themeApplied(cdp, 'system-cleaner', 14)).toBe(true)
+    expect(await cdp.evaluate(`getComputedStyle(document.body).backgroundImage.includes('gradient')`)).toBe(true)
+
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 840, deviceScaleFactor: 1, mobile: true })
+    try {
+      expect(await themeApplied(cdp, 'system-cleaner', 0)).toBe(true)
+      expect(await cdp.evaluate('document.documentElement.scrollWidth <= innerWidth')).toBe(true)
+      await click(cdp, 'button[aria-label="Open dashboard navigation"]')
+      await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('[data-dashboard-mobile-sidebar] [data-sidebar-item]'))`), 5_000)
+    }
+    finally {
+      await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })
+    }
+    await openAppearance(cdp, origin)
+
+    const imported = {
+      ...starter,
+      id: 'midnight-sample',
+      name: 'Midnight Sample',
+      layout: 'flush',
+      overview: 'panel',
+      light: { ...starter.light, canvas: '#e0dff0' },
+      dark: { ...starter.dark, canvas: '#13152b' },
+    }
+    const manifest = join(e2e!.database.directory, 'dashboard-theme.json')
+
+    await Bun.write(manifest, JSON.stringify({ ...imported, light: { ...imported.light, canvas: 'url(/unknown)' } }))
+    await chooseThemeFile(cdp, manifest)
+    await waitFor(() => cdp.evaluate(`document.querySelector('[role="alert"]')?.textContent.includes('light.canvas') === true`), 5_000)
+    expect(await themeApplied(cdp, 'system-cleaner', 14)).toBe(true)
+
+    await Bun.write(manifest, JSON.stringify(imported))
+    await chooseThemeFile(cdp, manifest)
+    await waitFor(() => themeApplied(cdp, imported.id, 0), 5_000)
+    expect(await pressed(cdp, imported.name)).toBe('true')
+
+    await Bun.write(manifest, JSON.stringify({ ...imported, layout: 'inset', radius: 18 }))
+    await chooseThemeFile(cdp, manifest)
+    await waitFor(() => themeApplied(cdp, imported.id, 18), 5_000)
+    expect(await cdp.evaluate(`document.querySelectorAll('button[data-theme-id="${imported.id}"]').length`)).toBe(1)
+
+    await click(cdp, { selector: '[aria-label="Color mode"] button', text: 'Dark' })
+    await navigate(cdp, origin)
+    expect(await themeApplied(cdp, imported.id, 18)).toBe(true)
+    expect(await cdp.evaluate(`getComputedStyle(document.querySelector('[data-dashboard-content]')).backgroundColor`)).toBe('rgb(19, 21, 43)')
+    expect(await cdp.evaluate(`getComputedStyle(document.querySelector('[data-dashboard-hero]')).backgroundImage.includes('gradient')`)).toBe(true)
+
+    await openAppearance(cdp, origin)
+    await click(cdp, { selector: 'button', text: 'Remove theme' })
+    await waitFor(() => themeApplied(cdp, 'original', 0), 5_000)
+    expect(await cdp.evaluate(`document.querySelector('${original}')?.getAttribute('aria-pressed')`)).toBe('true')
+    expect(await cdp.evaluate(`document.querySelector('button[data-theme-id="${imported.id}"]')`)).toBeNull()
+    await click(cdp, { selector: 'button', text: 'Reset to defaults' })
+  }, 120_000)
+
   test('a hidden section leaves the sidebar, and comes back', async () => {
     const { cdp } = e2e!.browser
     await openAppearance(cdp, e2e!.origin)
@@ -102,4 +176,19 @@ async function sectionShown(cdp: Cdp, id: string): Promise<boolean> {
     const node = document.querySelector('[data-sidebar-section][data-section-id=' + JSON.stringify(${JSON.stringify(id)}) + ']')
     return !!node && node.getClientRects().length > 0
   })()`)
+}
+
+async function chooseThemeFile(cdp: Cdp, path: string): Promise<void> {
+  const { root } = await cdp.send('DOM.getDocument') as { root: { nodeId: number } }
+  const { nodeId } = await cdp.send('DOM.querySelector', {
+    nodeId: root.nodeId,
+    selector: 'input[type="file"][accept=".json,application/json"]',
+  }) as { nodeId: number }
+  expect(nodeId).toBeGreaterThan(0)
+  await cdp.send('DOM.setFileInputFiles', { nodeId, files: [path] })
+}
+
+async function themeApplied(cdp: Cdp, id: string, radius: number): Promise<boolean> {
+  return await cdp.evaluate(`document.documentElement.dataset.dashboardTheme === ${JSON.stringify(id)}
+    && getComputedStyle(document.querySelector('[data-dashboard-content]')).borderTopLeftRadius === '${radius}px'`)
 }

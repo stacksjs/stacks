@@ -128,8 +128,8 @@ onMount(() => {
 
 <style>
   .dashboard-overview {
-    --overview-border: light-dark(#dedee5, #ffffff1a);
-    --overview-surface: light-dark(#ffffff, #18191f);
+    --overview-border: var(--dashboard-border, light-dark(#dedee5, #ffffff1a));
+    --overview-surface: var(--dashboard-surface, light-dark(#ffffff, #18191f));
   }
   .overview-metrics {
     display: grid;
@@ -145,12 +145,12 @@ onMount(() => {
   .overview-panel {
     background: var(--overview-surface);
     border: 1px solid var(--overview-border);
-    border-radius: 1rem;
+    border-radius: var(--dashboard-radius, 1rem);
   }
 </style>
 
-<div class="mx-auto px-4 py-6 sm:px-8 sm:py-8 max-w-6xl dashboard-overview">
-  <div class="flex flex-wrap gap-3 items-start justify-between mb-6">
+<div class="mx-auto px-4 py-6 sm:px-8 sm:py-8 max-w-6xl dashboard-overview" data-dashboard-overview-page>
+  <div data-dashboard-hero class="flex flex-wrap gap-3 items-start justify-between mb-6">
     <PageHeader title="Dashboard" description="Application activity and service health" />
     <Button variant="secondary" size="sm" :loading="dashboard.isLoading.value" @click="loadDashboard">
       Refresh
@@ -166,8 +166,8 @@ onMount(() => {
 
   <section aria-labelledby="application-overview" class="mb-5 p-3 sm:p-4 overview-panel">
     <div class="flex flex-wrap gap-2 items-center justify-between mb-3">
-      <h2 id="application-overview" class="font-semibold text-base text-neutral-900 dark:text-white">Overview</h2>
-      <StxLink to="/requests" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">Request history</StxLink>
+      <h2 data-dashboard-ink id="application-overview" class="font-semibold text-base text-neutral-900 dark:text-white">Overview</h2>
+      <StxLink data-dashboard-muted to="/requests" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">Request history</StxLink>
     </div>
     <div class="overview-metrics">
       <StatsCard :for="item in loadingCards" :if="dashboard.isLoading.value && stats().length === 0" loading />
@@ -195,7 +195,7 @@ onMount(() => {
     <ServiceHealth :services="services()" :loading="dashboard.isLoading.value" />
     <ActivityTable :activities="activities()" :description="activityDescription()" :loading="dashboard.isLoading.value">
       <template #actions>
-        <StxLink to="/data/activity" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">View all</StxLink>
+        <StxLink data-dashboard-muted to="/data/activity" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">View all</StxLink>
       </template>
     </ActivityTable>
   </div>

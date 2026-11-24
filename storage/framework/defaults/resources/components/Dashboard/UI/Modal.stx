@@ -117,6 +117,7 @@ effect(() => {
     <!-- Modal container -->
     <div class="flex min-h-full {{ positionClasses[position] }}" @click="handleBackdropClick">
       <div
+        data-dashboard-overlay="modal"
         class="relative w-full rounded-xl bg-white dark:bg-neutral-900 shadow-2xl {{ sizeClasses[size] }} {{ panelClassName }}"
       >
         <!-- Header -->

@@ -19,7 +19,7 @@ const title = useReactiveProp('title', '')
 const description = useReactiveProp('description', '')
 </script>
 
-<header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+<header data-dashboard-page-heading class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
   <div>
     <h1 class="font-bold text-2xl text-gray-900 dark:text-white">{{ title() }}</h1>
     <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ description() }}</p>

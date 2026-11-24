@@ -772,7 +772,7 @@ function cellClass(column: DashboardTableColumn, index: number): string {
 }
 </script>
 
-<div class="overflow-hidden relative bg-white dark:bg-neutral-900" :class="framed() ? 'border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm' : ''">
+<div data-dashboard-table :data-dashboard-framed="String(framed())" class="overflow-hidden relative bg-white dark:bg-neutral-900" :class="framed() ? 'border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm' : ''">
   <div :if="loading()" class="flex absolute inset-0 z-30 items-center justify-center bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm" role="status">
     <span aria-hidden="true" class="mr-2 h-5 w-5 text-blue-500 animate-spin i-hugeicons-loading-03"></span>
     <span class="text-neutral-500 text-sm dark:text-neutral-400">Loading</span>

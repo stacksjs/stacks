@@ -69,7 +69,7 @@ useEventListener('keydown', handleKeydown)
 useEventListener('stx:navigate', closeSidebar)
 </script>
 
-<div class="flex lg:hidden sticky top-0 z-40 gap-3 items-center px-4 h-14 bg-white/95 dark:bg-neutral-950/95 border-b border-neutral-200 dark:border-neutral-800 backdrop-blur-xl">
+<div data-dashboard-mobile-bar class="flex lg:hidden sticky top-0 z-40 gap-3 items-center px-4 h-14 bg-white/95 dark:bg-neutral-950/95 border-b border-neutral-200 dark:border-neutral-800 backdrop-blur-xl">
   <button
     ref="dashboardMobileMenuButton"
     type="button"

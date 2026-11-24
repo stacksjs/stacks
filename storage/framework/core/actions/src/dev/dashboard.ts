@@ -11,6 +11,7 @@ import { resolveDashboardCraftExecutable, type CraftBinaryResolver } from './das
 import { dashboardHttpsAnswers, dashboardOriginUrl, dashboardPendingHeader, dashboardReadyHeader, dashboardReadyPath, resolveDashboardDomain, resolveDashboardProxyStrategy } from './dashboard-proxy'
 import { buildManifest, discoverProjectModels, findAvailablePort, modelsWithEnabledFeatures, waitForServer, writeFileIfChanged } from './dashboard-utils'
 import { runDashboardSupervisor } from './dashboard-supervisor'
+import { dashboardThemeAssetRoutes } from '../dashboard-theme-assets'
 import { ensureDiscoveredPackages } from '../discover-packages'
 import { resolveStxSource } from '../stx-source'
 
@@ -307,6 +308,7 @@ async function startStxServer(): Promise<void> {
   }
 
   const configRoutes: Record<string, (req: Request) => Response | Promise<Response>> = {
+    ...dashboardThemeAssetRoutes(defaultsPath()),
     ...projectSwitcherRoutes({
       root: projectPath(),
       get url() { return dashboardBrowserUrl },
