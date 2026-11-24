@@ -107,7 +107,7 @@ test.each(restartModes)('dashboard restart keeps the old worker serving through 
   const child = spawnDashboard(root, true)
   try {
     const before = await waitFor(() => readProjectService(root, 'dashboard'))
-    const control = findRestartControl(root, 'dashboard', before.pid)!
+    const control = await waitFor(() => findRestartControl(root, 'dashboard', before.pid))
     expect((await fetch(`${control.url}/restart`, { method: 'POST' })).status).toBe(403)
     if (mode === 'legacy signal')
       clearProjectService(root, control.name, control.pid)
