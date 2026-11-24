@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'
+import { createConnection } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { isProcessAlive } from '@stacksjs/path'
@@ -54,7 +55,10 @@ async function sampleTraffic(urls: string[], signal: AbortSignal): Promise<{ fai
   return { failures, responses }
 }
 
-test.skipIf(process.platform === 'win32')('Software Update rolls web and API workers without interrupting traffic', async () => {
+const modes = process.platform === 'win32' ? ['TCP relay'] : ['native listeners', 'TCP relay']
+
+test.each(modes)('Software Update rolls web and API workers without interrupting traffic (%s)', async (mode) => {
+  const usingRelay = mode === 'TCP relay'
   const root = await mkdtemp(join(tmpdir(), 'stacks-serve-restart-'))
   const children: Array<ReturnType<typeof Bun.spawn>> = []
   const framework = resolve(import.meta.dir, '../../../../..')
@@ -62,17 +66,23 @@ test.skipIf(process.platform === 'win32')('Software Update rolls web and API wor
   const actions = join(root, 'storage/framework/core/actions/src/serve')
   const apiFile = join(actions, 'api.ts')
   const stx = join(root, 'serve-fixture.ts')
+  const relayWorker = join(framework, 'storage/framework/core/actions/src/helpers/serve-relay-worker.ts')
   const versionedApi = (release: string) => `
+import { installServeRelayWorker, serveRelayPort } from ${JSON.stringify(relayWorker)}
 if ('${release}' === 'after') {
   await Bun.write('api-starting', '')
   while (!await Bun.file('start-api').exists())
     await Bun.sleep(25)
 }
+const relayPort = serveRelayPort()
+const relay = relayPort ? installServeRelayWorker(drain) : undefined
 const server = Bun.serve({
-  hostname: process.env.API_HOST,
-  port: Number(process.env.PORT),
-  reusePort: process.env.STACKS_SERVE_WORKER === '1',
-  async fetch(request) {
+  hostname: relay ? '127.0.0.1' : process.env.API_HOST,
+  port: relayPort ?? Number(process.env.PORT),
+  reusePort: !relay && process.env.STACKS_SERVE_WORKER === '1',
+  async fetch(request, server) {
+    if (new URL(request.url).pathname === '/api/peer')
+      return Response.json((relay?.wrap(server) ?? server).requestIP(request))
     if (new URL(request.url).pathname === '/api/slow') {
       await Bun.write('slow-api-started', '')
       while (!await Bun.file('finish-slow-api').exists())
@@ -81,11 +91,12 @@ const server = Bun.serve({
     return new Response('${release} ' + process.pid)
   },
 })
-process.on('SIGTERM', async () => {
+async function drain() {
   await Bun.write('api-draining', '')
   await server.stop()
   process.exit(0)
-})
+}
+process.on('SIGTERM', drain)
 process.send({ type: 'stacks:api-ready', port: server.port })
 `
   try {
@@ -133,6 +144,7 @@ export { serve } from 'bun-plugin-stx/serve'
           BUN_PLUGIN_STX_SRC: stx,
           PORT_API: String(api),
           SHUTDOWN_GRACE_MS: '2500',
+          STACKS_SERVE_TCP_RELAY: usingRelay ? '1' : undefined,
         },
         stdout: 'ignore',
         stderr: 'inherit',
@@ -148,6 +160,27 @@ export { serve } from 'bun-plugin-stx/serve'
     expect(pageBefore).toMatch(/<h1>worker \d+<\/h1>/)
     expect(apiBefore).toMatch(/^before \d+$/)
     const apiUrl = `http://127.0.0.1:${api}`
+    if (usingRelay) {
+      // A network client cannot supply trusted peer metadata through HTTP.
+      const peer = await new Promise<{ port: number, address: string, expectedPort?: number }>((resolve, reject) => {
+        let response = ''
+        const socket = createConnection({ host: '127.0.0.1', port: api })
+        socket.setTimeout(3000, () => socket.destroy(new Error('Peer request timed out')))
+        socket.once('error', reject)
+        let expectedPort: number | undefined
+        socket.once('connect', () => {
+          expectedPort = socket.localPort
+          socket.write('GET /api/peer HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nX-Forwarded-For: 192.0.2.1\r\n\r\n')
+        })
+        socket.on('data', chunk => { response += chunk })
+        socket.once('end', () => {
+          try { resolve({ ...JSON.parse(response.split('\r\n\r\n')[1]!), expectedPort }) }
+          catch (error) { reject(error) }
+        })
+      })
+      expect(peer.address).toBe('127.0.0.1')
+      expect(peer.port).toBe(peer.expectedPort!)
+    }
     const slow = fetch(`${apiUrl}/api/slow`, { signal: AbortSignal.timeout(12_000) }).then(response => response.text())
     const originalRequest = slow.catch(error => String(error))
     const originalWebRequest = fetch(`${webUrl}/slow`, { signal: AbortSignal.timeout(12_000) })
@@ -165,7 +198,8 @@ export { serve } from 'bun-plugin-stx/serve'
       expect(await stillServing.text()).toBe(apiBefore)
       expect(await Bun.file(join(root, 'api-draining')).exists()).toBe(false)
       await Bun.write(join(root, 'start-api'), '')
-      await holdUntil(join(root, 'api-draining'))
+      if (!usingRelay)
+        await holdUntil(join(root, 'api-draining'))
       await Bun.write(join(root, 'finish-slow-api'), '')
       expect(await originalRequest).toBe(apiBefore)
       const deadline = Date.now() + 5000

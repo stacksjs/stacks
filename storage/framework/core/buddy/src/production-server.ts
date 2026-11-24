@@ -6,6 +6,7 @@ import { log } from '@stacksjs/logging'
 import { siteConfigPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { resolveStxSource } from '@stacksjs/actions'
+import { installServeRelayWorker, serveRelayPort } from '@stacksjs/actions/helpers/serve-relay-worker'
 import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import type { EnhancedRequest } from '@stacksjs/router'
 import { beginRequestCapture, finishRequestCapture } from '@stacksjs/router/request-capture'
@@ -183,8 +184,10 @@ export async function startProductionServer(options?: { port?: string | number, 
     process.env.PORT = String(options.port)
   process.env.APP_ENV = process.env.APP_ENV || 'production'
 
-  const port = Number(process.env.PORT) || 3000
-  const hostname = process.env.HOST?.trim() || undefined
+  const relayPort = serveRelayPort()
+  const relay = relayPort ? installServeRelayWorker(() => process.exit(0)) : undefined
+  const port = relayPort ?? (Number(process.env.PORT) || 3000)
+  const hostname = relay ? '127.0.0.1' : process.env.HOST?.trim() || undefined
   const readinessToken = process.env.STACKS_SERVE_READY_TOKEN
 
   const { config, feature, overridesReady, resolveViewPatterns } = await import('@stacksjs/config')
@@ -384,8 +387,8 @@ export async function startProductionServer(options?: { port?: string | number, 
         // release must bind the port before the old one is stopped. Off for
         // direct local entrypoints. Buddy-owned workers also opt in so their
         // replacement can listen before the old worker drains.
-        reusePort: Boolean(readinessToken) || ['production', 'staging', 'development']
-          .includes((process.env.APP_ENV || '').toLowerCase()),
+        reusePort: !relay && (Boolean(readinessToken) || ['production', 'staging', 'development']
+          .includes((process.env.APP_ENV || '').toLowerCase())),
         // The APP's components, with the framework's behind them.
         //
         // This was `join(defaultsResources, 'components')` — the framework
@@ -437,7 +440,9 @@ export async function startProductionServer(options?: { port?: string | number, 
         prepareMiddlewareRequest: (request: Request) => enhanceRequest(request as EnhancedRequest),
         // A page's ambient `ip`: the address trusted proxies vouch for, not
         // the proxy's own (stx >= 0.2.373).
-        clientAddress: viewClientAddress,
+        clientAddress: relay
+          ? (req: Request, server: Parameters<typeof viewClientAddress>[1]) => viewClientAddress(req, relay.wrap(server))
+          : viewClientAddress,
         // Maintenance / coming-soon gate runs first so it intercepts every
         // request. The gate allowlists `/coming-soon`, the secret bypass URL,
         // and static assets, so the holding page renders and visitors with a
@@ -456,7 +461,7 @@ export async function startProductionServer(options?: { port?: string | number, 
           // when proxying to the API - starts from. Without it every
           // forwarding header is believed, and a client that reaches this port
           // directly writes its own.
-          registerPeerSource(server)
+          registerPeerSource(relay ? relay.wrap(server) : server)
 
           const { maintenanceGate, isApiBoundRequest: isApiBound, proxyToBackend, resolveRedirect, resolveRewrite } = await import('@stacksjs/server')
           const gated = await maintenanceGate(req)

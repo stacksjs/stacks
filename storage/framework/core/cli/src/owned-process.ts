@@ -26,6 +26,7 @@ export interface OwnedProcess {
   readonly stdout: ReadableStream<Uint8Array> | null
   readonly stderr: ReadableStream<Uint8Array> | null
   readonly stdin: import('bun').FileSink | null
+  send: (message: unknown) => boolean
   stop: () => Promise<void>
 }
 
@@ -126,11 +127,17 @@ process.on('SIGTERM', () => {
 })
 setInterval(() => {}, 60000)
 let launched = false
+let consumer
 process.on('disconnect', () => {
   if (process.platform !== 'win32') process.kill(-process.pid, 'SIGKILL')
   else process.exit(1)
 })
 process.on('message', message => {
+  if (message?.type === 'relay') {
+    try { consumer?.send(message.payload) }
+    catch { /* the command may already be exiting */ }
+    return
+  }
   if (message?.start !== true || launched) return
   launched = true
   try {
@@ -151,6 +158,7 @@ process.on('message', message => {
       stdin: 'inherit', stdout: 'inherit', stderr: 'inherit',
       ...relay,
     })
+    if (message.ipc) consumer = child
     // Publish identity before any ready message, including native callbacks
     // delivered before spawn returns. Exit alone does not establish IPC drain.
     process.send({ type: 'started', pid: child.pid })
@@ -272,6 +280,17 @@ process.send({ type: 'ready' })
     stdout: child.stdout instanceof ReadableStream ? child.stdout : null,
     stderr: child.stderr instanceof ReadableStream ? child.stderr : null,
     stdin: child.stdin && typeof child.stdin !== 'number' ? child.stdin : null,
+    send(message) {
+      if (!options.ipc || !consumerPid || stopping || completed)
+        return false
+      try {
+        child.send({ type: 'relay', payload: message })
+        return true
+      }
+      catch {
+        return false
+      }
+    },
     stop,
   }
 }

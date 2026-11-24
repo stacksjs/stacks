@@ -149,6 +149,11 @@ jobs:
         run: bun .github/scripts/source-release-evidence.ts test
       - name: Verify immediate readiness and exit ordering repeatedly
         run: bun .github/scripts/source-release-evidence.ts stress
+      - name: Verify rolling Buddy server restarts on Windows
+        if: runner.os == 'Windows'
+        env:
+          APP_ENV: test
+        run: bun test ./storage/framework/core/buddy/tests/serve-restart.test.ts
 
   release-evidence-macos:
     name: Release evidence (macos-arm64)

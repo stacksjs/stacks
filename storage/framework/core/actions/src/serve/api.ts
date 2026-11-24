@@ -21,11 +21,12 @@ import process from 'node:process'
 import { config, overridesReady } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { appPath, frameworkPath } from '@stacksjs/path'
-import { disableViewRouting, route } from '@stacksjs/router'
+import { disableViewRouting, registerPeerSource, route } from '@stacksjs/router'
 import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import { ensureDiscoveredPackages } from '../discover-packages'
 import { reportApiReady, resolveApiHost } from '../helpers/api-host'
 import { shutDownApiServer } from '../helpers/api-shutdown'
+import { installServeRelayWorker, serveRelayPort } from '../helpers/serve-relay-worker'
 
 /**
  * Resolve a file from the scaffold defaults tree.
@@ -61,8 +62,9 @@ function resolveDefaultsFile(rel: string): string {
 await overridesReady
 
 // Production defaults
-const port = Number(process.env.PORT) || config.ports?.api || 3008
-const hostname = resolveApiHost()
+const relayPort = serveRelayPort()
+const port = relayPort ?? (Number(process.env.PORT) || config.ports?.api || 3008)
+const hostname = relayPort ? '127.0.0.1' : resolveApiHost()
 
 log.info(`[Stacks API] Starting server...`)
 log.info(`[Stacks API] Environment: ${process.env.APP_ENV || 'development'}`)
@@ -201,7 +203,7 @@ const server = await route.serve({
   ...serverRequestBodyOptions(config.server?.maxRequestBodySize),
   port,
   hostname,
-  reusePort: isDeployed || isManaged,
+  reusePort: !relayPort && (isDeployed || isManaged),
 } as Parameters<typeof route.serve>[0])
 
 // Graceful drain for the zero-downtime cutover: when systemd stops the
@@ -209,12 +211,19 @@ const server = await route.serve({
 // in-flight requests finish and run the shutdown hooks (`route.stopping`);
 // hard-exit after a grace window so a stuck keep-alive can't ride into
 // systemd's SIGKILL mid-request.
-process.on('SIGTERM', () => {
+let draining = false
+function drain(): void {
+  if (draining)
+    return
+  draining = true
   void shutDownApiServer(server, {
     graceMs: Number(process.env.SHUTDOWN_GRACE_MS) || 15_000,
     exit: code => process.exit(code),
   })
-})
+}
+process.on('SIGTERM', drain)
+if (relayPort)
+  registerPeerSource(installServeRelayWorker(drain).wrap(server))
 
 reportApiReady(server, false)
 log.info(`[Stacks API] Server running at http://${hostname}:${port}`)
