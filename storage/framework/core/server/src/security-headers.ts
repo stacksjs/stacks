@@ -65,6 +65,27 @@ export interface ViewSecurityRules extends EmbeddableRules {
   hsts?: string | null
   crossOriginOpenerPolicy?: string | null
   permissionsPolicy?: string | null
+  /** The page CSP, or null when the app has not turned it on. */
+  csp?: ResolvedPageCsp | null
+}
+
+/** CSP directives: each a list of sources, or `false` to drop a default one. */
+export type CspDirectives = Record<string, readonly string[] | false>
+
+/** `config.server.security.csp`. */
+export type PageCspOption = boolean | 'report-only' | {
+  /** Send `Content-Security-Policy-Report-Only`, which reports and blocks nothing. */
+  reportOnly?: boolean
+  /** Merged over the defaults; the nonce is always added to `script-src`. */
+  directives?: CspDirectives
+  /** Where the browser posts violation reports. */
+  reportUri?: string
+}
+
+interface ResolvedPageCsp {
+  reportOnly: boolean
+  directives: CspDirectives
+  reportUri?: string
 }
 
 /** The page security settings in `config.server.security`. */
@@ -73,6 +94,7 @@ export interface ViewSecurityOptions {
   hsts?: boolean | string
   crossOriginOpenerPolicy?: string | false
   permissionsPolicy?: Record<string, string> | false
+  csp?: PageCspOption
 }
 
 const HSTS_DEFAULT = 'max-age=31536000; includeSubDomains'
@@ -125,7 +147,80 @@ export function resolveViewSecurityRules(security: ViewSecurityOptions | undefin
     ? null
     : Object.entries({ ...PERMISSIONS_POLICY_DEFAULT, ...permissions }).map(([feature, allow]) => `${feature}=${allow}`).join(', ')
 
+  const csp = security?.csp
+  rules.csp = !csp
+    ? null
+    : csp === true || csp === 'report-only'
+      ? { reportOnly: csp === 'report-only', directives: {} }
+      : { reportOnly: csp.reportOnly === true, directives: csp.directives ?? {}, reportUri: csp.reportUri }
+
   return rules
+}
+
+/**
+ * The page policy's defaults. Scripts must be the page's own or carry this
+ * response's nonce; styles may be inline, because stx and ts-css write style
+ * attributes, and a nonce in `style-src` would make browsers ignore
+ * `'unsafe-inline'` and block them.
+ */
+const PAGE_CSP_DEFAULTS: Record<string, readonly string[]> = {
+  'default-src': ["'self'"],
+  'script-src': ["'self'"],
+  'style-src': ["'self'", "'unsafe-inline'"],
+  'img-src': ["'self'", 'data:', 'blob:', 'https:'],
+  'font-src': ["'self'", 'data:'],
+  'connect-src': ["'self'"],
+  'object-src': ["'none'"],
+  'base-uri': ["'self'"],
+  'form-action': ["'self'"],
+  'frame-ancestors': ["'self'"],
+}
+
+/**
+ * The CSP header value for one response: the defaults, then the app's
+ * directives over them, with `nonce` added to `script-src`. An embeddable
+ * path has no `frame-ancestors`, the CSP twin of its missing X-Frame-Options.
+ */
+export function pageContentSecurityPolicy(directives: CspDirectives, nonce: string, embeddable: boolean, reportUri?: string): string {
+  const merged: Record<string, readonly string[] | false> = { ...PAGE_CSP_DEFAULTS, ...directives }
+  if (embeddable && !directives['frame-ancestors'])
+    merged['frame-ancestors'] = false
+  const parts: string[] = []
+  for (const [name, sources] of Object.entries(merged)) {
+    if (sources === false) continue
+    const list = name === 'script-src' ? [...sources, `'nonce-${nonce}'`] : sources
+    parts.push(list.length > 0 ? `${name} ${list.join(' ')}` : name)
+  }
+  if (reportUri)
+    parts.push(`report-uri ${reportUri}`)
+  return parts.join('; ')
+}
+
+/** 16 random bytes, base64: a CSP nonce. */
+function newNonce(): string {
+  return Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64')
+}
+
+/**
+ * The page with a nonce on every `<script>` and the policy that allows them.
+ * Only an HTML response is rewritten, and one that already carries a policy
+ * of its own is left as it is.
+ */
+function withPageCsp(response: Response, csp: ResolvedPageCsp, embeddable: boolean): Response {
+  const header = csp.reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
+  if (!/^text\/html\b/i.test(response.headers.get('Content-Type') ?? '')
+    || response.headers.has('Content-Security-Policy') || response.headers.has('Content-Security-Policy-Report-Only'))
+    return response
+
+  const nonce = newNonce()
+  const rewritten = new HTMLRewriter()
+    .on('script', { element(element) { element.setAttribute('nonce', nonce) } })
+    .transform(response)
+  const headers = new Headers(rewritten.headers)
+  headers.set(header, pageContentSecurityPolicy(csp.directives, nonce, embeddable, csp.reportUri))
+  // The body changed length; let the server count it again.
+  headers.delete('Content-Length')
+  return new Response(rewritten.body, { status: response.status, statusText: response.statusText, headers })
 }
 
 let _isDisabledCache: boolean | undefined
@@ -231,27 +326,32 @@ export function applyViewSecurityHeaders(
     wanted.push(['Permissions-Policy', view.permissionsPolicy])
 
   const missing = wanted.filter(([name]) => !response.headers.has(name))
-  if (missing.length === 0)
-    return undefined
+  let secured: Response | undefined
+  if (missing.length > 0) {
+    try {
+      for (const [name, value] of missing)
+        response.headers.set(name, value)
+    }
+    catch {
+      // Immutable headers (`Response.redirect()`, some cached responses).
+      const headers = new Headers(response.headers)
+      for (const [name, value] of missing)
+        headers.set(name, value)
 
-  try {
-    for (const [name, value] of missing)
-      response.headers.set(name, value)
-
-    return undefined
+      secured = new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      })
+    }
   }
-  catch {
-    // Immutable headers (`Response.redirect()`, some cached responses).
-    const headers = new Headers(response.headers)
-    for (const [name, value] of missing)
-      headers.set(name, value)
 
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers,
-    })
-  }
+  if (!view.csp)
+    return secured
+
+  const current = secured ?? response
+  const withCsp = withPageCsp(current, view.csp, embeddable)
+  return withCsp === current ? secured : withCsp
 }
 
 /** Test helper - reset the cached env-derived flag. */

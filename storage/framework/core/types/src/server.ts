@@ -306,6 +306,22 @@ export interface ServerSecurityOptions {
    * turns the header off.
    */
   permissionsPolicy?: Record<string, string> | false
+
+  /**
+   * A Content-Security-Policy on pages. Off by default. `true` enforces it,
+   * `'report-only'` (or `{ reportOnly: true }`) only reports, which is how to
+   * find out what a page would break before enforcing. Every `<script>` the
+   * page carries gets a fresh per-response nonce, and `script-src` allows it.
+   * `directives` merge over the defaults (`default-src 'self'`, inline styles
+   * allowed, `object-src 'none'`, `base-uri`/`form-action`/`frame-ancestors
+   * 'self'`); `false` drops one. Inline `on*=` attributes are not scripts and
+   * are blocked by an enforced policy.
+   */
+  csp?: boolean | 'report-only' | {
+    reportOnly?: boolean
+    directives?: Record<string, readonly string[] | false>
+    reportUri?: string
+  }
 }
 
 export interface ServerOptions {
