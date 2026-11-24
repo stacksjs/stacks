@@ -7024,6 +7024,27 @@ async function handleServerRequestBeforeRoutes(request: Request): Promise<Respon
   return handleLoadedServerRequest(request)
 }
 
+/** bun-router's 404 for a path no route matches names the path and method; a route's own 404 does not. */
+function isUnmatchedRouteBody(text: string, path: string, method: string): boolean {
+  return text === JSON.stringify({ success: false, message: 'Not Found', path, method })
+    || text === JSON.stringify({ error: 'Not Found', path, method })
+}
+
+/**
+ * Whether `response` is the router saying no route matches `request`, as
+ * opposed to a route answering 404 itself (a record that is not there). A
+ * host that serves something else beside the app's routes, such as a desktop
+ * web view's pages, passes such a request on (stacksjs/stacks#3368).
+ */
+export async function isUnmatchedRouteResponse(response: Response, request: Request): Promise<boolean> {
+  if ((response as unknown as Record<symbol, unknown>)[ENRICHED_NOT_FOUND_RESPONSE] === true)
+    return true
+  if (response.status !== 404 || !response.headers.get('content-type')?.includes('json'))
+    return false
+  const { pathname } = new URL(request.url)
+  return isUnmatchedRouteBody(await response.clone().text(), pathname, request.method)
+}
+
 async function handleLoadedServerRequest(request: Request): Promise<Response> {
   const response = await route.handleRequest(request)
 
@@ -7043,9 +7064,7 @@ async function handleLoadedServerRequest(request: Request): Promise<Response> {
       const path = url.pathname
       const method = request.method
       const text = await response.clone().text()
-      const alreadyEnriched = text === JSON.stringify({ success: false, message: 'Not Found', path, method })
-        || text === JSON.stringify({ error: 'Not Found', path, method })
-      if (alreadyEnriched)
+      if (isUnmatchedRouteBody(text, path, method))
         return response
 
       const body = JSON.parse(text)

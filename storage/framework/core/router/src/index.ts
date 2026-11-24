@@ -84,7 +84,7 @@ export {
 } from './error-handler'
 
 // Export route introspection helpers
-export { listNamedRoutes, listRedirectRoutes, listRegisteredRoutes, routeParams } from './stacks-router'
+export { isUnmatchedRouteResponse, listNamedRoutes, listRedirectRoutes, listRegisteredRoutes, routeParams } from './stacks-router'
 export { DASHBOARD_ROUTE_GROUPS, dashboardGroupMiddleware, describeUnknownDashboardGroups, resolveDashboardAccess } from './dashboard-access'
 export type { DashboardAccess, DashboardRouteGroupPrefix } from './dashboard-access'
 export type { UrlParams } from './stacks-router'

@@ -51,3 +51,22 @@ describe('nativeRouteErrorResponse, with no error handler to defer to', () => {
     expect(body).toMatchObject({ error: 'Internal Server Error', message: 'An unexpected error occurred.', status: 500 })
   })
 })
+
+// stacksjs/stacks#3368: a host serving more than the app's routes (a desktop
+// web view's pages) passes on what no route matches, and only that.
+describe('isUnmatchedRouteResponse', () => {
+  it('is true for the router\'s own 404 and false for a route\'s', async () => {
+    const { createStacksRouter, isUnmatchedRouteResponse } = await import('../src')
+    const router = createStacksRouter({ csrf: false })
+    router.get('/_unmatched/record', () => new Response(JSON.stringify({ message: 'Not Found' }), { status: 404, headers: { 'content-type': 'application/json' } }))
+    router.get('/_unmatched/ok', () => ({ ok: true }))
+
+    const ask = async (path: string) => {
+      const request = new Request(`http://localhost${path}`, { headers: { accept: 'application/json' } })
+      return isUnmatchedRouteResponse(await router.handleRequest(request), request)
+    }
+    expect(await ask('/_unmatched/nowhere')).toBe(true)
+    expect(await ask('/_unmatched/record')).toBe(false)
+    expect(await ask('/_unmatched/ok')).toBe(false)
+  })
+})
