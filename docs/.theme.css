@@ -11,6 +11,81 @@
  * blocks no matter where in the head each stylesheet lands.
  */
 
+/* ------------------------------------------------------------------ type */
+
+/* Geist and Geist Mono from the files stacksjs.com already serves, with the
+ * main site's metric-matched fallbacks. Same origin and immutably cached, so
+ * a reader coming from the home page has them already; a Google Fonts
+ * stylesheet was a render-blocking request to another origin on every page. */
+
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/assets/fonts/geist/geist-latin.9b6f5ff45b27.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/assets/fonts/geist/geist-mono-latin.5f3d6ad60f29.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Geist Fallback";
+  font-weight: 100 449;
+  src: local("Arial"), local("ArialMT");
+  size-adjust: 102.0%;
+  ascent-override: 98.5%;
+  descent-override: 28.9%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Geist Fallback";
+  font-weight: 450 574;
+  src: local("Arial"), local("ArialMT");
+  size-adjust: 105.0%;
+  ascent-override: 95.7%;
+  descent-override: 28.1%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Geist Fallback";
+  font-weight: 575 639;
+  src: local("Arial Bold"), local("Arial-BoldMT");
+  size-adjust: 99.6%;
+  ascent-override: 100.9%;
+  descent-override: 29.6%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Geist Fallback";
+  font-weight: 640 689;
+  src: local("Arial Bold"), local("Arial-BoldMT");
+  size-adjust: 100.8%;
+  ascent-override: 99.7%;
+  descent-override: 29.3%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Geist Fallback";
+  font-weight: 690 900;
+  src: local("Arial Bold"), local("Arial-BoldMT");
+  size-adjust: 101.8%;
+  ascent-override: 98.7%;
+  descent-override: 29.0%;
+  line-gap-override: 0%;
+}
+
 /* ---------------------------------------------------------------- palette */
 
 :root {
@@ -37,7 +112,7 @@
 
   --bp-c-text-1: #0f172a;
   --bp-c-text-2: #475569;
-  --bp-c-text-3: #8391a7;
+  --bp-c-text-3: #5f6c82;
 
   --bp-c-border: #dbe2ec;
   --bp-c-divider: #e8edf4;
@@ -62,7 +137,7 @@
 
   --bp-nav-bg-color: rgba(255, 255, 255, 0.78);
   --bp-sidebar-bg-color: #fbfcfe;
-  --bp-font-family-base: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --bp-font-family-base: 'Geist', 'Geist Fallback', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --bp-font-family-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --bp-code-font-size: 13.5px;
   --bp-code-line-height: 1.75;
@@ -91,7 +166,7 @@ html.dark {
 
   --bp-c-text-1: #e6ebf5;
   --bp-c-text-2: #a3afc4;
-  --bp-c-text-3: #6b7890;
+  --bp-c-text-3: #8794aa;
 
   --bp-c-border: #23304a;
   --bp-c-divider: #18223a;
@@ -614,7 +689,16 @@ html .BPSearch-backdrop {
  * truncated to "Stacks D..." beside the search and social icons. */
 @media (max-width: 480px) {
   html .BPNavBarTitle-text {
-    display: none;
+    /* Hidden from sight only: the logo's alt text is empty, so this is the
+     * link's accessible name. Removing it from layout left the home link
+     * with no name at all. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 

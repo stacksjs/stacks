@@ -12,10 +12,8 @@ const config: BunPressOptions = {
   docsDir: './docs',
   outDir: './dist/docs',
 
-  // Matches stacksjs.com: Geist for text, Geist Mono for code and labels.
-  fonts: {
-    google: ['Geist:wght@400;500;600;700', 'Geist Mono:wght@400;500;600'],
-  },
+  // Geist and Geist Mono come from docs/.theme.css, which points at the
+  // files stacksjs.com serves itself (see the note there).
 
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/images/logos/favicon.svg' }],
