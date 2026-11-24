@@ -142,6 +142,14 @@ export interface WebviewAgentConfig {
   startPath?: string
   /** Paths (prefixes ending in `/`, or exact) served without the session cookie: a bearer-token API for another tool. Default none. */
   publicPaths?: string[]
+  /**
+   * Serve the project's own routes from the agent: the route files
+   * `app/Routes.ts` registers, the actions they name by string, and every
+   * middleware, compiled into the app so they work wherever it is installed.
+   * They answer after `entry`; a path no route matches goes on to the views.
+   * Default `false` (stacksjs/stacks#3368).
+   */
+  appRoutes?: boolean
 }
 
 /**

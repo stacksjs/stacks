@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { resolveMacosDesktop } from '@stacksjs/desktop-build'
-import { craftSupportsWebkit, macosAgentDevManifest, macosAgentEntry } from '../src/build/macos-native'
+import { appBundleFiles, craftSupportsWebkit, macosAgentDevManifest, macosAgentEntry } from '../src/build/macos-native'
 
 /**
  * The build side of `macos.agent` and `macos.webkit`: which routes the agent
@@ -79,5 +79,46 @@ describe('the development manifest', () => {
 
   test('appRoutes: false serves only the agent entry', () => {
     expect(macosAgentDevManifest(resolveMacosDesktop({ ...browser, agent: { appRoutes: false } }, '1.0.0'), { root: '/p', host: '/h', nativeBundle: '/s' }).appRoutes).toBe(false)
+  })
+})
+
+// stacksjs/stacks#3368: what a compiled app carries of the project, the same
+// for the macOS agent and the web view one.
+describe('appBundleFiles', () => {
+  test('the registry\'s route files, the actions they and the agent name, and every middleware', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-app-bundle-'))
+    try {
+      const put = (path: string, body: string) => {
+        mkdirSync(dirname(join(root, path)), { recursive: true })
+        writeFileSync(join(root, path), body)
+      }
+      put('app/Routes.ts', "export default { api: { path: 'api', middleware: 'auth' }, web: 'web' }\n")
+      put('routes/api.ts', "route.post('/queue', 'Actions/QueueAction')\n")
+      put('routes/web.ts', "route.get('/', 'Actions/HomeAction')\n")
+      put('app/Desktop/Agent.ts', "route.get('/native', 'Actions/NativeAction')\n")
+      put('app/Actions/QueueAction.ts', 'export default {}\n')
+      put('app/Actions/NativeAction.ts', 'export default {}\n')
+      put('storage/framework/defaults/app/Actions/HomeAction.ts', 'export default {}\n')
+      put('storage/framework/defaults/app/Middleware/Auth.ts', 'export default {}\n')
+      put('app/Middleware/Auth.ts', 'export default {}\n')
+      put('app/Middleware/Team.ts', 'export default {}\n')
+
+      const files = await appBundleFiles(root, [join(root, 'app/Desktop/Agent.ts')])
+
+      expect(files.routes).toEqual([
+        { file: join(root, 'routes/api.ts'), prefix: '/api', middleware: ['auth'] },
+        { file: join(root, 'routes/web.ts') },
+      ])
+      expect(files.actions).toEqual({
+        'Actions/QueueAction': join(root, 'app/Actions/QueueAction.ts'),
+        'Actions/HomeAction': join(root, 'storage/framework/defaults/app/Actions/HomeAction.ts'),
+        'Actions/NativeAction': join(root, 'app/Actions/NativeAction.ts'),
+      })
+      // The app's middleware replaces the default of the same name.
+      expect(files.middleware).toEqual({ Auth: join(root, 'app/Middleware/Auth.ts'), Team: join(root, 'app/Middleware/Team.ts') })
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
   })
 })

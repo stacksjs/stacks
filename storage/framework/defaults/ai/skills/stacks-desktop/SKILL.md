@@ -552,6 +552,12 @@ What the launcher (`runWebviewApp`) does, the same on every platform:
 `agent.publicPaths` opens paths to callers without the cookie (an MCP endpoint behind its own bearer token). The
 app's handler must authenticate those itself; the views are never served there.
 
+`agent.appRoutes: true` serves the project's own routes from the agent: the route files `app/Routes.ts` registers,
+the actions they name by string and every middleware, imported statically by the generated entry so a built app
+carries them (`appBundleFiles`, the same collector the macOS agent uses). They answer after `agent.entry`; a path no
+route matches (`isUnmatchedRouteResponse` from `@stacksjs/router`) goes on to the views, while a route's own 404 is
+still the app's answer. Off by default. Migrations, client scripts and config are not bundled yet (stacksjs/stacks#3368).
+
 **Views.** `buddy dev:desktop` serves `agent.views` live through stx (`bun-plugin-stx/serve`, with the gate and the
 agent module in its `onRequest`). `buddy build:desktop` builds them to static pages with stx's `buildStaticSite`
 and compiles every file into the agent, so a built app reads no loose view files. Component directories for the

@@ -1,4 +1,4 @@
-import type { DesktopAgentManifest, MacosAgentBundle, MacosDistribution, ResolvedMacosDesktop } from '@stacksjs/desktop-build'
+import type { AgentBundleFiles, DesktopAgentManifest, MacosAgentBundle, MacosDistribution, ResolvedMacosDesktop } from '@stacksjs/desktop-build'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -284,6 +284,22 @@ export function macosAgentMiddlewareFiles(root: string): Record<string, string> 
     }
   }
   return middleware
+}
+
+/**
+ * Everything of the project a compiled app's agent carries so it can serve the
+ * app's own routes: the registry's route files, the actions those files and
+ * `extraSources` (the agent's own module) name by string, and every
+ * middleware. Shared by the macOS agent and the web view build
+ * (stacksjs/stacks#3368).
+ */
+export async function appBundleFiles(root: string, extraSources: string[] = []): Promise<Required<AgentBundleFiles>> {
+  const routes = await macosAgentRouteFiles(root)
+  return {
+    routes,
+    actions: macosAgentActionFiles(root, [...routes.map(route => route.file), ...extraSources]),
+    middleware: macosAgentMiddlewareFiles(root),
+  }
 }
 
 /**
