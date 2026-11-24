@@ -1,5 +1,64 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.675...v0.75.676)
+
+## ✨ Features
+
+- **new**: install new apps from the Pantry registry ([f58a1be](https://github.com/stacksjs/stacks/commit/f58a1be)) _(by Chris Breuer)_
+- **buddy**: roll served apps without downtime ([8ff70d8](https://github.com/stacksjs/stacks/commit/8ff70d8)) _(by Chris Breuer)_
+- **buddy**: restart served apps from Software Update ([768f966](https://github.com/stacksjs/stacks/commit/768f966)) _(by Chris Breuer)_
+- **buddy**: restart standalone development servers from Settings ([c9014c9](https://github.com/stacksjs/stacks/commit/c9014c9)) _(by Chris Breuer)_
+- **buddy**: restart development apps from Software Update ([651e899](https://github.com/stacksjs/stacks/commit/651e899)) _(by Chris Breuer)_
+- **dashboard**: restart updated dashboards from Settings ([5e62da3](https://github.com/stacksjs/stacks/commit/5e62da3)) _(by Chris Breuer)_
+- **dashboard**: add Buddy software updates to Settings ([842a22a](https://github.com/stacksjs/stacks/commit/842a22a)) _(by Chris Breuer)_
+- **dashboard**: open Settings in a dedicated window ([d1b52c5](https://github.com/stacksjs/stacks/commit/d1b52c5)) _(by Chris Breuer)_
+- **desktop**: desktop.webview.agent.appRoutes bundles the project's routes ([bb7770b](https://github.com/stacksjs/stacks/commit/bb7770b)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+- **desktop**: a web view app serves the app's own routes ([a3dd8a0](https://github.com/stacksjs/stacks/commit/a3dd8a0)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+- **router**: tell the router's own 404 from a route's ([f03d193](https://github.com/stacksjs/stacks/commit/f03d193)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+- **database**: a migration runner for a compiled app's own database ([0c647d0](https://github.com/stacksjs/stacks/commit/0c647d0)) _(by glennmichael123)_ ([stacksjs/stacks#3369](https://github.com/stacksjs/stacks/issues/3369))
+- **audio**: decode speech uploads in a worker thread ([475f7d4](https://github.com/stacksjs/stacks/commit/475f7d4)) _(by glennmichael123)_
+- **audio**: decode speech uploads with ts-videos, no ffmpeg ([6ffbc49](https://github.com/stacksjs/stacks/commit/6ffbc49)) _(by glennmichael123)_
+- **socials**: LinkedIn lists the Pages a member may post for ([a34bcf3](https://github.com/stacksjs/stacks/commit/a34bcf3)) _(by glennmichael123)_ ([stacksjs/stacks#3373](https://github.com/stacksjs/stacks/issues/3373))
+- **dashboard**: design section landings and share native settings ([506380f](https://github.com/stacksjs/stacks/commit/506380f)) _(by Chris Breuer)_
+- **deploy**: warn about files written inside a release ([82aea66](https://github.com/stacksjs/stacks/commit/82aea66)) _(by glennmichael123)_ ([stacksjs/stacks#3367](https://github.com/stacksjs/stacks/issues/3367))
+- **dashboard**: add section navigation and polish color modes ([081ced0](https://github.com/stacksjs/stacks/commit/081ced0)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **dashboard**: bring the contracts up to the native settings work ([da05dcf](https://github.com/stacksjs/stacks/commit/da05dcf)) _(by Chris Breuer)_
+- **database**: read a compiled database's version without touching it ([4505a28](https://github.com/stacksjs/stacks/commit/4505a28)) _(by Chris Breuer)_
+- **deps**: bring pantry.lock up to the ts-videos and desktop ranges ([ae1e6bc](https://github.com/stacksjs/stacks/commit/ae1e6bc)) _(by Chris Breuer)_
+- **socials**: a Bluesky account on its own PDS can sign in ([7103f07](https://github.com/stacksjs/stacks/commit/7103f07)) _(by glennmichael123)_ ([stacksjs/stacks#3376](https://github.com/stacksjs/stacks/issues/3376))
+- **socials**: Instagram waits for its container, and Threads can delete ([c8fc926](https://github.com/stacksjs/stacks/commit/c8fc926)) _(by glennmichael123)_ ([stacksjs/stacks#3377](https://github.com/stacksjs/stacks/issues/3377))
+- **socials**: Bluesky tags in any script, and a retry that cannot post twice ([37f923f](https://github.com/stacksjs/stacks/commit/37f923f)) _(by glennmichael123)_ ([stacksjs/stacks#3376](https://github.com/stacksjs/stacks/issues/3376))
+- **desktop**: the agent answers errors in the router's shape, without the cause ([68e9981](https://github.com/stacksjs/stacks/commit/68e9981)) _(by glennmichael123)_ ([stacksjs/stacks#3361](https://github.com/stacksjs/stacks/issues/3361))
+- **router**: a failing native route answers in the standard error shape ([35bf5f3](https://github.com/stacksjs/stacks/commit/35bf5f3)) _(by glennmichael123)_ ([stacksjs/stacks#3361](https://github.com/stacksjs/stacks/issues/3361))
+
+## 📝 Documentation
+
+- count the dashboard's 452 components and refresh the native catalog ([1f180d6](https://github.com/stacksjs/stacks/commit/1f180d6)) _(by Chris Breuer)_
+- count the dashboard's 451 components ([f0d7fce](https://github.com/stacksjs/stacks/commit/f0d7fce)) _(by glennmichael123)_
+- count the dashboard's 449 components ([6fd4985](https://github.com/stacksjs/stacks/commit/6fd4985)) _(by glennmichael123)_
+- route.health() mounts /api/health, not /health ([013b3b1](https://github.com/stacksjs/stacks/commit/013b3b1)) _(by glennmichael123)_ ([stacksjs/stacks#3367](https://github.com/stacksjs/stacks/issues/3367))
+- **skills**: the health route is /api/health, and says what it checks ([6b67d6f](https://github.com/stacksjs/stacks/commit/6b67d6f)) _(by glennmichael123)_ ([stacksjs/stacks#3367](https://github.com/stacksjs/stacks/issues/3367))
+
+## ✅ Tests
+
+- **audio**: voice fixtures from phones and browsers ([ff4d92a](https://github.com/stacksjs/stacks/commit/ff4d92a)) _(by glennmichael123)_
+
+## 💚 Continuous Integration
+
+- bound the test shards and their Pantry setup ([73a995b](https://github.com/stacksjs/stacks/commit/73a995b)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **deps**: ts-videos 0.3.1 for audio, video and docs ([4e5db4c](https://github.com/stacksjs/stacks/commit/4e5db4c)) _(by glennmichael123)_
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.674...v0.75.675)
 
 ## ✨ Features
