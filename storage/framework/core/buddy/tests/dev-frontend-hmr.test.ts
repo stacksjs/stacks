@@ -2,7 +2,6 @@ import { expect, test } from 'bun:test'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { pathToFileURL } from 'node:url'
 import { startAppDevSession } from '../../actions/src/dev/app-session'
 
 async function until(check: () => Promise<void>): Promise<void> {
@@ -22,7 +21,7 @@ async function until(check: () => Promise<void>): Promise<void> {
 
 test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('STX keeps an open page and its edits across successive frontend worker swaps', async () => {
   const { launch } = await import('../../testing/src/browser')
-  const root = await mkdtemp(join(tmpdir(), 'stacks-frontend-hmr-'))
+  const root = await mkdtemp(join(tmpdir(), "stacks' frontend-hmr-"))
   const profile = await mkdtemp(join(tmpdir(), 'stacks-frontend-hmr-chrome-'))
   const source = join(root, 'app/version.ts')
   const viewSource = join(root, 'resources/views/view-version.ts')
@@ -42,9 +41,9 @@ test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('STX keeps an open page an
       writeFile(viewSource, 'export default undefined'),
       writeFile(join(root, 'resources/views/index.stx'), `
 <script server>
-const appModuleUrl = ${JSON.stringify(pathToFileURL(source).href)}
-const viewModuleUrl = ${JSON.stringify(pathToFileURL(viewSource).href)}
-const version = (await import(viewModuleUrl)).default ?? (await import(appModuleUrl)).default
+import appVersion from '../../app/version'
+import viewVersion from './view-version'
+const version = viewVersion ?? appVersion
 const worker = process.pid
 </script>
 <script client>
@@ -97,6 +96,7 @@ function increment() { count.update(value => value + 1) }
     await cdp.send('Page.navigate', { url })
     await until(async () => {
       expect(liveReloadConnected).toBe(true)
+      expect(await cdp.evaluate("document.querySelector('#version')?.textContent")).toBe('before')
       expect(await cdp.evaluate("document.querySelector('#count')?.textContent")).toBe('0')
     })
     await cdp.evaluate(`
