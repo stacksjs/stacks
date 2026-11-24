@@ -7,7 +7,7 @@ import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
 import { createServeRelay, reserveRelayWorkerPort, retireRelayWorker } from '@stacksjs/cli/serve-relay'
 import { Action } from '@stacksjs/enums'
 import { resolveApiHost, resolveApiPort } from '../helpers/api-host'
-import { actionNodePath, developmentConditionForProject, developmentWatchFlag, resolveActionFile } from '../helpers/utils'
+import { actionNodePath, developmentConditionForProject, resolveActionFile } from '../helpers/utils'
 import { serveAppRestart } from './app-session-control'
 
 interface AppDevSessionOptions {
@@ -37,8 +37,8 @@ interface AppService {
 
 const readyTimeoutMs = 90_000
 const relayPreload = fileURLToPath(new URL(`../helpers/serve-relay-worker${extname(import.meta.path)}`, import.meta.url))
-const ignoredApiWatchPaths = /(?:^|\/)(?:\.[^/]+|node_modules|dist|vendor)(?:\/|$)|^storage\/(?!framework\/(?:core|defaults|models)\/)/i
-const apiSourceExtension = /\.(?:[cm]?[jt]s|[jt]sx|json)$/i
+const ignoredWatchPaths = /(?:^|\/)(?:\.(?!config\/)[^/]+|node_modules|dist|vendor|tests)(?:\/|$)|^storage\/(?!framework\/(?:api|core|defaults|models|server)\/)/i
+const runtimeSource = /\.(?:[cm]?[jt]s|[jt]sx|json)$/i
 
 export function startAppDevSession(options: AppDevSessionOptions): { finished: Promise<void>, stop: () => Promise<void> } {
   const { root, target, frontendPort, apiPort, verbose, waitForPort, reportError } = options
@@ -105,18 +105,15 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
     const localPreload = resolve(dirname(entry), '../helpers', `serve-relay-worker${extname(entry)}`)
     const preload = await Bun.file(localPreload).exists() ? localPreload : relayPreload
     const api = service.action === Action.DevApi
-    // Bind the Windows API worker directly to an OS-assigned port. Releasing
-    // an ephemeral reservation first lets another Windows socket claim it.
-    const port = api && process.platform === 'win32' ? 0 : await reserveRelayWorkerPort()
+    // The API reports its OS-assigned listener. STX takes a fixed private
+    // port so its worker can be probed without changing the public URL.
+    const port = api ? 0 : await reserveRelayWorkerPort()
     signal.throwIfAborted()
-    // Bun's Windows --watch launcher can lose the worker's IPC pipe.
-    // The owner watches API source on Windows. STX owns frontend HMR.
-    const watchFlag = api && process.platform !== 'win32' ? developmentWatchFlag(service.action) : ''
     const { promise: relayReady, resolve: markRelayReady } = Promise.withResolvers<void>()
     const { promise: workerPort, resolve: reportWorkerPort } = Promise.withResolvers<number>()
     if (port)
       reportWorkerPort(port)
-    const child = spawnOwnedProcess([bun, developmentConditionForProject(root), watchFlag, '--preload', preload, entry].filter(Boolean), {
+    const child = spawnOwnedProcess([bun, developmentConditionForProject(root), '--preload', preload, entry].filter(Boolean), {
       ownerRuntime: bun,
       cwd: root,
       env: {
@@ -302,10 +299,7 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
     })
   }
 
-  const apiService = services.find(service => service.action === Action.DevApi)
-  const stopWatching = process.platform === 'win32' && apiService
-    ? watchApiSource(root, () => enqueueRestart([apiService]), reportError)
-    : undefined
+  const stopWatching = watchDevSource(root, services, enqueueRestart, reportError)
 
   return {
     finished,
@@ -326,42 +320,68 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
   }
 }
 
-function watchApiSource(root: string, reload: () => Promise<void>, reportError: (message: string) => void): (() => void) | undefined {
+function sourceServices(filename: string | null, services: AppService[]): AppService[] {
+  if (!filename)
+    return services
+  const path = filename.replaceAll('\\', '/').toLowerCase()
+  if (ignoredWatchPaths.test(path) || /\.d\.[cm]?ts$/.test(path) || (!runtimeSource.test(path) && path !== 'bunfig.toml'))
+    return []
+
+  // STX already refreshes templates, styles and browser-only modules in place.
+  const source = path.replace(/^storage\/framework\/defaults\//, '')
+  if (/^(?:public|resources\/assets|stores|composables)\//.test(source))
+    return []
+
+  if (/^(?:serve\.[cm]?[jt]s$|(?:site|stx|css)\.config\.[cm]?[jt]s$|frontend\/|resources\/(?!functions\/))/.test(source))
+    return services.filter(service => service.action === Action.Dev)
+  if (/^(?:routes\/api(?:\.[cm]?[jt]s$|\/)|storage\/framework\/core\/actions\/src\/dev\/api\.[cm]?[jt]s$)/.test(source))
+    return services.filter(service => service.action === Action.DevApi)
+  return services
+}
+
+function watchDevSource(
+  root: string,
+  services: AppService[],
+  reload: (changed: AppService[]) => Promise<void>,
+  reportError: (message: string) => void,
+): (() => void) | undefined {
   let debounce: ReturnType<typeof setTimeout> | undefined
   let reloading = false
-  let changed = false
   let stopped = false
+  const pending = new Set<AppService>()
 
   function schedule(): void {
     clearTimeout(debounce)
     if (stopped || reloading)
       return
     debounce = setTimeout(async () => {
-      changed = false
+      const changed = [...pending]
+      pending.clear()
       reloading = true
       try {
-        await reload()
+        await reload(changed)
       }
       catch (error) {
         if (!stopped)
-          reportError(`API source reload failed: ${error instanceof Error ? error.message : error}`)
+          reportError(`Source reload failed: ${error instanceof Error ? error.message : error}`)
       }
       finally {
         reloading = false
-        if (changed)
+        if (pending.size)
           schedule()
       }
     }, 200)
   }
 
-  const reportWatchError = (error: unknown) => reportError(`Could not watch API source: ${error instanceof Error ? error.message : error}`)
+  const reportWatchError = (error: unknown) => reportError(`Could not watch application source: ${error instanceof Error ? error.message : error}`)
   try {
     const watcher = watch(root, { recursive: true }, (_event, filename) => {
-      const path = filename?.replaceAll('\\', '/')
-      if (path && (ignoredApiWatchPaths.test(path) || /\.d\.[cm]?ts$/i.test(path) || !apiSourceExtension.test(path)))
-        return
-      changed = true
-      schedule()
+      const changed = sourceServices(filename, services)
+      if (changed.length) {
+        for (const service of changed)
+          pending.add(service)
+        schedule()
+      }
     })
     watcher.on('error', reportWatchError)
     return () => {

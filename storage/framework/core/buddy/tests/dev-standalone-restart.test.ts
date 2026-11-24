@@ -30,27 +30,31 @@ async function waitFor<T>(read: () => T | Promise<T>): Promise<T> {
 
 const launchModes = ['combined', 'separate commands', 'separate aliases'] as const
 
-test.each(launchModes)('Software Update rolls dev services on their original ports (%s)', async (mode) => {
+test.each(launchModes)('dev serves traffic through manual restarts and source reloads (%s)', async (mode) => {
   const combined = mode === 'combined'
   const commands = mode === 'separate aliases'
     ? [['dev:frontend'], ['dev:api', '--no-watch-types']]
     : [['dev', 'frontend'], ['dev', 'api']]
   const root = await mkdtemp(join(tmpdir(), 'stacks-standalone-dev-'))
   const actions = join(root, 'storage/framework/core/actions/src/dev')
-  const sourceFile = join(root, 'routes/source.ts')
+  const sourceFile = join(root, 'config/source.ts')
+  const frontendSource = join(root, 'resources/views/source.ts')
   const children: Array<ReturnType<typeof Bun.spawn>> = []
   let session: ReturnType<typeof startAppDevSession> | undefined
   const occupied = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response('unrelated') })
   try {
-    await Promise.all([mkdir(actions, { recursive: true }), mkdir(join(root, 'config')), mkdir(join(root, 'routes'))])
+    await Promise.all([mkdir(actions, { recursive: true }), mkdir(join(root, 'config')), mkdir(join(root, 'resources/views'), { recursive: true })])
     await Promise.all([
       writeFile(join(root, 'package.json'), '{"name":"standalone-restart-fixture"}'),
       writeFile(join(root, 'config/app.ts'), 'export default {}'),
       writeFile(join(root, 'bunfig.toml'), 'preload = []\n'),
       writeFile(join(root, 'version.txt'), 'before'),
       writeFile(sourceFile, 'export default "old source"'),
+      writeFile(frontendSource, 'export default undefined'),
       ...(['views', 'api'] as const).map(name => writeFile(join(actions, `${name}.ts`), `
-${name === 'api' ? "import source from '../../../../../../routes/source'" : "const source = 'frontend'"}
+import sharedSource from '../../../../../../config/source'
+${name === 'views' ? "import viewSource from '../../../../../../resources/views/source'" : 'const viewSource = undefined'}
+const source = viewSource ?? sharedSource
 const version = await Bun.file('version.txt').text()
 const port = Number(process.env.STACKS_DEV_PUBLIC_PORT)
 if (version === 'failed' && '${name}' === 'views')
@@ -58,6 +62,11 @@ if (version === 'failed' && '${name}' === 'views')
 if ((version === 'after' || version === 'unstable') && '${name}' === 'api') {
   await Bun.write('hold-api', '')
   while (!await Bun.file('allow-api').exists())
+    await Bun.sleep(25)
+}
+if (source === 'new source') {
+  await Bun.write('source-started-${name}', '')
+  while (!await Bun.file('source-release-${name}').exists())
     await Bun.sleep(25)
 }
 const server = Bun.serve({
@@ -71,6 +80,8 @@ const server = Bun.serve({
     }
     if (version === 'unstable' && '${name}' === 'views')
       await Bun.write('standby-probed', '')
+    if (source === 'new source')
+      await Bun.write('source-probed-${name}', '')
     return Response.json({ port, pid: process.pid, version, source })
   },
 })
@@ -209,12 +220,62 @@ if (version === 'unstable' && '${name}' === 'views') {
       await traffic
     }
     expect(failures).toEqual([])
+
     await writeFile(join(root, 'version.txt'), 'after')
-    await writeFile(sourceFile, 'export default "new source"')
-    await waitFor(async () => {
-      expect((await read(api.port)).source).toBe('new source')
-    })
-    expect((await read(frontend.port)).source).toBe('frontend')
+    await rm(join(root, 'slow-request'))
+    await rm(join(root, 'finish-slow'))
+    const beforeReload = await Promise.all([frontend.port, api.port].map(port => read(port)))
+    const oldRequests = beforeReload.map(previous => read(previous.port, '/slow'))
+    oldRequests.forEach(request => { void request.catch(() => {}) })
+    await waitFor(() => Bun.file(join(root, 'slow-request')).text())
+    monitoring = true
+    const reloadTraffic = (async () => {
+      while (monitoring) {
+        await Promise.all(beforeReload.map(previous => read(previous.port).catch(error => { failures.push(error) })))
+        await Bun.sleep(10)
+      }
+    })()
+    function readReady(name: 'views' | 'api', source: string): Promise<Listener> {
+      return waitFor(async () => {
+        const worker = await Bun.file(join(root, `${name}-ready.txt`)).json() as Listener
+        expect(worker.source).toBe(source)
+        return worker
+      })
+    }
+    try {
+      await writeFile(sourceFile, 'export default "new source"')
+      await Promise.all(['views', 'api'].map(name => waitFor(() => Bun.file(join(root, `source-started-${name}`)).text())))
+      expect(await Promise.all(beforeReload.map(previous => read(previous.port)))).toEqual(beforeReload)
+      await writeFile(join(root, 'source-release-views'), '')
+      await readReady('views', 'new source')
+      await waitFor(() => Bun.file(join(root, 'source-probed-views')).text())
+      expect(await read(api.port)).toEqual(beforeReload[1]!)
+      if (combined)
+        expect(await read(frontend.port)).toEqual(beforeReload[0]!)
+      await writeFile(join(root, 'source-release-api'), '')
+      await Promise.all(beforeReload.map(previous => waitFor(async () => {
+        const current = await read(previous.port)
+        expect(current.source).toBe('new source')
+        expect(current.pid).not.toBe(previous.pid)
+      })))
+      await writeFile(join(root, 'finish-slow'), '')
+      expect(await Promise.all(oldRequests)).toEqual(beforeReload)
+
+      const updated = await Promise.all(beforeReload.map(previous => read(previous.port)))
+      await writeFile(frontendSource, 'await Bun.write("source-broken", ""); throw new Error("Invalid frontend edit"); export default undefined')
+      await waitFor(() => Bun.file(join(root, 'source-broken')).text())
+      expect(await Promise.all(updated.map(current => read(current.port)))).toEqual(updated)
+      await writeFile(frontendSource, 'export default "fixed frontend source"')
+      await waitFor(async () => {
+        expect((await read(frontend.port)).source).toBe('fixed frontend source')
+      })
+      expect(await read(api.port)).toEqual(updated[1]!)
+    }
+    finally {
+      monitoring = false
+      await reloadTraffic
+    }
+    expect(failures).toEqual([])
     expect(await (await fetch(occupied.url)).text()).toBe('unrelated')
     for (const child of children)
       child.kill('SIGTERM')

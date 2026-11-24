@@ -128,8 +128,8 @@ When `buddy dev` runs without a specific server flag, `startDevelopmentServer()`
 7. Registers SIGINT/SIGTERM handlers that `SIGKILL` the entire process group
 
 ### Action Execution (`runAction` in helpers/utils.ts)
-- Dev actions (paths starting with `dev/`) automatically get `--watch` flag via `bun --watch`
-- The `dev/views` action is special-cased for maximum performance: imports `bun-plugin-stx/serve` directly instead of spawning a subprocess
+- Buddy supervises frontend and API workers through `startAppDevSession()`, which owns source reloads and the public listeners.
+- Other dev actions may use Bun watch mode or manage their own watchers.
 - `NODE_PATH` is set to include `pantry/` so compiled pantry packages can resolve `@stacksjs/*` at runtime
 - Dev action subprocess output is suppressed by default (quiet mode), visible with `--verbose`
 
@@ -184,9 +184,8 @@ When `APP_URL` is set to a custom domain (not `localhost`):
 
 ## Hot Reload / Watch Mode
 
-- **Dev actions use `bun --watch`**: All actions with paths starting with `dev/` are automatically run with Bun's `--watch` flag, which restarts the process on file changes
-- **Frontend (STX)**: `bun-plugin-stx/serve` has its own built-in watch/HMR for `.stx` templates
-- **API server**: Runs via `bun --watch`, restarts on route or handler changes
+- **Frontend (STX)**: `bun-plugin-stx/serve` handles template and stylesheet HMR in place.
+- **Frontend and API source**: Buddy stages affected workers on private ports and switches traffic only when they are ready. A failed replacement leaves the current workers serving. Combined sessions switch both workers together for shared edits. Standalone sessions apply changes independently, including on Windows.
 - **Docs**: `@stacksjs/bunpress` runs with `watch: true` for live documentation updates
 - **Components**: Uses the native component development workflow; inspect core/actions/src/dev/components.ts for the selected entry
 
@@ -296,8 +295,7 @@ Note: Dashboard mode overrides these settings via its own `serve()` options.
 - The preloader skips entirely for `dev`, `build`, `test`, `lint`, and version/help commands -- auto-imports are NOT available in those contexts
 - `buddy dev` (no arguments) starts ALL servers simultaneously -- use `buddy dev api` or `buddy dev frontend` to start only one
 - The `STACKS_PROXY_MANAGED=1` env var prevents individual dev servers from starting their own reverse proxy -- only the unified `buddy dev` command manages the proxy
-- Dev actions are executed with `bun --watch` automatically -- do NOT add `--watch` manually or you get double-restart behavior
-- The `dev/views` action is special-cased in `runAction()` to run in-process (no subprocess) for performance -- other dev actions spawn subprocesses
+- Buddy owns managed development worker lifecycles. Adding `--watch` to those workers bypasses the rolling handoff.
 - `NODE_PATH` is injected to include `pantry/` directory so compiled pantry packages can resolve `@stacksjs/*` dependencies at runtime
 - The dashboard config API shares the dashboard origin and atomically modifies top-level scalar literals in `config/*.ts`. Nested values, arrays, and environment-backed expressions remain read-only.
 - SSL certificates are stored in `~/.stacks/ssl/`, NOT in the project directory -- they persist across projects using the same domain

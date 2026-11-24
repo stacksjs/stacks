@@ -200,11 +200,13 @@ buddy dev:docs
 
 ## Hot Module Replacement
 
-All development servers support Hot Module Replacement (HMR), which means:
+STX live-updates templates and styles in the browser while the frontend server keeps running.
+When a source change needs a server restart, Buddy starts the replacement before switching
+traffic on the existing port. The old process keeps serving if the replacement fails to start.
 
-- Changes to your code are reflected immediately without full page reloads
-- Component state is preserved during updates
-- CSS changes are applied instantly
+This works for `buddy dev`, `buddy dev frontend`, and `buddy dev api`, including on Windows.
+With combined `buddy dev`, a shared source change switches both servers together once both
+replacements are ready.
 
 ## Pretty URLs
 
