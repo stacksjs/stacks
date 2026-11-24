@@ -47,6 +47,25 @@ export const LINKEDIN_MAX_IMAGES = 20
 export const LINKEDIN_MAX_ALT_TEXT = 4086
 
 /**
+ * The Page roles that may post as the organization. LinkedIn's Posts API
+ * grants `w_organization_social` to these; its access-control page spells the
+ * content role `CONTENT_ADMINISTRATOR` and the Posts page `CONTENT_ADMIN`, so
+ * both are accepted.
+ */
+export const LINKEDIN_POSTING_ROLES: readonly string[] = ['ADMINISTRATOR', 'DIRECT_SPONSORED_CONTENT_POSTER', 'CONTENT_ADMINISTRATOR', 'CONTENT_ADMIN']
+
+/** A company Page the signed-in member may post for. */
+export interface LinkedInOrganization {
+  /** `urn:li:organization:{id}`: publish with it as the identity's `did`. */
+  urn: string
+  id: string
+  /** The member's role on the Page. */
+  role: string
+  /** The Page's name, when LinkedIn gives it. */
+  name?: string
+}
+
+/**
  * `x-restli-protocol-version`: the Rest.li wire protocol LinkedIn's API speaks.
  *
  * Not its API version. `linkedin-version` is the dated one, it is configurable
@@ -132,6 +151,9 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
   maxImages = LINKEDIN_MAX_IMAGES
   /** Downloads an image given by address. Guarded against private addresses; replace it in a test. */
   fetchImage = fetchPostImage
+
+  /** Access-control entries read per request when listing Pages. */
+  organizationPageSize = 100
 
   protected apiVersion: string
   protected authBase: string
@@ -273,9 +295,11 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
   async publish(identity: SocialIdentityCredentials, post: PublishPostInput): Promise<PublishedPost> {
     if (!identity.accessToken) throw new Error('LinkedIn access token is missing for this identity.')
 
-    // `did` carries the member URN (urn:li:person:{sub}) for LinkedIn identities.
+    // `did` carries the author URN: the member (urn:li:person:{sub}), or a
+    // company Page from listOrganizations() (urn:li:organization:{id}), which
+    // needs the w_organization_social scope. The author owns the images too.
     const author = identity.did
-    if (!author) throw new Error('LinkedIn member URN is required to publish.')
+    if (!author) throw new Error('LinkedIn author URN is required to publish.')
 
     if (exceedsLimit('linkedin', post.text, this.characterLimit)) {
       throw new Error(`LinkedIn posts must be ${this.characterLimit} characters or fewer.`)
@@ -369,9 +393,10 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
     query: TimelineQuery = {},
   ): Promise<AuthoredPostPage> {
     if (!identity.accessToken) throw new Error('LinkedIn access token is missing for this identity.')
-    // `did` carries the member URN (urn:li:person:{sub}) for LinkedIn.
+    // `did` carries the author URN, a member's or a company Page's.
     const author = identity.did
-    if (!author) throw new Error('LinkedIn member URN is required to list posts.')
+    if (!author) throw new Error('LinkedIn author URN is required to list posts.')
+    const permission = author.startsWith('urn:li:organization:') ? 'r_organization_social' : 'r_member_social'
 
     const count = Math.min(Math.max(query.limit || 50, 1), 100)
     const start = Number(query.cursor || 0) || 0
@@ -394,7 +419,7 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
     catch (error) {
       if (error instanceof LinkedInApiError && (error.status === 401 || error.status === 403)) {
         throw new LinkedInApiError(
-          'LinkedIn will not list this account\'s posts - the Posts author finder needs the r_member_social permission, which this app does not hold.',
+          `LinkedIn will not list this account's posts - the Posts author finder needs the ${permission} permission, which this app does not hold.`,
           error.status,
           error.body,
         )
@@ -414,6 +439,80 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
       cursor: posts.length === count ? String(start + count) : undefined,
       posts,
     }
+  }
+
+  /**
+   * The company Pages the signed-in member may post for: the approved roles
+   * in {@link LINKEDIN_POSTING_ROLES}, from the organization access-control
+   * finder, each with its name when LinkedIn gives it (stacksjs/stacks#3373).
+   *
+   * Listing needs `rw_organization_admin` (or `r_organization_admin`), and
+   * posting as a Page needs `w_organization_social`; ask for them in
+   * {@link getAuthUrl}'s scopes. Publish as a Page by giving its `urn` as the
+   * identity's `did`.
+   */
+  async listOrganizations(accessToken: string): Promise<LinkedInOrganization[]> {
+    if (!accessToken) throw new Error('LinkedIn access token is required to list organizations.')
+    const headers = {
+      'authorization': `Bearer ${accessToken}`,
+      'linkedin-version': this.apiVersion,
+      'x-restli-protocol-version': RESTLI_PROTOCOL_VERSION,
+    }
+
+    type AclPage = {
+      elements?: Array<{ role?: string, state?: string, organizationTarget?: string, organization?: string }>
+      paging?: { start?: number, count?: number, total?: number }
+    }
+
+    const found = new Map<string, LinkedInOrganization>()
+    const count = Math.max(1, this.organizationPageSize)
+    // Bounded, so a total that never arrives cannot keep this going.
+    for (let start = 0, pages = 0; pages < 50; start += count, pages++) {
+      const url = new URL(`${this.apiBase}/rest/organizationAcls`)
+      url.searchParams.set('q', 'roleAssignee')
+      url.searchParams.set('state', 'APPROVED')
+      url.searchParams.set('start', String(start))
+      url.searchParams.set('count', String(count))
+
+      let page: AclPage
+      try {
+        page = await this.request<AclPage>(url.toString(), { headers })
+      }
+      catch (error) {
+        if (error instanceof LinkedInApiError && (error.status === 401 || error.status === 403)) {
+          throw new LinkedInApiError(
+            'LinkedIn will not list this member\'s Pages - that needs the rw_organization_admin (or r_organization_admin) permission, which this token does not hold.',
+            error.status,
+            error.body,
+          )
+        }
+        throw error
+      }
+
+      const elements = page.elements || []
+      for (const element of elements) {
+        const urn = element.organizationTarget || element.organization
+        const role = element.role || ''
+        if (!urn?.startsWith('urn:li:organization:') || !LINKEDIN_POSTING_ROLES.includes(role) || found.has(urn))
+          continue
+        found.set(urn, { urn, id: urn.slice('urn:li:organization:'.length), role })
+      }
+
+      const total = page.paging?.total
+      if (elements.length < count || (typeof total === 'number' && start + count >= total))
+        break
+    }
+
+    const organizations = [...found.values()]
+    for (const organization of organizations) {
+      // The name is a nicety: a Page LinkedIn will not describe is still listed.
+      const name = await this.request<{ localizedName?: string }>(
+        `${this.apiBase}/rest/organizations/${encodeURIComponent(organization.id)}`,
+        { headers },
+      ).then(details => details.localizedName, () => undefined)
+      if (name) organization.name = name
+    }
+    return organizations
   }
 
   /**

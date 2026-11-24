@@ -226,7 +226,8 @@ describe('the credential tables describe the real drivers', () => {
     // `publish`, and a narrower scan reported that as the field not being
     // read at all.
     for (const [platform, field, refusal] of [
-      ['linkedin', 'memberUrn', 'member URN is required'],
+      // memberUrn keeps its name; it may hold a company Page's URN too (#3373).
+      ['linkedin', 'memberUrn', 'author URN is required'],
       ['mastodon', 'instanceUrl', 'instance URL is required'],
       ['instagram', 'accountId', 'account id is required'],
       ['threads', 'userId', 'account id is required'],

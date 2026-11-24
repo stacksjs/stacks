@@ -134,7 +134,10 @@ each media container to be FINISHED before publishing it (containerTimeoutMs,
 five minutes by default), sends alt text on images and carousel items, refuses an
 image whose mimeType is not JPEG, and looks through every page of the user's
 Facebook Pages for the linked account. Threads deletes with deletePost (the
-threads_delete permission, 100 a day). PublishedPost.warnings
+threads_delete permission, 100 a day). LinkedIn posts as a company Page when the
+identity's did (the memberUrn setting) is an urn:li:organization URN, with the
+w_organization_social scope; listOrganizations(accessToken) lists the Pages the
+member may post for (rw_organization_admin). PublishedPost.warnings
 lists what went out without failing the post. The LinkedIn version is
 LINKEDIN_API_VERSION unless a configured one is still supported.
 

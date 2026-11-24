@@ -595,6 +595,70 @@ describe('LinkedIn', () => {
   })
 })
 
+// stacksjs/stacks#3373: posting as a company Page. LinkedIn's Posts and
+// Images APIs take an organization URN as the author and owner; what was
+// missing was finding the Pages a member may post for.
+describe('LinkedIn organizations', () => {
+  const member = { handle: 'glenn', did: 'urn:li:person:abc', accessToken: 'AT' }
+  const company = { handle: 'acme', did: 'urn:li:organization:42', accessToken: 'AT' }
+
+  it('lists the Pages the member may post for, with their names, across pages of results', async () => {
+    const sent = mockFetch((url) => {
+      const u = new URL(url)
+      if (u.pathname === '/rest/organizationAcls' && u.searchParams.get('start') === '0') {
+        return {
+          elements: [
+            { role: 'ADMINISTRATOR', state: 'APPROVED', organizationTarget: 'urn:li:organization:42' },
+            { role: 'ANALYST', state: 'APPROVED', organizationTarget: 'urn:li:organization:7' },
+          ],
+          paging: { start: 0, count: 2, total: 3 },
+        }
+      }
+      if (u.pathname === '/rest/organizationAcls')
+        return { elements: [{ role: 'CONTENT_ADMINISTRATOR', state: 'APPROVED', organization: 'urn:li:organization:99' }], paging: { start: 2, count: 2, total: 3 } }
+      if (u.pathname === '/rest/organizations/42') return { localizedName: 'Acme' }
+      return new Response('{"status":403}', { status: 403 })
+    })
+    const driver = new LinkedInPublishingDriver() as LinkedInPublishingDriver & { organizationPageSize: number }
+    driver.organizationPageSize = 2
+
+    expect(await driver.listOrganizations('AT')).toEqual([
+      { urn: 'urn:li:organization:42', id: '42', role: 'ADMINISTRATOR', name: 'Acme' },
+      // A name LinkedIn will not give is left out rather than failing the list.
+      { urn: 'urn:li:organization:99', id: '99', role: 'CONTENT_ADMINISTRATOR' },
+    ])
+    const acl = new URL(sent[0]!.url)
+    expect(Object.fromEntries(acl.searchParams)).toEqual({ q: 'roleAssignee', state: 'APPROVED', start: '0', count: '2' })
+    expect(sent[0]!.headers.get('authorization')).toBe('Bearer AT')
+    expect(sent[0]!.headers.get('x-restli-protocol-version')).toBe('2.0.0')
+    expect(sent[0]!.headers.get('linkedin-version')).toMatch(/^\d{6}$/)
+    // An analyst cannot post, so its Page is not even looked up.
+    expect(sent.some(s => s.url.includes('/organizations/7'))).toBe(false)
+  })
+
+  it('names the permission it needs when LinkedIn refuses the list', async () => {
+    mockFetch(() => new Response('{"status":403}', { status: 403 }))
+    await expect(new LinkedInPublishingDriver().listOrganizations('AT')).rejects.toThrow('rw_organization_admin')
+  })
+
+  it('publishes as the Page, which owns the images too', async () => {
+    const sent = mockFetch((url) => {
+      if (url.includes('initializeUpload')) return { value: { uploadUrl: 'https://upload.example/1', image: 'urn:li:image:1' } }
+      if (url.startsWith('https://upload.example/')) return undefined
+      return new Response('', { status: 201, headers: { 'x-restli-id': 'urn:li:share:9' } })
+    })
+    await new LinkedInPublishingDriver().publish(company, { text: 'hello', media: [{ bytes: PNG }] })
+    expect(json(sent[0]!).initializeUploadRequest.owner).toBe('urn:li:organization:42')
+    expect(json(sent.at(-1)!).author).toBe('urn:li:organization:42')
+  })
+
+  it('names the organization permission when a Page\'s posts cannot be listed', async () => {
+    mockFetch(() => new Response('{"status":403}', { status: 403 }))
+    await expect(new LinkedInPublishingDriver().listAuthoredPosts(company)).rejects.toThrow('r_organization_social')
+    await expect(new LinkedInPublishingDriver().listAuthoredPosts(member)).rejects.toThrow('r_member_social')
+  })
+})
+
 describe('LinkedIn text and versions', () => {
   it('keeps hashtags and escapes every other reserved character', () => {
     expect(escapeLinkedInText('Ship it #stacks (today) @team')).toBe('Ship it #stacks \\(today\\) \\@team')
