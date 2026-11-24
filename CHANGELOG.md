@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.672...v0.75.673)
+
+## ✨ Features
+
+- **dashboard**: add installable themes ([1e19f28](https://github.com/stacksjs/stacks/commit/1e19f28)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **docs**: a screen that misses its deadline is captured again ([9d6f52f](https://github.com/stacksjs/stacks/commit/9d6f52f)) _(by Chris Breuer)_
+
+## ⚡ Performance Improvements
+
+- **marketing**: load the stx runtime when someone touches the signup form ([efeeed9](https://github.com/stacksjs/stacks/commit/efeeed9)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- count the 447th dashboard component ([c3371d1](https://github.com/stacksjs/stacks/commit/c3371d1)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.931 ([ac6c78f](https://github.com/stacksjs/stacks/commit/ac6c78f)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.671...v0.75.672)
 
 ## 🐛 Bug Fixes
