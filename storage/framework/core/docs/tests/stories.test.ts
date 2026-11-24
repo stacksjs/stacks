@@ -1,6 +1,7 @@
 import { afterAll, expect, test } from 'bun:test'
 import { installBasicAuth } from '@stacksjs/testing/browser'
 import { browserStory } from '../src/story-drivers'
+import { portablePath } from '../src/stories'
 import { mkdtemp, mkdir, rm, symlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -39,7 +40,14 @@ test.each(encoders)('Buddy uses %s to record a browser journey, publish each sce
     expect(page).toContain('<video controls')
     expect(page.match(/!\[/g)?.length).toBe(2)
     expect(page).not.toContain('private-fixture')
-    const video = join(root, 'docs', report.results[0].video.path)
+    const video = join(report.mediaDir, report.results[0].video.path)
+    // One copy of each video and picture: published, not left beside the pages.
+    expect(await Bun.file(join(root, 'docs', report.results[0].video.path)).exists()).toBe(false)
+    expect(report.mediaDir.startsWith('/')).toBe(true)
+    const manifest = JSON.parse(await Bun.file(join(root, 'docs', 'manifest.json')).text())
+    // This fixture lives outside the project root, so its folders stay absolute.
+    expect(manifest.outDir).toBe(report.outDir)
+    expect(manifest.mediaDir).toBe(report.mediaDir)
     // Both encoders produce an H.264 MP4 with the captured viewport.
     const bytes = new Uint8Array(await Bun.file(video).arrayBuffer())
     expect(Buffer.from(bytes.subarray(4, 8)).toString()).toBe('ftyp')
@@ -56,7 +64,7 @@ test.each(encoders)('Buddy uses %s to record a browser journey, publish each sce
     expect(await Bun.file(join(report.mediaDir, report.results[0].video.path)).exists()).toBe(true)
     for (const scene of report.results[0].scenes) expect(await Bun.file(join(report.mediaDir, scene.screenshot.path)).exists()).toBe(true)
     const source = await Bun.file(config).text()
-    await Bun.write(join(root, 'docs', report.results[0].scenes[1].screenshot.path), 'changed')
+    await Bun.write(join(report.mediaDir, report.results[0].scenes[1].screenshot.path), 'changed')
     expect((await run(['--config', config, '--check', '--json'])).code).toBe(1)
     await Bun.write(config, source.replace("await view.click('button');await view.expectText('h1','Purchased')", "await view.goto('/unavailable')"))
     const unavailable = await run(['--config', config, '--json'])
@@ -150,4 +158,11 @@ test('Buddy lists browser and native scenes without starting devices or executin
   const linked = join(root, 'linked')
   await symlink(out, linked)
   expect((await run(['--config', config, '--out', linked])).code).toBe(1)
+})
+
+test('the manifest names folders inside the project relative to it, and others in full', () => {
+  expect(portablePath('/work/app', '/work/app/docs/stories')).toBe('docs/stories')
+  expect(portablePath('/work/app', '/work/app/docs/public/stories')).toBe('docs/public/stories')
+  expect(portablePath('/work/app', '/tmp/stories')).toBe('/tmp/stories')
+  expect(portablePath('/work/app', '/work/app-other/stories')).toBe('/work/app-other/stories')
 })

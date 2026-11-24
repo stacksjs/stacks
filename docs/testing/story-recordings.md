@@ -135,8 +135,8 @@ Native capture includes system UI and has no automatic redaction. Provision dedi
 
 | Setting | Default | Purpose |
 | --- | --- | --- |
-| `outDir` | `docs/stories` | Generated Markdown, video, screenshots and manifest |
-| `publishDir` | `docs/public/stories` | Media copied automatically for BunPress, or `false` to disable |
+| `outDir` | `docs/stories` | Generated Markdown pages, index and manifest (and the media, when publishing is off) |
+| `publishDir` | `docs/public/stories` | Where each video and screenshot is moved for BunPress, or `false` to keep them beside the pages |
 | `title` | `User stories` | Generated index title |
 | `fps` | `12` | Output video frames per second, from 1 to 60 |
 | `holdMs` | `700` | Readable pause before each screenshot, from 0 to 30000 |
@@ -153,7 +153,7 @@ Native capture includes system UI and has no automatic redaction. Provision dedi
 
 `--config path` selects another config, `--out directory` overrides its destination, and `--only a,b` selects stories. `--json` returns a machine-readable report. `--list` validates the inventory without opening drivers or running scenes. Config files are executable TypeScript, so keep device setup inside `open`, `prepare` or scene callbacks rather than at module scope.
 
-The default output sits directly in the docs source tree. The command automatically creates the index and each story's page, embeds its MP4 and lists every scene with its screenshot. Pages and media use relative links and can be shared together. It also copies video and screenshots to the sibling `public/<output-folder>` directory, which BunPress includes automatically in the built site. When using a custom destination, set `publishDir` to the public directory matching the story pages' URL path, or use `false` for a standalone Markdown bundle. Add `/stories/` to your site's navigation when you want it in a permanent menu.
+The default output sits directly in the docs source tree. The command automatically creates the index and each story's page, embeds its MP4 and lists every scene with its screenshot. Pages link to their media with relative paths. Each video and screenshot is then moved, not copied, to the sibling `public/<output-folder>` directory, which BunPress includes automatically in the built site, so a repository that commits the output stores every file once. The manifest names both folders relative to the project, so it reads the same on every machine, and `--check` verifies the pages in the output and the media where they were published. When using a custom destination, set `publishDir` to the public directory matching the story pages' URL path, or use `false` for a standalone Markdown bundle that keeps its media beside the pages. Add `/stories/` to your site's navigation when you want it in a permanent menu.
 
 Every capture receives a unique `runs/<run-id>/` directory. The command retains older runs, creates an ownership marker and refuses an unowned destination or a handwritten index. It never deletes old evidence automatically. A lock prevents concurrent writers. After an interrupted command, inspect the recorded PID before removing a stale `.recording.lock`.
 

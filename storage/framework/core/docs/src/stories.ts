@@ -39,9 +39,13 @@ export interface Story<Context = any> {
 }
 export interface StoryConfig {
   stories: Story[]
-  /** Self-contained generated docs directory. Default docs/stories. */
+  /** Generated docs directory: pages, index and manifest. Default docs/stories. */
   outDir?: string
-  /** BunPress public media directory. Default sibling public/<output folder>. False disables publishing. */
+  /**
+   * BunPress public media directory: videos and scene pictures move here, one
+   * copy each. Default sibling public/<output folder>. False disables
+   * publishing and keeps the media beside the pages in outDir.
+   */
   publishDir?: string | false
   title?: string
   fps?: number
@@ -110,6 +114,11 @@ function asset(root: string, value: StoryArtifact): string {
   if (!value.path || isAbsolute(value.path) || relative(root, path).startsWith('..')) throw new Error('Story artifact escaped its output directory')
   return path
 }
+/** A folder inside the project, as the manifest records it: relative and with forward slashes. One outside stays absolute. */
+export function portablePath(root: string, path: string): string {
+  const inside = relative(root, path)
+  return inside && !inside.startsWith('..') && !isAbsolute(inside) ? inside.split(sep).join('/') : path
+}
 async function validate(config: StoryConfig) {
   if (!config || !Array.isArray(config.stories) || !config.stories.length) throw new Error('Story configuration needs at least one story')
   const ids = new Set<string>()
@@ -171,7 +180,11 @@ export async function recordStories(options: RecordStoryOptions = {}): Promise<S
     const saved: StoryReport = JSON.parse(await readFile(join(outDir, 'manifest.json'), 'utf8'))
     if (saved.version !== 1 || saved.configHash !== report.configHash || JSON.stringify(saved.inventory) !== JSON.stringify(report.inventory)) throw new Error('Story recordings are stale')
     if (!saved.index || saved.results.length !== report.results.length || saved.results.some((result, index) => result.id !== report.results[index]!.id || result.status !== 'passed' || !result.video || !result.page || result.scenes.length !== report.results[index]!.scenes.length || result.scenes.some((scene, i) => scene.id !== report.results[index]!.scenes[i]!.id || scene.status !== 'passed' || !scene.screenshot))) throw new Error('Story recordings are incomplete or failed')
-    for (const value of [saved.index, ...saved.results.flatMap(result => [result.video!, result.page!, ...result.scenes.map(scene => scene.screenshot!)])]) {
+    // Pages and the index live in the output; videos and pictures live where
+    // they are published, or in the output when publishing is off.
+    const media = saved.results.flatMap(result => [result.video!, ...result.scenes.map(scene => scene.screenshot!)])
+    const pages = [saved.index, ...saved.results.map(result => result.page!)]
+    for (const value of mediaDir ? pages : [...pages, ...media]) {
       const actual = await artifact(outDir, asset(outDir, value))
       if (actual.sha256 !== value.sha256 || actual.bytes !== value.bytes) throw new Error(`Story artifact changed: ${value.path}`)
     }
@@ -179,11 +192,13 @@ export async function recordStories(options: RecordStoryOptions = {}): Promise<S
       await plainPath(mediaDir)
       await plainPath(join(mediaDir, '.stacks-stories'))
       if (await readFile(join(mediaDir, '.stacks-stories'), 'utf8') !== owner || !saved.published?.length) throw new Error('Published story media is incomplete')
-      const media = saved.results.flatMap(result => [result.video!, ...result.scenes.map(scene => scene.screenshot!)])
       if (JSON.stringify(saved.published) !== JSON.stringify(media)) throw new Error('Published story media inventory changed')
-      for (const value of media) if ((await artifact(mediaDir, asset(mediaDir, value))).sha256 !== value.sha256) throw new Error(`Published story media changed: ${value.path}`)
+      for (const value of media) {
+        const actual = await artifact(mediaDir, asset(mediaDir, value))
+        if (actual.sha256 !== value.sha256 || actual.bytes !== value.bytes) throw new Error(`Published story media changed: ${value.path}`)
+      }
     }
-    return { ...saved, outDir }
+    return { ...saved, outDir, mediaDir }
   }
   if (await exists(outDir)) {
     await plainPath(join(outDir, '.stacks-stories'))
@@ -279,11 +294,19 @@ export async function recordStories(options: RecordStoryOptions = {}): Promise<S
       }
       else { await mkdir(mediaDir, { recursive: true }); await writeFile(join(mediaDir, '.stacks-stories'), owner, { flag: 'wx' }) }
       report.published = report.results.flatMap(result => [result.video, ...result.scenes.map(scene => scene.screenshot)].filter((value): value is StoryArtifact => Boolean(value)))
+      // Move, not copy: the pages link to the published files, and a second
+      // copy in the output doubles every video a repository commits.
       for (const value of report.published) {
+        const source = asset(outDir, value)
         const destination = asset(mediaDir, value)
         await plainPath(destination, mediaDir)
         await mkdir(dirname(destination), { recursive: true })
-        await copyFile(asset(outDir, value), destination, 1) // COPYFILE_EXCL, unique run paths only.
+        if (await exists(destination)) throw new Error(`Published story media already exists: ${value.path}`)
+        await rename(source, destination).catch(async (error: NodeJS.ErrnoException) => {
+          if (error.code !== 'EXDEV') throw error
+          await copyFile(source, destination, 1) // COPYFILE_EXCL, unique run paths only.
+          await rm(source)
+        })
       }
     }
     const indexPath = join(outDir, 'index.md')
@@ -300,7 +323,10 @@ export async function recordStories(options: RecordStoryOptions = {}): Promise<S
     await writeFile(indexStage, indexPage, { flag: 'wx' })
     report.index = { path: 'index.md', sha256: hash(indexPage), bytes: Buffer.byteLength(indexPage) }
     const manifestStage = join(runDir, 'manifest.json.tmp')
-    await writeFile(manifestStage, `${JSON.stringify(report, null, 2)}\n`, { flag: 'wx' })
+    // The committed manifest names its folders from the project root, so it
+    // reads the same on every machine; the returned report keeps full paths.
+    const portable = { ...report, outDir: portablePath(root, outDir), mediaDir: mediaDir && portablePath(root, mediaDir) }
+    await writeFile(manifestStage, `${JSON.stringify(portable, null, 2)}\n`, { flag: 'wx' })
     await rename(indexStage, indexPath)
     await rename(manifestStage, manifestPath)
     return report

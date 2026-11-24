@@ -25,7 +25,7 @@ async function record(config: string) {
   const report = JSON.parse(await exec([process.execPath, '--conditions=development', cli, 'docs:stories', '--config', config, '--json']))
   expect(report.results[0].status).toBe('passed')
   expect(report.results[0].scenes.map((scene: { status: string }) => scene.status)).toEqual(['passed', 'passed'])
-  const movie = join(report.outDir, report.results[0].video.path)
+  const movie = join(report.mediaDir ?? report.outDir, report.results[0].video.path)
   // Recorded without FFmpeg: read the container back with ts-videos.
   const { Mp4Demuxer } = await import('@ts-videos/mp4')
   const { BufferSource } = await import('ts-videos')
