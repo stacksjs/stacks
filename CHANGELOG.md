@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.667...v0.75.668)
+
+## 🐛 Bug Fixes
+
+- **ci**: install the story video encoder through Pantry ([b5061ec](https://github.com/stacksjs/stacks/commit/b5061ec)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.666...v0.75.667)
 
 ## 🐛 Bug Fixes
