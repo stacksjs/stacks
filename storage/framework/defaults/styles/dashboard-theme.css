@@ -1,12 +1,15 @@
-html[data-dashboard-layout] {
+html[data-color-mode] {
   color-scheme: light;
+}
+
+html[data-color-mode].dark {
+  color-scheme: dark;
+}
+
+html[data-dashboard-layout] {
   --dashboard-overview-gradient:
     radial-gradient(ellipse at 85% 0%, color-mix(in srgb, var(--dashboard-hero-start) 90%, white), transparent 65%),
     linear-gradient(155deg, var(--dashboard-hero-start), var(--dashboard-hero-end));
-}
-
-html[data-dashboard-layout].dark {
-  color-scheme: dark;
 }
 
 html[data-dashboard-layout] body {
@@ -213,11 +216,11 @@ html[data-dashboard-theme="system-cleaner"] [data-section-id="analytics"] { --da
 html[data-dashboard-theme="system-cleaner"] [data-section-id="marketing"] { --dashboard-tile: #a12d79; }
 html[data-dashboard-theme="system-cleaner"] [data-section-id="management"] { --dashboard-tile: #4d579f; }
 
-html[data-dashboard-overview="immersive"]:has([data-dashboard-overview-page]) body {
+html[data-dashboard-overview="immersive"]:has([data-dashboard-overview-page], [data-dashboard-section-page]) body {
   background: var(--dashboard-overview-gradient) fixed;
 }
 
-html[data-dashboard-overview="immersive"]:has([data-dashboard-overview-page]) :is([data-dashboard-content], [data-dashboard-web-sidebar], [data-dashboard-mobile-bar]) {
+html[data-dashboard-overview="immersive"]:has([data-dashboard-overview-page], [data-dashboard-section-page]) :is([data-dashboard-content], [data-dashboard-web-sidebar], [data-dashboard-mobile-bar]) {
   --dashboard-canvas: transparent;
   --dashboard-window: transparent;
   --dashboard-text: var(--dashboard-hero-text);
@@ -229,7 +232,7 @@ html[data-dashboard-overview="immersive"]:has([data-dashboard-overview-page]) :i
   color: var(--dashboard-text);
 }
 
-html[data-dashboard-overview="immersive"] [data-dashboard-content]:has([data-dashboard-overview-page]),
+html[data-dashboard-overview="immersive"] [data-dashboard-content]:has([data-dashboard-overview-page], [data-dashboard-section-page]),
 html[data-dashboard-overview="immersive"] [data-dashboard-hero] {
   box-shadow: none;
 }
@@ -239,10 +242,189 @@ html[data-dashboard-overview="immersive"] [data-dashboard-hero] {
   padding-inline: 0;
 }
 
-html[data-dashboard-overview="immersive"]:has([data-dashboard-overview-page]) [data-dashboard-mobile-bar] > :is(button, span) {
+html[data-dashboard-overview="immersive"]:has([data-dashboard-overview-page], [data-dashboard-section-page]) [data-dashboard-mobile-bar] > :is(button, span) {
   color: inherit;
 }
 
 html[data-dashboard-overview="immersive"] [data-dashboard-overview-page] [data-dashboard-button="secondary"] {
   border-radius: 999px;
+}
+
+/* The Original follows the dashboard's explicit appearance choice, including
+   native fields and the macOS sidebar chrome that normally follows the OS. */
+html[data-dashboard-theme="original"] {
+  --dashboard-original-text: light-dark(#20232b, #f1f2f5);
+  --dashboard-original-muted: light-dark(#555d6b, #abb0bc);
+  --dashboard-original-focus: light-dark(#0863ce, #9bc7ff);
+  --dashboard-original-field: light-dark(#fff, #25272e);
+  --dashboard-original-field-border: light-dark(#858d9e, #687082);
+}
+
+html[data-dashboard-theme="original"] :is([data-dashboard-content], [data-dashboard-guest]) {
+  color: var(--dashboard-original-text);
+}
+
+html[data-dashboard-theme="original"] [data-dashboard-muted] {
+  color: var(--dashboard-original-muted);
+}
+
+html[data-dashboard-theme="original"][data-appearance="macos"] [data-sidebar-selection="accent"] {
+  --stx-sidebar-accent: light-dark(#0863ce, #216cdf);
+  --stx-sidebar-selection-idle: light-dark(rgb(0 0 0 / .065), rgb(255 255 255 / .11));
+  --stx-sidebar-icon-idle: light-dark(#596170, #a7aebe);
+}
+
+html[data-dashboard-theme="original"][data-appearance="macos"] [data-stx-sidebar] .stx-sidebar-rim {
+  box-shadow: inset 0 1px 0 light-dark(rgb(255 255 255 / .52), rgb(255 255 255 / .14)),
+              inset -1px 0 0 light-dark(rgb(29 41 63 / .1), rgb(255 255 255 / .08));
+}
+
+html[data-dashboard-theme="original"][data-appearance="macos"]:not(.dark) [data-stx-sidebar] .stx-sidebar-rim::after { opacity: .8; }
+html[data-dashboard-theme="original"][data-appearance="macos"].dark [data-stx-sidebar] .stx-sidebar-rim::after { opacity: .25; }
+
+html[data-dashboard-theme="original"] [data-stx-sidebar] :is([data-sidebar-item], [data-sidebar-section-header]):focus-visible {
+  outline: 2px solid var(--dashboard-original-focus);
+  outline-offset: -2px;
+}
+
+html[data-dashboard-theme="original"] [data-dashboard-field]:not(:disabled) {
+  color: var(--dashboard-original-text);
+  background-color: var(--dashboard-original-field);
+}
+
+html[data-dashboard-theme="original"] [data-dashboard-field]:not(:disabled, [aria-invalid="true"]) {
+  border-color: var(--dashboard-original-field-border);
+}
+
+html[data-dashboard-theme="original"] [data-dashboard-field]::placeholder {
+  color: var(--dashboard-original-muted);
+  opacity: 1;
+}
+
+html[data-dashboard-theme="original"] :is([data-dashboard-button], [data-dashboard-field]):focus-visible {
+  outline: 2px solid var(--dashboard-original-focus);
+  outline-offset: 2px;
+}
+
+html[data-dashboard-theme="original"] [data-dashboard-field][aria-invalid="true"]:focus-visible {
+  outline-color: light-dark(#a9263a, #ff9ca9);
+}
+
+[data-dashboard-section-sidebar],
+[data-dashboard-section-overview] {
+  display: none;
+}
+
+html[data-dashboard-navigation="sections"] :is([data-dashboard-sidebar-tree], [data-sidebar-order-controls]) {
+  display: none;
+}
+
+html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] {
+  display: block;
+}
+
+html[data-dashboard-navigation="sections"] [data-dashboard-section-sidebar] {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  padding: 6px 10px 0;
+}
+
+[data-dashboard-section-sidebar-links] {
+  display: grid;
+  gap: 4px;
+}
+
+[data-dashboard-section-sidebar-footer] {
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+[data-dashboard-section-entry]:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 5px 8px;
+  border-radius: 9px;
+  color: var(--dashboard-text);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+[data-dashboard-section-entry]:is(:hover, [aria-current]) {
+  background: var(--dashboard-surface-muted);
+}
+
+[data-dashboard-section-entry]:focus-visible,
+[data-dashboard-navigation-card]:focus-visible {
+  outline: 2px solid var(--dashboard-accent, light-dark(#0863ce, #9bc7ff));
+  outline-offset: 2px;
+}
+
+.dashboard-section-icon {
+  display: grid;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 8px;
+  color: white;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--dashboard-tile, var(--dashboard-accent-fill, #245fc8)) 72%, white), var(--dashboard-tile, var(--dashboard-accent-fill, #245fc8)));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .3), 0 2px 5px rgb(0 0 0 / .18);
+}
+
+.dashboard-section-icon > span { width: 16px; height: 16px; }
+
+[data-dashboard-navigation-card] {
+  align-items: center;
+  min-height: 70px;
+}
+
+[data-dashboard-navigation-card]:hover {
+  border-color: var(--dashboard-accent, light-dark(#0863ce, #9bc7ff));
+}
+
+html[data-dashboard-layout] [data-dashboard-navigation-card]:hover {
+  background: var(--dashboard-surface-muted);
+  border-color: var(--dashboard-accent);
+}
+
+html[data-dashboard-theme="system-cleaner"] [data-section-id="delivery"] { --dashboard-tile: #137485; }
+html[data-dashboard-theme="system-cleaner"] [data-section-id="utilities"],
+html[data-dashboard-theme="system-cleaner"] [data-section-id="settings"] { --dashboard-tile: #a12d79; }
+
+[data-dashboard-section-entry] > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] [data-dashboard-navigation-card] {
+  min-height: 116px;
+  padding-right: 72px;
+}
+
+html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] .dashboard-section-icon {
+  position: absolute;
+  top: -11px;
+  right: -11px;
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, rgb(255 255 255 / .72), transparent 32%),
+              linear-gradient(160deg, color-mix(in srgb, var(--dashboard-tile, var(--dashboard-accent-fill)) 67%, white), var(--dashboard-tile, var(--dashboard-accent-fill)));
+}
+
+html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] .dashboard-section-icon > span {
+  width: 26px;
+  height: 26px;
+}
+
+html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] [data-dashboard-navigation-card] > [data-dashboard-muted] {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
 }

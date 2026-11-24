@@ -1,3 +1,11 @@
+<script server>
+import { buildDashboardSectionHubs } from '@stacksjs/defaults/resources/functions/dashboard/section-navigation'
+import { buildWebSidebarSections } from '@stacksjs/defaults/resources/functions/dashboard/sidebar'
+
+export const homeSectionCards = buildDashboardSectionHubs(buildWebSidebarSections())
+  .map(({ id, href, label, icon, description, section, roleOptions }) => ({ id, href, label, icon, description, section, roleOptions }))
+</script>
+
 <script client>
 import { useDashboard } from '../../../../functions/dashboard'
 
@@ -156,6 +164,11 @@ onMount(() => {
       Refresh
     </Button>
   </div>
+
+  <section data-dashboard-section-overview aria-labelledby="dashboard-sections" class="mb-6">
+    <h2 id="dashboard-sections" data-dashboard-ink class="mb-3 font-semibold text-base text-neutral-900 dark:text-white">Sections</h2>
+    <DashboardNavigationCards :navigationCards="homeSectionCards" />
+  </section>
 
   <details :if="issues().length > 0" class="mb-4 px-4 py-3 text-amber-800 text-sm dark:text-amber-200 overview-panel">
     <summary class="font-medium cursor-pointer">Some dashboard data is unavailable</summary>

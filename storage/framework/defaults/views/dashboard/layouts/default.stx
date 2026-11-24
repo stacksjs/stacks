@@ -17,9 +17,11 @@
 // `storage/framework/tsconfig.app.json` and falls back to the installed
 // package when there is none, so it resolves in both layouts.
 import { dashboardProjectIdentity } from '@stacksjs/defaults/resources/functions/dashboard/project-switcher'
+import { buildDashboardSectionHubs } from '@stacksjs/defaults/resources/functions/dashboard/section-navigation'
 import { buildWebSidebarSections, webSidebarRoleMap } from '@stacksjs/defaults/resources/functions/dashboard/sidebar'
 
 export const sidebarSections = buildWebSidebarSections()
+export const sectionHubs = buildDashboardSectionHubs(sidebarSections)
 
 // The project this dashboard serves, for the switcher at the top of the
 // sidebar. Only its name: the list of other projects is fetched by the
@@ -54,9 +56,9 @@ defineClientPayload({ sidebarRoleMap, sidebarSections })
 <!-- Dashboard icon stylesheet. Most dashboard icons are applied via dynamic
     `:class="…"` bindings whose class names live in client script state, which the
     stx Crosswind extractor cannot see, so their CSS is never generated inline and
-    they render as empty boxes. The dev server generates the full icon set once and
+    they render as empty boxes. The dashboard generates the full icon set once and
     serves it here (browser-cached), instead of inlining ~260KB into every page.
-    Route: `/__deps/dashboard-icons.css` in actions/src/dev/dashboard.ts.
+    Route: `/__deps/dashboard-icons.css` in actions/src/dashboard-assets.ts.
 
     No angle-bracket tag names in this comment. stx parses them as elements, which
     breaks OUT of the comment: the closing marker is then never emitted, and the
@@ -494,6 +496,7 @@ import type { ToastType } from '@stacksjs/defaults/functions/toasts'
 import type { CraftSidebarSelectEvent } from '@stacksjs/defaults/functions/craft'
 import { useToasts, dismissToast } from '@stacksjs/defaults/functions/toasts'
 import { ensureCraftNativeSidebarMarker, useCraftSidebarSelection } from '@stacksjs/defaults/functions/craft'
+import { dashboardNavigationPath } from '@stacksjs/defaults/resources/functions/dashboard/section-navigation'
 import { APPEARANCE_STORAGE_KEY, readStoredAppearance, useAppearance } from '@stacksjs/defaults/views/dashboard/composables/useAppearance'
 import { useDashboardThemes } from '@stacksjs/defaults/views/dashboard/composables/useDashboardThemes'
 import { authStore } from '@stacksjs/defaults/views/dashboard/stores/auth'
@@ -607,7 +610,9 @@ function applySectionVisibility() {
   // ends up with no dependency and never runs again. The toggle then appears to
   // do nothing until a reload.
   const hidden = appearance.hiddenSections()
+  const flatNavigation = themes.sectionNavigation()
   for (const pane of sidebarPanes()) {
+    pane.setAttribute('tabindex', flatNavigation ? '-1' : '0')
     for (const section of pane.querySelectorAll<HTMLElement>('[data-sidebar-section]')) {
       const id = section.dataset.sectionId || ''
       section.setAttribute('data-viewer-hidden', String(hidden.includes(id)))
@@ -633,10 +638,6 @@ useEventListener('storage', (event) => {
   appearance.apply()
 })
 
-function normalizeRoutePath(path: string | null | undefined): string {
-  return (path || '/').replace(/\/+$/, '') || '/'
-}
-
 // Highlight the current route. Longest-prefix matching keeps a detail page
 // such as /commerce/products/42 attached to its /commerce/products row while
 // preventing /health from matching /health-check.
@@ -649,7 +650,7 @@ function syncActiveSidebarRow(url?: string): void {
     catch {}
   }
 
-  const currentPath = normalizeRoutePath(path)
+  const currentPath = dashboardNavigationPath(path || '/')
   for (const pane of sidebarPanes()) {
     let bestMatch = null
     let bestLength = -1
@@ -658,7 +659,7 @@ function syncActiveSidebarRow(url?: string): void {
     for (const link of links) {
       const href = link.getAttribute('href') || ''
       if (href.startsWith('http')) continue
-      const candidatePath = normalizeRoutePath(href)
+      const candidatePath = dashboardNavigationPath(href)
       if (`${currentPath}/`.startsWith(`${candidatePath}/`) && candidatePath.length > bestLength) {
         bestMatch = link
         bestLength = candidatePath.length
@@ -699,6 +700,7 @@ function showSidebarInDrawer() {
     drawer.appendChild(element)
   }
   applyRoleFilter()
+  applySectionVisibility()
   syncActiveSidebarRow()
 }
 
@@ -758,7 +760,6 @@ onDestroy(() => {
 
 <div ref="dashboardSidebarHost" data-dashboard-web-sidebar>
   <Sidebar
-    :sections="sidebarSections"
     theme="macos"
     width="250"
     placement="fixed"
@@ -781,6 +782,10 @@ onDestroy(() => {
         <ProjectSwitcher :name="dashboardProject.name" />
       @endif
     </template>
+    <div data-dashboard-sidebar-tree>
+      <SidebarSections :sections="sidebarSections" theme="macos" />
+    </div>
+    <DashboardSectionSidebar :sectionHubs="sectionHubs" />
     <template #footer>
       <div class="px-3 py-2 text-neutral-600 text-xs dark:text-neutral-300" data-sidebar-order-controls data-dashboard-muted :data-sidebar-order-editing="sidebarReordering() ? 'true' : 'false'">
         <p role="status" aria-live="polite" :text="sidebarOrderStatus.message"></p>

@@ -46,6 +46,9 @@ declare global {
    */
   const query: Record<string, string>
 
+  /** Path parameters for the current STX route, e.g. a file named [section].stx. */
+  const params: Record<string, string | undefined>
+
   /**
    * Cookies injected onto the render context by the serve path.
    *

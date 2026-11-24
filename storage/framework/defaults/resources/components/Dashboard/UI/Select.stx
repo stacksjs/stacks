@@ -83,6 +83,7 @@ function handleChange(event: Event): void {
   <div class="relative">
     <select
       data-ui-select
+      data-dashboard-field
       :id="selectId()"
       :name="liveName() || null"
       :aria-label="liveAriaLabel() || liveLabel() || null"

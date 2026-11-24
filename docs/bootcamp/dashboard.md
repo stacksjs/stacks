@@ -38,7 +38,9 @@ only, preserving the team's labels, access rules and model grouping.
 
 Open **Settings → Appearance** to switch between **The Original** and **System
 Cleaner**. The Original keeps the macOS and Arc sidebar options. Each theme
-follows your light, dark or system preference.
+follows your light, dark or system preference. System Cleaner puts one link per
+section in the sidebar. The dashboard home links to those sections as cards,
+and each section index lists its available pages as cards.
 
 To make a theme, choose **Download starter theme**, edit the JSON file, and
 choose **Install theme**. Install selects the theme immediately. Installing
@@ -54,7 +56,7 @@ Theme files use version 1 of the format:
 | `id` | A unique ID of up to 48 lowercase letters, digits and hyphens. Start with a letter. `original` and `system-cleaner` are reserved. |
 | `name`, `description` | The visible name (up to 64 characters) and an optional description (up to 180 characters). |
 | `layout` | `flush` or `inset`. Both use the full-width content area on mobile. |
-| `navigation` | `plain` or `tiles`. |
+| `navigation` | `plain` or `tiles` for the expandable sidebar, or `sections` for direct section links and card indexes. |
 | `overview` | `panel` for a gradient header, or `immersive` to extend the gradient behind the entire overview. Defaults to `panel`. |
 | `radius` | A whole number from 0 to 24, in pixels. |
 | `light`, `dark` | Both palettes from the starter file, with six-digit hex colors. |

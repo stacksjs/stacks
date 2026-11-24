@@ -115,6 +115,7 @@ function handleKeydown(event: KeyboardEvent): void {
       </div>
     @endif
     <input
+      data-dashboard-field
       :id="inputId()"
       :type="liveType()"
       x-model="liveValue"

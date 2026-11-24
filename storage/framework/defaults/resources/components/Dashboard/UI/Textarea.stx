@@ -102,6 +102,7 @@ function handleKeydown(event: KeyboardEvent): void {
 
   <div class="relative">
     <textarea
+      data-dashboard-field
       :id="textareaId()"
       :name="liveName() || null"
       :rows="liveRows()"

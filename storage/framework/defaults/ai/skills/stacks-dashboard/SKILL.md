@@ -550,6 +550,13 @@ with semantic styling hooks or dashboard theme CSS variables so every theme
 can use the same STX navigation, controls and page markup. Use fallbacks that
 match The Original when referencing optional theme variables.
 
+For the `sections` navigation style, build the sidebar links and home cards
+from the same enabled dashboard sections. Each link opens
+`/sections/{section}` with cards for its existing routes, including model
+destinations nested in the expandable sidebar. Apply the same viewer role
+requirements to the cards and sidebar links. Keep mobile navigation on the
+shared sidebar instance.
+
 Both dashboard servers expose the same theme stylesheet and synchronous
 bootstrap. The bootstrap and the appearance picker share the same manifest
 validator and read browser-local state. Keep both assets in the head when

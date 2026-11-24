@@ -16,7 +16,7 @@ export interface DashboardTheme {
   name: string
   description?: string
   layout: 'flush' | 'inset'
-  navigation: 'plain' | 'tiles'
+  navigation: 'plain' | 'tiles' | 'sections'
   overview: 'panel' | 'immersive'
   radius: number
   light: ThemePalette
@@ -32,9 +32,9 @@ export const SYSTEM_CLEANER_THEME: DashboardTheme = {
   version: 1,
   id: 'system-cleaner',
   name: 'System Cleaner',
-  description: 'A macOS-style window with colored navigation tiles and a violet overview.',
+  description: 'A violet overview with a short sidebar and card-based section pages.',
   layout: 'inset',
-  navigation: 'tiles',
+  navigation: 'sections',
   overview: 'immersive',
   radius: 14,
   light: {
@@ -101,8 +101,8 @@ export function parseDashboardTheme(value: unknown): DashboardTheme {
     throw new Error('Keep the description to 180 characters or fewer.')
   if (layout !== 'flush' && layout !== 'inset')
     throw new Error('Choose either flush or inset for layout.')
-  if (navigation !== 'plain' && navigation !== 'tiles')
-    throw new Error('Choose either plain or tiles for navigation.')
+  if (navigation !== 'plain' && navigation !== 'tiles' && navigation !== 'sections')
+    throw new Error('Choose plain, tiles, or sections for navigation.')
   if (overview !== 'panel' && overview !== 'immersive')
     throw new Error('Choose either panel or immersive for overview.')
   if (typeof radius !== 'number' || !Number.isInteger(radius) || radius < 0 || radius > 24)

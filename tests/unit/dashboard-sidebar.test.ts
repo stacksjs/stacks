@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
+import { activeDashboardSection, buildDashboardSectionHubs, canSeeDashboardCard } from '../../storage/framework/defaults/resources/functions/dashboard/section-navigation'
 import {
   DEFAULT_TOGGLES,
   DISCOVERED_MANIFEST_PATH,
@@ -13,6 +14,31 @@ import {
   parseDiscoveredManifest,
   webSidebarRoleMap,
 } from '../../storage/framework/defaults/resources/functions/dashboard/sidebar'
+
+it('section indexes keep nested destinations and their inherited role gates', () => {
+  const icon = 'i-f7-table'
+  const [hub] = buildDashboardSectionHubs([
+    { id: 'top', label: '', items: [{ id: 'home', label: 'Home', icon, iconColor: 'blue', href: '/' }] },
+    {
+      id: 'data',
+      label: 'Data',
+      items: [{
+        id: 'models',
+        label: 'Models',
+        icon,
+        iconColor: 'blue',
+        roles: ['admin', 'manager'],
+        children: [{ id: 'accounts', label: 'Accounts', icon, iconColor: 'blue', roles: ['billing'], href: '/models/account' }],
+      }],
+    },
+  ])
+  expect(hub?.href).toBe('/sections/data')
+  expect(hub?.destinations.map(card => card.href)).toEqual(['/models/account'])
+  expect(canSeeDashboardCard(hub!, ['billing'], false)).toBe(false)
+  expect(canSeeDashboardCard(hub!, ['manager', 'billing'], false)).toBe(true)
+  expect(activeDashboardSection([hub!], '/models/account/1')).toBe('data')
+  expect(activeDashboardSection([hub!], '/models/accounting')).toBeUndefined()
+})
 
 describe('dashboard sidebar data', () => {
   it('shows operational links only when their private backing models are in the native schema', () => {

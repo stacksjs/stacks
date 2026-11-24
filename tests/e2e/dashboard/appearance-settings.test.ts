@@ -60,6 +60,67 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     }, 5_000, { label: 'the defaults back on the page' })
   }, 120_000)
 
+  test('The Original uses the chosen color scheme on overview surfaces and sidebar controls', async () => {
+    const { cdp } = e2e!.browser
+    const origin = e2e!.origin
+    for (const { system, mode, panel, field } of [
+      { system: 'light', mode: 'Dark', panel: 'rgb(24, 25, 31)', field: 'rgb(37, 39, 46)' },
+      { system: 'dark', mode: 'Light', panel: 'rgb(255, 255, 255)', field: 'rgb(255, 255, 255)' },
+    ]) {
+      await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: system }] })
+      await openAppearance(cdp, origin)
+      await click(cdp, { selector: '[aria-label="Color mode"] button', text: mode })
+      await navigate(cdp, origin)
+      const appearance = await cdp.evaluate(`(() => {
+        const panel = document.querySelector('section.overview-panel')
+        const sidebar = document.querySelector('[data-stx-sidebar]')
+        return {
+          colorScheme: getComputedStyle(document.documentElement).colorScheme,
+          panel: getComputedStyle(panel).backgroundColor,
+          sidebarAccent: getComputedStyle(sidebar).getPropertyValue('--stx-sidebar-accent').trim(),
+        }
+      })()`)
+      expect(appearance).toEqual({
+        colorScheme: mode.toLowerCase(),
+        panel,
+        sidebarAccent: 'light-dark(#0863ce, #216cdf)',
+      })
+      await navigate(cdp, `${origin}/jobs/history`)
+      expect(await cdp.evaluate(`getComputedStyle(document.querySelector('select[data-dashboard-field]')).backgroundColor`)).toBe(field)
+      expect(await cdp.evaluate(`Boolean(document.querySelector('main table thead'))`)).toBe(true)
+    }
+    await openAppearance(cdp, origin)
+    await click(cdp, { selector: 'button', text: 'Reset to defaults' })
+  }, 120_000)
+
+  test('System Cleaner opens section indexes and child pages from flat links and cards', async () => {
+    const { cdp } = e2e!.browser
+    const origin = e2e!.origin
+    await openAppearance(cdp, origin)
+    await click(cdp, 'button[data-theme-id="system-cleaner"]')
+    await navigate(cdp, origin)
+    const appLink = '[data-dashboard-section-sidebar] [href="/sections/app"]'
+    const appCard = '[data-dashboard-section-overview] [data-dashboard-navigation-card][href="/sections/app"]'
+    await waitFor(() => cdp.evaluate(`!!document.querySelector('${appCard}')`), 5_000)
+    expect(await cdp.evaluate(`document.querySelector('${appLink}')?.getClientRects().length`)).toBe(1)
+    expect(await cdp.evaluate(`[...document.querySelectorAll('[data-sidebar-section-header], [data-sidebar-disclosure]')].some(element => element.getClientRects().length > 0)`)).toBe(false)
+
+    await click(cdp, appLink)
+    await waitFor(() => cdp.evaluate(`location.pathname === '/sections/app' && document.querySelector('h1')?.textContent.trim() === 'App'`), 10_000)
+    expect(await cdp.evaluate(`document.querySelector('${appLink}')?.getAttribute('aria-current')`)).toBe('page')
+
+    await click(cdp, '[data-dashboard-navigation-card][href="/jobs/history"]')
+    await waitFor(() => cdp.evaluate(`location.pathname === '/jobs/history' && document.querySelector('${appLink}')?.getAttribute('aria-current') === 'location'`), 10_000)
+
+    await navigate(cdp, origin)
+    await click(cdp, appCard)
+    await waitFor(() => cdp.evaluate(`location.pathname === '/sections/app' && !!document.querySelector('[data-dashboard-navigation-card][href="/deployments"]')`), 10_000)
+
+    await openAppearance(cdp, origin)
+    await click(cdp, 'button[data-theme-id="original"]')
+    expect(await cdp.evaluate(`[...document.querySelectorAll('[data-sidebar-section-header]')].some(element => element.getClientRects().length > 0)`)).toBe(true)
+  }, 120_000)
+
   test('selects, imports, updates and removes themes across real dashboard pages', async () => {
     const { cdp } = e2e!.browser
     const origin = e2e!.origin
@@ -86,7 +147,7 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
       expect(await themeApplied(cdp, 'system-cleaner', 0)).toBe(true)
       expect(await cdp.evaluate('document.documentElement.scrollWidth <= innerWidth')).toBe(true)
       await click(cdp, 'button[aria-label="Open dashboard navigation"]')
-      await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('[data-dashboard-mobile-sidebar] [data-sidebar-item]'))`), 5_000)
+      await waitFor(() => cdp.evaluate(`Array.from(document.querySelectorAll('[data-dashboard-mobile-sidebar] [data-dashboard-section-entry]')).some(link => link.getClientRects().length > 0)`), 5_000)
     }
     finally {
       await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })

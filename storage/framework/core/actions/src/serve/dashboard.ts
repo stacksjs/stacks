@@ -46,7 +46,7 @@ import process from 'node:process'
 import { config, feature, overridesReady } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath, publicPath } from '@stacksjs/path'
-import { dashboardThemeAssetRoutes } from '../dashboard-theme-assets'
+import { dashboardAssetRoutes } from '../dashboard-assets'
 import { resolveComponentsLibraryRoot, resolveDefaultsRoot } from '../dev/defaults-resources'
 import { disabledFeatureViews } from '../dev/dashboard-feature-views'
 import { decideDashboardAccess } from './dashboard-gate'
@@ -138,7 +138,7 @@ await serve({
   // Assets belong to the application even when the page came from framework
   // storage.
   publicDir: publicPath(),
-  routes: dashboardThemeAssetRoutes(defaultsRoot),
+  routes: dashboardAssetRoutes(defaultsRoot, projectPath()),
 
   quiet: true,
 

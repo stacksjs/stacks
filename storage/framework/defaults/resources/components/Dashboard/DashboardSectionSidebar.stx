@@ -1,0 +1,78 @@
+<script server>
+import type { DashboardNavigationHub } from '@stacksjs/defaults/resources/functions/dashboard/section-navigation'
+
+const { sectionHubs = [] } = defineProps<{ sectionHubs: DashboardNavigationHub[] }>()
+defineClientPayload({ sectionHubs })
+</script>
+
+<script client>
+import { activeDashboardSection, canSeeDashboardCard, dashboardNavigationPath } from '@stacksjs/defaults/resources/functions/dashboard/section-navigation'
+import { useAppearance } from '@stacksjs/defaults/views/dashboard/composables/useAppearance'
+import { authStore } from '@stacksjs/defaults/views/dashboard/stores/auth'
+
+const hubs = {{ sectionHubs }}
+const rail = useRef<HTMLElement>('dashboardSectionSidebar')
+const route = useRoute()
+const appearance = useAppearance()
+
+function syncVisibility(): void {
+  const hidden = appearance.hiddenSections()
+  const roles = authStore.roles()
+  const localViewer = authStore.unauthenticated()
+  for (const hub of hubs) {
+    const link = rail.current?.querySelector(`[data-section-id="${hub.id}"]`)
+    link?.toggleAttribute('hidden', hidden.includes(hub.id) || !canSeeDashboardCard(hub, roles, localViewer))
+  }
+}
+
+function syncSelection(path = route.path): void {
+  const current = dashboardNavigationPath(path)
+  const settings = current === '/settings' || current.startsWith('/settings/')
+  const active = settings ? 'settings' : activeDashboardSection(hubs, current)
+  for (const link of rail.current?.querySelectorAll<HTMLElement>('[data-dashboard-section-entry]') ?? []) {
+    if (link.dataset.sectionId === active)
+      link.setAttribute('aria-current', link.getAttribute('href') === current ? 'page' : 'location')
+    else
+      link.removeAttribute('aria-current')
+  }
+}
+
+function handleKeydown(event: KeyboardEvent): void {
+  // The enclosing Sidebar delegates these keys for its outline. In the
+  // flat rail the focused link handles keyboard activation.
+  if (event.key === 'Enter' || event.key.startsWith('Arrow'))
+    event.stopPropagation()
+}
+
+// This component lives outside the route outlet and keeps its listeners and
+// refs when STX replaces a page's setup during a same-layout navigation.
+useEventListener('stx:navigate', () => syncSelection())
+useEventListener('stx:load', () => syncSelection())
+useEventListener('popstate', () => syncSelection())
+effect(syncVisibility)
+onMount(() => {
+  syncVisibility()
+  syncSelection()
+})
+</script>
+
+<div data-dashboard-section-sidebar ref="dashboardSectionSidebar" @keydown="handleKeydown($event)">
+  <div data-dashboard-section-sidebar-links>
+    <a href="/" data-stx-link data-dashboard-section-entry data-section-id="top">
+      <span class="dashboard-section-icon" aria-hidden="true"><span class="i-f7-house"></span></span>
+      <span>Home</span>
+    </a>
+    @foreach(sectionHubs as hub)
+      <a href="{{ hub.href }}" data-stx-link data-dashboard-section-entry data-section-id="{{ hub.id }}">
+        <span class="dashboard-section-icon" aria-hidden="true"><span class="{{ hub.icon }}"></span></span>
+        <span>{{ hub.label }}</span>
+      </a>
+    @endforeach
+  </div>
+  <div data-dashboard-section-sidebar-footer>
+    <a href="/settings" data-stx-link data-dashboard-section-entry data-section-id="settings">
+      <span class="dashboard-section-icon" aria-hidden="true"><span class="i-f7-gear-alt"></span></span>
+      <span>Settings</span>
+    </a>
+  </div>
+</div>

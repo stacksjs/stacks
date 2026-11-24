@@ -792,6 +792,7 @@ function cellClass(column: DashboardTableColumn, index: number): string {
       <div :if="searchable()" class="relative">
         <span aria-hidden="true" class="absolute left-2.5 top-1/2 h-4 w-4 text-neutral-400 -translate-y-1/2 i-hugeicons-search-01"></span>
         <input
+          data-dashboard-field
           type="search"
           :placeholder="searchPlaceholder()"
           :aria-label="searchPlaceholder()"

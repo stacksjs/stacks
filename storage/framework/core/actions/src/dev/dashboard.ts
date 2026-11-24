@@ -11,7 +11,7 @@ import { resolveDashboardCraftExecutable, type CraftBinaryResolver } from './das
 import { dashboardHttpsAnswers, dashboardOriginUrl, dashboardPendingHeader, dashboardReadyHeader, dashboardReadyPath, resolveDashboardDomain, resolveDashboardProxyStrategy } from './dashboard-proxy'
 import { buildManifest, discoverProjectModels, findAvailablePort, modelsWithEnabledFeatures, waitForServer, writeFileIfChanged } from './dashboard-utils'
 import { runDashboardSupervisor } from './dashboard-supervisor'
-import { dashboardThemeAssetRoutes } from '../dashboard-theme-assets'
+import { dashboardAssetRoutes } from '../dashboard-assets'
 import { ensureDiscoveredPackages } from '../discover-packages'
 import { resolveStxSource } from '../stx-source'
 
@@ -275,40 +275,8 @@ async function startStxServer(): Promise<void> {
     }
   }
 
-  // Dashboard icons render through ts-css icon classes (`i-hugeicons-*`), but most are
-  // applied via dynamic bindings — `:class="stat.icon"` — whose values live in `<script>`
-  // state. The stx ts-css extractor only sees static `class="…"` and string literals
-  // written inline inside `:class="…"`, so dynamically-bound icons never get CSS generated
-  // and render as empty boxes. Generate the CSS for every icon the dashboard references
-  // (framework defaults + userland overrides) ONCE and serve it as a browser-cached
-  // stylesheet the layout links, rather than inlining ~260KB of icon CSS into every page.
-  // The matching <link> is injected by the dashboard layout — see
-  // `storage/framework/defaults/views/dashboard/layouts/default.stx`.
-  let dashboardIconCss: Promise<string> | null = null
-  async function buildDashboardIconCss(): Promise<string> {
-    const { generateCss } = await import('@stacksjs/stx')
-    // Model-defined icons can appear only in the async catalog (for example a
-    // model hidden from navigation), so rendered sidebar markup cannot seed them.
-    const dirs = [dashboardPath, userDashboardPath, dashboardComponentsPath, userDashboardComponentsPath, projectPath('app/Models'), defaultsPath('app/Models'), defaultsPath('functions'), defaultsPath('resources/functions')]
-    const icons = new Set<string>()
-    for (const dir of dirs) {
-      if (!existsSync(dir))
-        continue
-      const glob = new Bun.Glob('**/*.{stx,ts}')
-      for await (const file of glob.scan({ cwd: dir, absolute: true })) {
-        const text = await Bun.file(file).text()
-        // `i-collection-name` icon tokens; two+ segments avoids matching `i-foo`.
-        for (const match of text.matchAll(/\bi-[a-z][a-z0-9]*(?:-[a-z0-9]+)+/g))
-          icons.add(match[0])
-      }
-    }
-    if (icons.size === 0)
-      return ''
-    return generateCss(`<div class="${[...icons].join(' ')}"></div>`, process.cwd())
-  }
-
   const configRoutes: Record<string, (req: Request) => Response | Promise<Response>> = {
-    ...dashboardThemeAssetRoutes(defaultsPath()),
+    ...dashboardAssetRoutes(defaultsPath(), projectPath()),
     ...projectSwitcherRoutes({
       root: projectPath(),
       get url() { return dashboardBrowserUrl },
@@ -324,13 +292,6 @@ async function startStxServer(): Promise<void> {
     '/__deps/ts-charts.js': browserDependencyRoute(
       tsChartsEntry || `${localTsChartsRoot}/packages/ts-charts/src/index.ts`,
     ),
-    '/__deps/dashboard-icons.css': async () => {
-      if (!dashboardIconCss)
-        dashboardIconCss = buildDashboardIconCss()
-      return new Response(await dashboardIconCss, {
-        headers: { 'content-type': 'text/css; charset=utf-8', 'cache-control': 'no-cache' },
-      })
-    },
     '/api/config/list': async () => {
       try {
         const hidden = await hiddenConfigs()

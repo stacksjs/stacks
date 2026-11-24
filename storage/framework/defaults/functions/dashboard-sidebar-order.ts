@@ -37,6 +37,7 @@ export function createDashboardSidebarOrder(options: {
     const pane = options.pane()
     if (!pane) return
     const sectionNodes = new Map([...pane.querySelectorAll<HTMLElement>('[data-sidebar-section]')].map(node => [node.dataset.sectionId!, node]))
+    const sectionLinks = new Map([...pane.querySelectorAll<HTMLElement>('[data-dashboard-section-sidebar] [data-section-id]')].map(link => [link.dataset.sectionId, link]))
     const sorted = orderSidebarSections(options.sections, order)
     groups.set('sections', sorted.map(section => section.id))
     function visit(items: WebSidebarItem[], section: string, ancestors: string[] = []) {
@@ -51,6 +52,8 @@ export function createDashboardSidebarOrder(options: {
     for (const section of sorted) {
       const node = sectionNodes.get(section.id)
       if (node) node.parentElement!.append(node)
+      const link = sectionLinks.get(section.id)
+      link?.parentElement?.append(link)
       visit(section.items, section.id)
     }
   }

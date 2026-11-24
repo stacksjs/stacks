@@ -1,0 +1,44 @@
+<script server>
+import type { DashboardNavigationCard } from '@stacksjs/defaults/resources/functions/dashboard/section-navigation'
+
+const { navigationCards = [], emptyLabel = '' } = defineProps<{
+  navigationCards: DashboardNavigationCard[]
+  emptyLabel?: string
+}>()
+defineClientPayload({ navigationCards, emptyLabel })
+</script>
+
+<script client>
+import { canSeeDashboardCard } from '@stacksjs/defaults/resources/functions/dashboard/section-navigation'
+import { authStore } from '@stacksjs/defaults/views/dashboard/stores/auth'
+
+const cards = {{ navigationCards }}
+const emptyMessage = {{ emptyLabel }}
+const visibleCards = derived(() => {
+  const roles = authStore.roles()
+  const localViewer = authStore.unauthenticated()
+  return cards.filter(card => canSeeDashboardCard(card, roles, localViewer))
+})
+</script>
+
+<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-dashboard-navigation-cards>
+  <a
+    data-stx-link
+    :for="card in visibleCards()"
+    :href="card.href"
+    :data-section-id="card.section"
+    data-dashboard-card="default"
+    data-dashboard-navigation-card
+    class="flex overflow-hidden relative gap-3 items-start p-4 min-w-0 no-underline bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800"
+  >
+    <span class="dashboard-section-icon" aria-hidden="true">
+      <span :class="card.icon"></span>
+    </span>
+    <span class="flex flex-1 flex-col gap-1 min-w-0">
+      <span data-dashboard-ink class="font-semibold text-neutral-900 text-sm dark:text-white" :text="card.label"></span>
+      <span data-dashboard-muted :if="card.description" class="text-neutral-600 text-xs dark:text-neutral-400" :text="card.description"></span>
+    </span>
+    <span aria-hidden="true" class="shrink-0 h-4 w-4 i-f7-chevron-right" data-dashboard-muted></span>
+  </a>
+</div>
+<p :if="emptyMessage && !authStore.loading() && visibleCards().length === 0" class="text-neutral-600 text-sm dark:text-neutral-400" :text="emptyMessage"></p>

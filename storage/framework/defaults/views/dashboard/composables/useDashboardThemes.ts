@@ -25,6 +25,7 @@ const dashboardThemeStore = defineStore('dashboard-themes', () => {
   const preferences = state(read())
   const active = derived(() => preferences().active)
   const installed = derived(() => preferences().installed)
+  const sectionNavigation = derived(() => resolveDashboardTheme(active(), installed())?.navigation === 'sections')
 
   function apply(next: DashboardThemePreferences): void {
     preferences.set(next)
@@ -71,7 +72,7 @@ const dashboardThemeStore = defineStore('dashboard-themes', () => {
     })
   }
 
-  return { active, installed, select, install, remove, sync: () => apply(read()) }
+  return { active, installed, sectionNavigation, select, install, remove, sync: () => apply(read()) }
 })
 
 export function useDashboardThemes(): typeof dashboardThemeStore {
