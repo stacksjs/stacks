@@ -1,7 +1,7 @@
 import { afterAll, expect, test } from 'bun:test'
 import { installBasicAuth } from '@stacksjs/testing/browser'
 import { browserStory } from '../src/story-drivers'
-import { portablePath } from '../src/stories'
+import { assembleStoryFilm, portablePath } from '../src/stories'
 import { mkdtemp, mkdir, rm, symlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -16,18 +16,14 @@ async function run(args: string[]) {
   return { code, stdout, stderr }
 }
 
-const ffmpeg = Bun.which('ffmpeg')
-const encoders: Array<[string, string | undefined]> = [['WebCodecs', undefined]]
-if (ffmpeg) encoders.push(['FFmpeg', ffmpeg])
-
-test.each(encoders)('Buddy uses %s to record a browser journey, publish each scene, and detect changed evidence', async (_name, executable) => {
+test('Buddy uses WebCodecs to record a browser journey, publish each scene, and detect changed evidence', async () => {
   const root = await mkdtemp(join(tmpdir(), 'story-browser-')); roots.push(root)
   const server = Bun.serve({ port: 0, fetch(request) { return new Response('<html><head><title>Story fixture</title></head><body><main><h1>Cart</h1><button onclick="document.querySelector(\'h1\').textContent=\'Purchased\'">Buy</button><input type="password" value="private-fixture"></main></body></html>', { status: new URL(request.url).pathname === '/unavailable' ? 503 : 200, headers: { 'Content-Type': 'text/html' } }) } })
   try {
     const config = join(root, 'stories.ts')
     const driver = pathToFileURL(resolve(import.meta.dir, '../src/story-drivers.ts')).href
     await Bun.write(config, `import { browserStory } from ${JSON.stringify(driver)}
-      export default { outDir: ${JSON.stringify(join(root, 'docs'))}, holdMs: 300, stories: [{ id:'purchase', title:'Purchase', driver:browserStory({baseUrl:${JSON.stringify(server.url.href)},viewport:{width:640,height:480},ffmpeg:${JSON.stringify(executable)}}), scenes:[
+      export default { outDir: ${JSON.stringify(join(root, 'docs'))}, holdMs: 300, stories: [{ id:'purchase', title:'Purchase', driver:browserStory({baseUrl:${JSON.stringify(server.url.href)},viewport:{width:640,height:480}}), scenes:[
         {id:'cart',title:'Review cart',run:async view=>{await view.expectText('h1','Cart')}},
         {id:'purchased',title:'Order confirmed',run:async view=>{await view.click('button');await view.expectText('h1','Purchased')}}
       ] }] }`)
@@ -48,18 +44,31 @@ test.each(encoders)('Buddy uses %s to record a browser journey, publish each sce
     // This fixture lives outside the project root, so its folders stay absolute.
     expect(manifest.outDir).toBe(report.outDir)
     expect(manifest.mediaDir).toBe(report.mediaDir)
-    // Both encoders produce an H.264 MP4 with the captured viewport.
+    // ts-videos writes an H.264 MP4 with the captured viewport.
     const bytes = new Uint8Array(await Bun.file(video).arrayBuffer())
     expect(Buffer.from(bytes.subarray(4, 8)).toString()).toBe('ftyp')
-    if (executable) expect(Buffer.from(bytes).includes('Lavf')).toBe(true)
     const { Mp4Demuxer } = await import('@ts-videos/mp4')
-    const { BufferSource } = await import('ts-videos')
+    const { BufferSource, parseMp4Chapters } = await import('ts-videos')
     const demuxer = new Mp4Demuxer(new BufferSource(bytes))
     const tracks = await demuxer.getTracks()
     const picture = tracks.find(track => track.type === 'video') as { codec: string, width: number, height: number } | undefined
     expect(picture?.codec).toBe('h264')
     expect(picture!.width).toBeGreaterThan(300)
     expect(picture!.height).toBeGreaterThan(200)
+    const replay = { id: 'replay', title: 'Einkauf ansehen' }
+    const combinedManifest = join(root, 'combined.json')
+    await Bun.write(combinedManifest, JSON.stringify({
+      ...manifest,
+      inventory: [...manifest.inventory, { ...manifest.inventory[0], ...replay }],
+      results: [...manifest.results, { ...manifest.results[0], ...replay }],
+    }))
+    const output = join(root, 'walkthrough.mp4')
+    const walkthrough = await assembleStoryFilm([combinedManifest], output)
+    expect(walkthrough.chapters.map(chapter => chapter.title)).toEqual(['Purchase', replay.title])
+    expect(walkthrough.chapters[1]!.start).toBe(walkthrough.chapters[0]!.end)
+    const chapters = parseMp4Chapters(await Bun.file(output).bytes()).chapters
+    expect(chapters.map(chapter => chapter.startTime)).toEqual(walkthrough.chapters.map(chapter => chapter.start))
+    await expect(assembleStoryFilm([combinedManifest], output)).rejects.toThrow('EEXIST')
     expect((await run(['--config', config, '--check', '--json'])).code).toBe(0)
     expect(await Bun.file(join(report.mediaDir, report.results[0].video.path)).exists()).toBe(true)
     for (const scene of report.results[0].scenes) expect(await Bun.file(join(report.mediaDir, scene.screenshot.path)).exists()).toBe(true)

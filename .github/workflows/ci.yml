@@ -114,12 +114,6 @@ jobs:
         env:
           STACKS_BROWSER_TESTS: '1'
         run: bun test ./storage/framework/core/docs/tests/screenshots.test.ts ./storage/framework/core/docs/tests/screenshot-models.test.ts
-      - name: Install story video encoder
-        uses: pantry-pm/pantry/packages/action@c7a4512c54606c2b0940e9809cb3454a2cbdf4fa # v0.11.205
-        with:
-          version: '0.11.205'
-          install: 'false'
-          packages: 'ffmpeg.org@9.0.2'
       - name: Verify story videos and generated documentation through Buddy
         run: bun test ./storage/framework/core/docs/tests/stories.test.ts
       - name: Verify repeated mid-gesture rejection and cleanup

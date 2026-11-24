@@ -114,6 +114,81 @@ function asset(root: string, value: StoryArtifact): string {
   if (!value.path || isAbsolute(value.path) || relative(root, path).startsWith('..')) throw new Error('Story artifact escaped its output directory')
   return path
 }
+
+/** Join verified story recordings in inventory order and give each story an MP4 chapter. */
+export async function assembleStoryFilm(manifests: readonly string[], destination: string, projectRoot = process.cwd()) {
+  if (!manifests.length || !destination.endsWith('.mp4')) throw new Error('Expected story manifests and an MP4 destination')
+  const reports = await Promise.all(manifests.map(async file => {
+    const report = JSON.parse(await readFile(file, 'utf8')) as StoryReport
+    const root = await realpath(report.mediaDir ? resolve(projectRoot, report.mediaDir) : dirname(resolve(file)))
+    return { report, root }
+  }))
+  const { configHash, inventory } = reports[0]!.report
+  if (!inventory.length || reports.some(({ report }) => report.version !== 1 || report.configHash !== configHash))
+    throw new Error('The recordings must share one Stacks story configuration')
+
+  const { Mp4Demuxer, Mp4Muxer } = await import('@ts-videos/mp4')
+  const { BufferSource, BufferTarget, parseMp4Chapters } = await import('ts-videos')
+  const target = new BufferTarget()
+  const muxer = new Mp4Muxer(target)
+  const chapters: Array<{ title: string, start: number, end: number }> = []
+  let outputTrack: { id: number, width: number, height: number, description: Uint8Array } | undefined
+  let elapsed = 0
+  for (const story of inventory) {
+    const recording = reports.flatMap(({ report, root }) => report.results
+      .filter(result => result.id === story.id && result.status === 'passed')
+      .map(result => ({ root, result }))).at(-1)
+    const video = recording?.result.video
+    if (!video || recording.result.scenes.length !== story.scenes.length
+      || story.scenes.some(scene => !recording.result.scenes.some(result => result.id === scene.id && result.status === 'passed' && result.screenshot)))
+      throw new Error(`Story ${story.id} has missing or failed recording evidence`)
+    const path = asset(recording.root, video)
+    await plainPath(path, recording.root)
+    if (basename(path) !== 'video.mp4' || !(await lstat(path)).isFile()) throw new Error(`Unexpected video path for ${story.id}`)
+    const bytes = await readFile(path)
+    if (bytes.length !== video.bytes || hash(bytes) !== video.sha256)
+      throw new Error(`The recording for ${story.id} no longer matches its manifest`)
+
+    const demuxer = new Mp4Demuxer(new BufferSource(bytes))
+    const tracks = await demuxer.getTracks()
+    const picture = tracks.find(track => track.type === 'video')
+    if (picture?.codec !== 'h264' || !picture.codecDescription?.length || tracks.some(track => track.type === 'audio'))
+      throw new Error(`Story ${story.id} needs a silent H.264 recording`)
+    const { width, height, codecDescription, frameRate } = picture
+    if (!outputTrack) {
+      const track = muxer.addVideoTrack({ codec: 'h264', width, height, frameRate, codecDescription })
+      outputTrack = { id: track.id, width, height, description: codecDescription }
+    }
+    if (width !== outputTrack.width || height !== outputTrack.height || !Buffer.from(codecDescription).equals(outputTrack.description))
+      throw new Error(`Story ${story.id} has a different viewport or H.264 configuration`)
+
+    const start = Math.round(elapsed * 1000)
+    muxer.addChapter(story.title, start)
+    let firstTimestamp: number | undefined
+    let duration = 0
+    for await (const packet of demuxer.packets(picture.id)) {
+      if (firstTimestamp === undefined && !packet.isKeyframe) throw new Error(`Story ${story.id} has no opening keyframe`)
+      firstTimestamp ??= packet.timestamp
+      const offset = packet.timestamp - firstTimestamp
+      if (!Number.isFinite(offset) || offset < 0 || !packet.duration || !Number.isFinite(packet.duration) || packet.duration <= 0)
+        throw new Error(`Story ${story.id} has invalid video timing`)
+      await muxer.writePacket(outputTrack.id, { ...packet, timestamp: elapsed + offset })
+      duration = Math.max(duration, offset + packet.duration)
+    }
+    if (!duration) throw new Error(`Story ${story.id} has no video frames`)
+    elapsed += duration
+    chapters.push({ title: story.title, start, end: Math.round(elapsed * 1000) })
+  }
+  await muxer.finalize()
+  const bytes = target.buffer
+  const verified = parseMp4Chapters(bytes).chapters
+  if (verified.length !== chapters.length || verified.some((chapter, index) => chapter.startTime !== chapters[index]?.start || chapter.title !== chapters[index]?.title))
+    throw new Error('The MP4 chapters did not match the story inventory')
+  const output = resolve(destination)
+  await writeFile(output, bytes, { flag: 'wx' })
+  return { output, seconds: elapsed, chapters }
+}
+
 /** A folder inside the project, as the manifest records it: relative and with forward slashes. One outside stays absolute. */
 export function portablePath(root: string, path: string): string {
   const inside = relative(root, path)

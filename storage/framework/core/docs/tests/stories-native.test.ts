@@ -78,9 +78,11 @@ test.skipIf(!process.env.STACKS_STORY_IOS_DEVICE)('records actual iOS input, two
   const deadline = setTimeout(() => { void testing.stop() }, 180000)
   try {
     await Promise.race([isReady, testing.exited.then(async () => { throw new Error(`XCTest exited before ready: ${(await stdout).slice(-6000)} ${(await stderr).slice(-3000)}`) })])
-    const dimensions = JSON.parse(await exec(['ffprobe', '-v', 'error', '-of', 'json', '-show_streams', await (async () => {
-      const path = join(directory, 'dimensions.png'); await exec(['xcrun', 'simctl', 'io', device, 'screenshot', path]); return path
-    })()])).streams[0]
+    const screenshot = join(directory, 'dimensions.png')
+    await exec(['xcrun', 'simctl', 'io', device, 'screenshot', screenshot])
+    const png = await readFile(screenshot)
+    expect(png.subarray(12, 16).toString()).toBe('IHDR')
+    const dimensions = { width: png.readUInt32BE(16), height: png.readUInt32BE(20) }
     const config = join(directory, 'stories.ts')
     await writeFile(config, `import { nativeStory } from ${JSON.stringify(driver)}
       export default {outDir:${JSON.stringify(join(directory, 'docs'))}, holdMs:500,stories:[{id:'native-ios',title:'Native iOS purchase',driver:nativeStory({platform:'ios',device:${JSON.stringify(device)},input:{async tap(x,y){if(x!==${dimensions.width / 2}||y!==${dimensions.height / 2})throw new Error('Unexpected fixture target');const response=await fetch(${JSON.stringify(`${server.url}tap`)});if(!response.ok)throw new Error('Native tap failed')}}}),scenes:[
