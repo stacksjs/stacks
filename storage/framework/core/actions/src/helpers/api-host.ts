@@ -10,9 +10,10 @@ export function resolveApiPort(value: string | undefined, configured = 3008): nu
 }
 
 /** Notify supervising tools only after the server owns its actual address. */
-export function reportApiReady(server: Pick<Server<unknown>, 'port' | 'url'>): void {
+export function reportApiReady(server: Pick<Server<unknown>, 'port' | 'url'>, announce = true): void {
   process.send?.({ type: 'stacks:api-ready', port: server.port, url: server.url.href })
-  console.log(`\n  ➜  API server ready: ${server.url.origin}\n`)
+  if (announce)
+    console.log(`\n  ➜  API server ready: ${server.url.origin}\n`)
 }
 
 /** Resolve the interface used by API entrypoints in local and deployed runtimes. */

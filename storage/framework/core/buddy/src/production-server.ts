@@ -9,6 +9,7 @@ import { resolveStxSource } from '@stacksjs/actions'
 import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import type { EnhancedRequest } from '@stacksjs/router'
 import { beginRequestCapture, finishRequestCapture } from '@stacksjs/router/request-capture'
+import { serveReadyHeader, serveReadyPath } from './serve-readiness'
 
 /**
  * `requestContext` for `<script server>` blocks in `.stx` pages, the same one
@@ -184,6 +185,7 @@ export async function startProductionServer(options?: { port?: string | number, 
 
   const port = Number(process.env.PORT) || 3000
   const hostname = process.env.HOST?.trim() || undefined
+  const readinessToken = process.env.STACKS_SERVE_READY_TOKEN
 
   const { config, feature, overridesReady, resolveViewPatterns } = await import('@stacksjs/config')
   await overridesReady
@@ -441,6 +443,10 @@ export async function startProductionServer(options?: { port?: string | number, 
         // and static assets, so the holding page renders and visitors with a
         // valid bypass cookie pass through.
         onRequest: async (req: Request, server?: Parameters<typeof registerPeerSource>[0]) => {
+          if (readinessToken && req.method === 'HEAD' && req.headers.get(serveReadyHeader) === readinessToken
+            && new URL(req.url).pathname === serveReadyPath)
+            return new Response(null, { status: 204, headers: { [serveReadyHeader]: readinessToken } })
+
           beginRequestCapture(req)
           // First, before any `await`: this request's scope for its
           // server scripts (see `installRequestScope()` above).

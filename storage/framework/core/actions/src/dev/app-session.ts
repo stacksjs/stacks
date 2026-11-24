@@ -3,7 +3,7 @@ import process from 'node:process'
 import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
 import { Action } from '@stacksjs/enums'
 import { actionNodePath, developmentConditionForProject, developmentWatchFlag, resolveActionFile } from '../helpers/utils'
-import { serveAppDevRestart } from './app-session-control'
+import { serveAppRestart } from './app-session-control'
 
 interface AppDevSessionOptions {
   root: string
@@ -193,7 +193,7 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
     }
   }))
   try {
-    closeRestart = serveAppDevRestart(root, () => {
+    closeRestart = serveAppRestart(root, 'dev', () => {
       restarting ??= initialStart.then(restart).finally(() => { restarting = undefined })
       return restarting
     })

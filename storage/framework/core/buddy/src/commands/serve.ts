@@ -5,6 +5,7 @@ import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { ExitCode } from '@stacksjs/types'
 import { startProductionServer } from '../production-server'
+import { isServeWorker, runServeSession } from '../serve-session'
 
 export {
   loadStxPartialsDir,
@@ -17,7 +18,12 @@ export function serve(buddy: CLI): void {
     .command('serve', 'Start the production HTTP server (STX views + /api proxy + coming-soon/maintenance gate)')
     .option('-p, --port <port>', 'Port to listen on (defaults to PORT env or 3000)')
     .option('--verbose', 'Enable verbose output', { default: false })
-    .action(startProductionServer)
+    .action(async (options?: { port?: string | number, verbose?: boolean }) => {
+      if (isServeWorker())
+        await startProductionServer(options)
+      else
+        await runServeSession('serve', options)
+    })
 }
 
 export function serveApi(buddy: CLI): void {
@@ -25,6 +31,10 @@ export function serveApi(buddy: CLI): void {
     .command('serve:api', 'Start the production API server (bun-router routes the frontend proxies /api to)')
     .option('-p, --port <port>', 'Port to listen on (defaults to PORT env or 3008)')
     .action(async (options?: { port?: string | number }) => {
+      if (!isServeWorker()) {
+        await runServeSession('serve:api', options)
+        return
+      }
       if (options?.port)
         process.env.PORT = String(options.port)
       process.env.APP_ENV = process.env.APP_ENV || 'production'

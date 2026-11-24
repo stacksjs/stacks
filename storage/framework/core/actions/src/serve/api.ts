@@ -24,7 +24,7 @@ import { appPath, frameworkPath } from '@stacksjs/path'
 import { disableViewRouting, route } from '@stacksjs/router'
 import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import { ensureDiscoveredPackages } from '../discover-packages'
-import { resolveApiHost } from '../helpers/api-host'
+import { reportApiReady, resolveApiHost } from '../helpers/api-host'
 import { shutDownApiServer } from '../helpers/api-shutdown'
 
 /**
@@ -216,4 +216,5 @@ process.on('SIGTERM', () => {
   })
 })
 
+reportApiReady(server, false)
 log.info(`[Stacks API] Server running at http://${hostname}:${port}`)
