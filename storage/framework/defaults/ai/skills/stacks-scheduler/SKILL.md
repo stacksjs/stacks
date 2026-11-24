@@ -51,8 +51,14 @@ schedule.job(name: JobName): UntimedSchedule     // Runs a job by name via runJo
 schedule.action(name: string): UntimedSchedule    // Runs an action by name via runAction()
 schedule.command(cmd: string): UntimedSchedule    // Runs a shell command via runCommand()
 
-// Graceful shutdown - stops all tracked jobs
-schedule.gracefulShutdown(): Promise<void>
+// Stops every schedule, then waits up to timeoutMs (30 s) for running jobs.
+// Resolves with the tasks still running when it gave up.
+schedule.gracefulShutdown(options?: { timeoutMs?: number }): Promise<{ unfinished: string[] }>
+// SIGTERM/SIGINT -> gracefulShutdown, then exit 0. runScheduler() installs it.
+schedule.stopOnSignals(options?: { timeoutMs?: number }): void
+// Each task's last run: startedAt, finishedAt, durationMs, status
+// ('running' | 'success' | 'failed'), error (500 chars), lastSuccessAt.
+schedule.lastRuns(): Record<string, ScheduledRun>
 ```
 
 ### Constructor
@@ -107,6 +113,7 @@ withContext(context: any): this          // passed to the task on each run: the 
 withInterval(seconds: number): this      // at least this many seconds between runs; sooner ticks are skipped
 between(startAt: string | Date, stopAt: string | Date): this  // only run inside the window; stops for good once it closes
 withoutOverlapping(expiresAfterMinutes?: number): this
+allowOverlapping(): this                 // let a tick start while the last run is still going (off by default)
 onOneServer(): this
 runInBackground(): this
 ```
@@ -134,6 +141,13 @@ The `Timezone` type is a string union of ~70 IANA timezone identifiers (e.g., `'
 
 
 ### Overlap Prevention and Locking
+
+In one process, a tick never starts while the previous run of the same task is
+still going: it is skipped and logged. `allowOverlapping()` opts a task out.
+`runNow()` and background runs always run. Each run's start, end, status and
+error are kept in `storage/framework/runtime/scheduler-history.json` (a shared
+temp file in a test process); `schedule.lastRuns()` reads it, and
+`buddy schedule:list` shows it as LAST RUN.
 
 `withoutOverlapping()` uses a local exclusive file lock, with a stale-lock
 expiry. `onOneServer()` also requests a dedicated PostgreSQL/MySQL advisory
