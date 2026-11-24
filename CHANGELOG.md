@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.678...v0.75.679)
+
+## 🐛 Bug Fixes
+
+- **cms**: escape raw HTML in blog posts ([6028ddf](https://github.com/stacksjs/stacks/commit/6028ddf)) _(by Chris Breuer)_
+- **buddy**: use relative STX server imports in the worker-swap test ([9dec6e2](https://github.com/stacksjs/stacks/commit/9dec6e2)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **ai**: refresh the native skills catalog ([d9ec413](https://github.com/stacksjs/stacks/commit/d9ec413)) _(by Chris Breuer)_
+
+## ✅ Tests
+
+- **dashboard**: wait for restart endpoint registration ([32339e1](https://github.com/stacksjs/stacks/commit/32339e1)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.677...v0.75.678)
 
 ## ✨ Features
