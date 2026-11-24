@@ -6011,7 +6011,7 @@ async function deployToFlyProvider(tsCloudConfig: any, environment: string, verb
  * Build an OCI container image for each site using pantry's native, daemon-less
  * builder — no Docker dependency. The image is built from the framework's
  * generated `storage/framework/Dockerfile` and pushed to the pantry registry
- * when `PANTRY_REGISTRY_TOKEN`/`PANTRY_TOKEN` is set, so the container can be
+ * when `PANTRY_TOKEN` is set, so the container can be
  * consumed by registries, CDK, or ts-cloud. The site continues to run on the
  * server via bun + systemd, keeping the box dependency-free.
  */
@@ -6039,7 +6039,7 @@ async function buildContainerImageWithPantry(args: {
   }
 
   const dockerfile = 'storage/framework/Dockerfile'
-  const canPush = Boolean(process.env.PANTRY_REGISTRY_TOKEN || process.env.PANTRY_TOKEN)
+  const canPush = Boolean(process.env.PANTRY_TOKEN)
 
   for (const [siteName, site] of Object.entries(sites)) {
     if (!site?.start)

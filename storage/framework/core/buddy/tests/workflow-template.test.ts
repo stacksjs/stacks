@@ -7,7 +7,7 @@ const config = {
   deploy: true,
   env: { checks: { COPYFILE_DISABLE: '1' }, ios: { DEVELOPER_DIR: '/Applications/Xcode_27.1.app/Contents/Developer' } },
   commands: Object.fromEntries(['after-deploy', 'native-build', 'native-accept'].map(step => [step, [['bun', 'run', step]]])),
-  secrets: { checks: ['PANTRY_REGISTRY_TOKEN'], deploy: ['DEPLOY_SSH_KEY'], ios: ['APP_STORE_CONNECT_KEY_ID'] },
+  secrets: { checks: ['PANTRY_TOKEN'], deploy: ['DEPLOY_SSH_KEY'], ios: ['APP_STORE_CONNECT_KEY_ID'] },
   native: { artifacts: ['storage/native/simulator/**/*.zip', 'storage/native/simulator/**/receipt.json'], downloadDirectory: 'storage/native/received', archivePattern: '**/*.app.zip' },
 }
 
