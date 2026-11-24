@@ -153,17 +153,6 @@ describe('Anthropic', () => {
     ])
   })
 
-  test('keeps the structured-output tool out of toolCalls', async () => {
-    respond({
-      model: 'claude-sonnet-5-5',
-      usage: { input_tokens: 1, output_tokens: 1 },
-      content: [{ type: 'tool_use', id: 'toolu_9', name: 'structured_output', input: { answer: 42 } }],
-    })
-    const result = await anthropic.chat([question], { responseFormat: { type: 'json_object' } })
-    expect(JSON.parse(result.content)).toEqual({ answer: 42 })
-    expect(result.toolCalls).toBeUndefined()
-  })
-
   test('toolChoice "none" forbids a call', async () => {
     respond({ model: 'claude-sonnet-5-5', usage: { input_tokens: 1, output_tokens: 1 }, content: [{ type: 'text', text: 'ok' }] })
     await anthropic.chat([question], { tools: [weather], toolChoice: 'none' })

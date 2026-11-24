@@ -68,61 +68,9 @@ describe('Anthropic driver tools + responseFormat (stacksjs/stacks#1878 A-1)', (
     ])
   })
 
-  test('responseFormat: json_schema maps to a synthetic tool with forced tool_choice', async () => {
-    mockFetch({
-      content: [{ type: 'tool_use', name: 'extract_user', input: { name: 'Alice', age: 30 } }],
-      model: 'claude-sonnet-4',
-      usage: { input_tokens: 20, output_tokens: 10 },
-      stop_reason: 'tool_use',
-    })
-
-    const result = await chat([{ role: 'user', content: 'extract' }], {
-      responseFormat: {
-        type: 'json_schema',
-        json_schema: {
-          name: 'extract_user',
-          schema: {
-            type: 'object',
-            properties: { name: { type: 'string' }, age: { type: 'number' } },
-            required: ['name', 'age'],
-          },
-        },
-      },
-    })
-
-    expect(lastRequest?.body.tools).toEqual([
-      {
-        name: 'extract_user',
-        description: expect.stringContaining('extract_user'),
-        input_schema: {
-          type: 'object',
-          properties: { name: { type: 'string' }, age: { type: 'number' } },
-          required: ['name', 'age'],
-        },
-      },
-    ])
-    expect(lastRequest?.body.tool_choice).toEqual({ type: 'tool', name: 'extract_user' })
-    // The content field should be the JSON-stringified tool input.
-    expect(JSON.parse(result.content)).toEqual({ name: 'Alice', age: 30 })
-  })
-
-  test('responseFormat: json_object maps to a generic structured_output tool', async () => {
-    mockFetch({
-      content: [{ type: 'tool_use', name: 'structured_output', input: { answer: 42 } }],
-      model: 'claude-sonnet-4',
-      usage: { input_tokens: 5, output_tokens: 5 },
-      stop_reason: 'tool_use',
-    })
-
-    const result = await chat([{ role: 'user', content: 'count' }], {
-      responseFormat: { type: 'json_object' },
-    })
-
-    const tools = lastRequest?.body.tools as Array<{ name: string }>
-    expect(tools[0].name).toBe('structured_output')
-    expect(lastRequest?.body.tool_choice).toEqual({ type: 'tool', name: 'structured_output' })
-    expect(JSON.parse(result.content)).toEqual({ answer: 42 })
-  })
+  // json_schema and json_object: tests/anthropic-structured-output.test.ts.
+  // They were a synthetic tool with a forced tool_choice, which current
+  // models refuse (stacksjs/stacks#3380).
 
   test('responseFormat: text is a no-op (no tools added)', async () => {
     mockFetch({

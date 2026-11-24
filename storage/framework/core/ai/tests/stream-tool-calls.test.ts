@@ -136,21 +136,7 @@ describe('Anthropic', () => {
     expect(result.toolCalls).toEqual([{ id: 'toolu_01', name: 'get_weather', arguments: { city: 'Paris' } }])
   })
 
-  test('streams structured output as its JSON text, not as a tool call', async () => {
-    streams(sse(
-      { type: 'message_start', message: { model: 'claude-test', usage: { input_tokens: 5 } } },
-      { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'toolu_x', name: 'answer', input: {} } },
-      { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"ok":' } },
-      { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: 'true}' } },
-      { type: 'content_block_stop', index: 0 },
-      { type: 'message_delta', delta: { stop_reason: 'tool_use' }, usage: { output_tokens: 4 } },
-    ))
-    const seen = await events(anthropic.streamChatEvents([question], { responseFormat: { type: 'json_schema', json_schema: { name: 'answer', schema: { type: 'object' } } } }))
-
-    expect(seen.filter(e => e.type === 'tool_call')).toEqual([])
-    expect(seen.filter(e => e.type === 'text').map(e => (e as { text: string }).text).join('')).toBe('{"ok":true}')
-    expect(requests[0]!.body.tool_choice).toEqual({ type: 'tool', name: 'answer' })
-  })
+  // Structured output streams as text: tests/anthropic-structured-output.test.ts.
 
   test('throws an error event instead of ending as if the model had finished', async () => {
     streams(sse(

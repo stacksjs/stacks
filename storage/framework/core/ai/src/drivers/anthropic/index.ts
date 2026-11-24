@@ -152,15 +152,14 @@ export function createAnthropicDriver(config: AnthropicDriverConfig): AIDriver {
 }
 
 /**
- * The Messages API request for a chat completion, streamed or not, and the
- * name of the internal structured-output tool when `responseFormat` asks for
- * one. Shared so a stream offers the model exactly what `chat()` would: the
- * stream used to send no tools at all, so it could never see a tool call.
+ * The Messages API request for a chat completion, streamed or not. Shared so
+ * a stream offers the model exactly what `chat()` would: the stream used to
+ * send no tools at all, so it could never see a tool call.
  */
 function messagesRequest(
   messages: AIMessage[],
   options: ChatCompletionOptions & { system?: string },
-): { body: Record<string, unknown>, outputTool?: string } {
+): Record<string, unknown> {
   const {
     model = DEFAULT_MODEL,
     maxTokens = DEFAULT_MAX_TOKENS,
@@ -177,13 +176,17 @@ function messagesRequest(
   // (stacksjs/stacks#1878 A-3). Apps that authored their messages
   // with OpenAI-style `image_url` blocks (or use cross-driver
   // helpers) get the right shape on the wire.
+  //
+  // `temperature` and `top_p` go out only when the caller set them:
+  // undefined is dropped by JSON.stringify. Current models refuse
+  // non-default sampling values, so the framework never sets one itself.
   const body: Record<string, unknown> = {
     model,
     max_tokens: maxTokens,
     temperature,
     top_p: topP,
     stop_sequences: stop ? (Array.isArray(stop) ? stop : [stop]) : undefined,
-    system,
+    system: responseFormat?.type === 'json_object' ? withJsonObjectInstruction(system) : system,
     messages: normalizeMessagesForProvider(messages, 'anthropic'),
   }
 
@@ -197,22 +200,15 @@ function messagesRequest(
       body.tool_choice = mapAnthropicToolChoice(toolChoice)
   }
 
-  // responseFormat → tools-as-json shape (Claude has no first-class JSON
-  // mode; the idiom is a tool whose input is the JSON, which the model is
-  // made to call). If callers provide both explicit tools AND
-  // responseFormat, the structured-output tool is appended and forced via
-  // tool_choice. Caller's explicit tool_choice wins.
-  if (responseFormat && responseFormat.type !== 'text') {
-    const outputTool = buildAnthropicJsonTool(responseFormat)
-    const existing = Array.isArray(body.tools) ? body.tools as unknown[] : []
-    body.tools = [...existing, outputTool]
-    if (toolChoice === undefined) {
-      body.tool_choice = { type: 'tool', name: outputTool.name }
-    }
-    return { body, outputTool: outputTool.name }
-  }
+  // Structured output is the Messages API's own JSON mode, and the answer
+  // comes back as text. It used to be a synthetic tool the model was forced
+  // to call, and current models (Opus 5.5, Sonnet 5.5) refuse a forced tool
+  // choice with a 400, so every request asking for JSON failed
+  // (stacksjs/stacks#3380).
+  if (responseFormat?.type === 'json_schema')
+    body.output_config = { format: { type: 'json_schema', schema: anthropicJsonSchema(responseFormat.json_schema.schema) } }
 
-  return { body }
+  return body
 }
 
 function postMessages(body: Record<string, unknown>, options: Pick<ChatCompletionOptions, 'signal' | 'maxRetries'> = {}): Promise<Response> {
@@ -239,7 +235,7 @@ export async function chat(
 ): Promise<AIResult> {
   // Track wall-clock duration for usage reporters (#1878 A-6).
   const startedAt = Date.now()
-  const { body, outputTool } = messagesRequest(messages, options)
+  const body = messagesRequest(messages, options)
   const response = await postMessages(body, options)
 
   if (!response.ok) {
@@ -253,19 +249,13 @@ export async function chat(
     throw new Error('Claude API returned empty content')
   }
 
-  // The structured-output tool is internal: its input is the answer, so it
-  // becomes `content`. Every other tool_use block is a call the application
-  // has to run, reported in `toolCalls` - this used to stringify the first
-  // tool_use's input into `content`, dropping its name and id and any other
-  // call, so a tool could not be answered.
+  // Every tool_use block is a call the application has to run, reported in
+  // `toolCalls` with its name and id. Structured output arrives as text.
   const blocks = data.content as Array<{ type: string, text?: string, id?: string, name?: string, input?: Record<string, unknown> }>
-  const structured = outputTool ? blocks.find(b => b.type === 'tool_use' && b.name === outputTool) : undefined
   const toolCalls: AIToolCall[] = blocks
-    .filter(b => b.type === 'tool_use' && b !== structured)
+    .filter(b => b.type === 'tool_use')
     .map(b => ({ id: b.id ?? '', name: b.name ?? '', arguments: b.input ?? {} }))
-  const content = structured
-    ? JSON.stringify(structured.input)
-    : blocks.filter(b => b.type === 'text').map(b => b.text ?? '').join('')
+  const content = blocks.filter(b => b.type === 'text').map(b => b.text ?? '').join('')
 
   const result: AIResult = {
     content,
@@ -306,24 +296,49 @@ function mapAnthropicToolChoice(choice: NonNullable<ChatCompletionOptions['toolC
   return { type: 'tool', name: choice.name }
 }
 
+/** What `json_object` adds to the system prompt: the API has no schema-free JSON mode. */
+const JSON_OBJECT_INSTRUCTION = 'Reply with a single JSON object and nothing else: no prose and no code fence.'
+
+function withJsonObjectInstruction(system?: string): string {
+  return system ? `${system}\n\n${JSON_OBJECT_INSTRUCTION}` : JSON_OBJECT_INSTRUCTION
+}
+
+/** Keywords the Messages API's JSON mode does not accept. */
+const UNSUPPORTED_SCHEMA_KEYWORDS = new Set(['minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'multipleOf', 'minLength', 'maxLength'])
+
 /**
- * Build a synthetic tool that captures the requested JSON shape,
- * used to coerce structured output via the tool-use idiom.
+ * A JSON Schema in the form `output_config.format` accepts: every object
+ * closed with `additionalProperties: false` unless it says otherwise, and the
+ * numeric and length constraints the API does not support left out. The
+ * caller's schema is not changed. `generateObject()` still validates the
+ * answer against the full schema, constraints included.
  */
-function buildAnthropicJsonTool(format: NonNullable<ChatCompletionOptions['responseFormat']>): { name: string, description: string, input_schema: Record<string, unknown> } {
-  if (format.type === 'json_schema') {
-    return {
-      name: format.json_schema.name,
-      description: `Returns the result as JSON matching the '${format.json_schema.name}' schema.`,
-      input_schema: format.json_schema.schema,
-    }
+export function anthropicJsonSchema(schema: unknown): Record<string, unknown> {
+  return closeSchema(schema) as Record<string, unknown>
+}
+
+function closeSchema(node: unknown): unknown {
+  if (Array.isArray(node))
+    return node.map(closeSchema)
+  if (!node || typeof node !== 'object')
+    return node
+
+  const out: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+    if (UNSUPPORTED_SCHEMA_KEYWORDS.has(key))
+      continue
+    if (key === 'properties' || key === '$defs' || key === 'definitions')
+      out[key] = Object.fromEntries(Object.entries((value ?? {}) as Record<string, unknown>).map(([name, sub]) => [name, closeSchema(sub)]))
+    else if (key === 'items' || key === 'anyOf' || key === 'allOf' || key === 'oneOf' || key === 'not')
+      out[key] = closeSchema(value)
+    else
+      out[key] = value
   }
-  // json_object — no schema, just "object with any keys"
-  return {
-    name: 'structured_output',
-    description: 'Returns the result as a JSON object.',
-    input_schema: { type: 'object', additionalProperties: true },
-  }
+
+  const isObject = out.type === 'object' || (Array.isArray(out.type) && out.type.includes('object')) || 'properties' in out
+  if (isObject && !('additionalProperties' in out))
+    out.additionalProperties = false
+  return out
 }
 
 /** The Messages API's streamed events, as far as a chat completion reads them. */
@@ -342,8 +357,8 @@ type MessagesStreamEvent =
  * call once its arguments have streamed, then the whole result.
  *
  * A `tool_use` block streams its input as `input_json_delta` fragments, so a
- * call is reported at its `content_block_stop`, whole. The structured-output
- * tool is internal, as in `chat()`: its JSON streams as text. An `error`
+ * call is reported at its `content_block_stop`, whole. Structured output is
+ * text, so its JSON streams as text. An `error`
  * event (an overload mid-stream) throws rather than ending the stream as if
  * the model had finished.
  */
@@ -352,7 +367,7 @@ export async function* streamChatEvents(
   options: ChatCompletionOptions & { system?: string } = {},
 ): AsyncGenerator<AIStreamEvent> {
   const startedAt = Date.now()
-  const { body, outputTool } = messagesRequest(messages, options)
+  const body = messagesRequest(messages, options)
   const response = await postMessages({ ...body, stream: true }, options)
 
   if (!response.ok) {
@@ -361,7 +376,7 @@ export async function* streamChatEvents(
   }
   if (!response.body) throw new Error('No response body')
 
-  const toolBlocks = new Map<number, { id: string, name: string, json: string, structured: boolean }>()
+  const toolBlocks = new Map<number, { id: string, name: string, json: string }>()
   const toolCalls: AIToolCall[] = []
   let content = ''
   let model = String(body.model)
@@ -378,8 +393,7 @@ export async function* streamChatEvents(
         break
       case 'content_block_start':
         if (event.content_block.type === 'tool_use') {
-          const name = event.content_block.name ?? ''
-          toolBlocks.set(event.index, { id: event.content_block.id ?? '', name, json: '', structured: name === outputTool })
+          toolBlocks.set(event.index, { id: event.content_block.id ?? '', name: event.content_block.name ?? '', json: '' })
         }
         break
       case 'content_block_delta': {
@@ -393,16 +407,12 @@ export async function* streamChatEvents(
           if (!block)
             break
           block.json += delta.partial_json
-          if (block.structured && delta.partial_json) {
-            content += delta.partial_json
-            yield { type: 'text', text: delta.partial_json }
-          }
         }
         break
       }
       case 'content_block_stop': {
         const block = toolBlocks.get(event.index)
-        if (block && !block.structured) {
+        if (block) {
           const call: AIToolCall = { id: block.id, name: block.name, arguments: parseToolArguments(block.json, block.name) }
           toolCalls.push(call)
           yield { type: 'tool_call', call }
