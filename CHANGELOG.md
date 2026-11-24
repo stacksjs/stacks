@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.666...v0.75.667)
+
+## 🐛 Bug Fixes
+
+- **docs**: a partial capture no longer replaces the films and docs page ([7e7fa60](https://github.com/stacksjs/stacks/commit/7e7fa60)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.665...v0.75.666)
 
 ## 🐛 Bug Fixes
