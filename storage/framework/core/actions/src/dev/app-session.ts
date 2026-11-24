@@ -9,6 +9,7 @@ import { Action } from '@stacksjs/enums'
 import { resolveApiHost, resolveApiPort } from '../helpers/api-host'
 import { actionNodePath, developmentConditionForProject, resolveActionFile } from '../helpers/utils'
 import { serveAppRestart } from './app-session-control'
+import { frontendBuildId } from './frontend-hmr'
 
 interface AppDevSessionOptions {
   root: string
@@ -53,6 +54,7 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
   const bun: string = runtime
   const requestedGrace = Number(process.env.SHUTDOWN_GRACE_MS)
   const drainMs = Number.isFinite(requestedGrace) && requestedGrace > 0 ? requestedGrace : 1500
+  const frontendBuild = crypto.randomUUID()
 
   const { promise: finished, resolve: finish, reject: fail } = Promise.withResolvers<void>()
   const shutdown = new AbortController()
@@ -120,6 +122,7 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
         ...process.env,
         ...(api ? { PORT_API: String(port) } : {
           PORT: String(port),
+          STX_BUILD_ID: process.env.STX_BUILD_ID || frontendBuildId(entry, frontendBuild),
           ...(apiPort !== undefined && { PORT_API: String(apiPort) }),
         }),
         HOST: '127.0.0.1',

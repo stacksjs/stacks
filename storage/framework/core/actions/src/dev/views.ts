@@ -7,6 +7,8 @@ import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import { seedCsrfPageResponse } from './csrf'
 import { resolveDefaultsResources } from './defaults-resources'
 import { exitWithParent } from './exit-with-parent'
+import { frontendHmrResponse } from './frontend-hmr'
+import { retainFrontendPageState } from './frontend-hmr-state'
 import { devRelayWorker } from '../helpers/serve-relay-worker'
 import type { EnhancedRequest } from '@stacksjs/router'
 import { beginRequestCapture, finishRequestCapture } from '@stacksjs/router/request-capture'
@@ -45,6 +47,7 @@ installRequestScope()
 exitWithParent()
 
 const projectServe = projectPath('serve.ts')
+const hmrWorker = devRelayWorker && crypto.randomUUID()
 
 try {
   const file = Bun.file(projectServe)
@@ -375,7 +378,8 @@ async function startDefaultServer() {
     //      to /login or /register can immediately submit to the API.
     // Production applies all three.
     onResponse: async (req: Request, response: Response) => {
-      const securityResponse = applyViewSecurityHeaders(req, response, embeddableRules)
+      const live = hmrWorker && (frontendHmrResponse(req, response, hmrWorker) ?? retainFrontendPageState(response))
+      const securityResponse = applyViewSecurityHeaders(req, live || response, embeddableRules) ?? (live || undefined)
       const secured = applyResponseHeaders(req, securityResponse ?? response, config.server?.headers) ?? securityResponse
 
       // `baseline` is what to return when nothing further changes: the rebuilt

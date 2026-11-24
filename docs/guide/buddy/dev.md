@@ -203,6 +203,8 @@ buddy dev:docs
 STX live-updates templates and styles in the browser while the frontend server keeps running.
 When a source change needs a server restart, Buddy starts the replacement before switching
 traffic on the existing port. The old process keeps serving if the replacement fails to start.
+After a compatible frontend worker swap, open STX pages refresh in place and keep local
+state such as edited fields, focus, and scroll position.
 
 This works for `buddy dev`, `buddy dev frontend`, and `buddy dev api`, including on Windows.
 With combined `buddy dev`, a shared source change switches both servers together once both
