@@ -61,6 +61,30 @@ test('native failure evidence retains the independent producing job attempt', ()
   expect(evidence.with.path).toBe('storage/native/acceptance/result.json')
 })
 
+test('native proof keeps its receipt and publishes each evidence group independently', () => {
+  const workflow = Bun.YAML.parse(renderReviewOsWorkflow({ ...config, native: {
+    ...config.native,
+    evidence: ['storage/native/acceptance/result.json'],
+    evidenceGroups: {
+      screenshots: ['storage/native/acceptance/*.png'],
+      traces: ['storage/native/acceptance/*.txt', 'storage/native/logs/*.log'],
+    },
+  } })) as any
+  const steps = workflow.jobs.native.steps.filter((step: any) => step.with?.name?.startsWith('native-evidence-'))
+  const attempt = '${{ github.run_id }}-${{ github.run_attempt }}-${{ reviewos.job_attempt }}'
+  expect(steps.map((step: any) => [step.if, step.with.name, step.with.path])).toEqual([
+    ['always()', `native-evidence-${attempt}`, 'storage/native/acceptance/result.json'],
+    ['always()', `native-evidence-screenshots-${attempt}`, 'storage/native/acceptance/*.png'],
+    ['always()', `native-evidence-traces-${attempt}`, 'storage/native/acceptance/*.txt\nstorage/native/logs/*.log'],
+  ])
+})
+
+test('native evidence groups refuse unsafe names and paths before generating YAML', () => {
+  const invalidGroups: Record<string, string[]>[] = [{ '../screens': ['screens/*.png'] }, { screens: [] }, { screens: ['../secret'] }, { screens: ['result.json\nother.json'] }]
+  for (const evidenceGroups of invalidGroups)
+    expect(() => renderReviewOsWorkflow({ ...config, native: { ...config.native, evidenceGroups } })).toThrow('evidence groups')
+})
+
 test('native build and downloaded acceptance receive only their declared credentials', () => {
   const workflow = Bun.YAML.parse(renderReviewOsWorkflow({
     ...config,

@@ -23,6 +23,8 @@ export interface WorkflowConfig {
     downloadDirectory: string
     archivePattern: string
     evidence?: string[]
+    /** Name additional evidence archives so small receipts can publish independently. */
+    evidenceGroups?: Record<string, string[]>
     releaseArtifacts?: string[]
   }
   release?: {
