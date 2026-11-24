@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.668...v0.75.669)
+
+## ✨ Features
+
+- **docs**: build chaptered walkthroughs with ts-videos ([645f8cb](https://github.com/stacksjs/stacks/commit/645f8cb)) _(by Chris Breuer)_
+- **docs**: give the docs the Stacks theme ([473b08e](https://github.com/stacksjs/stacks/commit/473b08e)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.667...v0.75.668)
 
 ## 🐛 Bug Fixes
