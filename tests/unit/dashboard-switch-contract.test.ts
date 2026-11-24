@@ -65,7 +65,9 @@ describe('dashboard switch contract', () => {
       ['Marketing/MarketingListDialog.stx', ['v-model:checked="isPublic" label="Public signup"', 'v-model:checked="doubleOptIn" label="Double opt-in"']],
       // Bound to its draft as the page's other inputs are, with no setter between.
       ['Settings/SettingsDashboard.stx', ['v-model:checked="drafts[field.key]"']],
-      ['Settings/AppearanceSettingsDashboard.stx', [':checked="isVisible(section.id)"', '@update:checked="toggleSection(section.id, $event)"']],
+      // The native settings pages use stx's own Switch primitive (the macOS
+      // style), which reports a flip as `change` rather than `update:checked`.
+      ['Settings/AppearanceSettingsDashboard.stx', [':checked="isVisible(section.id)"', '@change="toggleSection(section.id, $event)"']],
     ]
     let total = 0
     for (const [file, expected] of switches) {
@@ -74,7 +76,7 @@ describe('dashboard switch contract', () => {
         expect(text, `${file}: ${binding}`).toContain(binding)
         total++
       }
-      expect(count(text, /<Toggle\b/g), file).toBeGreaterThan(0)
+      expect(count(text, /<(?:Toggle|Switch)\b/g), file).toBeGreaterThan(0)
     }
     expect(total).toBe(32)
   })

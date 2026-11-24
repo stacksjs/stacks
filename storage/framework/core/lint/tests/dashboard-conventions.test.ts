@@ -106,10 +106,15 @@ function hasLiveDomAccess(src: string): boolean {
  *
  * `[...all].stx` uses STX's native `definePageMeta({ status: 404 })` server API
  * so full-page and fragment responses carry the correct HTTP status.
+ *
+ * `sections/[section].stx` reads its `section` route param on the server to
+ * pick the hub it renders, and titles the page from it, so a section landing
+ * and its not-found state are decided before the HTML is sent.
  */
 const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set([
   'layouts/default.stx',
   '[...all].stx',
+  'sections/[section].stx',
 ])
 
 /**
