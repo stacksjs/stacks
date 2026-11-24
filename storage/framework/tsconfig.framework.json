@@ -282,6 +282,7 @@
       "@stacksjs/validation/*.js": ["./core/validation/src/*.ts"],
       "@stacksjs/validation/runtime": ["./core/validation/src/runtime.ts"],
       "@stacksjs/video": ["./core/video/src/index.ts"],
+      "@stacksjs/video/*": ["./core/video/src/*.ts"],
       "@stacksjs/waf": ["./core/waf/src/index.ts"],
       "@stacksjs/whois": ["./core/whois/src/index.ts"],
       "@stacksjs/whois/*": ["./core/whois/src/*.ts"],

@@ -278,6 +278,7 @@
       "@stacksjs/validation/*.js": ["./validation/src/*.ts"],
       "@stacksjs/validation/runtime": ["./validation/src/runtime.ts"],
       "@stacksjs/video": ["./video/src/index.ts"],
+      "@stacksjs/video/*": ["./video/src/*.ts"],
       "@stacksjs/waf": ["./waf/src/index.ts"],
       "@stacksjs/whois": ["./whois/src/index.ts"],
       "@stacksjs/whois/*": ["./whois/src/*.ts"],
