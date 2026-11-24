@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { bumpedVersion, nextBuildTag, pushIosReleaseTag } from './release-ios'
-import { projectWorkflowClient } from './workflow-client'
+import { isInterruptedWorkflowRead, projectWorkflowClient } from './workflow-client'
 import { workflowReleaseIdentity } from './workflow-project'
 import { renderReviewOsWorkflow } from './workflow-template'
 
@@ -91,12 +91,21 @@ export function commitWorkflowRelease(root: string, config: WorkflowConfig, iden
 export async function waitForWorkflowRelease(root: string, config: WorkflowConfig, minutes: number, client: Client = projectWorkflowClient(config)): Promise<number> {
   const deadline = Date.now() + minutes * 60000
   const evidence = projectWorkflowEvidence(root, config, true)
+  let interruption: unknown
   do {
-    const runs = await client.runs('ci.yml', { branch: 'main', sha: evidence.commit })
-    const newest = runs.sort((a, b) => b.number - a.number)[0]
-    if (newest && evidence.evaluate(await client.run(newest.number)) === 'accepted') return newest.number
-    if (Date.now() >= deadline) break
-    await Bun.sleep(Math.min(10000, deadline - Date.now()))
-  } while (Date.now() <= deadline)
-  throw new Error('Release delivery is still pending. Inspect buddy workflow:runs and workflow:show. Resume tester delivery with buddy release:testflight; do not create another upload')
+    try {
+      const runs = await client.runs('ci.yml', { branch: 'main', sha: evidence.commit })
+      const newest = runs.sort((a, b) => b.number - a.number)[0]
+      if (newest && evidence.evaluate(await client.run(newest.number)) === 'accepted') return newest.number
+      interruption = undefined
+    }
+    catch (error) {
+      if (!isInterruptedWorkflowRead(error)) throw error
+      interruption = error
+    }
+    const remaining = deadline - Date.now()
+    if (remaining <= 0) break
+    await Bun.sleep(Math.min(10000, remaining))
+  } while (Date.now() < deadline)
+  throw new Error('Release delivery is still pending. Inspect buddy workflow:runs and workflow:show. Resume tester delivery with buddy release:testflight; do not create another upload', { cause: interruption })
 }

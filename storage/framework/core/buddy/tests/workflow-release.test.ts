@@ -124,6 +124,45 @@ test('release waiting keeps verifying its original commit after main advances', 
   finally { rmSync(root, { recursive: true, force: true }) }
 })
 
+test('release waiting resumes after an interrupted status read for the same source', async () => {
+  const { root, config, run } = fixture()
+  try {
+    for (const job of run.jobs) {
+      for (const step of job.steps) Object.assign(step, { state: 'succeeded', exit_code: 0 })
+    }
+    let reads = 0
+    const client = {
+      runs: async (_workflow: string, { sha }: { sha: string }) => {
+        expect(sha).toBe(run.head_sha)
+        return [run]
+      },
+      run: async (number: number) => {
+        expect(number).toBe(run.number)
+        if (++reads === 1) throw Object.assign(new Error('Unable to connect'), { code: 'ECONNREFUSED' })
+        return run
+      },
+    } as any
+    expect(await waitForWorkflowRelease(root, config, 1, client)).toBe(7)
+    expect(reads).toBe(2)
+  }
+  finally { rmSync(root, { recursive: true, force: true }) }
+}, 20000)
+
+test('release waiting keeps the last interruption at the deadline and surfaces permanent errors immediately', async () => {
+  const { root, config, run } = fixture()
+  try {
+    const unavailable = new Error('ReviewOS workflow request blocked: Metadata API returned HTTP 503')
+    const refused = new Error('ReviewOS workflow request blocked: Metadata API returned HTTP 401')
+    const unavailableClient = { runs: async () => { throw unavailable } } as any
+    const refusedClient = { runs: async () => { throw refused } } as any
+    const failedClient = { runs: async () => [run], run: async () => ({ ...run, state: 'failed' }) } as any
+    await expect(waitForWorkflowRelease(root, config, 0, unavailableClient)).rejects.toMatchObject({ cause: unavailable })
+    await expect(waitForWorkflowRelease(root, config, 1, refusedClient)).rejects.toBe(refused)
+    await expect(waitForWorkflowRelease(root, config, 1, failedClient)).rejects.toThrow('failed')
+  }
+  finally { rmSync(root, { recursive: true, force: true }) }
+})
+
 test('a normal workflow release atomically publishes aligned metadata, notes and its immutable tag', () => {
   const { root, config, git } = fixture()
   try {
