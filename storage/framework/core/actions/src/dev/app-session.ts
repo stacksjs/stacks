@@ -126,6 +126,7 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
         API_HOST: '127.0.0.1',
         STACKS_DEV_PUBLIC_PORT: String(service.port),
         STACKS_DEV_RELAY_WORKER: '1',
+        STACKS_DEV_RELAY_REPLACEMENT: service.worker ? '1' : undefined,
         NODE_PATH: actionNodePath(root, process.env.NODE_PATH),
         STACKS_DEV_SERVER: '1',
       },

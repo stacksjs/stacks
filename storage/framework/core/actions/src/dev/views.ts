@@ -55,7 +55,11 @@ try {
     await startDefaultServer()
   }
 }
-catch {
+catch (error) {
+  // A standby that cannot start the project's server must leave the live
+  // worker in place. Serving the default site would signal a false readiness.
+  if (devRelayWorker && process.env.STACKS_DEV_RELAY_REPLACEMENT === '1')
+    throw error
   await startDefaultServer()
 }
 

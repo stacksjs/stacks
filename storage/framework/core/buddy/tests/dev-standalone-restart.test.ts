@@ -28,6 +28,20 @@ async function waitFor<T>(read: () => T | Promise<T>): Promise<T> {
   }
 }
 
+async function waitForPort(port: number, timeoutMs: number, signal: AbortSignal): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs
+  while (!signal.aborted && Date.now() < deadline) {
+    const response = await fetch(`http://127.0.0.1:${port}`, {
+      headers: { connection: 'close' },
+      signal: AbortSignal.any([signal, AbortSignal.timeout(500)]),
+    }).catch(() => null)
+    if (response?.ok)
+      return true
+    await Bun.sleep(50)
+  }
+  return false
+}
+
 const launchModes = ['combined', 'separate commands', 'separate aliases'] as const
 
 test.each(launchModes)('dev serves traffic through manual restarts and source reloads (%s)', async (mode) => {
@@ -99,19 +113,7 @@ if (version === 'unstable' && '${name}' === 'views') {
         root,
         frontendPort: 0,
         apiPort: 0,
-        async waitForPort(port, timeoutMs, signal) {
-          const deadline = Date.now() + timeoutMs
-          while (!signal.aborted && Date.now() < deadline) {
-            const response = await fetch(`http://127.0.0.1:${port}`, {
-              headers: { connection: 'close' },
-              signal: AbortSignal.any([signal, AbortSignal.timeout(500)]),
-            }).catch(() => null)
-            if (response?.ok)
-              return true
-            await Bun.sleep(50)
-          }
-          return false
-        },
+        waitForPort,
         reportError: console.error,
       })
     }
@@ -294,3 +296,47 @@ if (version === 'unstable' && '${name}' === 'views') {
     await rm(root, { recursive: true, force: true })
   }
 }, 35_000)
+
+test('a broken custom frontend save keeps the existing server until a corrected save is ready', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'stacks-custom-frontend-reload-'))
+  const entry = join(root, 'serve.ts')
+  const portFile = join(root, 'port.txt')
+  const errors: string[] = []
+  let session: ReturnType<typeof startAppDevSession> | undefined
+  const customServer = (version: string) => `
+Bun.serve({
+  hostname: '127.0.0.1',
+  port: Number(process.env.PORT),
+  fetch: () => new Response(${JSON.stringify(version)}),
+})
+await Bun.write('port.txt', process.env.STACKS_DEV_PUBLIC_PORT)
+`
+  try {
+    await Promise.all([mkdir(join(root, 'config')), mkdir(join(root, 'resources/views'), { recursive: true })])
+    await Promise.all([
+      writeFile(join(root, 'package.json'), '{"name":"custom-frontend-reload-fixture"}'),
+      writeFile(join(root, 'config/app.ts'), 'export default {}'),
+      writeFile(join(root, 'resources/views/index.stx'), '<p>Default frontend</p>'),
+      writeFile(join(root, 'bunfig.toml'), 'preload = []\n'),
+      writeFile(entry, customServer('custom before')),
+    ])
+    session = startAppDevSession({ root, target: 'frontend', frontendPort: 0, waitForPort, reportError: error => errors.push(error) })
+    void session.finished.catch(() => {})
+    const port = await waitFor(async () => Number(await Bun.file(portFile).text()))
+    const body = async () => {
+      const response = await fetch(`http://127.0.0.1:${port}`, { headers: { connection: 'close' }, signal: AbortSignal.timeout(1_000) })
+      expect(response.ok).toBe(true)
+      return await response.text()
+    }
+    await waitFor(async () => { expect(await body()).toBe('custom before') })
+    await writeFile(entry, 'throw new Error("custom server boot failed")')
+    await waitFor(() => { expect(errors[0]).toContain('Frontend exited before it was ready') })
+    expect(await body()).toBe('custom before')
+    await writeFile(entry, customServer('custom after'))
+    await waitFor(async () => { expect(await body()).toBe('custom after') })
+  }
+  finally {
+    await session?.stop()
+    await rm(root, { recursive: true, force: true })
+  }
+}, 25_000)
