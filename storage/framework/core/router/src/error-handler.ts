@@ -11,37 +11,18 @@ import { log } from '@stacksjs/logging/runtime'
 import type { ErrorPageConfig } from '@stacksjs/error-handling'
 import { isApiRequest } from './api-shape'
 import { getRecentQueries, isDebugAllowed, registerQueryTracker } from './query-tracking'
+import type { ErrorBodyOptions } from './error-body'
+import { errorBody } from './error-body'
 import { applySecurityHeaders, createSecurityHeaders } from './security-headers'
 
 export { clearTrackedQueries, getQueryShapeCounts, trackQuery } from './query-tracking'
 
 registerQueryTracker()
 
-/**
- * Standard error response structure used across all JSON error responses.
- */
-export interface ErrorResponseBody {
-  error: string
-  message: string
-  status: number
-  timestamp: string
-  details?: Record<string, unknown>
-}
+export type { ErrorResponseBody } from './error-body'
 
-function buildErrorJson(opts: {
-  error: string
-  message: string
-  status: number
-  details?: Record<string, unknown>
-}): string {
-  const body: ErrorResponseBody = {
-    error: opts.error,
-    message: opts.message,
-    status: opts.status,
-    timestamp: new Date().toISOString(),
-  }
-  if (opts.details) body.details = opts.details
-  return JSON.stringify(body)
+function buildErrorJson(opts: ErrorBodyOptions): string {
+  return JSON.stringify(errorBody(opts))
 }
 
 /**

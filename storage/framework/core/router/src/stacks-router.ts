@@ -346,6 +346,7 @@ export function shouldUseNativeRoutesByDefault(routes: readonly Route[]): boolea
 import { runWithRequestArgument, runWithRequestArguments, setAmbientRequestContext } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { type FormRefusal, formRefusalOf } from './refuse'
+import { internalServerErrorBody } from './error-body'
 import { applySecurityHeaders, createJsonSecurityHeaders, secureSerializedJsonResponse } from './security-headers'
 import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/pagination'
 
@@ -6744,27 +6745,22 @@ function applyDirectNativeCookies(router: NativeRouterInternals, response: Respo
     : response
 }
 
-function nativeRouteErrorResponse(error: unknown): Response {
-  return new Response(JSON.stringify({
-    success: false,
-    message: 'Internal Server Error',
-    error: error instanceof Error ? error.message : String(error),
-  }), {
-    status: 500,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin',
-    },
-  })
+/**
+ * A direct native route's 500 when the router has no error handler, in the
+ * standard error shape. It sent the raw `error.message` with wildcard CORS
+ * headers whatever the app's policy said (stacksjs/stacks#3361); the cause is
+ * logged by the caller, and CORS is the post-response wrapper's job, as it is
+ * for every other error.
+ */
+export function nativeRouteErrorResponse(): Response {
+  return new Response(JSON.stringify(internalServerErrorBody()), { status: 500, headers: createJsonSecurityHeaders() })
 }
 
 function handleDirectNativeRouteError(router: NativeRouterInternals, error: unknown): Response | Promise<Response> {
   console.error('Error handling request:', error)
   return router.errorHandler
     ? router.errorHandler(error instanceof Error ? error : new Error(String(error)))
-    : nativeRouteErrorResponse(error)
+    : nativeRouteErrorResponse()
 }
 
 function directNativePath(path: string): string | undefined {
