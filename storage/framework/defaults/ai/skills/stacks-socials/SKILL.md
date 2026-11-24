@@ -129,7 +129,12 @@ limits. Bluesky uploads external.thumb for link cards, and its publish takes a
 third argument too: { rkey } from blueskyRecordKey(), kept per post, so a retry
 answers with the post that already went out instead of posting twice. Bluesky
 hashtags take letters from any script (#café, #日本), and images leave a link
-card out with a warning, since a post holds one attachment. PublishedPost.warnings
+card out with a warning, since a post holds one attachment. Instagram waits for
+each media container to be FINISHED before publishing it (containerTimeoutMs,
+five minutes by default), sends alt text on images and carousel items, refuses an
+image whose mimeType is not JPEG, and looks through every page of the user's
+Facebook Pages for the linked account. Threads deletes with deletePost (the
+threads_delete permission, 100 a day). PublishedPost.warnings
 lists what went out without failing the post. The LinkedIn version is
 LINKEDIN_API_VERSION unless a configured one is still supported.
 

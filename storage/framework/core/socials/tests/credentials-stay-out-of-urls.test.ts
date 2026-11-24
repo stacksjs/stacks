@@ -87,8 +87,9 @@ describe('Instagram', () => {
   it('publishes with the token in a header and nowhere else', async () => {
     const requests = await record(() => instagram().publish(identity, post))
 
-    // Three requests: create the container, publish it, read the permalink.
-    expect(requests.map(r => r.method)).toEqual(['POST', 'POST', 'GET'])
+    // Four requests: create the container, check it is finished
+    // (stacksjs/stacks#3377), publish it, read the permalink.
+    expect(requests.map(r => r.method)).toEqual(['POST', 'GET', 'POST', 'GET'])
 
     for (const request of requests) {
       expect(request.url, request.path).not.toContain(TOKEN)

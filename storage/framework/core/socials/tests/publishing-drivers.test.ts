@@ -412,19 +412,32 @@ describe('Threads', () => {
 describe('Instagram', () => {
   const identity = { handle: 'glenn', did: '1784', accessToken: 'AT' }
 
-  function api(): Sent[] {
+  function api(statuses: string[] = ['FINISHED']): Sent[] {
     let container = 0
+    let polled = 0
     return mockFetch((url) => {
       if (url.endsWith('/media_publish')) return { id: 'ig9' }
       if (url.includes('fields=permalink')) return { permalink: 'https://instagram.com/p/9' }
+      if (url.includes('fields=status_code')) {
+        const code = statuses[Math.min(polled++, statuses.length - 1)]
+        return code === 'ERROR' ? { status_code: code, status: 'Error: 2207026' } : { status_code: code }
+      }
       if (url.endsWith('/media')) return { id: `c${++container}` }
       return { access_token: 'LONG', expires_in: 5184000 }
     })
   }
 
+  /** A driver that waits no real time between status checks, and counts them. */
+  function driver(): InstagramPublishingDriver & { waited: number[] } {
+    const made = new InstagramPublishingDriver() as InstagramPublishingDriver & { waited: number[] }
+    made.waited = []
+    ;(made as any).sleep = async (ms: number) => { made.waited.push(ms) }
+    return made
+  }
+
   it('sends two or more images as a carousel', async () => {
     const sent = api()
-    const result = await new InstagramPublishingDriver().publish(identity, {
+    const result = await driver().publish(identity, {
       text: 'caption',
       media: [{ url: 'https://cdn.example/1.png' }, { url: 'https://cdn.example/2.png' }],
     })
@@ -449,6 +462,86 @@ describe('Instagram', () => {
     expect(sent[0]!.method).toBe('POST')
     expect(sent[0]!.url).not.toContain('secret')
     expect(form(sent[0]!)).toEqual({ grant_type: 'fb_exchange_token', client_id: 'id', client_secret: 'secret', fb_exchange_token: 'SHORT' })
+  })
+
+  // stacksjs/stacks#3377. The container was published the moment it was
+  // created, so an image Instagram had not finished fetching failed the post.
+  it('publishes the container only once Instagram has finished it', async () => {
+    const sent = api(['IN_PROGRESS', 'IN_PROGRESS', 'FINISHED'])
+    const made = driver()
+    await made.publish(identity, { text: 'x', media: [{ url: 'https://cdn.example/1.jpg' }] })
+
+    const order = sent.map(s => s.url.includes('status_code') ? 'status' : s.url.endsWith('/media_publish') ? 'publish' : s.url.endsWith('/media') ? 'create' : 'other')
+    expect(order.slice(0, 5)).toEqual(['create', 'status', 'status', 'status', 'publish'])
+    expect(made.waited).toHaveLength(2)
+  })
+
+  it('fails with Instagram\'s own reason when the container errors, and does not publish', async () => {
+    const sent = api(['ERROR'])
+    await expect(driver().publish(identity, { text: 'x', media: [{ url: 'https://cdn.example/1.jpg' }] })).rejects.toThrow('2207026')
+    expect(sent.some(s => s.url.endsWith('/media_publish'))).toBe(false)
+  })
+
+  it('gives up on a container still processing after its time, without publishing', async () => {
+    const sent = api(['IN_PROGRESS'])
+    const made = driver()
+    made.containerTimeoutMs = 10_000
+    await expect(made.publish(identity, { text: 'x', media: [{ url: 'https://cdn.example/1.jpg' }] })).rejects.toThrow('still processing')
+    expect(sent.some(s => s.url.endsWith('/media_publish'))).toBe(false)
+    expect(made.waited.reduce((a, b) => a + b, 0)).toBeGreaterThanOrEqual(10_000)
+  })
+
+  it('sends each image\'s alt text, on a single image and on carousel items', async () => {
+    const sent = api()
+    await driver().publish(identity, { text: 'one', media: [{ url: 'https://cdn.example/1.jpg', altText: 'a cat' }] })
+    await driver().publish(identity, { text: 'two', media: [{ url: 'https://cdn.example/1.jpg', altText: 'a cat' }, { url: 'https://cdn.example/2.jpg' }] })
+    const created = sent.filter(s => s.url.endsWith('/media')).map(form)
+    expect(created[0]).toEqual({ image_url: 'https://cdn.example/1.jpg', alt_text: 'a cat', caption: 'one' })
+    expect(created[1]).toEqual({ image_url: 'https://cdn.example/1.jpg', is_carousel_item: 'true', alt_text: 'a cat' })
+    expect(created[2]).toEqual({ image_url: 'https://cdn.example/2.jpg', is_carousel_item: 'true' })
+    // The carousel container itself takes no alt text.
+    expect(created[3]).not.toHaveProperty('alt_text')
+  })
+
+  it('refuses an image it knows is not a JPEG, the one format Instagram takes', async () => {
+    const sent = api()
+    await expect(driver().publish(identity, { text: 'x', media: [{ url: 'https://cdn.example/1.png', mimeType: 'image/png' }] })).rejects.toThrow('JPEG')
+    expect(sent).toHaveLength(0)
+  })
+
+  it('finds the Instagram account on any page of the user\'s Pages, not only the first', async () => {
+    const sent = mockFetch((url) => {
+      if (url.includes('after=PAGE2'))
+        return { data: [{ access_token: 'PAGE_TOKEN', instagram_business_account: { id: '1784', username: 'glenn' } }] }
+      return { data: [{ access_token: 'other' }], paging: { next: 'https://graph.facebook.com/v22.0/me/accounts?after=PAGE2' } }
+    })
+    expect(await new InstagramPublishingDriver().resolveAccount('USER')).toEqual({ igUserId: '1784', username: 'glenn', pageAccessToken: 'PAGE_TOKEN' })
+    expect(sent).toHaveLength(2)
+    expect(sent[1]!.url).toContain('after=PAGE2')
+    expect(sent[1]!.headers.get('authorization')).toBe('Bearer USER')
+  })
+
+  it('does not follow a paging address on another host, which would carry the token there', async () => {
+    const sent = mockFetch(() => ({ data: [], paging: { next: 'https://evil.example/me/accounts?after=2' } }))
+    await expect(new InstagramPublishingDriver().resolveAccount('USER')).rejects.toThrow('another host')
+    expect(sent.map(s => new URL(s.url).host)).toEqual(['graph.facebook.com'])
+  })
+})
+
+describe('Threads deletion (stacksjs/stacks#3377)', () => {
+  it('deletes a post with DELETE /{post-id}, the token in a header', async () => {
+    const sent = mockFetch(() => ({ success: true }))
+    await new ThreadsPublishingDriver().deletePost({ handle: 'glenn', did: '42', accessToken: 'AT' }, { uri: 'post9' })
+    expect(sent).toHaveLength(1)
+    expect(sent[0]!.method).toBe('DELETE')
+    expect(new URL(sent[0]!.url).pathname).toEndWith('/post9')
+    expect(sent[0]!.url).not.toContain('AT')
+    expect(sent[0]!.headers.get('authorization')).toBe('Bearer AT')
+  })
+
+  it('refuses an id that is not a plain post id', async () => {
+    mockFetch(() => ({}))
+    await expect(new ThreadsPublishingDriver().deletePost({ handle: 'glenn', did: '42', accessToken: 'AT' }, { uri: '42/threads' })).rejects.toThrow()
   })
 })
 

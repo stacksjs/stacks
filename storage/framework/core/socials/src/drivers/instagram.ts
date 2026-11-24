@@ -12,6 +12,12 @@ import { exceedsLimit } from '../text'
 /** Items Instagram takes in one carousel. */
 export const INSTAGRAM_MAX_IMAGES = 10
 
+/** Instagram's limit on an image's alt text. */
+export const INSTAGRAM_MAX_ALT_TEXT = 1000
+
+/** Pages of the user's Facebook Pages read when looking for the Instagram account. */
+const MAX_ACCOUNT_PAGES = 20
+
 export interface InstagramLongLivedToken {
   accessToken: string
   expiresIn?: number
@@ -75,6 +81,11 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
   characterLimit = 2200
   /** Images attached per post. Instagram's own ceiling; an app may lower it. */
   maxImages = INSTAGRAM_MAX_IMAGES
+  /**
+   * How long to wait for Instagram to finish a media container before giving
+   * up on the post. Meta suggests checking for up to five minutes.
+   */
+  containerTimeoutMs = 300_000
 
   protected graphVersion: string
   protected authBase: string
@@ -136,28 +147,39 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
       fields: 'name,access_token,instagram_business_account{id,username}',
     })
 
-    const payload = await this.graph<{
+    type AccountsPage = {
       data?: Array<{
         access_token?: string
         instagram_business_account?: { id: string, username?: string }
       }>
-    }>(`/me/accounts?${query.toString()}`, { method: 'GET' }, accessToken)
-
-    const page = (payload.data || []).find(entry => entry.instagram_business_account?.id)
-    const account = page?.instagram_business_account
-    if (!account?.id || !page?.access_token) {
-      throw new InstagramApiError(
-        'No Instagram Business account is linked to your Facebook Pages.',
-        400,
-        JSON.stringify(payload),
-      )
+      paging?: { next?: string }
     }
 
-    return {
-      igUserId: account.id,
-      username: account.username,
-      pageAccessToken: page.access_token,
+    // Every page of the user's Pages, not only the first: someone who manages
+    // many Pages could have the linked one on page two (stacksjs/stacks#3377).
+    let payload = await this.graph<AccountsPage>(`/me/accounts?${query.toString()}`, { method: 'GET' }, accessToken)
+    const seen: AccountsPage['data'] = []
+    for (let pages = 1; ; pages++) {
+      seen.push(...(payload.data || []))
+      const page = (payload.data || []).find(entry => entry.instagram_business_account?.id && entry.access_token)
+      if (page) {
+        return {
+          igUserId: page.instagram_business_account!.id,
+          username: page.instagram_business_account!.username,
+          pageAccessToken: page.access_token!,
+        }
+      }
+      const next = payload.paging?.next
+      if (!next || pages >= MAX_ACCOUNT_PAGES)
+        break
+      payload = await this.graph<AccountsPage>(next, { method: 'GET' }, accessToken)
     }
+
+    throw new InstagramApiError(
+      'No Instagram Business account is linked to your Facebook Pages.',
+      400,
+      JSON.stringify({ data: seen }),
+    )
   }
 
   /**
@@ -206,6 +228,11 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
     if (!images.length) throw new Error('Instagram requires an image to post.')
     if (images.some(image => !image.url))
       throw new InstagramApiError('Instagram fetches images from a public address, and this image has none.', 422, '')
+    // JPEG is the only image format Instagram publishes. An image we know is
+    // something else is refused here; one whose type we do not know is
+    // checked by Instagram, and its error arrives through the container.
+    if (images.some(image => image.mimeType && !/^image\/jpe?g$/i.test(image.mimeType)))
+      throw new InstagramApiError('Instagram only publishes JPEG images, and this image is not one.', 422, '')
 
     if (exceedsLimit('instagram', post.text, this.characterLimit)) {
       throw new Error(`Instagram captions must be ${this.characterLimit} characters or fewer.`)
@@ -227,18 +254,29 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
       return container.id
     }
 
+    // Alt text goes on each image, single or carousel item; the carousel
+    // container itself takes none.
+    const imageFields = (image: { url?: string, altText?: string }): Record<string, string> => ({
+      image_url: image.url!,
+      ...(image.altText?.trim() ? { alt_text: image.altText.trim().slice(0, INSTAGRAM_MAX_ALT_TEXT) } : {}),
+    })
+
     // 1) Create the container: one per carousel item, then one that holds them.
     let creationId: string
     if (images.length > 1) {
       const children: string[] = []
-      for (const image of images) children.push(await create({ image_url: image.url!, is_carousel_item: 'true' }))
+      for (const image of images) children.push(await create({ ...imageFields(image), is_carousel_item: 'true' }))
       creationId = await create({ media_type: 'CAROUSEL', children: children.join(','), caption: post.text })
     }
     else {
-      creationId = await create({ image_url: images[0]!.url!, caption: post.text })
+      creationId = await create({ ...imageFields(images[0]!), caption: post.text })
     }
 
-    // 2) Publish the container.
+    // 2) Wait until Instagram has fetched and processed it. Publishing a
+    // container that is still in progress fails the post (stacksjs/stacks#3377).
+    await this.waitForContainer(creationId, accessToken)
+
+    // 3) Publish the container.
     const published = await this.graph<{ id?: string }>(
       `/${igUserId}/media_publish`,
       {
@@ -266,6 +304,51 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
     }
   }
 
+  /**
+   * Wait for a media container to be `FINISHED`. Checked at once, then after
+   * a growing pause (1, 2, 4 ... seconds, at most a minute apart) until
+   * {@link containerTimeoutMs}. `ERROR` and `EXPIRED` fail at once, with
+   * Instagram's own reason.
+   */
+  protected async waitForContainer(containerId: string, accessToken: string): Promise<void> {
+    let waited = 0
+    let pause = 1000
+    for (;;) {
+      const container = await this.graph<{ status_code?: string, status?: string }>(
+        `/${containerId}?fields=status_code,status`,
+        { method: 'GET' },
+        accessToken,
+      )
+      const code = container.status_code
+      // FINISHED is the one to publish; PUBLISHED means it already went out.
+      if (code === 'FINISHED' || code === 'PUBLISHED' || code === undefined)
+        return
+      if (code === 'ERROR' || code === 'EXPIRED') {
+        throw new InstagramApiError(
+          `Instagram could not prepare this post (${code}${container.status ? `: ${container.status}` : ''}).`,
+          422,
+          JSON.stringify(container),
+        )
+      }
+      if (waited >= this.containerTimeoutMs) {
+        throw new InstagramApiError(
+          `Instagram was still processing this post after ${Math.round(waited / 1000)} seconds, so it was not published.`,
+          504,
+          JSON.stringify(container),
+        )
+      }
+      const next = Math.min(pause, 60_000, Math.max(this.containerTimeoutMs - waited, 0))
+      await this.sleep(next)
+      waited += next
+      pause *= 2
+    }
+  }
+
+  /** The pause between container checks; tests replace it. */
+  protected sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+
   // The Content Publishing scope does not grant a readable home timeline.
   async timeline(_identity: SocialIdentityCredentials, _query: TimelineQuery = {}): Promise<TimelineResult> {
     return { items: [] }
@@ -283,11 +366,24 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
    * header answers `code 190 Cannot parse access token`, byte for byte what
    * the query form answers, while sending none answers `code 2500`.
    */
+  /**
+   * A Graph API path, or a `paging.next` address Meta handed back. An
+   * absolute address is only followed on the Graph host itself: the token
+   * goes with the request, and it must not go anywhere else.
+   */
+  protected graphUrl(path: string): string {
+    if (!/^https?:\/\//i.test(path))
+      return `${this.graphBase}/${this.graphVersion}${path}`
+    if (new URL(path).origin !== new URL(this.graphBase).origin)
+      throw new InstagramApiError('Instagram returned a paging address on another host, so it was not followed.', 502, '')
+    return path
+  }
+
   protected async graph<T>(path: string, init: RequestInit, token?: string): Promise<T> {
     const headers = new Headers(init.headers)
     if (token) headers.set('authorization', `Bearer ${token}`)
 
-    const response = await fetch(`${this.graphBase}/${this.graphVersion}${path}`, { ...init, headers })
+    const response = await fetch(this.graphUrl(path), { ...init, headers })
     const text = await response.text()
     let json: any = {}
     try {

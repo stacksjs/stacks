@@ -1,6 +1,8 @@
 import type {
   PublishedPost,
   PublishPostInput,
+  RemotePostRef,
+  SocialDeletionDriver,
   SocialIdentityCredentials,
   SocialPublishingDriver,
   TimelineQuery,
@@ -74,7 +76,7 @@ export interface ThreadsAccount {
  * Unlike Instagram, Threads allows text-only posts — `post.media` is optional
  * and, when present, the container is created as an `IMAGE` instead of `TEXT`.
  */
-export class ThreadsPublishingDriver implements SocialPublishingDriver {
+export class ThreadsPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver {
   readonly provider: 'threads' = 'threads'
   characterLimit = 500
   /** Images attached per post. Threads' own ceiling; an app may lower it. */
@@ -284,6 +286,18 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver {
       cid: published.id,
       url: permalink?.permalink,
     }
+  }
+
+  /**
+   * Delete one of the account's posts: `DELETE /{threads-media-id}`, which
+   * needs the `threads_delete` permission. Threads allows 100 deletes a day
+   * per account (stacksjs/stacks#3377).
+   */
+  async deletePost(identity: SocialIdentityCredentials, ref: RemotePostRef): Promise<void> {
+    if (!identity.accessToken) throw new Error('Threads access token is missing for this identity.')
+    // The id becomes a path segment, so nothing but an id gets that far.
+    if (!/^\w+$/.test(ref.uri)) throw new Error(`Threads post id "${ref.uri}" is not an id.`)
+    await this.graph(`/${ref.uri}`, { method: 'DELETE' }, identity.accessToken)
   }
 
   // The Content Publishing scope does not grant a readable home timeline.
