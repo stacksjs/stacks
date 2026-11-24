@@ -3,9 +3,10 @@ import process from 'node:process'
 
 interface SocketPeer { address: string, port?: number }
 
-export function serveRelayPort(): number | undefined {
+export function serveRelayPort(worker: 'serve' | 'dashboard' = 'serve'): number | undefined {
   const port = Number(process.env.STACKS_SERVE_RELAY_PORT)
-  if (process.env.STACKS_SERVE_WORKER === '1' && typeof process.send === 'function'
+  const key = worker === 'dashboard' ? 'STACKS_DASHBOARD_WORKER' : 'STACKS_SERVE_WORKER'
+  if (process.env[key] === '1' && typeof process.send === 'function'
     && Number.isInteger(port) && port > 0 && port <= 65535)
     return port
 }

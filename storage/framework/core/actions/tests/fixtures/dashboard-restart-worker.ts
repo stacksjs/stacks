@@ -1,37 +1,39 @@
 import process from 'node:process'
-import { clearProjectService, recordProjectService } from '../../../path/src/projects'
 import { runDashboardSupervisor } from '../../src/dev/dashboard-supervisor'
+import { installServeRelayWorker, serveRelayPort } from '../../src/helpers/serve-relay-worker'
 
 if (process.env.STACKS_DASHBOARD_WORKER !== '1')
   process.exit(await runDashboardSupervisor(import.meta.path, []))
 
-const root = process.cwd()
-const pid = Number(process.env.STACKS_DASHBOARD_SUPERVISOR_PID)
-if (Number(process.env.PORT_ADMIN) > 0) {
-  // Stretch the handoff so the updater necessarily polls before the new
-  // worker publishes its service record.
-  clearProjectService(root, 'dashboard', pid)
-  if (process.env.STACKS_DASHBOARD_TEST_HOLD_RESTART === '1') {
-    while (!await Bun.file('publish-dashboard').exists())
-      await Bun.sleep(25)
-  }
-  else {
-    await Bun.sleep(450)
-  }
+const instance = process.env.STACKS_DASHBOARD_INSTANCE!
+installServeRelayWorker(() => process.exit(0))
+if (await Bun.file('fail-dashboard').exists())
+  throw new Error('Replacement dashboard failed at startup')
+if (await Bun.file('dashboard-started').exists() && process.env.STACKS_DASHBOARD_TEST_HOLD_RESTART === '1') {
+  await Bun.write('replacement-started', '')
+  while (!await Bun.file('publish-dashboard').exists())
+    await Bun.sleep(25)
 }
 
-const instance = crypto.randomUUID()
-const server = Bun.serve({
+Bun.serve({
   hostname: '127.0.0.1',
-  port: Number(process.env.PORT_ADMIN),
-  fetch: () => new Response(null, { status: 204, headers: { 'x-stacks-dashboard': instance } }),
+  port: serveRelayPort('dashboard')!,
+  async fetch(request) {
+    const path = new URL(request.url).pathname
+    if (path === '/__buddy/dashboard-ready')
+      return new Response(null, { status: 204, headers: { 'x-stacks-dashboard': instance } })
+    if (path === '/slow') {
+      await Bun.write('slow-request-started', '')
+      while (!await Bun.file('complete-slow-request').exists())
+        await Bun.sleep(25)
+    }
+    return new Response(instance)
+  },
 })
-recordProjectService(root, {
-  name: 'dashboard',
-  pid,
-  port: server.port!,
-  url: server.url.href,
-  startedAt: new Date().toISOString(),
-  restartInstance: instance,
+await Bun.write('dashboard-started', '')
+process.send?.({
+  type: 'stacks:dashboard-ready',
+  instance,
+  domain: null,
+  url: `http://127.0.0.1:${process.env.STACKS_DASHBOARD_PUBLIC_PORT}`,
 })
-process.on('SIGTERM', () => process.exit(0))

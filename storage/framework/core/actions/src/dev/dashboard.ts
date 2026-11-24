@@ -1,20 +1,20 @@
 import process from 'node:process'
 import { existsSync, mkdirSync } from 'node:fs'
-import { connect } from 'node:net'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { clearProjectService, defaultsPath, projectPath, publicPath, recordProjectService, storagePath } from '@stacksjs/path'
 import { seedCsrfPageResponse, validateDevCsrfRequest } from './csrf'
 import { resolveComponentsLibraryRoot } from './defaults-resources'
 import { createIdleExit, projectSwitcherRoutes } from './dashboard-projects'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
-import { dashboardCraftCommand, resolveDashboardCraftExecutable, type CraftBinaryResolver } from './dashboard-native'
-import { dashboardHttpsAnswers, dashboardOriginUrl, dashboardPendingHeader, dashboardReadyHeader, dashboardReadyPath, resolveDashboardDomain, resolveDashboardProxyStrategy } from './dashboard-proxy'
+import { openDashboardNativeWindow } from './dashboard-native'
+import { dashboardHttpsAnswers, dashboardOriginUrl, dashboardPendingHeader, dashboardReadyHeader, dashboardReadyPath, resolveDashboardDomain, startDashboardReverseProxy } from './dashboard-proxy'
 import { buildManifest, discoverProjectModels, findAvailablePort, modelsWithEnabledFeatures, waitForServer, writeFileIfChanged } from './dashboard-utils'
 import { dashboardSoftwareUpdateRoutes } from './dashboard-software-updates'
 import { runDashboardSupervisor } from './dashboard-supervisor'
 import { dashboardAssetRoutes } from '../dashboard-assets'
 import { ensureDiscoveredPackages } from '../discover-packages'
 import { resolveStxSource } from '../stx-source'
+import { installServeRelayWorker, serveRelayPort } from '../helpers/serve-relay-worker'
 
 if (process.env.STACKS_DASHBOARD_WORKER !== '1') {
   // The STX server owns template and component HMR. Backend modules need a
@@ -69,11 +69,14 @@ const userDashboardPath = projectPath('resources/views/dashboard')
 const dashboardComponentsPath = defaultsPath('resources/components/Dashboard')
 const userDashboardComponentsPath = projectPath('resources/components/Dashboard')
 const preferredPort = Number(process.env.PORT_ADMIN) || 3002
+const privatePort = serveRelayPort('dashboard')
+const relay = privatePort ? installServeRelayWorker(() => process.exit(0)) : undefined
 const restartPort = Number(process.env.STACKS_DASHBOARD_RESTART_PORT) || undefined
 const dashboardHostname = '127.0.0.1'
 const dashboardListener = { hostname: dashboardHostname }
 // eslint-disable-next-line ts/no-top-level-await
-const dashboardPort = restartPort ?? await findAvailablePort(preferredPort)
+const dashboardPort = relay ? Number(process.env.STACKS_DASHBOARD_PUBLIC_PORT) : restartPort ?? await findAvailablePort(preferredPort)
+const listenerPort = privatePort ?? dashboardPort
 const dashboardAddress = `${dashboardHostname}:${dashboardPort}`
 const dashboardLocalUrl = `http://${dashboardAddress}`
 
@@ -84,17 +87,16 @@ const idleExitMs = Number(process.env.STACKS_DASHBOARD_IDLE_EXIT_MS) || 0
 // Under the supervisor the record carries the supervisor's pid, so it stays
 // true across the worker restarts a backend edit causes.
 const servicePid = Number(process.env.STACKS_DASHBOARD_SUPERVISOR_PID) || process.pid
-const idleExit = createIdleExit(idleExitMs, () => {
+const idleExit = createIdleExit(relay ? 0 : idleExitMs, () => {
   clearProjectService(projectPath(), 'dashboard', servicePid)
   process.exit(0)
 })
 
-const dashboardInstance = crypto.randomUUID()
+const dashboardInstance = (relay && process.env.STACKS_DASHBOARD_INSTANCE) || crypto.randomUUID()
 let dashboardReady = false
 let dashboardPublished = false
 const { app, overridesReady } = await import('@stacksjs/config')
 await overridesReady
-const background = process.env.STACKS_DASHBOARD_BACKGROUND === '1'
 const appUrl = process.env.APP_URL || app.url || ''
 const localhostOnly = process.env.STACKS_DEV_LOCALHOST === '1'
 const defaultDashboardDomain = resolveDashboardDomain(appUrl, localhostOnly)
@@ -103,8 +105,14 @@ const dashboardDomain = managedDashboardDomain === undefined
   ? resolveDashboardDomain(appUrl, localhostOnly, process.env.DASHBOARD_URL) ?? defaultDashboardDomain
   : managedDashboardDomain || null
 const originDomain = dashboardDomain?.endsWith('.localhost') ? dashboardDomain : defaultDashboardDomain
-let dashboardBrowserUrl = dashboardOriginUrl(originDomain, dashboardPort)
-const sslBasePath = `${process.env.HOME}/.stacks/ssl`
+let dashboardBrowserUrl = (relay && process.env.STACKS_DASHBOARD_PUBLIC_URL) || dashboardOriginUrl(originDomain, dashboardPort)
+if (relay) {
+  process.on('message', (message) => {
+    if (message && typeof message === 'object' && 'type' in message && message.type === 'stacks:dashboard-url'
+      && 'url' in message && typeof message.url === 'string')
+      dashboardBrowserUrl = message.url
+  })
+}
 
 function restoreConsole(): void {
   console.log = originalConsoleLog
@@ -452,8 +460,8 @@ async function startStxServer(): Promise<void> {
     exclude: disabledFeatureViews(dashboardPath, feature),
     // Local dashboard actions can run without an authenticated browser session.
     ...dashboardListener,
-    port: dashboardPort,
-    ...(restartPort !== undefined && { autoIncrementPort: false }),
+    port: listenerPort,
+    ...((privatePort !== undefined || restartPort !== undefined) && { autoIncrementPort: false }),
     // The app's dashboard components first, then the framework's, both ahead
     // of `@stacksjs/components` below: that library shares names with the
     // dashboard's own (`Button`, `Card`, `Table`, ...), so the framework's
@@ -530,7 +538,7 @@ async function startStxServer(): Promise<void> {
     //      collide with a page — e.g. `route.health()` registering a
     //      `/health` LB-probe at root — would intercept the page.
     onRequest: async (req: Request, server) => {
-      const peer = server.requestIP(req)?.address
+      const peer = (relay?.wrap(server) ?? server).requestIP(req)?.address
       if (!peer || (peer !== '::1' && !/^(?:::ffff:)?127\./.test(peer)))
         return new Response('Not found', { status: 404 })
 
@@ -566,106 +574,10 @@ async function startStxServer(): Promise<void> {
   })
 }
 
-/** Whether anything is listening on `port` of the loopback interface. */
-function portAnswers(port: number, timeoutMs = 800): Promise<boolean> {
-  return new Promise((resolve) => {
-    const socket = connect({ port, host: '127.0.0.1' })
-    const finish = (answered: boolean): void => {
-      try { socket.destroy() }
-      catch { /* already gone */ }
-      resolve(answered)
-    }
-    socket.once('connect', () => finish(true))
-    socket.once('error', () => finish(false))
-    setTimeout(() => finish(false), timeoutMs).unref?.()
-  })
-}
-
-/**
- * Publish `dashboard.<domain>` on the shared rpx daemon.
- *
- * The daemon is root-owned and already holds :443 for every dev host, so a
- * route is all this process can (and needs to) contribute. The entry carries
- * this pid, which is how the daemon garbage-collects it when the dashboard
- * stops.
- */
-async function registerWithRpxDaemon(domainToServe: string): Promise<boolean> {
-  const { writeEntry } = await import('@stacksjs/rpx')
-
-  await writeEntry({
-    id: `${domainToServe}-dashboard`,
-    from: dashboardAddress,
-    to: domainToServe,
-    cwd: process.cwd(),
-    createdAt: new Date().toISOString(),
-    pid: process.pid,
-  }, undefined, verbose)
-
-  return true
-}
-
-/**
- * Make `https://dashboard.<domain>` reach this server. Returns whether the
- * pretty URL is actually served - see {@link resolveDashboardProxyStrategy}
- * for the cases.
- */
-async function startReverseProxy(): Promise<boolean> {
-  if (!dashboardDomain) return false
-
-  try {
-    // Loaded lazily: under `buddy dev` the strategy is settled without touching
-    // rpx at all, and importing it there only costs boot time and log noise.
-    let rpx: typeof import('@stacksjs/rpx') | undefined
-    const loadRpx = async (): Promise<typeof import('@stacksjs/rpx')> => (rpx ??= await import('@stacksjs/rpx'))
-
-    const strategy = await resolveDashboardProxyStrategy(dashboardDomain, {
-      proxyManagedExternally: Boolean(process.env.STACKS_PROXY_MANAGED),
-      isDaemonRunning: async () => (await loadRpx()).isDaemonRunning(),
-      httpsPortAnswers: () => portAnswers(443),
-    })
-
-    if (strategy === 'origin-only')
-      return false
-
-    // `buddy dev` owns the proxy and publishes its routes when the ports are ready.
-    if (strategy === 'parent-managed')
-      return true
-
-    if (strategy === 'daemon-route') {
-      await registerWithRpxDaemon(dashboardDomain)
-      return true
-    }
-
-    if (background)
-      return false
-
-    await (await loadRpx()).startProxies({
-      proxies: [
-        { from: dashboardAddress, to: dashboardDomain, cleanUrls: false },
-      ],
-      https: {
-        basePath: sslBasePath,
-        validityDays: 825,
-      },
-      regenerateUntrustedCerts: false,
-      verbose,
-    })
-
-    // rpx falls back to a high port when it cannot bind :443 (it needs root),
-    // and that fallback port is not in the pretty URL. Only claim the pretty
-    // URL once :443 actually answers; otherwise the banner below prints the
-    // origin URL, which always works.
-    return await portAnswers(443)
-  }
-  catch (error) {
-    if (verbose) originalConsoleLog(`  ${dim(`Proxy: ${error}`)}`)
-    return false
-  }
-}
-
-// Register the local route while the dashboard boots. Background starts never
-// wait for privilege escalation.
-const proxy = startReverseProxy()
+// A supervised dashboard keeps one proxy route for its public relay.
+const proxy = relay ? Promise.resolve(false) : startDashboardReverseProxy({
+  domain: dashboardDomain, address: dashboardAddress, pid: servicePid, verbose,
+})
 
 // Phase 1: Start STX server and discover models in parallel
 // eslint-disable-next-line ts/no-top-level-await
@@ -729,7 +641,7 @@ writeFileIfChanged(manifestPath, JSON.stringify(manifestPayload, null, 2))
 
 // Wait briefly for STX server (it's usually ready by now)
 // eslint-disable-next-line ts/no-top-level-await
-const serverReady = await waitForServer(dashboardPort)
+const serverReady = await waitForServer(listenerPort)
 
 // Restore console before our output
 restoreConsole()
@@ -747,20 +659,25 @@ if (dashboardHttpsUrl && proxyStarted)
 // Say where this dashboard is, in the project itself. `buddy dashboard`, the
 // background daemon and the project switcher of every other dashboard read
 // this to learn that the project already has one up, whoever started it.
-recordProjectService(projectPath(), {
-  name: 'dashboard',
-  pid: servicePid,
-  port: dashboardPort,
-  url: dashboardBrowserUrl,
-  startedAt: new Date().toISOString(),
-  ...(servicePid !== process.pid ? { restartInstance: dashboardInstance } : {}),
-  ...(idleExitMs > 0 ? { idleExitMs } : {}),
-})
-dashboardPublished = true
-// A worker run on its own owns its record. Under the supervisor the record is
-// the supervisor's to take down, when it stops for good.
-if (servicePid === process.pid)
-  process.on('exit', () => clearProjectService(projectPath(), 'dashboard', servicePid))
+if (relay) {
+  dashboardPublished = true
+  process.send?.({ type: 'stacks:dashboard-ready', instance: dashboardInstance, domain: dashboardDomain, url: dashboardBrowserUrl })
+}
+else {
+  recordProjectService(projectPath(), {
+    name: 'dashboard',
+    pid: servicePid,
+    port: dashboardPort,
+    url: dashboardBrowserUrl,
+    startedAt: new Date().toISOString(),
+    ...(servicePid !== process.pid ? { restartInstance: dashboardInstance } : {}),
+    ...(idleExitMs > 0 ? { idleExitMs } : {}),
+  })
+  dashboardPublished = true
+  // Legacy supervisors clean the record when the session ends.
+  if (servicePid === process.pid)
+    process.on('exit', () => clearProjectService(projectPath(), 'dashboard', servicePid))
+}
 
 const initialUrl = `${dashboardBrowserUrl}/`
 
@@ -800,7 +717,7 @@ if (verbose) {
   // failed typecheck.
   console.log(`  ${dim('➜')}  ${dim('URL')}:      ${dim(initialUrl)}`)
   if (dashboardDomain) {
-    console.log(`  ${dim('➜')}  ${dim('SSL')}:      ${dim(sslBasePath)}`)
+    console.log(`  ${dim('➜')}  ${dim('SSL')}:      ${dim(`${process.env.HOME}/.stacks/ssl`)}`)
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:    ${dim(`${dashboardAddress} → ${dashboardDomain}`)}`)
   }
 
@@ -814,102 +731,23 @@ if (verbose) {
 console.log()
 /* eslint-enable no-console */
 
-// Import Craft dynamically. Its static import triggers bun-router
-// config loading which prints warnings before our console.log override is
-// active. We also let it be missing — the native window is a nicety, not a
-// requirement; the dashboard runs fine as a plain web server in that case.
-let resolveCraftBinary: CraftBinaryResolver | undefined
-const nativeDisabled = process.env.STACKS_NO_NATIVE === '1'
-const explicitCraftSdk = process.env.CRAFT_SDK_SRC
-
-if (!nativeDisabled && explicitCraftSdk) {
-  try {
-    // eslint-disable-next-line ts/no-top-level-await
-    ;({ resolveCraftBinary } = await import(explicitCraftSdk) as { resolveCraftBinary?: CraftBinaryResolver })
-    if (!resolveCraftBinary)
-      throw new Error('CRAFT_SDK_SRC must export resolveCraftBinary')
-  }
-  catch (error) {
-    throw new Error(`Could not load CRAFT_SDK_SRC ${explicitCraftSdk}: ${error instanceof Error ? error.message : String(error)}`)
-  }
-}
-
-if (!nativeDisabled && !explicitCraftSdk) {
-  try {
-    // eslint-disable-next-line ts/no-top-level-await
-    ;({ resolveCraftBinary } = await import('craft-native') as { resolveCraftBinary?: CraftBinaryResolver })
-  }
-  catch {
-    // The canonical Craft SDK is unavailable. Keep serving the web dashboard.
-  }
-}
-
-const craftBinaryPath = resolveCraftBinary ? resolveDashboardCraftExecutable(resolveCraftBinary) : undefined
-
-if (craftBinaryPath) {
-  // Resolve the dock icon. Userland gets first crack at customizing via
-  // `resources/assets/images/app-icon.png` in the project; if absent, fall
-  // back to the framework's bundled placeholder so the dock never shows the
-  // generic "no icon" silhouette. PNG is fine — NSImage decodes it directly.
-  const userIconPath = projectPath('resources/assets/images/app-icon.png')
-  const defaultIconPath = defaultsPath('resources/assets/images/app-icon.png')
-  // eslint-disable-next-line ts/no-top-level-await
-  const appIconPath = (await Bun.file(userIconPath).exists())
-    ? userIconPath
-    : (await Bun.file(defaultIconPath).exists()) ? defaultIconPath : undefined
-
-  try {
-    // Loopback HTTP works in WKWebView without trusting the browser's local
-    // development CA. The shared storage flag is currently exposed by the CLI.
-    const app = Bun.spawn(dashboardCraftCommand({
-      binary: craftBinaryPath,
-      url: dashboardLocalUrl,
-      icon: appIconPath,
-      verbose,
-    }), {
-      stdin: verbose ? 'inherit' : 'ignore',
-      stdout: verbose ? 'inherit' : 'ignore',
-      stderr: 'inherit',
-    })
-
-    for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-      process.once(signal, () => {
-        app.kill()
-        process.exit(0)
-      })
-    }
-
-    const exitCode = await app.exited
-    if (exitCode === 0)
-      process.exit(0)
-    throw new Error(`Craft exited with code ${exitCode}`)
-  }
-  catch (error) {
-    const fallbackUrl = dashboardBrowserUrl
-    // eslint-disable-next-line no-console
-    console.log(`  ${dim('Native Craft window failed:')} ${dim(error instanceof Error ? error.message : String(error))}`)
-    // eslint-disable-next-line no-console
-    console.log(`  ${dim('Dashboard available at:')} ${cyan(fallbackUrl)}\n`)
-
-    // Keep the process running since we're serving via STX
-    await new Promise(() => {})
-  }
-}
-else {
-  // No native window — keep the HTTP server alive so the dashboard is
-  // reachable via the URLs printed in the banner above. SIGINT/SIGTERM
-  // exit cleanly without a window to close.
-  //
-  // We get here in three cases:
-  //   1. STACKS_NO_NATIVE=1 explicitly requested a web-only dashboard.
-  //   2. The canonical Craft SDK is unavailable.
-  //   3. Pantry has not installed Craft and CRAFT_BIN was not set.
-  // eslint-disable-next-line no-console
-  const nativeMessage = nativeDisabled
-    ? 'Native window disabled by STACKS_NO_NATIVE=1. Open the URL above in a browser.'
-    : 'Native window unavailable. Run pantry install craft, set CRAFT_BIN, or open the URL above in a browser.'
-  console.log(`  ${dim(nativeMessage)}\n`)
+if (!relay) {
   process.on('SIGINT', () => process.exit(0))
   process.on('SIGTERM', () => process.exit(0))
-  await new Promise(() => {})
+  try {
+    const app = await openDashboardNativeWindow(dashboardLocalUrl, verbose)
+    if (app) {
+      for (const signal of ['SIGINT', 'SIGTERM'] as const)
+        process.prependOnceListener(signal, () => app.kill())
+      const exitCode = await app.exited
+      if (exitCode === 0)
+        process.exit(0)
+      throw new Error(`Craft exited with code ${exitCode}`)
+    }
+  }
+  catch (error) {
+    console.warn(`Native Craft window failed: ${error instanceof Error ? error.message : error}`)
+  }
 }
+
+await new Promise(() => {})

@@ -13,7 +13,8 @@
  *   only URL there is.
  */
 import { lookup } from 'node:dns/promises'
-import { isIP } from 'node:net'
+import { connect, isIP } from 'node:net'
+import process from 'node:process'
 import { getCACertificates } from 'node:tls'
 
 export type DashboardProxyStrategy = 'parent-managed' | 'daemon-route' | 'own-proxy' | 'origin-only'
@@ -114,4 +115,109 @@ export async function resolveDashboardProxyStrategy(
     return 'daemon-route'
 
   return 'own-proxy'
+}
+
+/** Whether anything is listening on `port` of the loopback interface. */
+function portAnswers(port: number, timeoutMs = 800): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = connect({ port, host: '127.0.0.1' })
+    const finish = (answered: boolean): void => {
+      try { socket.destroy() }
+      catch { /* already gone */ }
+      resolve(answered)
+    }
+    socket.once('connect', () => finish(true))
+    socket.once('error', () => finish(false))
+    setTimeout(() => finish(false), timeoutMs).unref?.()
+  })
+}
+
+/**
+ * Publish `dashboard.<domain>` on the shared rpx daemon.
+ *
+ * The daemon is root-owned and already holds :443 for every dev host, so a
+ * route is all this process can (and needs to) contribute. The entry carries
+ * this pid, which is how the daemon garbage-collects it when the dashboard
+ * stops.
+ */
+async function registerWithRpxDaemon(domainToServe: string, dashboardAddress: string, pid: number, verbose: boolean): Promise<boolean> {
+  const { writeEntry } = await import('@stacksjs/rpx')
+
+  await writeEntry({
+    id: `${domainToServe}-dashboard`,
+    from: dashboardAddress,
+    to: domainToServe,
+    cwd: process.cwd(),
+    createdAt: new Date().toISOString(),
+    pid,
+  }, undefined, verbose)
+
+  return true
+}
+
+/**
+ * Make `https://dashboard.<domain>` reach this server. Returns whether the
+ * pretty URL is actually served - see {@link resolveDashboardProxyStrategy}
+ * for the cases.
+ */
+export async function startDashboardReverseProxy(options: {
+  domain: string | null
+  address: string
+  pid: number
+  verbose: boolean
+}): Promise<boolean> {
+  const { domain: dashboardDomain, address: dashboardAddress, pid, verbose } = options
+  const sslBasePath = `${process.env.HOME}/.stacks/ssl`
+  const background = process.env.STACKS_DASHBOARD_BACKGROUND === '1'
+  if (!dashboardDomain) return false
+
+  try {
+    // Loaded lazily: under `buddy dev` the strategy is settled without touching
+    // rpx at all, and importing it there only costs boot time and log noise.
+    let rpx: typeof import('@stacksjs/rpx') | undefined
+    const loadRpx = async (): Promise<typeof import('@stacksjs/rpx')> => (rpx ??= await import('@stacksjs/rpx'))
+
+    const strategy = await resolveDashboardProxyStrategy(dashboardDomain, {
+      proxyManagedExternally: Boolean(process.env.STACKS_PROXY_MANAGED),
+      isDaemonRunning: async () => (await loadRpx()).isDaemonRunning(),
+      httpsPortAnswers: () => portAnswers(443),
+    })
+
+    if (strategy === 'origin-only')
+      return false
+
+    // `buddy dev` owns the proxy and publishes its routes when the ports are ready.
+    if (strategy === 'parent-managed')
+      return true
+
+    if (strategy === 'daemon-route') {
+      await registerWithRpxDaemon(dashboardDomain, dashboardAddress, pid, verbose)
+      return true
+    }
+
+    if (background)
+      return false
+
+    await (await loadRpx()).startProxies({
+      proxies: [
+        { from: dashboardAddress, to: dashboardDomain, cleanUrls: false },
+      ],
+      https: {
+        basePath: sslBasePath,
+        validityDays: 825,
+      },
+      regenerateUntrustedCerts: false,
+      verbose,
+    })
+
+    // rpx falls back to a high port when it cannot bind :443 (it needs root),
+    // and that fallback port is not in the pretty URL. Only claim the pretty
+    // URL once :443 actually answers; otherwise the banner below prints the
+    // origin URL, which always works.
+    return await portAnswers(443)
+  }
+  catch (error) {
+    if (verbose) console.log(`  Proxy: ${error}`)
+    return false
+  }
 }

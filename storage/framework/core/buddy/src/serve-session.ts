@@ -6,7 +6,7 @@ import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
 import { log } from '@stacksjs/logging'
 import { isCompiledBinary, projectCliEntry, projectPath } from '@stacksjs/path'
 import { serveReadyHeader, serveReadyPath } from './serve-readiness'
-import { createServeRelay } from './serve-relay'
+import { createServeRelay, reserveRelayWorkerPort, retireRelayWorker } from '@stacksjs/cli/serve-relay'
 
 type ServeCommand = 'serve' | 'serve:api'
 interface ServeOptions { port?: string | number, verbose?: boolean }
@@ -17,13 +17,6 @@ interface ServeWorker {
   apiReady: Promise<number>
   privatePort?: number
   target?: ReturnType<Relay['createTarget']>
-}
-
-async function reserveWorkerPort(): Promise<number> {
-  const reservation = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response() })
-  const port = reservation.port!
-  await reservation.stop(true)
-  return port
 }
 
 async function servingPort(configured: string | number | undefined, web: boolean): Promise<number> {
@@ -109,7 +102,7 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
   let closeControl: (() => void) | undefined
 
   async function startWorker(pinnedPort?: number): Promise<ServeWorker> {
-    const privatePort = relay ? await reserveWorkerPort() : undefined
+    const privatePort = relay ? await reserveRelayWorkerPort() : undefined
     shutdown.signal.throwIfAborted()
     const entry = projectCliEntry(root)
     // Resolve the project's CLI again after each update. Keep the current
@@ -196,29 +189,6 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
       throw new Error(`Buddy ${command} listened on port ${port} instead of ${expectedPort}.`)
   }
 
-  async function retire(previous: ServeWorker): Promise<void> {
-    if (previous.target) {
-      const deadline = Date.now() + grace
-      await previous.target.drain(grace)
-      previous.child.send({ type: 'stacks:serve-drain' })
-      let timer: ReturnType<typeof setTimeout> | undefined
-      try {
-        await Promise.race([
-          previous.child.exited,
-          new Promise<void>(resolve => { timer = setTimeout(resolve, Math.max(deadline - Date.now(), 250)) }),
-        ])
-      }
-      finally {
-        clearTimeout(timer)
-        previous.target.close()
-        await previous.child.stop()
-      }
-    }
-    else {
-      await previous.child.stop()
-    }
-  }
-
   async function restart(): Promise<void> {
     const previous = worker!
     // A direct API listener may get its port from project configuration.
@@ -237,7 +207,10 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
       await candidate.child.stop()
       throw error
     }
-    await retire(previous)
+    if (previous.target)
+      await retireRelayWorker(previous.child, previous.target, grace)
+    else
+      await previous.child.stop()
   }
 
   const stopChildren = () => Promise.all([...children].map(child => child.stop()))

@@ -53,13 +53,15 @@ describe('dashboard native Craft resolution', () => {
   })
 
   it('keeps the dashboard launcher on the canonical Craft contract', async () => {
-    const source = await Bun.file(new URL('../src/dev/dashboard.ts', import.meta.url)).text()
+    const [source, supervisor] = await Promise.all([
+      Bun.file(new URL('../src/dev/dashboard-native.ts', import.meta.url)).text(),
+      Bun.file(new URL('../src/dev/dashboard-supervisor.ts', import.meta.url)).text(),
+    ])
 
     expect(source).toContain("import('craft-native')")
     expect(source).toContain('CRAFT_SDK_SRC')
     expect(source).toContain('STACKS_NO_NATIVE')
-    expect(source).toContain('url: dashboardLocalUrl')
-    expect(source).not.toContain('url: initialUrl')
+    expect(supervisor).toContain('openDashboardNativeWindow(localUrl, verbose)')
     expect(source).not.toContain('/Code/Tools/craft')
     expect(source).not.toContain('/Documents/Projects/craft')
     expect(source).not.toContain('non-existent CRAFT_BIN')

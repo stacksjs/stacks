@@ -87,6 +87,8 @@ function spawnDashboard(root: string, holdRestart = false): ReturnType<typeof Bu
     env: {
       ...process.env,
       STACKS_DASHBOARD_WORKER: '0',
+      STACKS_NO_NATIVE: '1',
+      SHUTDOWN_GRACE_MS: '2500',
       PORT_ADMIN: '0',
       STACKS_DASHBOARD_TEST_HOLD_RESTART: holdRestart ? '1' : '0',
     },
@@ -97,7 +99,7 @@ function spawnDashboard(root: string, holdRestart = false): ReturnType<typeof Bu
 
 const restartModes = process.platform === 'win32' ? ['supervisor endpoint'] : ['supervisor endpoint', 'legacy signal']
 
-test.each(restartModes)('dashboard restart waits through an unpublished worker (%s)', async (mode) => {
+test.each(restartModes)('dashboard restart keeps the old worker serving through handoff (%s)', async (mode) => {
   const root = mkdtempSync(join(tmpdir(), 'dashboard-worker-restart-'))
   mkdirSync(join(root, 'config'))
   writeFileSync(join(root, 'config/app.ts'), 'export default {}')
@@ -110,17 +112,56 @@ test.each(restartModes)('dashboard restart waits through an unpublished worker (
     if (mode === 'legacy signal')
       clearProjectService(root, control.name, control.pid)
 
-    const restart = restartProjectDashboard(root)
-    void restart.catch(() => {})
-    await waitFor(() => readProjectService(root, 'dashboard') ? null : true)
-    expect(isProcessAlive(before.pid)).toBe(true)
-    await Bun.write(join(root, 'publish-dashboard'), '')
-    await restart
+    const readBody = (path: string) => fetch(`${before.url}${path}`, {
+      headers: { connection: 'close' },
+      signal: AbortSignal.timeout(5000),
+    }).then(async (response) => {
+      expect(response.ok).toBe(true)
+      return response.text()
+    })
+    const slow = readBody('/slow')
+    void slow.catch(() => {})
+    await waitFor(async () => await Bun.file(join(root, 'slow-request-started')).exists() ? true : null)
+    let monitoring = true
+    const errors: unknown[] = []
+    const traffic = (async () => {
+      while (monitoring) {
+        try { await readBody('/status') }
+        catch (error) { errors.push(error) }
+        await Bun.sleep(10)
+      }
+    })()
+    try {
+      const restart = restartProjectDashboard(root)
+      void restart.catch(() => {})
+      await waitFor(async () => await Bun.file(join(root, 'replacement-started')).exists() ? true : null)
+      expect(await readBody('/status')).toBe(before.restartInstance!)
+      expect(readProjectService(root, 'dashboard')?.restartInstance).toBe(before.restartInstance)
+      expect(isProcessAlive(before.pid)).toBe(true)
+      await Bun.write(join(root, 'publish-dashboard'), '')
+      const newInstance = await waitFor(async () => {
+        const value = await runningDashboardInstance(before.port)
+        return value && value !== before.restartInstance ? value : null
+      })
+      await Bun.write(join(root, 'complete-slow-request'), '')
+      expect(await slow).toBe(before.restartInstance!)
+      await restart
 
-    const after = readProjectService(root, 'dashboard')
-    expect(after).toMatchObject({ pid: before.pid, port: before.port })
-    expect(after?.restartInstance).not.toBe(before.restartInstance)
-    expect(await runningDashboardInstance(before.port)).toBe(after?.restartInstance!)
+      const after = readProjectService(root, 'dashboard')
+      expect(after).toMatchObject({ pid: before.pid, port: before.port, restartInstance: newInstance })
+      expect(await readBody('/status')).toBe(newInstance)
+      if (mode === 'supervisor endpoint') {
+        await Bun.write(join(root, 'fail-dashboard'), '')
+        await expect(restartProjectDashboard(root)).rejects.toThrow('exited before it was ready')
+        expect(readProjectService(root, 'dashboard')?.restartInstance).toBe(newInstance)
+        expect(await readBody('/status')).toBe(newInstance)
+      }
+    }
+    finally {
+      monitoring = false
+      await traffic
+    }
+    expect(errors).toEqual([])
   }
   finally {
     child.kill('SIGTERM')

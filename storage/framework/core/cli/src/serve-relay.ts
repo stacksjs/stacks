@@ -1,7 +1,8 @@
 import type { Socket } from 'node:net'
+import type { OwnedProcess } from './owned-process'
 import { createConnection, createServer } from 'node:net'
 
-export function createServeRelay(host: string, port: number) {
+export function createServeRelay(host: string, port: number, onActivity?: () => void) {
   let current: ReturnType<typeof createTarget> | undefined
   let sequence = 0
   const server = createServer({ pauseOnConnect: true, allowHalfOpen: true }, (client) => {
@@ -10,11 +11,15 @@ export function createServeRelay(host: string, port: number) {
     else
       client.destroy()
   })
-  const listening = new Promise<void>((resolve, reject) => {
+  const listening = new Promise<number>((resolve, reject) => {
     server.once('error', reject)
     server.listen({ host, port, exclusive: true }, () => {
       server.off('error', reject)
-      resolve()
+      const address = server.address()
+      if (address && typeof address !== 'string')
+        resolve(address.port)
+      else
+        reject(new Error('Could not determine the relay port.'))
     })
   })
 
@@ -49,6 +54,8 @@ export function createServeRelay(host: string, port: number) {
             clearTimeout(timeout)
             // These pipes preserve the original HTTP bytes and upgrades, with
             // Node stream backpressure in both directions.
+            if (onActivity)
+              client.on('data', onActivity)
             client.pipe(upstream)
             upstream.pipe(client)
           },
@@ -95,5 +102,34 @@ export function createServeRelay(host: string, port: number) {
       current = undefined
       server.close()
     },
+  }
+}
+
+export async function reserveRelayWorkerPort(): Promise<number> {
+  const reservation = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response() })
+  const port = reservation.port!
+  await reservation.stop(true)
+  return port
+}
+
+export async function retireRelayWorker(
+  child: OwnedProcess,
+  target: ReturnType<ReturnType<typeof createServeRelay>['createTarget']>,
+  grace: number,
+): Promise<void> {
+  const deadline = Date.now() + grace
+  await target.drain(grace)
+  child.send({ type: 'stacks:serve-drain' })
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    await Promise.race([
+      child.exited,
+      new Promise<void>(resolve => { timer = setTimeout(resolve, Math.max(deadline - Date.now(), 250)) }),
+    ])
+  }
+  finally {
+    clearTimeout(timer)
+    target.close()
+    await child.stop()
   }
 }

@@ -16,6 +16,7 @@ on:
       - 'storage/framework/core/buddy/src/serve-*.ts'
       - 'storage/framework/core/buddy/tests/serve-restart.test.ts'
       - 'storage/framework/core/cli/src/owned-process.ts'
+      - 'storage/framework/core/cli/src/serve-relay.ts'
   pull_request:
     branches: [main]
     paths: *restart_paths
@@ -38,7 +39,7 @@ jobs:
         env:
           APP_ENV: test
         run: bun test ./storage/framework/core/buddy/tests/serve-restart.test.ts
-      - name: Restart the dashboard supervisor worker
+      - name: Exercise rolling dashboard restarts with live traffic
         env:
           APP_ENV: test
-        run: bun test ./storage/framework/core/actions/tests/dashboard-software-updates.test.ts --test-name-pattern "dashboard restart waits"
+        run: bun test ./storage/framework/core/actions/tests/dashboard-software-updates.test.ts --test-name-pattern "dashboard restart keeps"
