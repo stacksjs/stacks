@@ -147,7 +147,7 @@ route.group({ middleware: 'auth' }, () => {
   route.post('/logout', 'Actions/Auth/LogoutAction')
 })
 
-// Health check (adds GET /health)
+// Health check (adds GET /api/health)
 route.health()
 ```
 

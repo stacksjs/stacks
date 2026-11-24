@@ -89,7 +89,7 @@ routes. Use `buddy route:list` to inspect this application's actual surface.
 - `/commerce/products/*`, `/commerce/orders/*`, `/commerce/customers/*`
 
 ### Health
-- `GET /health` — status, uptime, memory, PID, Bun version
+- `GET /api/health`: `{ status: 'healthy' | 'degraded', checks: { database, cache }, timestamp }`, 503 when a check fails
 
 ## Versioned Routes (routes/v1.ts)
 
@@ -120,7 +120,7 @@ route.get('/ping', (req) => Response.json({ pong: true }))
 - String handlers (Actions/X) are dynamically imported at request time
 - Route order matters — first match wins
 - Use groups for shared middleware instead of repeating on each route
-- The `health()` helper registers `GET /health` automatically
+- The `health()` helper registers `GET /api/health`, not `/health`, so it cannot collide with a page
 - For the router API (request helpers, middleware, responses), see the `stacks-router` skill
 
 Source: `core/router/src/route-loader.ts`, `appRouteRegistry`, and

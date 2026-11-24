@@ -39,21 +39,31 @@ export const healthNotificationsWip = 1  // Notifications placeholder
 The health check functionality currently lives in the router, not this package:
 
 ```
-GET /health
+GET /api/health
 ```
 
-Returns:
+It is mounted under `/api`, not at `/health`, so it cannot collide with a page
+of the app's own. Point load balancers, uptime monitors and a deploy's
+`healthCheck` at `/api/health`.
+
+It runs a database check (`SELECT 1`) and a cache round trip, each with a
+1.5 second timeout, and answers 200 when both pass and 503 when one fails:
+
 ```json
 {
-  "status": "ok",
-  "uptime": 12345,
-  "memory": { "rss": 1234567, "heapUsed": 987654 },
-  "pid": 1234,
-  "bunVersion": "1.3.0"
+  "status": "healthy",
+  "checks": {
+    "database": { "ok": true, "ms": 2 },
+    "cache": { "ok": true, "ms": 1 }
+  },
+  "timestamp": 1764000000000
 }
 ```
 
-This endpoint is registered via `route.health()` in the router.
+A failing check has `ok: false` and a `message`, and `status` is `"degraded"`.
+
+This endpoint is registered via `route.health()` in the router
+(`checkApplicationHealth()` in `core/router/src/health.ts`).
 
 ## CLI Commands
 
@@ -70,6 +80,6 @@ buddy doctor              # Comprehensive system diagnostics
 
 ## Gotchas
 - **Package is WIP** — only placeholder exports exist
-- **Health endpoint is in the router** — `GET /health` works via `route.health()`, not this package
+- **Health endpoint is in the router**: `GET /api/health` (not `/health`) works via `route.health()`, not this package
 - **`buddy doctor`** — system diagnostics are in the buddy CLI, not this health package
 - **Oh Dear driver planned** — integration with ohdear.app for external monitoring

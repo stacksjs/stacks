@@ -29,7 +29,7 @@ route.put('/users/{id}', handler)
 route.patch('/users/{id}', handler)
 route.delete('/users/{id}', handler)
 route.options('/users', handler)
-route.health()  // GET /health endpoint
+route.health()  // GET /api/health endpoint
 ```
 
 ### Redirects
@@ -409,7 +409,7 @@ bundles, and feature gates decide the mounted surface; inspect `buddy route:list
 - `/monitoring/errors/*`
 
 ### Health
-- `GET /health` — returns status, uptime, memory, PID, Bun version
+- `GET /api/health`: `{ status: 'healthy' | 'degraded', checks: { database, cache }, timestamp }`, 503 when a check fails
 
 ## Server Integration
 
