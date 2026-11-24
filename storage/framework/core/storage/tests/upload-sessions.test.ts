@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdtemp, readdir, rm, utimes } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { createUploadSessions, UploadSessionError } from '../src/upload-sessions'
+import { createUploadSessions, handleUploadSessionRequest, receiveUpload, uploadSessionResponse, UploadSessionError } from '../src/upload-sessions'
 
 let directory = ''
 beforeEach(async () => { directory = await mkdtemp(join(tmpdir(), 'upload-sessions-')) })
@@ -135,5 +135,67 @@ describe('upload sessions', () => {
     expect(await uploads.prune()).toBe(1)
     expect((await refusal(uploads.status(old.id, 'a'))).code).toBe('not-found')
     expect((await uploads.status(fresh.id, 'a')).id).toBe(fresh.id)
+  })
+})
+
+describe('the upload session routes', () => {
+  const routes = (overrides: Record<string, unknown> = {}) => {
+    const uploads = sessions()
+    const call = (method: string, params: Record<string, unknown>, body?: unknown, extra: { owner?: string | null, length?: number } = {}) => handleUploadSessionRequest({
+      method,
+      params,
+      headers: { get: (name: string) => name === 'content-length' && extra.length !== undefined ? String(extra.length) : null },
+      json: async () => body,
+      arrayBuffer: async () => (body as Uint8Array).buffer.slice((body as Uint8Array).byteOffset, (body as Uint8Array).byteOffset + (body as Uint8Array).byteLength) as ArrayBuffer,
+    }, uploads, { owner: extra.owner === undefined ? '7' : extra.owner, accept: file => /\.mov$/.test(file.name) ? null : 'Choose a video.', ...overrides })
+    return { uploads, call }
+  }
+
+  test('begin, parts, status and cancel, each answering as the browser client expects', async () => {
+    const { uploads, call } = routes()
+    const file = fileOf(PART + 10)
+    const begun = await call('POST', {}, { name: 'squat.mov', size: file.byteLength, type: 'video/quicktime' })
+    expect(begun.status).toBe(201)
+    const { upload } = await begun.json() as { upload: { id: string, parts: number } }
+    expect(upload.parts).toBe(2)
+    expect((await call('PUT', { id: upload.id, index: 0 }, file.subarray(0, PART), { length: PART })).status).toBe(200)
+    const status = await (await call('GET', { id: upload.id })).json() as { upload: { received: number[] } }
+    expect(status.upload.received).toEqual([0])
+    expect((await call('DELETE', { id: upload.id })).status).toBe(200)
+    expect((await call('GET', { id: upload.id })).status).toBe(404)
+    expect(await uploads.prune(Date.now() + 10 ** 12)).toBe(0)
+  })
+
+  test('refuses what the app does not accept, an oversized part unread, and anyone signed out', async () => {
+    const { call } = routes()
+    const refused = await call('POST', {}, { name: 'notes.pdf', size: 10 })
+    expect(refused.status).toBe(422)
+    expect((await refused.json() as { error: string }).error).toBe('Choose a video.')
+    const { upload } = await (await call('POST', {}, { name: 'a.mov', size: 10 })).json() as { upload: { id: string } }
+    expect((await call('PUT', { id: upload.id, index: 0 }, new Uint8Array(10), { length: PART + 1 })).status).toBe(413)
+    expect((await call('GET', { id: upload.id }, undefined, { owner: null })).status).toBe(401)
+    expect((await call('GET', { id: upload.id }, undefined, { owner: '8' })).status).toBe(404)
+  })
+})
+
+describe('receiving an upload in an action', () => {
+  test('a session\'s finished file, or the multipart file, or nothing', async () => {
+    const uploads = sessions()
+    const file = fileOf(PART + 5)
+    const begun = await uploads.begin({ owner: '7', name: 'clip.mov', size: file.byteLength, type: 'video/quicktime' })
+    await uploads.receive(begun.id, '7', 0, file.subarray(0, PART))
+    await uploads.receive(begun.id, '7', 1, file.subarray(PART))
+    const fromSession = await receiveUpload({ method: 'POST', headers: { get: () => null }, get: name => name === 'upload' ? begun.id : undefined }, { owner: 7, sessions: uploads })
+    expect(fromSession).toMatchObject({ name: 'clip.mov', size: file.byteLength, type: 'video/quicktime', fromSession: true })
+    expect(new Uint8Array(await fromSession!.blob.arrayBuffer())).toEqual(file)
+    await fromSession!.discard()
+    expect(await readdir(directory)).toEqual([])
+
+    const whole = new File([file], 'small.mov', { type: 'video/quicktime' })
+    const fromRequest = await receiveUpload({ method: 'POST', headers: { get: () => null }, get: () => undefined, file: name => name === 'video' ? whole : undefined }, { owner: 7, sessions: uploads, field: 'video' })
+    expect(fromRequest).toMatchObject({ name: 'small.mov', fromSession: false, size: file.byteLength })
+    expect(await receiveUpload({ method: 'POST', headers: { get: () => null }, get: () => undefined, file: () => undefined }, { owner: 7, sessions: uploads })).toBeNull()
+    const error = await receiveUpload({ method: 'POST', headers: { get: () => null }, get: () => 'f'.repeat(32) }, { owner: 7, sessions: uploads }).catch(cause => cause)
+    expect(uploadSessionResponse(error).status).toBe(404)
   })
 })

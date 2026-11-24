@@ -324,3 +324,135 @@ export function createUploadSessions(options: UploadSessionsOptions): UploadSess
     },
   }
 }
+
+/**
+ * The request an upload route receives, as much of it as these helpers read:
+ * Stacks' router request, or any `Request` with `params` added.
+ */
+export interface UploadRouteRequest {
+  method: string
+  params?: Record<string, unknown>
+  headers: { get: (name: string) => string | null }
+  json?: () => Promise<unknown>
+  arrayBuffer?: () => Promise<ArrayBuffer>
+  get?: (name: string) => unknown
+  file?: (name: string) => unknown
+}
+
+export interface UploadRouteOptions {
+  /** Who is uploading: an account id. Null answers 401. */
+  owner: string | number | null | undefined
+  /**
+   * Checks a file as it is announced, before any of it is sent: answer a
+   * message to refuse it (422), or null to let it in. The size limit is the
+   * sessions' own.
+   */
+  accept?: (file: { name: string, size: number, type: string }) => string | null
+}
+
+const json = (body: unknown, status = 200): Response => Response.json(body, { status })
+
+/** How a refused session call is answered: the refusal as itself, anything else as a 500 that says nothing of its own. */
+export function uploadSessionResponse(cause: unknown): Response {
+  if (cause instanceof UploadSessionError)
+    return json({ error: cause.message, code: cause.code }, cause.status)
+  console.error('[uploads] an upload session call failed', cause)
+  return json({ error: 'Could not store the upload. Try again.' }, 500)
+}
+
+/**
+ * Answers every upload session route from one handler, so an app's routes are
+ * a line each (`uploadInParts` in `@stacksjs/browser` speaks them):
+ *
+ * - `POST   /uploads`                    begin: `{ name, size, type, meta }` → 201 `{ upload }`
+ * - `GET    /uploads/{id}`               status → `{ upload }`
+ * - `PUT    /uploads/{id}/parts/{index}` one part, the raw body → `{ upload }`
+ * - `DELETE /uploads/{id}`               cancel → `{ ok: true }`
+ *
+ * It tells them apart by method and by which of `id` and `index` the route
+ * captured. A part is read only after its declared length has been checked
+ * against the part size, so an oversized body is refused unread.
+ */
+export async function handleUploadSessionRequest(request: UploadRouteRequest, sessions: UploadSessions, options: UploadRouteOptions): Promise<Response> {
+  if (options.owner === null || options.owner === undefined || options.owner === '')
+    return json({ error: 'Unauthenticated' }, 401)
+  const owner = String(options.owner)
+  const id = request.params?.id === undefined ? '' : String(request.params.id)
+  const method = request.method.toUpperCase()
+  try {
+    if (method === 'POST' && !id) {
+      const body = (await request.json?.().catch(() => ({})) ?? {}) as { name?: unknown, size?: unknown, type?: unknown, meta?: unknown }
+      const file = { name: String(body.name ?? ''), size: Number(body.size), type: typeof body.type === 'string' ? body.type : '' }
+      const refusal = options.accept?.(file)
+      if (refusal)
+        return json({ error: refusal, code: 'invalid' }, 422)
+      return json({ upload: await sessions.begin({ owner, ...file, meta: body.meta as Record<string, string> | undefined }) }, 201)
+    }
+    if (method === 'PUT' && id && request.params?.index !== undefined) {
+      const index = Number(request.params.index)
+      const view = await sessions.status(id, owner)
+      const declared = Number(request.headers.get('content-length'))
+      if (Number.isFinite(declared) && declared > view.partBytes)
+        return json({ error: `A part is at most ${view.partBytes} bytes.`, code: 'bad-part' }, 413)
+      if (!request.arrayBuffer)
+        return json({ error: 'This route cannot read a request body.' }, 500)
+      return json({ upload: await sessions.receive(id, owner, index, new Uint8Array(await request.arrayBuffer())) })
+    }
+    if (method === 'GET' && id)
+      return json({ upload: await sessions.status(id, owner) })
+    if (method === 'DELETE' && id) {
+      await sessions.abort(id, owner)
+      return json({ ok: true })
+    }
+    return json({ error: 'Not found' }, 404)
+  }
+  catch (cause) {
+    return uploadSessionResponse(cause)
+  }
+}
+
+/** A file an action was sent, either way it can come. */
+export interface ReceivedUpload {
+  name: string
+  size: number
+  type: string
+  /**
+   * The finished file on this machine, for a file sent in parts; absent for
+   * one that came whole in the request, which is `blob`.
+   */
+  path?: string
+  /** The file itself: a lazy file on disk, or the request's own part. */
+  blob: Blob
+  /** Whether it arrived through an upload session. */
+  fromSession: boolean
+  /** Removes a session's file once it has been taken. Does nothing for a file that came whole. */
+  discard: () => Promise<void>
+}
+
+export interface ReceiveUploadOptions {
+  owner: string | number
+  sessions: UploadSessions
+  /** The multipart field a whole file comes in. Default `file`. */
+  field?: string
+  /** The field naming an upload session. Default `upload`. */
+  sessionField?: string
+}
+
+/**
+ * The file an action was sent: the multipart `field` (a small file, in one
+ * request), or the upload session `sessionField` names (a large one, sent in
+ * parts first). Null when the request carries neither. Throws
+ * `UploadSessionError` for a session that is not this owner's or not whole;
+ * `uploadSessionResponse` answers it.
+ */
+export async function receiveUpload(request: UploadRouteRequest, options: ReceiveUploadOptions): Promise<ReceivedUpload | null> {
+  const session = request.get?.(options.sessionField ?? 'upload')
+  if (typeof session === 'string' && session.trim()) {
+    const done = await options.sessions.complete(session.trim(), String(options.owner))
+    return { name: done.name, size: done.size, type: done.type, path: done.path, blob: Bun.file(done.path), fromSession: true, discard: done.discard }
+  }
+  const upload = request.file?.(options.field ?? 'file') as (Blob & { name?: string, isValid?: () => boolean }) | undefined
+  if (!upload || (typeof upload.isValid === 'function' && !upload.isValid()))
+    return null
+  return { name: String(upload.name ?? ''), size: upload.size, type: upload.type ?? '', blob: upload, fromSession: false, discard: async () => {} }
+}

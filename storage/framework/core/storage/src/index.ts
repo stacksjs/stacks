@@ -30,8 +30,12 @@ export type { FilenameStrategy, PutFileOptions, UploadedFileLike } from './put-f
 export { UploadedFile, uploadedFile, uploadedFiles } from './uploaded-file'
 
 // Uploads that arrive in parts and survive a dropped connection.
-export { createUploadSessions, UploadSessionError } from './upload-sessions'
-export type { BeginUpload, CompletedUpload, UploadSessionErrorCode, UploadSessions, UploadSessionsOptions, UploadSessionView } from './upload-sessions'
+export { createUploadSessions, handleUploadSessionRequest, receiveUpload, uploadSessionResponse, UploadSessionError } from './upload-sessions'
+export type { BeginUpload, CompletedUpload, ReceivedUpload, ReceiveUploadOptions, UploadRouteOptions, UploadRouteRequest, UploadSessionErrorCode, UploadSessions, UploadSessionsOptions, UploadSessionView } from './upload-sessions'
+
+// Where a stored file can be served from without reading it: a lazy local file, or a temporary URL.
+export { localDiskRoot, locateFile } from './locate'
+export type { LocatedFile, LocateOptions } from './locate'
 
 // Filesystem type helpers
 export { azureDisk, backblazeDisk, configFromEnv, filebaseDisk, gcsDisk, hetznerDisk, localDisk, r2Disk, s3Disk } from './types/filesystem'

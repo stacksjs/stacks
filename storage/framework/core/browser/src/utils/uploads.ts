@@ -282,3 +282,92 @@ export function forgetUpload(resumeKey: string, storage?: Pick<Storage, 'removeI
   }
   catch {}
 }
+
+/** A file up to this size goes in one request: sending it in parts would only add round trips. */
+export const DEFAULT_SINGLE_REQUEST_BYTES = 8 * 1024 * 1024
+
+export interface SendUploadOptions extends Omit<UploadInPartsOptions, 'endpoint' | 'resumeKey' | 'storage'> {
+  /** Where the session routes live. Default `/uploads`. */
+  endpoint?: string
+  /** The multipart field a file that goes whole is sent in. Default `file`. */
+  field?: string
+  /** The field the action reads an upload session's id from. Default `upload`. */
+  sessionField?: string
+  /** Form fields sent to the action with the file, or with the session that stands for it. Blobs are sent as files. */
+  fields?: Record<string, string | Blob | undefined | null>
+  /** A file up to this size goes in one request. Default 8 MiB, one part. */
+  threshold?: number
+  /** Where session ids are remembered. Default `localStorage`. */
+  storage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> | null
+  /** What the remembered session is for, so the same file sent to two places is two uploads. Default: the action's path. */
+  purpose?: string
+  /** Forget the remembered session after this status from the action (default: success, 404 and 422). */
+  spent?: (status: number) => boolean
+}
+
+const isBlob = (value: unknown): value is Blob => typeof Blob !== 'undefined' && value instanceof Blob
+
+function appendField(body: FormData, name: string, value: string | Blob, fallbackName: string): void {
+  if (!isBlob(value)) {
+    body.append(name, value)
+    return
+  }
+  const given = (value as { name?: unknown }).name
+  if (typeof given === 'string' && given) body.append(name, value)
+  else body.append(name, value, fallbackName)
+}
+
+/**
+ * Sends a file to an action, the way that suits its size: a small one whole,
+ * in one multipart request; a large one in parts through the upload session
+ * routes (`uploadInParts`), then the action is posted the session's id in
+ * place of the file. The same file sent again carries on from the parts that
+ * arrived. Answers the action's response; a refusal while sending parts is
+ * answered as a response too, with the server's status and words, so a
+ * caller reads every outcome the same way. Only a cancel or a network failure
+ * that outlasts the retries throws.
+ *
+ * On the server, `receiveUpload` in `@stacksjs/storage` reads either.
+ */
+export async function sendUpload(path: string, file: unknown, options: SendUploadOptions = {}): Promise<Response> {
+  const transport = options.transport ?? defaultTransport
+  const field = options.field ?? 'file'
+  const fields = Object.entries(options.fields ?? {}).filter((entry): entry is [string, string | Blob] => entry[1] !== undefined && entry[1] !== null)
+  const name = options.name ?? ((file as { name?: unknown } | null)?.name as string | undefined) ?? 'upload'
+  const progress = options.onProgress
+
+  if (!isBlob(file) || file.size <= (options.threshold ?? DEFAULT_SINGLE_REQUEST_BYTES)) {
+    const body = new FormData()
+    // A native host's FormData streams its own file object; a browser's takes the Blob, named.
+    if (isBlob(file)) appendField(body, field, file, name)
+    else body.append(field, file as Blob)
+    for (const [key, value] of fields) appendField(body, key, value, `${key}.bin`)
+    return transport(path, {
+      method: 'POST',
+      body,
+      ...(options.signal ? { signal: options.signal } : {}),
+      ...(progress ? { onUploadProgress: progress } : {}),
+    })
+  }
+
+  const picked = file as Blob & { name?: string, lastModified?: number }
+  const resumeKey = uploadResumeKey({ name: picked.name ?? name, size: file.size, lastModified: picked.lastModified ?? 0 } as Blob & { name: string, lastModified: number }, options.purpose ?? path)
+  let session: UploadSession
+  try {
+    session = await uploadInParts(file, { ...options, transport, endpoint: options.endpoint ?? '/uploads', name, resumeKey })
+  }
+  catch (cause) {
+    if (cause instanceof UploadRefused)
+      return Response.json(cause.body && typeof cause.body === 'object' ? cause.body : { error: cause.message }, { status: cause.status })
+    throw cause
+  }
+  const body = new FormData()
+  body.append(options.sessionField ?? 'upload', session.id)
+  for (const [key, value] of fields) appendField(body, key, value, `${key}.bin`)
+  const response = await transport(path, { method: 'POST', body, ...(options.signal ? { signal: options.signal } : {}) })
+  const spent = options.spent ?? (status => status < 300 || status === 404 || status === 422)
+  // Taken, or refused for what it is: either way the session is done with, and the same file sent again starts anew.
+  if (spent(response.status)) forgetUpload(resumeKey, options.storage === undefined ? undefined : options.storage)
+  return response
+}
+

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { uploadInParts, UploadRefused, uploadResumeKey } from '../src/utils/uploads'
+import { sendUpload, uploadInParts, UploadRefused, uploadResumeKey } from '../src/utils/uploads'
 
 const PART = 1000
 
@@ -178,5 +178,62 @@ describe('uploading a file in parts', () => {
     }
     await uploadInParts(file, { transport, endpoint: '/uploads', concurrency: 1, transportReportsProgress: true, onProgress: progress => seen.push(progress.loaded), storage: null })
     expect(seen).toEqual([0, 400, 1000, 1400, 2000])
+  })
+})
+
+describe('sending a file to an action', () => {
+  test('a small file goes whole with its fields; a large one in parts, then the session and fields', async () => {
+    const server = fakeServer()
+    const calls: { path: string, body: unknown }[] = []
+    const transport: Parameters<typeof uploadInParts>[1]['transport'] = async (path, init) => {
+      if (path === '/exercises/3/video') {
+        calls.push({ path, body: init.body })
+        return Response.json({ ok: true }, { status: 201 })
+      }
+      return server.transport(path, init)
+    }
+    const poster = new Blob([new Uint8Array(4)], { type: 'image/jpeg' })
+
+    await sendUpload('/exercises/3/video', fileOf(PART), { transport, field: 'video', fields: { poster, converted: 'webcodecs', skip: undefined }, threshold: PART, storage: null })
+    const whole = calls[0]!.body as FormData
+    expect((whole.get('video') as File).name).toBe('squat.mov')
+    expect((whole.get('poster') as File).name).toBe('poster.bin')
+    expect(whole.get('converted')).toBe('webcodecs')
+    expect(whole.has('skip')).toBe(false)
+
+    const storage = memoryStorage()
+    const large = fileOf(PART * 3)
+    const response = await sendUpload('/exercises/3/video', large, { transport, field: 'video', fields: { converted: 'webcodecs' }, threshold: PART, storage })
+    expect(response.status).toBe(201)
+    const viaSession = calls[1]!.body as FormData
+    expect(viaSession.has('video')).toBe(false)
+    const id = viaSession.get('upload') as string
+    expect(server.joined(id)).toEqual(new Uint8Array(await large.arrayBuffer()))
+    expect(viaSession.get('converted')).toBe('webcodecs')
+    // Taken: the same file sent again is a new upload.
+    expect(storage.items.size).toBe(0)
+  })
+
+  test('a refusal while sending parts comes back as the server\'s response', async () => {
+    const server = fakeServer({ maxBytes: 100 })
+    const response = await sendUpload('/exercises/3/video', fileOf(PART * 2), { transport: server.transport, threshold: PART, retryDelay: 1, storage: null })
+    expect(response.status).toBe(413)
+    expect(await response.json()).toEqual({ error: 'Keep the file under the limit.' })
+  })
+
+  test('a native host\'s file is never sliced: it goes whole for the host to stream', async () => {
+    const server = fakeServer()
+    const seen: unknown[] = []
+    const Original = globalThis.FormData
+    globalThis.FormData = class { append(_name: string, value: unknown) { seen.push(value) } } as unknown as typeof FormData
+    const byPath = { path: '/tmp/pick/demo.mov', name: 'demo.mov', size: PART * 50 }
+    try {
+      await sendUpload('/videos', byPath, { transport: async (path, init) => { if (path !== '/videos') return server.transport(path, init); return Response.json({}) }, threshold: PART })
+    }
+    finally {
+      globalThis.FormData = Original
+    }
+    expect(seen).toEqual([byPath])
+    expect(server.calls).toEqual([])
   })
 })
