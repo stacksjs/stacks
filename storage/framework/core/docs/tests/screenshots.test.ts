@@ -204,6 +204,36 @@ test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' 
   finally { server.stop(true) }
 }, 60_000)
 
+test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' && !process.env.STACKS_BROWSER_TESTS))('a screen that stalls past its deadline is tried again; other failures are final', async () => {
+  const root = await fixture()
+  let requests = 0
+  // The first request stalls past the deadline, as a busy app server can.
+  const server = Bun.serve({ port: 0, async fetch(request) {
+    if (new URL(request.url).pathname === '/missing') return new Response('<title>Missing</title><main>Gone</main>', { status: 404, headers: { 'Content-Type': 'text/html' } })
+    if (new URL(request.url).pathname !== '/') return new Response('', { status: 204 })
+    if (++requests === 1) await Bun.sleep(4000)
+    return new Response('<title>Account</title><main>A fully loaded account screen.</main>', { headers: { 'Content-Type': 'text/html' } })
+  } })
+  const screens = (retries: number) => `export default {baseUrl:'http://127.0.0.1:${server.port}',outDir:'pictures',backend:'chrome',requireHttpStatus:true,timeoutMs:2000,retries:${retries},viewports:[{name:'mobile',width:390,height:844}],pages:[{id:'account',title:'Account',path:'/',description:'Account.',waitFor:'main'},{id:'missing',title:'Missing',path:'/missing',description:'Missing.',waitFor:'main'}]}`
+  try {
+    await Bun.write(join(root, 'screens.ts'), screens(1))
+    const retried = await captureScreenshots({ root, config: 'screens.ts' })
+    expect(retried.results.map(result => [result.id, result.status])).toEqual([['account', 'captured'], ['missing', 'failed']])
+    expect(requests).toBe(2)
+    // A 404 is the screen's own failure: one attempt, recorded as such.
+    expect(retried.results[1]!.attempts).toBe(1)
+    expect(retried.results[1]!.error).toContain('HTTP 404')
+
+    requests = 0
+    await Bun.write(join(root, 'once.ts'), screens(0))
+    const once = await captureScreenshots({ root, config: 'once.ts', only: ['account'], outDir: 'once' })
+    expect(once.results[0]!.status).toBe('failed')
+    expect(once.results[0]!.error).toContain('deadline exceeded')
+    expect(once.results[0]!.attempts).toBe(1)
+  }
+  finally { server.stop(true) }
+}, 90_000)
+
 describe('screens discovered from stx views', () => {
   test('lists every view with a stable id, route and source, and explains dynamic gaps', async () => {
     const root = await fixture()

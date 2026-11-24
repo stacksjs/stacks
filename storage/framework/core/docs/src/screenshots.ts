@@ -66,6 +66,8 @@ export interface ScreenshotConfig {
   /** Refuse captures when the browser cannot report the document HTTP status. */
   requireHttpStatus?: boolean
   timeoutMs?: number
+  /** More tries for a screen that misses its deadline (0 to 3, default 1). Other failures are final. */
+  retries?: number
   /** Additional source/version files whose changes require recapture. */
   inputs?: string[]
   /** Optional template coverage. Every .stx needs a page or an explanation. */
@@ -98,6 +100,8 @@ export interface ScreenshotResult {
   file?: string
   sha256?: string
   error?: string
+  /** How many times a failed screen was tried. */
+  attempts?: number
 }
 export interface ScreenshotReport {
   format: 1
@@ -125,6 +129,8 @@ export interface ScreenshotOptions {
   onProgress?: (result: ScreenshotResult) => void
 }
 export const defineScreenshotConfig = (config: ScreenshotConfig): ScreenshotConfig => config
+/** The error a capture reports when it misses `timeoutMs`; the only one retried. */
+const DEADLINE = 'Screenshot deadline exceeded'
 const defaults: ScreenshotViewport[] = [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile', width: 390, height: 844 }]
 const hash = (bytes: string | Uint8Array): string => createHash('sha256').update(bytes).digest('hex')
 const safeName = (value: string): boolean => /^[a-z0-9][a-z0-9._-]*$/i.test(value) && !value.endsWith('.') && !/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(value)
@@ -137,6 +143,8 @@ export async function validateScreenshotConfig(config: ScreenshotConfig, root = 
   if (!config.outDir || !config.pages.length) throw new Error('outDir and at least one page are required')
   if (config.timeoutMs !== undefined && (!Number.isFinite(config.timeoutMs) || config.timeoutMs < 100 || config.timeoutMs > 120_000))
     throw new Error('timeoutMs must be between 100 and 120000')
+  if (config.retries !== undefined && (!Number.isInteger(config.retries) || config.retries < 0 || config.retries > 3))
+    throw new Error('retries must be a whole number from 0 to 3')
   if (config.backend && !['webkit', 'chrome'].includes(config.backend)) throw new Error('backend must be webkit or chrome')
   if (config.requireHttpStatus !== undefined && typeof config.requireHttpStatus !== 'boolean') throw new Error('requireHttpStatus must be a boolean')
   const profiles = Object.keys(config.profiles ?? { default: {} })
@@ -230,6 +238,7 @@ async function captureProfile(configFile: string, profile: string, options: Scre
   try {
   const fixtures = { ...config.fixtures, ...await config.data?.prepare(models) }
   const timeout = config.timeoutMs ?? 30_000
+  const retries = config.retries ?? 1
   for (const viewport of config.viewports ?? defaults) {
     if (options.viewports?.length && !options.viewports.includes(viewport.name)) continue
     for (const page of config.pages) {
@@ -239,10 +248,17 @@ async function captureProfile(configFile: string, profile: string, options: Scre
       const result: ScreenshotResult = { id: page.id, profile, viewport, title: page.title, description: page.description, ...(page.reason ? { reason: page.reason } : {}), path: new URL(typeof page.path === 'string' ? page.path : page.route!, config.baseUrl).pathname, status: 'failed' }
       results.push(result)
       if (page.skip) { result.status = 'skipped'; result.error = page.skip; process.send?.({ type: 'screenshot-result', result }); continue }
+      // A screen that misses its deadline gets another try: on a busy machine
+      // the app can stall for a minute, and one stall should not fail a run.
+      // Any other failure is the screen's own and repeats, so it is final.
+      let tries = 0
+      for (let attempt = 0; ; attempt++) {
+      tries = attempt + 1
       let phase = 'starting the browser'
       let view: Bun.WebView | undefined
       let timer: ReturnType<typeof setTimeout> | undefined
       try {
+        delete result.error
         view = await browser.view(viewport.width, viewport.height)
         await Promise.race([
           (async () => {
@@ -294,11 +310,16 @@ async function captureProfile(configFile: string, profile: string, options: Scre
             result.sha256 = hash(picture)
             result.status = 'captured'
           })(),
-          new Promise<never>((_, reject) => { timer = setTimeout(() => { view?.close(); reject(new Error('Screenshot deadline exceeded')) }, timeout) }),
+          new Promise<never>((_, reject) => { timer = setTimeout(() => { view?.close(); reject(new Error(DEADLINE)) }, timeout) }),
         ])
       }
       catch (error) { result.error = `${phase}: ${redacted(error, config)}` }
-      finally { if (timer) clearTimeout(timer); view?.close(); process.send?.({ type: 'screenshot-result', result }) }
+      finally { if (timer) clearTimeout(timer); view?.close() }
+      if (result.status === 'captured' || attempt >= retries || !result.error?.endsWith(DEADLINE)) break
+      await Bun.sleep(2000)
+      }
+      if (result.status !== 'captured' && result.error) result.attempts = tries
+      process.send?.({ type: 'screenshot-result', result })
     }
   }
   return results
@@ -394,7 +415,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
           const progress = message as { type?: string, result?: ScreenshotResult }
           if (progress?.type === 'screenshot-result' && progress.result) options.onProgress?.(progress.result)
         } })
-        const code = await Promise.race([running.exited, new Promise<never>((_, reject) => { timer = setTimeout(() => { void running.stop(); reject(new Error(`Screenshot worker timed out for ${profile}`)) }, count * ((config.timeoutMs ?? 30_000) + 2000) + 30_000) })])
+        const code = await Promise.race([running.exited, new Promise<never>((_, reject) => { timer = setTimeout(() => { void running.stop(); reject(new Error(`Screenshot worker timed out for ${profile}`)) }, count * ((config.timeoutMs ?? 30_000) + 2000) * (1 + (config.retries ?? 1)) + 30_000) })])
         if (code.code !== 0) throw new Error(`Screenshot worker failed for ${profile}`)
         report.results.push(...JSON.parse(await readFile(resultFile, 'utf8')) as ScreenshotResult[])
       }

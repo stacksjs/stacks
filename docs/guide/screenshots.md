@@ -321,7 +321,7 @@ A picture of a spinner documents nothing. For each screen the capture:
 6. disables animations, transitions and carets, hides password inputs and configured `masks`, and waits for fonts and for the images in view;
 7. saves the viewport.
 
-A visible image that failed to load fails the capture. A screen that never settles within `timeoutMs` (30 seconds by default, per screen) is recorded as failed, with the step it stopped in.
+A visible image that failed to load fails the capture. A screen that never settles within `timeoutMs` (30 seconds by default, per screen) is tried again after a short pause (`retries`, once by default), because a busy machine can stall the app for a minute. If it misses the deadline again, it is recorded as failed with the step it stopped in and `attempts`. Other failures, such as an HTTP error or a redirect, repeat on every try, so they are not retried.
 
 A page often draws once before its data requests start, so a single look can pass too early. Put a `ready` hook in `defaults` that requires the quiet to last:
 
@@ -618,6 +618,7 @@ Use screens for breadth: nothing a user can open goes undocumented. Use stories 
 | `backend` | WebKit on macOS, Chrome elsewhere | `'webkit'` or `'chrome'` |
 | `requireHttpStatus` | `false` | Fail when the document's status cannot be observed |
 | `timeoutMs` | `30000` | Deadline per screen, from 100 to 120000 |
+| `retries` | `1` | More tries for a screen that misses its deadline, from 0 to 3. Any other failure is final |
 | `coverage` | None | View directories that must be fully covered, with explained exclusions |
 | `inputs` | None | Extra files whose changes require a recapture |
 | `redactEnv` | None | Environment variable names whose values are removed from error text |
