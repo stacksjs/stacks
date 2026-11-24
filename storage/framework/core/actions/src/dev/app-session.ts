@@ -23,7 +23,7 @@ interface AppDevSessionOptions {
 type Relay = ReturnType<typeof createServeRelay>
 interface AppWorker {
   child: OwnedProcess
-  target: ReturnType<Relay['createTarget']>
+  target?: ReturnType<Relay['createTarget']>
   ready: Promise<boolean>
   alive: boolean
 }
@@ -104,14 +104,18 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
 
     const localPreload = resolve(dirname(entry), '../helpers', `serve-relay-worker${extname(entry)}`)
     const preload = await Bun.file(localPreload).exists() ? localPreload : relayPreload
-    const port = await reserveRelayWorkerPort()
-    signal.throwIfAborted()
     const api = service.action === Action.DevApi
+    // Bind the Windows API worker directly to an OS-assigned port. Releasing
+    // an ephemeral reservation first lets another Windows socket claim it.
+    const port = api && process.platform === 'win32' ? 0 : await reserveRelayWorkerPort()
+    signal.throwIfAborted()
     // Bun's Windows --watch launcher can lose the worker's IPC pipe.
     // The owner watches API source on Windows. STX owns frontend HMR.
     const watchFlag = api && process.platform !== 'win32' ? developmentWatchFlag(service.action) : ''
     const { promise: relayReady, resolve: markRelayReady } = Promise.withResolvers<void>()
-    let relayTarget: AppWorker['target'] | undefined
+    const { promise: workerPort, resolve: reportWorkerPort } = Promise.withResolvers<number>()
+    if (port)
+      reportWorkerPort(port)
     const child = spawnOwnedProcess([bun, developmentConditionForProject(root), watchFlag, '--preload', preload, entry].filter(Boolean), {
       ownerRuntime: bun,
       cwd: root,
@@ -125,7 +129,6 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
         API_HOST: '127.0.0.1',
         STACKS_DEV_PUBLIC_PORT: String(service.port),
         STACKS_DEV_RELAY_WORKER: '1',
-        STACKS_SERVE_RELAY_PORT: String(port),
         NODE_PATH: actionNodePath(root, process.env.NODE_PATH),
         STACKS_DEV_SERVER: '1',
       },
@@ -134,18 +137,25 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
       stderr: verbose || !api ? 'inherit' : 'ignore',
       stopGraceMs: 0,
       ipc(message) {
-        if (message && typeof message === 'object' && 'type' in message && message.type === 'stacks:dev-relay-ready')
-          markRelayReady()
-        relayTarget?.onMessage(message)
+        if (message && typeof message === 'object' && 'type' in message) {
+          if (message.type === 'stacks:dev-relay-ready')
+            markRelayReady()
+          if (message.type === 'stacks:api-ready' && 'port' in message && typeof message.port === 'number'
+            && Number.isInteger(message.port) && message.port > 0 && message.port <= 65535)
+            reportWorkerPort(message.port)
+        }
+        worker.target?.onMessage(message)
       },
     })
     const probe = new AbortController()
     const deadline = AbortSignal.any([signal, AbortSignal.timeout(readyTimeoutMs)])
     const error = new Error(`${service.name} did not become ready on port ${service.port}.`)
     const ready = Promise.race([
-      relayReady.then(() => waitForPort(port, readyTimeoutMs, AbortSignal.any([probe.signal, deadline]))).then((listening) => {
-        if (!listening || deadline.aborted)
+      Promise.all([relayReady, workerPort]).then(async ([, actualPort]) => {
+        const listening = await waitForPort(actualPort, readyTimeoutMs, AbortSignal.any([probe.signal, deadline]))
+        if (!listening || deadline.aborted || probe.signal.aborted)
           throw error
+        worker.target = service.relay!.createTarget(actualPort, child.send)
         return true
       }),
       child.exited.then(({ code }) => {
@@ -163,19 +173,19 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
       }),
     ]).finally(() => probe.abort())
     void ready.catch(() => {})
-    const worker = { child, target: relayTarget = service.relay!.createTarget(port, child.send), ready, alive: true }
+    const worker: AppWorker = { child, ready, alive: true }
     workers.add(worker)
     void child.exited.then(({ code }) => {
       worker.alive = false
       workers.delete(worker)
-      worker.target.close()
+      worker.target?.close()
       if (service.worker === worker) {
         delete service.worker
         onWorkerExit(code ? new Error(`${service.name} exited with code ${code}.`) : undefined)
       }
     }, (error: unknown) => {
       worker.alive = false
-      worker.target.close()
+      worker.target?.close()
       if (service.worker === worker) {
         delete service.worker
         onWorkerExit(new Error(`${service.name}: ${error instanceof Error ? error.message : error}`))
@@ -209,7 +219,7 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
   }
 
   function promote(service: AppService, worker: AppWorker): void {
-    service.relay!.promote(worker.target)
+    service.relay!.promote(worker.target!)
     service.worker = worker
   }
 
@@ -246,7 +256,7 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
         promote(service, candidate.value)
       return previous
     })
-    await Promise.all(old.map(worker => worker && retireRelayWorker(worker.child, worker.target, drainMs)))
+    await Promise.all(old.map(worker => worker?.target && retireRelayWorker(worker.child, worker.target, drainMs)))
   }
 
   const initialStart = Promise.all(services.map(async (service) => {
@@ -308,7 +318,7 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
       for (const service of services)
         service.relay?.stop()
       stopping = Promise.allSettled([...workers].map((worker) => {
-        worker.target.close()
+        worker.target?.close()
         return worker.child.stop()
       })).then(() => finish())
       return stopping
