@@ -1,0 +1,36 @@
+name: Buddy Serve Windows
+
+on:
+  push:
+    branches: [main]
+    paths: &serve_paths
+      - '.github/workflows/buddy-serve-windows.yml'
+      - 'storage/framework/core/actions/src/helpers/serve-relay-worker.ts'
+      - 'storage/framework/core/actions/src/serve/api.ts'
+      - 'storage/framework/core/buddy/src/commands/serve.ts'
+      - 'storage/framework/core/buddy/src/production-server.ts'
+      - 'storage/framework/core/buddy/src/serve-*.ts'
+      - 'storage/framework/core/buddy/tests/serve-restart.test.ts'
+      - 'storage/framework/core/cli/src/owned-process.ts'
+  pull_request:
+    branches: [main]
+    paths: *serve_paths
+
+permissions:
+  contents: read
+
+jobs:
+  rolling-restart:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.4'
+      - run: bun install --frozen-lockfile
+      - run: bun .github/scripts/source-release-evidence.ts build
+      - name: Exercise rolling web and API restarts with live traffic
+        env:
+          APP_ENV: test
+        run: bun test ./storage/framework/core/buddy/tests/serve-restart.test.ts
