@@ -411,6 +411,8 @@ export class PaddleDriver implements PaymentDriver {
    * the transaction and opens Paddle.js.
    */
   async checkout(payer: Payer, request: CheckoutRequest): Promise<CheckoutSession> {
+    if (request.idempotencyKey !== undefined)
+      throw new PaymentUnsupportedError('paddle', 'a checkout idempotency key')
     if (request.mode === 'setup')
       throw new PaymentUnsupportedError('paddle', 'setup checkout', 'Paddle saves a payment method while taking a payment, never on its own')
     if (request.paymentMethods?.length)

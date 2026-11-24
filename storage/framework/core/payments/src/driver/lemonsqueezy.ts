@@ -291,6 +291,8 @@ export class LemonSqueezyDriver implements PaymentDriver {
    * store's currency.
    */
   async checkout(payer: Payer, request: CheckoutRequest): Promise<CheckoutSession> {
+    if (request.idempotencyKey !== undefined)
+      throw new PaymentUnsupportedError('lemonsqueezy', 'a checkout idempotency key')
     if (request.mode === 'setup')
       throw new PaymentUnsupportedError('lemonsqueezy', 'setup checkout', 'Lemon Squeezy saves a payment method while taking a payment, never on its own')
     if (request.lines.length !== 1)

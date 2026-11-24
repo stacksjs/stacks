@@ -6,7 +6,11 @@ import { stripe } from '../drivers/stripe'
 import { freshIdempotencyKey } from '../idempotency'
 
 export interface Checkout {
-  create: (user: UserModel, params: Stripe.Checkout.SessionCreateParams) => Promise<Stripe.Response<Stripe.Checkout.Session>>
+  create: (user: UserModel, params: Stripe.Checkout.SessionCreateParams, options?: CheckoutOptions) => Promise<Stripe.Response<Stripe.Checkout.Session>>
+}
+
+interface CheckoutOptions {
+  idempotencyKey?: string
 }
 
 /**
@@ -52,7 +56,11 @@ export function assertSameOriginUrl(url: string | undefined, label: string): voi
 }
 
 export const manageCheckout: Checkout = (() => {
-  async function create(user: UserModel, params: Stripe.Checkout.SessionCreateParams): Promise<Stripe.Response<Stripe.Checkout.Session>> {
+  async function create(user: UserModel, params: Stripe.Checkout.SessionCreateParams, options: CheckoutOptions = {}): Promise<Stripe.Response<Stripe.Checkout.Session>> {
+    const { idempotencyKey } = options
+    if (idempotencyKey !== undefined && (!idempotencyKey.trim() || idempotencyKey.length > 255))
+      throw new TypeError('A Stripe checkout idempotency key must be nonblank and at most 255 characters.')
+
     // The billable `checkout()` resolves/creates the Stripe customer first and
     // passes it in `params.customer`; fall back to the persisted `stripe_id`.
     // (`user.hasStripeId()` is not bound onto the model by the billable trait,
@@ -74,14 +82,10 @@ export const manageCheckout: Checkout = (() => {
 
     const mergedParams = { ...defaultParams, ...params }
 
-    // Checkout sessions are one-shot per attempt — a deterministic key
-    // would cause the second call to return the FIRST session's URL
-    // (potentially expired). We use `freshIdempotencyKey` so each
-    // create attempt produces a new session, but a single network
-    // retry within one attempt still benefits from in-flight
-    // idempotency on Stripe's side (stacksjs/stacks#1876 X-1).
+    // Apps that persist an attempt can retry it after losing Stripe's reply.
+    // Preserve a fresh key for every caller that starts a new attempt.
     return await stripe.checkout.sessions.create(mergedParams, {
-      idempotencyKey: freshIdempotencyKey('checkout.session.create', user.id),
+      idempotencyKey: idempotencyKey ?? freshIdempotencyKey('checkout.session.create', user.id),
     })
   }
 

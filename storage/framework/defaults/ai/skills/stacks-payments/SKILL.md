@@ -102,6 +102,8 @@ const upgrade = await Payment.subscriptionCheckout(user, 'price_xxx', {
 
 Send the payer to `session.url`. `trialDays` starts a subscription checkout with a trial. `reference` and `metadata` are copied onto the payment or subscription the checkout creates. Return URLs must be on the app's origin.
 
+For Stripe checkout, persist an `idempotencyKey` before starting an attempt. Reuse the key and the same parameters when retrying that attempt within Stripe's replay window. Reconcile the original attempt before retrying after the replay window. Omit the key to start a new attempt, or supply a new key if the app needs to retry it safely. The key goes in a Stripe request header. Other built-in drivers reject this option.
+
 ### Subscriptions
 
 ```typescript
