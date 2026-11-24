@@ -105,9 +105,9 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
     const localPreload = resolve(dirname(entry), '../helpers', `serve-relay-worker${extname(entry)}`)
     const preload = await Bun.file(localPreload).exists() ? localPreload : relayPreload
     const api = service.action === Action.DevApi
-    // The API reports its OS-assigned listener. STX takes a fixed private
-    // port so its worker can be probed without changing the public URL.
-    const port = api ? 0 : await reserveRelayWorkerPort()
+    // Let Windows assign the API port at bind time to avoid reservation
+    // races. The other workers keep the private port passed to their entry.
+    const port = api && process.platform === 'win32' ? 0 : await reserveRelayWorkerPort()
     signal.throwIfAborted()
     const { promise: relayReady, resolve: markRelayReady } = Promise.withResolvers<void>()
     const { promise: workerPort, resolve: reportWorkerPort } = Promise.withResolvers<number>()
