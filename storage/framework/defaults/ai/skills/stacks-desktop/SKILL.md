@@ -556,7 +556,14 @@ app's handler must authenticate those itself; the views are never served there.
 the actions they name by string and every middleware, imported statically by the generated entry so a built app
 carries them (`appBundleFiles`, the same collector the macOS agent uses). They answer after `agent.entry`; a path no
 route matches (`isUnmatchedRouteResponse` from `@stacksjs/router`) goes on to the views, while a route's own 404 is
-still the app's answer. Off by default. Migrations, client scripts and config are not bundled yet (stacksjs/stacks#3368).
+still the app's answer. Off by default.
+
+`agent.database: true` gives the app its own SQLite file, `database.sqlite` in its data directory. The build runs
+`buddy migrate --no-generate` against a scratch file and compiles in exactly the migrations it applied
+(`appMigrationFiles`); at every launch, once the instance lock is held and before the agent module loads, they are
+applied with `migrateCompiledDatabase` and `DB_CONNECTION`/`DB_DATABASE_PATH` point the app at the file. A database a
+newer version changed, or a migration that fails (the backup is put back), stops the launch with the reason in the
+app's log. Client scripts and config are not bundled yet (stacksjs/stacks#3368).
 
 **Views.** `buddy dev:desktop` serves `agent.views` live through stx (`bun-plugin-stx/serve`, with the gate and the
 agent module in its `onRequest`). `buddy build:desktop` builds them to static pages with stx's `buildStaticSite`

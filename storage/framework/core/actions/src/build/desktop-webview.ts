@@ -38,7 +38,7 @@ import {
   windowsRuntimeCompanions,
 } from '@stacksjs/desktop-build'
 import { projectPath } from '@stacksjs/path'
-import { appBundleFiles } from './macos-native'
+import { appBundleFiles, appMigrationFiles } from './macos-native'
 
 /**
  * `buddy build:desktop` for a project whose `config/desktop.ts` declares a
@@ -74,6 +74,9 @@ const agentEntry = webviewAgentEntry(root, config.agent.entry)
 // The project's routes, actions and middleware, named so the bundler carries them (stacksjs/stacks#3368).
 const appFiles = config.agent.appRoutes ? await appBundleFiles(root, agentEntry ? [agentEntry] : []) : undefined
 if (appFiles) await log.info(`Bundling ${appFiles.routes.length} route file(s), ${Object.keys(appFiles.actions).length} action(s) and ${Object.keys(appFiles.middleware).length} middleware into the agent`)
+// The migrations buddy migrate applies, compiled in and applied at launch (stacksjs/stacks#3368).
+const migrationFiles = config.agent.database ? await appMigrationFiles(root) : undefined
+if (migrationFiles) await log.info(`Bundling ${Object.keys(migrationFiles).length} migration(s) for the app's own database`)
 const viewsDir = resolve(root, config.agent.views)
 const hostRuntime = (): string => resolveCraftExecutable()
 
@@ -125,6 +128,7 @@ if (process.env.STACKS_DESKTOP_LAUNCH === '1') {
     manifest: webviewManifest(config, { runtime: devRuntime, runtimeFlags: probeCraftFlags(devRuntime), development: true }),
     agentEntry,
     ...appFiles,
+    ...(migrationFiles ? { migrations: migrationFiles } : {}),
     ...(existsSync(viewsDir) ? { stxViews: { dir: viewsDir, root, ...(config.agent.components?.length ? { components: resolveWebviewComponents(root, config.agent.components) } : {}) } } : {}),
   }))
   await log.info(`Starting ${config.appName} (Ctrl-C quits)`)
@@ -248,6 +252,7 @@ for (const target of targets) {
     manifest: webviewManifest(config, { runtime: embedded ? 'embedded' : 'beside', runtimeFlags: probeCraftFlags(runtime), sourceRevision }),
     agentEntry,
     ...appFiles,
+    ...(migrationFiles ? { migrations: migrationFiles } : {}),
     viewFiles,
     ...(embedded ? { embeddedRuntime: runtime } : {}),
   }))

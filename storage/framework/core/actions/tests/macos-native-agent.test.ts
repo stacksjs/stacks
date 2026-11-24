@@ -1,9 +1,10 @@
+import { Database } from 'bun:sqlite'
 import { describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { resolveMacosDesktop } from '@stacksjs/desktop-build'
-import { appBundleFiles, craftSupportsWebkit, macosAgentDevManifest, macosAgentEntry } from '../src/build/macos-native'
+import { appBundleFiles, appMigrationFiles, craftSupportsWebkit, macosAgentDevManifest, macosAgentEntry } from '../src/build/macos-native'
 
 /**
  * The build side of `macos.agent` and `macos.webkit`: which routes the agent
@@ -116,6 +117,72 @@ describe('appBundleFiles', () => {
       })
       // The app's middleware replaces the default of the same name.
       expect(files.middleware).toEqual({ Auth: join(root, 'app/Middleware/Auth.ts'), Team: join(root, 'app/Middleware/Team.ts') })
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+})
+
+// stacksjs/stacks#3368: the migrations a compiled app applies are exactly
+// the ones buddy migrate applies, which skips those of features the app has
+// not installed. So they are read from a scratch run, not chosen here.
+describe('appMigrationFiles', () => {
+  const project = () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-app-migrations-'))
+    mkdirSync(join(root, 'database/migrations'), { recursive: true })
+    for (const name of ['0000000001-create-posts-table.sql', '0000000002-create-carts-table.sql', '0000000003-create-tags-table.sql'])
+      writeFileSync(join(root, 'database/migrations', name), '-- sql\n')
+    return root
+  }
+
+  test('lists what buddy migrate applied to a scratch database, in order, as files', async () => {
+    const root = project()
+    const calls: Array<{ command: string[], env: Record<string, string | undefined> }> = []
+    try {
+      const files = await appMigrationFiles(root, (command, env) => {
+        calls.push({ command, env })
+        const db = new Database(env.DB_DATABASE_PATH!)
+        db.exec('CREATE TABLE migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, migration TEXT)')
+        // The commerce table is left out, as buddy migrate leaves out an uninstalled feature.
+        db.exec("INSERT INTO migrations (migration) VALUES ('0000000001-create-posts-table.sql'), ('0000000003-create-tags-table.sql')")
+        db.close()
+        return { exitCode: 0, output: '' }
+      })
+
+      expect(files).toEqual({
+        '0000000001-create-posts-table.sql': join(root, 'database/migrations/0000000001-create-posts-table.sql'),
+        '0000000003-create-tags-table.sql': join(root, 'database/migrations/0000000003-create-tags-table.sql'),
+      })
+      expect(calls[0]!.command).toEqual(['./buddy', 'migrate', '--no-generate'])
+      expect(calls[0]!.env.DB_CONNECTION).toBe('sqlite')
+      // A scratch file, never the project's own database.
+      expect(calls[0]!.env.DB_DATABASE_PATH!.startsWith(root)).toBe(false)
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  test('fails the build when buddy migrate fails, with its output', async () => {
+    const root = project()
+    try {
+      await expect(appMigrationFiles(root, () => ({ exitCode: 1, output: 'no such column: title' }))).rejects.toThrow('no such column: title')
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  test('fails the build when the ledger names a migration that is not on disk', async () => {
+    const root = project()
+    try {
+      await expect(appMigrationFiles(root, (_command, env) => {
+        const db = new Database(env.DB_DATABASE_PATH!)
+        db.exec("CREATE TABLE migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, migration TEXT); INSERT INTO migrations (migration) VALUES ('0000000009-gone.sql')")
+        db.close()
+        return { exitCode: 0, output: '' }
+      })).rejects.toThrow('0000000009-gone.sql')
     }
     finally {
       rmSync(root, { recursive: true, force: true })

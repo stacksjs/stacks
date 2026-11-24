@@ -1,6 +1,8 @@
 import type { AgentBundleFiles, DesktopAgentManifest, MacosAgentBundle, MacosDistribution, ResolvedMacosDesktop } from '@stacksjs/desktop-build'
+import { Database } from 'bun:sqlite'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
@@ -299,6 +301,56 @@ export async function appBundleFiles(root: string, extraSources: string[] = []):
     routes,
     actions: macosAgentActionFiles(root, [...routes.map(route => route.file), ...extraSources]),
     middleware: macosAgentMiddlewareFiles(root),
+  }
+}
+
+/** Runs `buddy migrate` for {@link appMigrationFiles}; tests stand in for it. */
+export type MigrateRunner = (command: string[], env: Record<string, string | undefined>) => { exitCode: number, output: string }
+
+/**
+ * The migrations a compiled app applies to its own database, by file name:
+ * exactly the ones `buddy migrate` applies, read from a run against a scratch
+ * file. Choosing them here would be a second copy of the framework's rules
+ * (it skips the migrations of features the app has not installed), and the
+ * copy would drift (stacksjs/stacks#3368).
+ *
+ * `--no-generate`: a build applies the migrations the project has; it does
+ * not write new ones into it.
+ */
+export async function appMigrationFiles(root: string, run?: MigrateRunner): Promise<Record<string, string>> {
+  const runner: MigrateRunner = run ?? ((command, env) => {
+    const result = Bun.spawnSync(command, { cwd: root, env: env as Record<string, string>, stdout: 'pipe', stderr: 'pipe' })
+    return { exitCode: result.exitCode ?? 1, output: `${result.stderr.toString()}${result.stdout.toString()}` }
+  })
+  const scratch = mkdtempSync(join(tmpdir(), 'stacks-desktop-migrations-'))
+  const databasePath = join(scratch, 'template.sqlite')
+  try {
+    const result = runner(['./buddy', 'migrate', '--no-generate'], { ...process.env, DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: databasePath })
+    if (result.exitCode !== 0 || !existsSync(databasePath))
+      throw new Error(`buddy migrate failed while listing the app's migrations:\n${result.output.slice(-2000)}`)
+
+    const database = new Database(databasePath, { readonly: true })
+    let applied: string[]
+    try {
+      applied = (database.query('SELECT migration FROM migrations ORDER BY id').all() as Array<{ migration: string }>).map(row => row.migration)
+    }
+    finally {
+      database.close()
+    }
+
+    const files: Record<string, string> = {}
+    const missing: string[] = []
+    for (const name of applied) {
+      const file = join(root, 'database/migrations', name)
+      if (existsSync(file)) files[name] = file
+      else missing.push(name)
+    }
+    if (missing.length)
+      throw new Error(`buddy migrate applied migrations that are not in database/migrations: ${missing.join(', ')}`)
+    return files
+  }
+  finally {
+    rmSync(scratch, { recursive: true, force: true })
   }
 }
 
