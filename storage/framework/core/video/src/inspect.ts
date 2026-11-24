@@ -14,6 +14,12 @@ import { BufferSource, Input } from 'ts-videos'
 export interface VideoInspection extends VideoProfile {
   /** 'mp4', 'mov' or 'webm', as the container says. */
   format: string
+  /**
+   * The quarter turns the stored frame is shown with, in degrees: 90 or 270
+   * for a phone held upright. `width` and `height` are the frame as shown,
+   * already turned.
+   */
+  rotation: 0 | 90 | 180 | 270
 }
 
 const VIDEO_CODECS: Record<string, VideoCodec> = { h264: 'h264', avc: 'h264', avc1: 'h264', h265: 'h265', hevc: 'h265', hvc1: 'h265', hev1: 'h265', vp8: 'vp8', vp9: 'vp9', av1: 'av1', prores: 'prores' }
@@ -31,11 +37,16 @@ export async function inspectVideo(bytes: Uint8Array | ArrayBuffer): Promise<Vid
     const format = await input.getFormatName().catch(() => '')
     const duration = await input.getDuration().catch(() => Number.NaN)
     const container: VideoContainer = format === 'webm' ? 'webm' : 'mp4'
+    const rotation = track.rotation ?? 0
+    const quarter = rotation === 90 || rotation === 270
+    const stored = { width: track.displayWidth || track.width, height: track.displayHeight || track.height }
     return {
       format,
       container,
-      width: track.displayWidth || track.width,
-      height: track.displayHeight || track.height,
+      // As shown: a phone held upright stores 1920x1080 with a quarter turn, and plays 1080x1920.
+      width: quarter ? stored.height : stored.width,
+      height: quarter ? stored.width : stored.height,
+      rotation,
       duration: Number.isFinite(duration) && duration > 0 ? Math.round(duration * 1000) / 1000 : 0,
       // Containers often leave the rate out; 30 is what a plan assumes then.
       frameRate: track.frameRate && track.frameRate > 0 ? track.frameRate : 30,

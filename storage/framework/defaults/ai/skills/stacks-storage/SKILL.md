@@ -412,6 +412,57 @@ const path = await file.move('new/path/file.jpg', 'local')
 
 `store()` generates a hash-based filename using `crypto.randomUUID()`. `storeAs()` validates the filename: rejects path traversal (`..`), forward slashes, and backslashes.
 
+## Uploads in parts (upload sessions)
+
+For files too large or too precious for one request: a phone clip on a gym's
+wifi, anything behind a gateway with a body limit. The client announces the
+file, sends parts of 8 MiB that are each retried alone, and a part that
+arrived is never sent again, even after the page reloads.
+
+```ts
+import { createUploadSessions, UploadSessionError } from '@stacksjs/storage'
+
+const uploads = createUploadSessions({
+  directory: storagePath('app/upload-sessions'), // local, private to this process
+  maxBytes: 2 * 1024 ** 3,
+})
+
+// POST   /uploads                  -> begin
+const upload = await uploads.begin({ owner: String(user.id), name, size, type, meta })
+// GET    /uploads/{id}             -> which parts are in
+await uploads.status(id, owner)
+// PUT    /uploads/{id}/parts/{n}   -> the part's raw bytes (application/octet-stream)
+await uploads.receive(id, owner, index, new Uint8Array(await request.arrayBuffer()))
+// DELETE /uploads/{id}
+await uploads.abort(id, owner)
+
+// In the action that uses the file:
+const done = await uploads.complete(id, owner) // { path, name, size, type, meta, discard }
+await Storage.disk().putStream(key, Bun.file(done.path).stream(), { contentType })
+await done.discard()
+```
+
+- Every call names the `owner` given at `begin`; anyone else gets `not-found`,
+  the same as an id that never existed. `UploadSessionError` carries the HTTP
+  `status` to answer with (404, 409 incomplete, 413, 422, 429).
+- A part must be exactly `partBytes` (the last one, the remainder). Sending one
+  again replaces it, so a retry after a timeout is safe. `complete` is safe to
+  repeat too.
+- Parts live on this machine's filesystem, not on a disk: an object store
+  cannot append, and consumers need a path. With several servers, share the
+  directory or pin a session to one of them.
+- Run `uploads.prune()` from the scheduler; unfinished sessions go after
+  `ttlSeconds` (a day by default). `maxOpenPerOwner` caps what one account can
+  leave lying around.
+- Browser side: `uploadInParts(file, { endpoint, transport, onProgress, signal,
+  resumeKey })` from `@stacksjs/browser` speaks exactly these routes, retries
+  each part with a growing pause, honours `Retry-After`, and with
+  `resumeKey: uploadResumeKey(file, purpose)` continues a file picked again.
+  Route bodies are `{ upload: <session view> }`.
+
+Source: core/storage/src/upload-sessions.ts, core/browser/src/utils/uploads.ts.
+Tests: core/storage/tests/upload-sessions.test.ts, core/browser/tests/uploads.test.ts.
+
 ## Low-Level File Operations
 
 ### Read/Write Files

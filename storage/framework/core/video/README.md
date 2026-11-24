@@ -94,3 +94,30 @@ const licenseEndpoints = {
 ```
 
 The component serializes these descriptors into `data-media-config` and attaches them to DASH sources, detected by MIME type or a `.mpd` URL (including query strings). Progressive fallback sources remain unchanged. License and certificate routes must authorize the viewer.
+
+## Uploads
+
+Convert a picked clip on the device, then check what arrived on the server.
+
+```ts
+// In the browser. Its own path: nothing server-side comes with it.
+import { prepareVideoUpload } from '@stacksjs/video/browser'
+
+const { video, poster, converter } = await prepareVideoUpload(file, {
+  onProgress: ratio => bar.set(ratio),
+  signal,
+})
+// `video` is an upright H.264/AAC MP4 inside 1280x720 at 30 fps with its index
+// first, and `poster` a JPEG of one frame. Where the browser has no WebCodecs,
+// or cannot read the clip, `video` is the file as picked and `converter` null.
+```
+
+```ts
+// On the server: read the file, never the client's word for it.
+import { inspectVideoFile, webReadyProblems } from '@stacksjs/video'
+
+const clip = await inspectVideoFile(path) // container, codecs, frame as shown, rotation, faststart
+const converted = clip !== null && webReadyProblems(clip, clip.faststart).length === 0
+```
+
+Send large files with upload sessions (`createUploadSessions` in `@stacksjs/storage`, `uploadInParts` in `@stacksjs/browser`): parts are retried one by one, and a dropped connection costs one part instead of the upload.

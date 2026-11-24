@@ -31,3 +31,32 @@ pipeline; they do not certify live encoding support on an arbitrary machine.
 Test invalid ranges, signatures/expiry, capabilities and file metadata.
 Source: core/video/src/index.ts, files.ts and inspect.ts. Retained tests:
 video.test.ts, process.test.ts and files.test.ts.
+
+## Uploads: convert on the device, check on the server
+
+A picked clip is converted in the browser before it is sent, and the server
+reads what arrived instead of believing the client.
+
+- Browser: `prepareVideoUpload(file, { onProgress, signal })` from
+  `@stacksjs/video/browser` (its own path; nothing server-side comes with it).
+  It answers `{ video, poster?, converter }`: an upright H.264 and AAC MP4
+  inside 1280 by 720 at 30 frames a second with its index first, and a JPEG
+  poster, encoded with the browser's own codecs (WebCodecs through ts-videos).
+  It never fails an upload: without WebCodecs, or for a clip the browser cannot
+  read, `video` is the original and `converter` is null (`reason` says why).
+  Only a cancellation throws. `canPrepareVideoUpload()` is the cheap check.
+- Server: `inspectVideo(bytes)` or `inspectVideoFile(path)` (reads the first
+  8 MB, the rest only when the index is at the end) answer the container,
+  codecs, the frame as shown and its `rotation`; `isFaststart(bytes)` reads the
+  box order; `webReadyProblems(inspection, faststart)` lists why a file is not
+  what `prepareVideoUpload` makes, and is empty when it is. A client's
+  "converted" flag is worth exactly that check.
+- Send large files with upload sessions (`createUploadSessions` in
+  `@stacksjs/storage`, `uploadInParts` in `@stacksjs/browser`), then inspect
+  the finished file by path.
+
+There is no server-side encoder in this package: a Bun process has no
+WebCodecs. Do not promise a transcode on upload; convert on the device, or
+run an ffmpeg job of your own.
+Source: core/video/src/browser.ts and upload.ts. Tests: upload.test.ts, with a
+real phone clip and the clip a browser made of it as fixtures.
