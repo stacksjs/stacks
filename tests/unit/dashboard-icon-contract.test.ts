@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import f7 from '@iconify-json/f7/icons.json'
 import hugeicons from '@iconify-json/hugeicons/icons.json'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -24,16 +25,24 @@ async function dashboardIconTokens(): Promise<string[]> {
 }
 
 describe('dashboard icon contract', () => {
-  test('every dashboard icon belongs to the bundled Hugeicons collection', async () => {
+  // Hugeicons draws the dashboard; Framework7 draws the macOS-style native
+  // settings. Both ship with @stacksjs/defaults, and nothing else does.
+  test('every dashboard icon belongs to a bundled collection', async () => {
+    const collections: Record<string, { icons: Record<string, unknown>, aliases?: Record<string, unknown> }> = {
+      'i-hugeicons-': hugeicons,
+      'i-f7-': f7,
+    }
     const tokens = await dashboardIconTokens()
-    const unexpectedCollections = tokens.filter(token => !token.startsWith('i-hugeicons-'))
-    const availableNames = new Set([
-      ...Object.keys(hugeicons.icons),
-      ...Object.keys(hugeicons.aliases || {}),
-    ])
-    const missingNames = tokens
-      .map(token => token.slice('i-hugeicons-'.length))
-      .filter(name => !availableNames.has(name))
+    const prefixOf = (token: string) => Object.keys(collections).find(prefix => token.startsWith(prefix))
+    const unexpectedCollections = tokens.filter(token => !prefixOf(token))
+    const missingNames = tokens.filter((token) => {
+      const prefix = prefixOf(token)
+      if (!prefix)
+        return false
+      const name = token.slice(prefix.length)
+      const collection = collections[prefix]!
+      return !(name in collection.icons) && !(name in (collection.aliases || {}))
+    })
 
     expect(tokens.length).toBeGreaterThan(150)
     expect(unexpectedCollections).toEqual([])
@@ -42,7 +51,7 @@ describe('dashboard icon contract', () => {
 
   test('the shared icon stylesheet scans component and composable sources', () => {
     const source = readFileSync(
-      join(process.cwd(), 'storage/framework/core/actions/src/dev/dashboard.ts'),
+      join(process.cwd(), 'storage/framework/core/actions/src/dashboard-assets.ts'),
       'utf8',
     )
 

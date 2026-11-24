@@ -40,6 +40,12 @@ describe('dashboard view componentization', () => {
         if (scripts.length !== 1 || !scripts[0].includes('definePageMeta({ status: 404 })'))
           failures.push(`${route}: missing native 404 page metadata`)
       }
+      // A section landing picks its hub from the `section` route param on the
+      // server, which only the route can see; the landing itself is a component.
+      else if (route === 'sections/[section].stx') {
+        if (scripts.length !== 1 || !scripts[0].includes('params.section'))
+          failures.push(`${route}: its script should only read the section param`)
+      }
       else if (scripts.length > 0) {
         failures.push(`${route}: owns route script`)
       }

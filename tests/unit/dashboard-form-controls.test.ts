@@ -186,6 +186,7 @@ describe('dialogs outside commerce', () => {
 const NATIVE_FILTER_CONTROLS_KEPT: Record<string, { selects: number, searches: number, because: string }> = {
   'GlobalSearch.stx': { selects: 0, searches: 1, because: 'the search palette: focused on open and driven by its own keys, not a filter row' },
   'Email/InboxSettingsDashboard.stx': { selects: 6, searches: 0, because: 'a settings form, not a list filter' },
+  'Settings/DashboardSettingsFrame.stx': { selects: 0, searches: 1, because: 'the System Settings sidebar search: it opens the matching settings page, not a list filter' },
   'Teams/TeamPeopleDashboard.stx': { selects: 2, searches: 0, because: 'the invite form and each member row\'s role, not a list filter' },
   'Management/AssignmentDrawer.stx': { selects: 1, searches: 0, because: 'a guard picked inside an assignment drawer, not a list filter' },
   'Remote/RemoteConsole.stx': { selects: 2, searches: 0, because: 'the host and command a console runs, not a list filter' },
