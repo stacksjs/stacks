@@ -54,7 +54,7 @@ describe('the Pantry a release regenerates pantry.lock with', () => {
     expect(declared).toBeDefined()
     const pins = declaredPantryWorkflowVersions(root)
     expect(pins.some(pin => pin.file.endsWith('ci.yml'))).toBe(true)
-    expect(pins.some(pin => pin.file.endsWith('release.yml') && pin.job === 'npm')).toBe(true)
+    expect(pins.some(pin => pin.file.endsWith('release.yml') && pin.job === 'publish')).toBe(true)
     for (const pin of pins)
       expect(Bun.semver.satisfies(pin.version, declared!.range), `${pin.file} (${pin.job}) uses Pantry ${pin.version}`).toBe(true)
   })

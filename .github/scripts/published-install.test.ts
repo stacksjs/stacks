@@ -8,7 +8,7 @@ import { join } from 'node:path'
 async function verify(mode: string, registryStatus = '200') {
   const directory = mkdtempSync(join(tmpdir(), 'stacks-published-install-'))
   const workflow = Bun.YAML.parse(readFileSync(new URL('../workflows/release.yml', import.meta.url), 'utf8')) as any
-  const step = workflow.jobs.npm.steps.find((entry: any) => entry.name === 'Verify published framework install')
+  const step = workflow.jobs.publish.steps.find((entry: any) => entry.name === 'Verify published framework install from npm')
   const commands = {
     bun: `#!/bin/bash
 if [ "$1" != add ]; then

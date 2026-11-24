@@ -36,7 +36,7 @@ test('invalid source identity fails and registry writes depend on the source gat
   const workflow = Bun.YAML.parse(readFileSync(new URL('../workflows/release.yml', import.meta.url), 'utf8')) as any
   expect(workflow.jobs['release-gate'].needs).toContain('source-ci')
   expect(workflow.jobs['source-ci'].steps.some((step: any) => step.run === 'bun .github/scripts/await-release-ci.ts')).toBe(true)
-  expect(workflow.jobs.npm.needs).toBe('release-gate')
+  expect(workflow.jobs.publish.needs).toBe('release-gate')
 })
 
 test('native browser device-scale evidence is required before publication', () => {
@@ -84,5 +84,5 @@ test('manual recovery accepts only complete exact-main CI and an immutable relea
   expect(workflow.jobs.serialize.if).toBe("startsWith(github.ref, 'refs/tags/v')")
   expect(workflow.jobs['source-ci'].needs).toBe('serialize')
   expect(workflow.jobs['release-gate'].needs).toEqual(['serialize', 'source-ci'])
-  expect(workflow.jobs.npm.needs).toBe('release-gate')
+  expect(workflow.jobs.publish.needs).toBe('release-gate')
 })

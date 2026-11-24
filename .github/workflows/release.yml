@@ -187,13 +187,16 @@ jobs:
         if: vars.RELEASE_GATE_BYPASS == 'true'
         run: echo "::warning title=Release gate bypassed::RELEASE_GATE_BYPASS is set, so the pinned checks did not run for this release."
 
-  npm:
-    name: npm
+  # Publishes to the Pantry registry by default. npm is opt-in through the
+  # RELEASE_REGISTRIES repository variable (`pantry,npm`, or `npm`); see
+  # .github/scripts/release-registries.ts for why.
+  publish:
+    name: publish
     needs: release-gate
     runs-on: ubuntu-latest
-    # Publication can wait up to thirty minutes for npm automated review,
-    # in addition to package builds, uploads, clean-install checks and binaries.
-    timeout-minutes: 180  # the publish waits out npm propagation, layer by layer
+    # With npm enabled, publication can wait up to thirty minutes for npm
+    # automated review, in addition to builds, clean-install checks and binaries.
+    timeout-minutes: 180  # the npm publish waits out propagation, layer by layer
     outputs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
@@ -278,7 +281,38 @@ jobs:
             exit 1
           fi
 
-      # Publish the framework through pantry. Scoped core/* packages use a
+      - name: Resolve release registries
+        id: registries
+        env:
+          RELEASE_REGISTRIES: ${{ vars.RELEASE_REGISTRIES }}
+        run: bun .github/scripts/release-registries.ts
+
+      # The whole workspace in one call, every package uploading in parallel:
+      # the Pantry registry answers a publish with the version already
+      # readable, so nothing waits for propagation and no package waits for
+      # the ones it depends on. A version already there is skipped, so a job
+      # rerun resumes. The registry has no OIDC exchange yet, so this takes a
+      # token with publish rights to @stacksjs/* and stacks, scoped to this
+      # step alone.
+      - name: Publish Framework to Pantry
+        if: steps.registries.outputs.pantry == 'true'
+        env:
+          PANTRY_REGISTRY_TOKEN: ${{ secrets.PANTRY_REGISTRY_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PANTRY_REGISTRY_TOKEN:-}" ]; then
+            echo "::error title=Pantry publish::PANTRY_REGISTRY_TOKEN is not set. Mint a token in the Pantry backend with publish access to @stacksjs/* and stacks, and add it as a repository secret of that name."
+            exit 1
+          fi
+          pantry publish --ignore-scripts --concurrency 32 'storage/framework/core/*' 'storage/framework/core'
+
+      # A 200 from the registry is not proof: it serves npm's copy of a version
+      # it does not hold. This checks each package is Pantry's own publication.
+      - name: Verify Pantry publication
+        if: steps.registries.outputs.pantry == 'true'
+        run: bun .github/scripts/verify-pantry-publication.ts
+
+      # Publish the framework to npm through pantry. Scoped core/* packages use a
       # holding tag and are promoted as one set. The unscoped `stacks`
       # meta-package is then published directly to latest through OIDC because
       # the legacy token cannot mutate that package's dist-tags. pantry resolves
@@ -302,12 +336,14 @@ jobs:
       # publishes straight to `latest`, exactly as before.
       # A failed sibling does not undo npm's accepted uploads. A job rerun must
       # verify their original bytes before pantry can repack and try any upload.
-      - name: Verify original publications before resuming
+      - name: Verify original npm publications before resuming
+        if: steps.registries.outputs.npm == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: bun .github/scripts/resume-npm-publication.ts
 
-      - name: Publish Framework
+      - name: Publish Framework to npm
+        if: steps.registries.outputs.npm == 'true'
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -369,7 +405,8 @@ jobs:
       # they do, this is propagation and the release continues with a warning.
       # If they do not, the publish genuinely lost a package and the release
       # fails, however long it took to find out.
-      - name: Verify published framework install
+      - name: Verify published framework install from npm
+        if: steps.registries.outputs.npm == 'true'
         run: |
           version="${GITHUB_REF#refs/tags/v}"
           smoke_dir="$(mktemp -d)"
@@ -445,6 +482,7 @@ jobs:
           exit 1
 
       - name: Publish Dummy Libraries
+        if: steps.registries.outputs.npm == 'true'
         run: ./storage/framework/scripts/publish-dummy-libs
         env:
           BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -496,7 +534,7 @@ jobs:
           release-token: ${{ secrets.GITHUB_TOKEN }}
 
   homebrew:
-    needs: npm
+    needs: publish
     # Hashing release archives and updating a formula does not execute binaries.
     runs-on: ubuntu-latest
     steps:
@@ -512,7 +550,7 @@ jobs:
       - name: Debug Tag
         run: |
           echo "Tag: ${GITHUB_REF#refs/tags/}"
-          echo "Version from previous job: ${{ needs.npm.outputs.version }}"
+          echo "Version from previous job: ${{ needs.publish.outputs.version }}"
 
       - name: Generate GitHub App Token
         id: generate-token

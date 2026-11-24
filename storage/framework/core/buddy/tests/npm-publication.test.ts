@@ -135,6 +135,7 @@ test('only completed publication jobs from the exact source and attempt supply r
   const job = { id: 3, name: 'npm', run_id: 2, run_attempt: 1, head_sha: sha, status: 'completed', conclusion: 'failure' }
   const ids = (jobs: typeof job[]) => priorPublicationJobIds(jobs, 2, 1, sha)
   expect(ids([job])).toEqual([3])
+  expect(ids([{ ...job, name: 'publish' }])).toEqual([3])
   expect(ids([{ ...job, conclusion: 'skipped' }])).toEqual([])
   expect(ids([{ ...job, name: 'release gate' }])).toEqual([])
   expect(() => ids([job, job])).toThrow('Ambiguous')

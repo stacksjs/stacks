@@ -25,7 +25,9 @@ export interface PriorJob {
 
 /** A skipped dependency job made no uploads and has no downloadable log. */
 export function priorPublicationJobIds(jobs: readonly PriorJob[], runId: number, attempt: number, sha: string): number[] {
-  const publications = jobs.filter(job => job.name === 'npm')
+  // `publish` since releases default to Pantry; `npm` before that, which a
+  // rerun of an earlier release still carries.
+  const publications = jobs.filter(job => job.name === 'publish' || job.name === 'npm')
   if (publications.length > 1) throw new Error('Ambiguous publication history; no publication resumed')
   return publications.flatMap((job) => {
     if (!Number.isSafeInteger(job.id) || job.id <= 0 || job.run_id !== runId
