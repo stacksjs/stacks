@@ -117,6 +117,8 @@ export class Schedule implements UntimedSchedule {
   /** Each background task's run in this process, for `runNow(name, { inProcess: true })`. */
   private static inProcessRuns = new Map<string, () => Promise<void>>()
   private shouldPreventOverlap = false
+  /** Set by allowOverlapping(); otherwise a tick never starts on top of a running one. */
+  private allowOverlap = false
   private overlapExpiresAfterMinutes = 24 * 60
   private shouldRunOnOneServer = false
   private shouldRunInBackground = false
@@ -387,6 +389,19 @@ export class Schedule implements UntimedSchedule {
    */
   withProtection(callback?: (job: ScheduledJob) => void): this {
     this.options.protect = callback || true
+    return this
+  }
+
+  /**
+   * Let a tick start while the previous run of this task is still going.
+   *
+   * Off by default: the next tick used to start without waiting for the
+   * last, so a task slower than its interval ran on top of itself, and a
+   * digest or a scheduled post went out twice (stacksjs/stacks#3364). Only
+   * for a task that is safe to run concurrently with itself.
+   */
+  allowOverlapping(): this {
+    this.allowOverlap = true
     return this
   }
 
@@ -1041,6 +1056,12 @@ export class Schedule implements UntimedSchedule {
       if (protect && running) {
         log.debug(`[scheduler] task ${taskName} is still running; skipping this tick (withProtection)`)
         if (typeof protect === 'function') protect(job)
+        return
+      }
+      // A tick never starts on top of a running one unless the task allows it
+      // (#3364). runNow() and a background run carry no slot and always run.
+      if (slot !== undefined && running && !this.allowOverlap) {
+        log.info(`[scheduler] task ${taskName} is still running; skipping this tick (allowOverlapping() to run concurrently)`)
         return
       }
       if (interval && lastStartedAt !== null && now - lastStartedAt < interval * 1000) {

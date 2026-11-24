@@ -96,6 +96,8 @@ export interface BaseSchedule {
   between: (startAt: string | Date, stopAt: string | Date) => this
   setTimeZone: (timezone: Timezone) => this
   withoutOverlapping: (expiresAfterMinutes?: number) => this
+  /** Let a tick start while the previous run of this task is still going (off by default). */
+  allowOverlapping: () => this
   onOneServer: () => this
   runInBackground: () => this
   /** Dispatch a `schedule.job(...)` to this queue instead of running it in the scheduler. */
