@@ -1,6 +1,7 @@
 import process from 'node:process'
 import { isProjectRoot, readProjectService } from '@stacksjs/path'
 import { daemonStatus, openProjectDashboard, stopProjectDashboard } from '../daemon/client'
+import { restartAppDevSession, runningAppDevSessions } from './app-session-control'
 import { dashboardPendingHeader, dashboardReadyHeader, dashboardReadyPath } from './dashboard-proxy'
 
 /** A dashboard must be supervised or owned by the Buddy daemon to be restarted. */
@@ -53,4 +54,27 @@ export async function restartProjectDashboard(root: string): Promise<void> {
   if (!daemon?.dashboards.some(dashboard => dashboard.path === root) || !await stopProjectDashboard(root))
     throw new Error('This dashboard was started outside Buddy’s managed lifecycle.')
   await openProjectDashboard(root)
+}
+
+export function canRestartUpdatedProject(root: string): boolean {
+  return isProjectRoot(root) && (canRestartDashboard(root) || runningAppDevSessions(root).length > 0)
+}
+
+export async function restartUpdatedProject(root: string): Promise<void> {
+  if (!isProjectRoot(root))
+    throw new Error('Buddy could not find the updated project.')
+
+  const sessions = runningAppDevSessions(root)
+  const dashboard = canRestartDashboard(root)
+  if (!sessions.length && !dashboard)
+    throw new Error('The running app services and dashboard have already stopped.')
+
+  // Keep the Settings connection available while the app services restart.
+  const results = await Promise.allSettled(sessions.map(restartAppDevSession))
+  if (dashboard)
+    results.push(...await Promise.allSettled([restartProjectDashboard(root)]))
+
+  const errors = results.flatMap(result => result.status === 'rejected' ? [result.reason instanceof Error ? result.reason.message : String(result.reason)] : [])
+  if (errors.length)
+    throw new Error(errors.join(' '))
 }

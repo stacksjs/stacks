@@ -54,7 +54,7 @@ const availableCount = derived(() => projects().filter(project => project.availa
 
 const restartAvailable = derived(() => report()?.restartAvailable === true)
 const updatesInstalled = derived(() => report()?.projects.some(project => project.status === 'complete') === true)
-const dashboardsRestarted = derived(() => report()?.projects.some(project => project.restartStatus === 'complete') === true)
+const projectsRestarted = derived(() => report()?.projects.some(project => project.restartStatus === 'complete') === true)
 const restartFailed = derived(() => report()?.projects.some(project => project.restartStatus === 'failed' || project.restartStatus === 'interrupted') === true)
 const reportHasErrors = derived(() => report()?.projects.some(project => project.status === 'failed' || project.status === 'interrupted') === true)
 const reportProjects = derived(() => report()?.projects ?? [])
@@ -126,7 +126,7 @@ async function installUpdates(): Promise<void> {
   }
 }
 
-async function restartDashboards(): Promise<void> {
+async function restartProjects(): Promise<void> {
   const previous = snapshot()
   const update = previous?.update
   if (!update || !restartAvailable() || busy())
@@ -214,14 +214,14 @@ onMount(() => {
         </div>
         <p :if="running() && !restarting()" class="p-3 text-neutral-600 text-xs dark:text-neutral-300" role="status">Buddy is installing updates. You can close this window.</p>
         <div :if="restartAvailable() || restarting()" class="dashboard-settings-section-toggle">
-          <SettingsRow label="Restart required" description="Restart the updated dashboards to load the new framework." setting="restart-updated-dashboards">
-            <Button size="sm" class="whitespace-nowrap" :loading="requestingRestart() || restarting()" :disabled="busy()" @click="restartDashboards()">
+          <SettingsRow label="Restart required" description="Restart the running app services and dashboards to load the new framework." setting="restart-updated-projects">
+            <Button size="sm" class="whitespace-nowrap" :loading="requestingRestart() || restarting()" :disabled="busy()" @click="restartProjects()">
               {{ restarting() ? 'Restarting…' : 'Restart Now' }}
             </Button>
           </SettingsRow>
         </div>
-        <p :if="!running() && !restartAvailable() && updatesInstalled() && !dashboardsRestarted() && !restartFailed()" class="p-3 text-neutral-600 text-xs dark:text-neutral-300" role="status">The updated framework will load the next time these dashboards start.</p>
-        <p :if="!running() && dashboardsRestarted() && !restartFailed()" class="p-3 text-neutral-600 text-xs dark:text-neutral-300" role="status">The updated dashboards restarted.</p>
+        <p :if="!running() && !restartAvailable() && updatesInstalled() && !projectsRestarted() && !restartFailed()" class="p-3 text-neutral-600 text-xs dark:text-neutral-300" role="status">The updated framework will load the next time these projects start.</p>
+        <p :if="!running() && projectsRestarted() && !restartFailed()" class="p-3 text-neutral-600 text-xs dark:text-neutral-300" role="status">The updated projects restarted.</p>
         <p :if="reportHasErrors() || restartFailed()" class="p-3 break-all text-red-700 text-xs dark:text-red-300" role="alert">Buddy log <code :text="report()?.logFile"></code></p>
       </SettingsGroup>
     </div>

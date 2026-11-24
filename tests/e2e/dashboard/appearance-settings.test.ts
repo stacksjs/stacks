@@ -349,12 +349,12 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
 
       await click(cdp, 'button[aria-label="Update Site"]')
       await click(cdp, { selector: 'button', text: 'Update Now' })
-      const restartButton = '[data-setting="restart-updated-dashboards"] button'
+      const restartButton = '[data-setting="restart-updated-projects"] button'
       await waitFor(() => cdp.evaluate(`document.querySelector('${restartButton}')?.textContent.trim() === 'Restart Now'`), 10_000)
       expect(selected).toEqual(['shop', 'site'])
 
       await click(cdp, restartButton)
-      await waitFor(() => cdp.evaluate(`document.querySelector('[data-dashboard-settings-content]').textContent.includes('The updated dashboards restarted.')`), 10_000)
+      await waitFor(() => cdp.evaluate(`document.querySelector('[data-dashboard-settings-content]').textContent.includes('The updated projects restarted.')`), 10_000)
       expect(restartedUpdate).toBe('fixture')
       expect(await cdp.evaluate(`Boolean(document.querySelector('${restartButton}'))`)).toBe(false)
     }

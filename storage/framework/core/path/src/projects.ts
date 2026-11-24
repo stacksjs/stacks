@@ -57,6 +57,8 @@ export interface ProjectService {
   restartInstance?: string
   /** Set when the server stops itself after this long without a request. */
   idleExitMs?: number
+  /** Private authorization for an owned development session. */
+  controlToken?: string
 }
 
 /** How often a run inside a project refreshes its `lastUsedAt`. */
@@ -118,9 +120,9 @@ function readEntry(id: string): RegisteredProject | null {
 }
 
 /** Write a file so a reader sees the old content or the new, never half of it. */
-function writeAtomic(file: string, content: string): void {
+function writeAtomic(file: string, content: string, mode?: number): void {
   const temporary = `${file}.${process.pid}.tmp`
-  writeFileSync(temporary, content)
+  writeFileSync(temporary, content, { mode })
   renameSync(temporary, file)
 }
 
@@ -435,7 +437,7 @@ function servicePath(root: string, name: string): string {
  */
 export function recordProjectService(root: string, service: ProjectService): void {
   mkdirSync(servicesDir(root), { recursive: true })
-  writeAtomic(servicePath(root, service.name), `${JSON.stringify(service, null, 2)}\n`)
+  writeAtomic(servicePath(root, service.name), `${JSON.stringify(service, null, 2)}\n`, service.controlToken ? 0o600 : undefined)
 }
 
 /**
@@ -464,6 +466,24 @@ export function readProjectService(root: string, name: string): ProjectService |
   }
 
   return { ...service, name }
+}
+
+/** Find currently running instances of an owned project service. */
+export function listProjectServiceInstances(root: string, name: string): ProjectService[] {
+  let files: string[]
+  try {
+    files = readdirSync(servicesDir(root))
+  }
+  catch {
+    return []
+  }
+  const prefix = `${slug(name)}-`
+  return files.flatMap((file) => {
+    if (!file.startsWith(prefix) || !/^\d+\.json$/.test(file.slice(prefix.length)))
+      return []
+    const service = readProjectService(root, file.slice(0, -5))
+    return service && file === `${prefix}${service.pid}.json` ? [service] : []
+  })
 }
 
 /**

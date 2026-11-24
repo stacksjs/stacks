@@ -770,6 +770,8 @@ export function dev(buddy: CLI): void {
 export async function startDevelopmentServer(_options: DevOptions, _startTime?: number): Promise<void> {
   const options = _options
   const startedAt = _startTime
+  const root = projectPath()
+  const { runningAppDevSessions } = await import('@stacksjs/actions/dev/app-session-control')
   const appUrl = process.env.APP_URL ?? 'stacks.localhost'
   const nativeMode = resolveDevelopmentLaunch({
     browser: options.browser,
@@ -794,7 +796,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // an orphan from a previous `./buddy dev` in this same project is ours to
   // reclaim, and reclaiming it keeps the port numbers stable across restarts.
   // Anything still listening afterwards belongs to someone else.
-  if (process.env.STACKS_DEV_NO_KILL !== '1') {
+  if (process.env.STACKS_DEV_NO_KILL !== '1' && !runningAppDevSessions(root).length) {
     await cleanupStaleDevProcesses([
       preferredFrontendPort,
       preferredApiPort,
@@ -918,6 +920,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // every now and then because writes were mid-flight.
   let isExiting = false
   let closeNativeApp: (() => void) | undefined
+  let appSession: ReturnType<typeof import('@stacksjs/actions/dev/app-session').startAppDevSession> | undefined
   const SHUTDOWN_GRACE_MS = 1500
   const cleanup = (signal: NodeJS.Signals) => {
     if (isExiting) return
@@ -959,7 +962,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
       catch { /* best-effort teardown */ }
     })()
     const teardownDeadline = new Promise<void>(resolve => setTimeout(resolve, SHUTDOWN_GRACE_MS))
-    void Promise.race([rpxTeardown, teardownDeadline]).finally(() => {
+    void Promise.race([Promise.allSettled([rpxTeardown, appSession?.stop()]), teardownDeadline]).finally(() => {
       try { process.kill(-process.pid, 'SIGTERM') }
       catch {
         // Process group may not exist (e.g., not session leader) - try the
@@ -979,6 +982,17 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // Start all servers silently — unified banner above handles output
   const quietOpts = { ...options, quiet: true }
   const a = await actions()
+  const { startAppDevSession } = await import('@stacksjs/actions/dev/app-session')
+  if (isExiting)
+    return
+  appSession = startAppDevSession({
+    root,
+    frontendPort,
+    apiPort,
+    verbose: options.verbose,
+    waitForPort,
+    reportError: message => { void log.error(message) },
+  })
 
   // Background readiness probes. Each resolves when the backend port accepts
   // a TCP connection so the "ready in N ms" line below reflects the time at
@@ -1123,15 +1137,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
     .catch(() => { /* swallow — verbose-mode error handlers below already log */ })
 
   await Promise.all([
-    // Not gated on --verbose: the banner has already printed this server's
-    // URL, so a frontend that failed to start has to say so.
-    a.runFrontendDevServer(quietOpts).catch((error) => {
-      log.error(`Frontend: ${error instanceof Error ? error.message : error}`)
-    }),
-    a.runApiDevServer(quietOpts).catch((error) => {
-      if (options.verbose)
-        log.error(`API: ${error}`)
-    }),
+    appSession.finished,
     a.runDocsDevServer(quietOpts).catch((error) => {
       if (options.verbose)
         log.error(`Docs: ${error}`)
@@ -1553,13 +1559,13 @@ async function printRegisteredRoutes(apiPort: number): Promise<void> {
  *
  * Returns `false` if no HTTP response arrives before `timeoutMs`.
  */
-async function probeDevServerHttp(port: number): Promise<boolean> {
+async function probeDevServerHttp(port: number, signal?: AbortSignal): Promise<boolean> {
   for (const path of ['/__health', '/']) {
     const ok = await new Promise<boolean>((resolve) => {
       const ac = new AbortController()
       // First stx request can block on ts-css compile — allow several seconds.
       const t = setTimeout(() => ac.abort(), path === '/' ? 8000 : 800)
-      fetch(`http://127.0.0.1:${port}${path}`, { signal: ac.signal, redirect: 'manual' })
+      fetch(`http://127.0.0.1:${port}${path}`, { signal: signal ? AbortSignal.any([signal, ac.signal]) : ac.signal, redirect: 'manual' })
         .then(() => { clearTimeout(t); resolve(true) })
         .catch(() => { clearTimeout(t); resolve(false) })
     })
@@ -1619,10 +1625,10 @@ async function someoneIsListening(port: number, host: string): Promise<boolean> 
   })
 }
 
-async function waitForPort(port: number, timeoutMs: number): Promise<boolean> {
+async function waitForPort(port: number, timeoutMs: number, signal?: AbortSignal): Promise<boolean> {
   const deadline = Date.now() + timeoutMs
-  while (Date.now() < deadline) {
-    if (await probeDevServerHttp(port))
+  while (!signal?.aborted && Date.now() < deadline) {
+    if (await probeDevServerHttp(port, signal))
       return true
     // Tight poll: a refused connection rejects instantly, so this is cheap and
     // detects "just bound" within ~50ms instead of up to a quarter second.

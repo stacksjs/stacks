@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { isProcessAlive, isProjectRoot, projectCliEntry } from '@stacksjs/path'
 import { machineEnvironment } from '../daemon/environment'
-import { canRestartDashboard, restartProjectDashboard } from './dashboard-restart'
+import { canRestartUpdatedProject, restartUpdatedProject } from './dashboard-restart'
 
 export interface SoftwareUpdateProject {
   id: string
@@ -91,7 +91,7 @@ function currentJob(db: Database): Job | null {
 
 function restartTargets(job: Job): SoftwareUpdateReport['projects'] {
   return job.report.projects.filter((project, index) =>
-    project.status === 'complete' && project.restartStatus !== 'complete' && canRestartDashboard(job.targets[index]!.root),
+    project.status === 'complete' && project.restartStatus !== 'complete' && canRestartUpdatedProject(job.targets[index]!.root),
   )
 }
 
@@ -190,14 +190,14 @@ async function runSoftwareRestart(db: Database, job: Job): Promise<void> {
       continue
     project.restartStatus = 'restarting'
     writeJob(db, job)
-    console.log(`\n${target.name}: restarting dashboard\n`)
+    console.log(`\n${target.name}: restarting running app services and dashboard\n`)
     try {
-      await restartProjectDashboard(target.root)
+      await restartUpdatedProject(target.root)
       project.restartStatus = 'complete'
     }
     catch (error) {
       project.restartStatus = 'failed'
-      project.restartMessage = error instanceof Error ? error.message : 'Buddy could not restart this dashboard.'
+      project.restartMessage = error instanceof Error ? error.message : 'Buddy could not restart this project.'
       console.error(project.restartMessage)
     }
     writeJob(db, job)

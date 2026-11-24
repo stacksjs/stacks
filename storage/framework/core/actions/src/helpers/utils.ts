@@ -131,15 +131,17 @@ export function actionNodePath(projectRoot: string, existingNodePath?: string): 
  * and joining gives us a direct on-disk path regardless of the exports
  * field shape.
  */
-async function resolveActionFile(action: string, projectRoot?: string): Promise<string | null> {
+export async function resolveActionFile(action: string, projectRoot?: string): Promise<string | null> {
   const candidates: string[] = []
 
   // 1) User override path (legacy framework directory). `projectRoot` is set
   //    when the action runs in a different project than this process booted
   //    from (see `userActionsBase` in runAction) so its vendored core wins
   //    over the host project's.
-  if (projectRoot)
+  if (projectRoot) {
     candidates.push(join(projectRoot, `storage/framework/core/actions/src/${action}.ts`))
+    candidates.push(...publishedActionCandidates(action, join(projectRoot, 'node_modules/@stacksjs/actions')))
+  }
 
   candidates.push(p.actionsPath(`src/${action}.ts`))
 

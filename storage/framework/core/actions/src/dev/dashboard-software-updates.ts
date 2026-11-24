@@ -196,7 +196,7 @@ export function dashboardSoftwareUpdateRoutes(options: UpdateRoutesOptions) {
       const update = startSoftwareRestart(stateFile, body.updateId)
       return update
         ? response({ update }, 202)
-        : response({ error: 'There are no updated dashboards ready to restart.' }, 409)
+        : response({ error: 'There are no updated projects ready to restart.' }, 409)
     }
     catch {
       return response({ error: 'Buddy could not start the restart.' }, 500)
