@@ -297,7 +297,7 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
             We are clearing the last stretch: framework, docs, CMS, and the deploy path. Leave your email and we will let you know the moment the trail opens.
           </p>
           <div class="mode-subscribe">
-            <SubscribeForm source="coming-soon" label="Notify me" buttonClass="button primary" successText="You are on the list. We will write the moment the trail opens." />
+            <SubscribeForm client="interaction" source="coming-soon" label="Notify me" buttonClass="button primary" successText="You are on the list. We will write the moment the trail opens." />
           </div>
           <div class="mode-meta">
             <a class="mode-textlink" href="/blog/introducing-stacks" data-no-router>Read “Introducing Stacks”</a>
@@ -665,7 +665,7 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
             </div>
 
             <div class="cta-form" id="subscribe">
-              <SubscribeForm source="homepage" returnTo="/#subscribe" outcome="{{ subscribeOutcome }}" label="Get the launch email" tone="outline" buttonClass="button" intro="Stacks is not out yet. Get one email the day it is, and early access before that." successText="Thanks, you are on the list. A welcome email is on its way to your inbox." alreadyText="You are already on the list. We will write the day Stacks opens up." />
+              <SubscribeForm client="interaction" source="homepage" returnTo="/#subscribe" outcome="{{ subscribeOutcome }}" label="Get the launch email" tone="outline" buttonClass="button" intro="Stacks is not out yet. Get one email the day it is, and early access before that." successText="Thanks, you are on the list. A welcome email is on its way to your inbox." alreadyText="You are already on the list. We will write the day Stacks opens up." />
             </div>
           </div>
         </section>

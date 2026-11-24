@@ -11,4 +11,4 @@ declare const subscribeReturn: string
 declare const subscribeOutcome: string
 </script>
 
-<SubscribeForm source="{{ subscribeSource }}" returnTo="{{ subscribeReturn }}" outcome="{{ subscribeOutcome }}" label="Get the launch email" buttonClass="button primary" successText="Thanks, you are on the list. A welcome email is on its way to your inbox." alreadyText="You are already on the list. We will write the day Stacks opens up." fine="One email when Stacks opens up, then a build note now and then. Unsubscribe in one click." />
+<SubscribeForm client="interaction" source="{{ subscribeSource }}" returnTo="{{ subscribeReturn }}" outcome="{{ subscribeOutcome }}" label="Get the launch email" buttonClass="button primary" successText="Thanks, you are on the list. A welcome email is on its way to your inbox." alreadyText="You are already on the list. We will write the day Stacks opens up." fine="One email when Stacks opens up, then a build note now and then. Unsubscribe in one click." />
