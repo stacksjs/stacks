@@ -566,7 +566,8 @@ route.get('/profile', async (req) => {
 ```typescript
 // Add health check endpoint
 route.health()
-// Creates GET /health returning { status: 'healthy', timestamp: ... }
+// Creates GET /api/health returning { status: 'healthy' | 'degraded', checks, timestamp },
+// with 503 when a check fails
 ```
 
 ## Route Loading

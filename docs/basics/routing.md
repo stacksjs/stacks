@@ -231,7 +231,8 @@ Stacks provides a built-in health check route:
 
 ```typescript
 
-// Adds GET /health endpoint
+// Adds GET /api/health: the database and cache checks,
+// 200 when both pass and 503 when one fails
 route.health()
 
 ```
