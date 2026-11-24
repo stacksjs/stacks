@@ -40,25 +40,23 @@ async function loadBilling(): Promise<void> {
 onMount(() => { void loadBilling() })
 </script>
 
-<div class="space-y-6">
-  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-    <div>
-      <p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">Settings</p>
-      <h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">Billing</h1>
-      <p class="mt-1 max-w-2xl text-gray-500 text-sm dark:text-neutral-400">Inspect the active subscription, provider-backed payment methods, and persisted transaction records for the signed-in user.</p>
-    </div>
-    <Button :if="authenticated()" variant="secondary" :loading="loading()" @click="loadBilling()">
-      <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
-      Refresh
-    </Button>
-  </header>
+<div class="dashboard-settings-stack">
+  <div :if="authenticated()">
+    <SettingsGroup>
+      <SettingsRow label="Billing details" setting="refresh-billing">
+        <Button variant="secondary" size="sm" :loading="loading()" @click="loadBilling()">
+          Refresh
+        </Button>
+      </SettingsRow>
+    </SettingsGroup>
+  </div>
 
-  <section :if="loading()" aria-live="polite" class="flex items-center justify-center py-20 text-gray-500 text-sm dark:text-neutral-400 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <section :if="loading()" aria-live="polite" class="flex items-center justify-center py-20 text-gray-500 text-sm dark:text-neutral-400" data-settings-panel>
     <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
     Loading billing details
   </section>
 
-  <section :else-if="!authenticated()" class="p-8 text-center bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <section :else-if="!authenticated()" class="p-8 text-center" data-settings-panel>
     <span class="inline-block h-8 w-8 text-gray-400 i-hugeicons-square-lock-02"></span>
     <h2 class="mt-3 font-semibold text-gray-900 text-lg dark:text-white">Sign in to view billing</h2>
     <p class="mt-2 mx-auto max-w-lg text-gray-500 text-sm dark:text-neutral-400">Billing APIs are scoped to the authenticated user. No account or payment data is exposed to an anonymous dashboard session.</p>
@@ -78,7 +76,7 @@ onMount(() => { void loadBilling() })
       </ul>
     </div>
 
-    <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.8fr)]">
+    <div class="grid gap-3 sm:grid-cols-2">
       <BillingPlanSummary :subscription="subscription()" />
       <BillingPaymentMethodsPanel :methods="paymentMethods()" />
     </div>

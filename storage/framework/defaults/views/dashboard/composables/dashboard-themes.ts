@@ -32,7 +32,7 @@ export const SYSTEM_CLEANER_THEME: DashboardTheme = {
   version: 1,
   id: 'system-cleaner',
   name: 'System Cleaner',
-  description: 'A violet overview with a short sidebar and card-based section pages.',
+  description: 'A violet overview, a flat sidebar, and color-coded section pages.',
   layout: 'inset',
   navigation: 'sections',
   overview: 'immersive',

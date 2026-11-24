@@ -1,0 +1,41 @@
+<script server>
+const { pane } = defineProps<{ pane: 'general' | 'appearance' | 'mail' | 'billing' }>()
+
+export const panes = [
+  { id: 'general', label: 'General', href: '/settings', icon: 'i-f7-gear-alt-fill', tone: 'grey', description: 'Manage this project’s configuration and environment bindings.' },
+  { id: 'appearance', label: 'Appearance', href: '/settings/appearance', icon: 'i-f7-circle-lefthalf-fill', tone: 'purple', description: 'Choose how the dashboard looks and which sections are shown in the sidebar.' },
+  { id: 'mail', label: 'Mail', href: '/settings/mail', icon: 'i-f7-envelope-fill', tone: 'blue', description: 'Set the sender, delivery driver, and credentials for outgoing mail.' },
+  { id: 'billing', label: 'Billing', href: '/settings/billing', icon: 'i-f7-creditcard-fill', tone: 'green', description: 'View your subscription, payment methods, and transactions.' },
+] as const
+export const activePane = panes.find(item => item.id === pane) ?? panes[0]
+</script>
+
+<div data-dashboard-settings class="dashboard-settings">
+  <aside class="dashboard-settings-sidebar">
+    <a href="/" data-stx-link class="dashboard-settings-back">
+      <span class="i-f7-chevron-left" aria-hidden="true"></span>
+      Dashboard
+    </a>
+    <h1>Settings</h1>
+    <nav aria-label="Settings">
+      <SettingsSidebarGroup>
+        @foreach(panes as item)
+          <a href="{{ item.href }}" data-stx-link class="dashboard-settings-nav-item"
+            @if(item.id === activePane.id)aria-current="page"@endif>
+            <span class="dashboard-settings-tile" data-tone="{{ item.tone }}" aria-hidden="true">
+              <span class="{{ item.icon }}"></span>
+            </span>
+            {{ item.label }}
+          </a>
+        @endforeach
+      </SettingsSidebarGroup>
+    </nav>
+  </aside>
+
+  <div class="dashboard-settings-pane">
+    <div class="dashboard-settings-inner">
+      <SettingsPaneHeader :title="activePane.label" :description="activePane.description" :icon="activePane.icon" :tone="activePane.tone" />
+      <slot />
+    </div>
+  </div>
+</div>

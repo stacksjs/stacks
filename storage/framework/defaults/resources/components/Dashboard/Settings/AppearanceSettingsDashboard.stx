@@ -38,14 +38,12 @@ const resetError = state('')
 // the confirmation and the preview. A settings page whose changes you cannot
 // see until you navigate away is the thing this is avoiding.
 const styleOptions = SIDEBAR_STYLE_OPTIONS
-const colorModes = COLOR_MODE_OPTIONS
+const colorModes = COLOR_MODE_OPTIONS.map(({ id, label }) => ({ value: id, label }))
 const sections = {{ navSections }}
 
 const sidebarStyle = appearance.sidebarStyle
 const colorMode = appearance.colorMode
 const hiddenSections = appearance.hiddenSections
-
-const hiddenCount = derived(() => hiddenSections().length)
 
 function selectStyle(id: SidebarStyle) {
   appearance.setSidebarStyle(id)
@@ -110,12 +108,6 @@ const selected = (a: unknown, b: unknown) => String(a === b)
   color: #2563eb;
 }
 
-.appearance-mode[data-selected="true"] {
-  border-color: #3b82f6;
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
 .dark .appearance-option {
   border-color: rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.03);
@@ -130,12 +122,6 @@ const selected = (a: unknown, b: unknown) => String(a === b)
 .dark .appearance-option[data-selected="true"] .appearance-check {
   color: #93c5fd;
 }
-.dark .appearance-mode[data-selected="true"] {
-  border-color: #60a5fa;
-  background: rgba(59, 130, 246, 0.15);
-  color: #bfdbfe;
-}
-
 /*
  * Shell miniatures.
  *
@@ -229,26 +215,17 @@ const selected = (a: unknown, b: unknown) => String(a === b)
 </style>
 
 <template>
-<div class="flex flex-col gap-6 mx-auto pb-12 pt-6 px-6 max-w-4xl">
-  <PageHeader
-    title="Appearance"
-    description="How the dashboard looks for you. These preferences are stored in this browser and apply to every page."
-    backLink="/settings"
-    backLabel="Settings"
-  />
+<div class="dashboard-settings-stack">
+  <SettingsGroup header="Display">
+    <SettingsRow label="Color mode" description="System follows your device’s light or dark mode." setting="color-mode">
+      <SegmentedControl :value="colorMode()" :options="colorModes" label="Color mode" variant="mac" @change="selectColorMode($event)" />
+    </SettingsRow>
+  </SettingsGroup>
 
   <DashboardThemePicker />
 
-  <!-- ===================== Sidebar style ===================== -->
-  <Card :if="usesOriginalTheme()" variant="default" padding="none">
-    <div class="px-6 py-5 border-b border-neutral-200/60 dark:border-white/5">
-      <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Sidebar style</h2>
-      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
-        Changes the navigation pane and the shape of every page around it.
-      </p>
-    </div>
-
-    <div class="grid gap-4 sm:grid-cols-2 p-6">
+  <SettingsGroup header="Sidebar style" footer="Applies when The Original is selected.">
+    <div class="grid gap-4 sm:grid-cols-2 p-3">
       <button :for="option in styleOptions"
         type="button"
         class="flex flex-col gap-3 p-4 w-full text-left rounded-xl appearance-option"
@@ -276,69 +253,21 @@ const selected = (a: unknown, b: unknown) => String(a === b)
         <span class="leading-relaxed text-neutral-500 text-xs dark:text-neutral-400">{{ option.description }}</span>
       </button>
     </div>
-  </Card>
+  </SettingsGroup>
 
-  <!-- ===================== Color mode ===================== -->
-  <Card variant="default" padding="none">
-    <div class="px-6 py-5 border-b border-neutral-200/60 dark:border-white/5">
-      <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Color mode</h2>
-      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
-        System follows your operating system and changes with it.
-      </p>
+  <SettingsGroup header="Sidebar sections" footer="Hidden sections stay accessible by URL.">
+    <div :for="section in sections" class="dashboard-settings-section-toggle">
+      <SettingsRow :label="section.label" :description="section.count + ' items'" :setting="'show-section-' + section.id">
+        <Switch :checked="isVisible(section.id)" :label="'Show ' + section.label + ' section'" variant="mac" @change="toggleSection(section.id, $event)" />
+      </SettingsRow>
     </div>
+  </SettingsGroup>
 
-    <div class="flex gap-3 p-6" role="group" aria-label="Color mode">
-      <button :for="mode in colorModes"
-        type="button"
-        class="flex flex-1 gap-2 items-center justify-center px-3 py-2 font-medium text-neutral-600 text-sm dark:text-neutral-300 rounded-lg appearance-mode appearance-option"
-        :data-selected="selected(colorMode(), mode.id)"
-        :aria-pressed="String(selected(colorMode(), mode.id))"
-        @click="selectColorMode(mode.id)"
-      >
-        <span :class="mode.icon" class="h-4 w-4" aria-hidden="true"></span>
-        <span>{{ mode.label }}</span>
-      </button>
-    </div>
-  </Card>
-
-  <!-- ===================== Navigation sections ===================== -->
-  <Card variant="default" padding="none">
-    <div class="flex flex-wrap gap-4 items-center justify-between px-6 py-5 border-b border-neutral-200/60 dark:border-white/5">
-      <div>
-        <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Navigation</h2>
-        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
-          Hide sections you do not use. This only affects your sidebar. It does not
-          disable anything, and every page stays reachable by URL.
-        </p>
-      </div>
-      <span :if="hiddenCount() > 0" class="px-2.5 py-1 font-medium text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 rounded-full">
-        {{ hiddenCount() }} hidden
-      </span>
-    </div>
-
-    <div class="divide-neutral-200/60 divide-y dark:divide-white/5">
-      <div :for="section in sections" class="px-6 py-4 hover:bg-stone-50/60 dark:hover:bg-white/[0.02]">
-        <Toggle
-          :checked="isVisible(section.id)"
-          :label="section.label"
-          :description="section.count + ' items'"
-          :ariaLabel="'Show ' + section.label + ' section'"
-          labelPosition="left"
-          @update:checked="toggleSection(section.id, $event)"
-        />
-      </div>
-    </div>
-  </Card>
-
-  <!-- ===================== Reset ===================== -->
-  <div class="flex items-center justify-between px-1">
-    <p class="text-neutral-500 text-xs dark:text-neutral-400">
-      Themes and appearance preferences are stored in this browser.
-    </p>
-    <Button variant="secondary" size="sm" @click="resetAll()">
-      Reset to defaults
-    </Button>
-  </div>
+  <SettingsGroup>
+    <SettingsRow label="Restore defaults" description="Reset dashboard appearance and sidebar preferences in this browser." setting="reset-appearance">
+      <Button variant="secondary" size="sm" @click="resetAll()">Reset to defaults</Button>
+    </SettingsRow>
+  </SettingsGroup>
   <p :if="resetError()" class="text-red-700 text-sm dark:text-red-300" role="alert" :text="resetError()"></p>
 </div>
 </template>

@@ -16,16 +16,9 @@ function expiry(method: BillingPaymentMethod): string {
 }
 </script>
 
-<section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <header class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-neutral-700">
-    <div>
-      <h2 class="font-semibold text-base text-gray-900 dark:text-white">Payment methods</h2>
-      <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Methods returned by the configured payment provider.</p>
-    </div>
-    <span class="h-5 w-5 text-gray-400 i-hugeicons-credit-card"></span>
-  </header>
+<SettingsGroup header="Payment methods">
 
-  <div :if="methods().length === 0" class="px-6 py-14 text-center">
+  <div :if="methods().length === 0" class="px-4 py-7 text-center">
     <span class="inline-block h-7 w-7 text-gray-400 i-hugeicons-credit-card-not-found"></span>
     <p class="mt-3 font-medium text-gray-900 text-sm dark:text-white">No payment methods</p>
     <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">No provider-backed payment method is attached to this user.</p>
@@ -43,4 +36,4 @@ function expiry(method: BillingPaymentMethod): string {
       </div>
     </li>
   </ul>
-</section>
+</SettingsGroup>

@@ -3,5 +3,7 @@
 @section('content')
 @title('Dashboard - Appearance')
 
-<AppearanceSettingsDashboard />
+<DashboardSettingsFrame pane="appearance">
+  <AppearanceSettingsDashboard />
+</DashboardSettingsFrame>
 @endsection

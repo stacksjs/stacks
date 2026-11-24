@@ -3,8 +3,7 @@
 @section('content')
 @title('Dashboard - Billing Settings')
 
-<div class="p-4 lg:p-8 min-h-[100dvh] dark:bg-neutral-900">
+<DashboardSettingsFrame pane="billing">
   <BillingSettings />
-</div>
-
+</DashboardSettingsFrame>
 @endsection

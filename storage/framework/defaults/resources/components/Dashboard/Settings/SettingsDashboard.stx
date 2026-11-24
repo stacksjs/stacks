@@ -191,32 +191,37 @@ void loadFiles()
 </script>
 
 <template>
-<div class="flex flex-col gap-6 mx-auto pb-12 pt-6 px-6 max-w-7xl">
-  <PageHeader
-    title="Settings"
-    description="Review and edit project configuration without losing comments or environment bindings"
-  />
+<div class="dashboard-settings-stack">
+  <div :if="files().length > 0">
+    <SettingsGroup header="Project configuration">
+      <details class="dashboard-settings-config-picker">
+        <summary>
+          <span>Configuration file</span>
+          <span class="dashboard-settings-config-selection">
+            <span :text="selectedFile()?.title"></span>
+            <span class="i-f7-chevron-down" aria-hidden="true"></span>
+          </span>
+        </summary>
+        <div class="pt-2 px-2">
+          <SearchFilter v-model:searchValue="configQuery" placeholder="Search config" ariaLabel="Search configuration" />
+        </div>
 
-  <div class="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)]">
-    <Card variant="default" padding="none">
-      <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-        <SearchFilter v-model:searchValue="configQuery" placeholder="Search config" ariaLabel="Search configuration" />
-      </div>
+        <nav class="overflow-y-auto p-2 max-h-[68vh]" aria-label="Configuration files">
+          <button :for="file in filteredFiles"
+            type="button"
+            :class="selected() === file.name ? 'flex items-center gap-3 px-3 py-2.5 w-full text-left text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 rounded-lg' : 'flex items-center gap-3 px-3 py-2.5 w-full text-left text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-white/5 rounded-lg'"
+            @click="requestSelectFile(file.name)"
+          >
+            <span class="flex-none h-4 w-4 i-hugeicons-settings-02"></span>
+            <span class="flex-1 font-medium text-sm truncate">{{ file.title }}</span>
+            <span class="text-[10px] text-neutral-500 dark:text-neutral-400">{{ file.size < 1024 ? file.size + ' B' : Math.round(file.size / 1024) + ' KB' }}</span>
+          </button>
+        </nav>
+      </details>
+    </SettingsGroup>
+  </div>
 
-      <nav class="overflow-y-auto p-2 max-h-[68vh]" aria-label="Configuration files">
-        <button :for="file in filteredFiles"
-          type="button"
-          :class="selected() === file.name ? 'flex items-center gap-3 px-3 py-2.5 w-full text-left text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 rounded-lg' : 'flex items-center gap-3 px-3 py-2.5 w-full text-left text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-white/5 rounded-lg'"
-          @click="requestSelectFile(file.name)"
-        >
-          <span class="flex-none h-4 w-4 i-hugeicons-settings-02"></span>
-          <span class="flex-1 font-medium text-sm truncate">{{ file.title }}</span>
-          <span class="text-[10px] text-neutral-500 dark:text-neutral-400">{{ file.size < 1024 ? file.size + ' B' : Math.round(file.size / 1024) + ' KB' }}</span>
-        </button>
-      </nav>
-    </Card>
-
-    <Card variant="default" padding="none">
+  <SettingsGroup>
       @if(loading())
         <div class="flex items-center justify-center min-h-80 text-neutral-500 dark:text-neutral-400">
           <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
@@ -235,7 +240,7 @@ void loadFiles()
           <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Add a TypeScript config file under config to manage it here.</p>
         </div>
       @elseif(selectedFile())
-        <div class="flex flex-wrap gap-4 items-center justify-between px-6 py-5 border-b border-neutral-200/60 dark:border-white/5">
+        <div class="flex flex-wrap gap-4 items-center justify-between px-4 py-3 border-b border-neutral-200/60 dark:border-white/5">
           <div>
             <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">{{ selectedFile()?.title }}</h2>
             <p class="mt-1 font-mono text-neutral-500 text-xs dark:text-neutral-400">config/{{ selectedFile()?.name }}.ts</p>
@@ -250,18 +255,18 @@ void loadFiles()
         </div>
 
         @if(message())
-          <div class="mt-5 mx-6 px-4 py-3 text-green-700 text-sm dark:text-green-300 bg-green-50 dark:bg-green-500/10 border border-green-200 rounded-lg dark:border-green-500/20">
+          <div class="mt-3 mx-4 px-4 py-3 text-green-700 text-sm dark:text-green-300 bg-green-50 dark:bg-green-500/10 border border-green-200 rounded-lg dark:border-green-500/20">
             {{ message() }}
           </div>
         @endif
         @if(error())
-          <div class="mt-5 mx-6 px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-500/10 border border-red-200 rounded-lg dark:border-red-500/20">
+          <div class="mt-3 mx-4 px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-500/10 border border-red-200 rounded-lg dark:border-red-500/20">
             {{ error() }}
           </div>
         @endif
 
         <form class="divide-neutral-200/60 divide-y dark:divide-white/5" @submit.prevent="save()">
-          <div :for="field in fields" class="grid gap-3 sm:grid-cols-[minmax(10rem,0.8fr)_minmax(0,1.2fr)] sm:items-start px-6 py-5">
+          <div :for="field in fields" class="grid gap-3 sm:grid-cols-[minmax(10rem,0.8fr)_minmax(0,1.2fr)] sm:items-start px-4 py-3">
             <div>
               <label :for="'config-' + field.key" class="font-medium text-neutral-900 text-sm dark:text-white">{{ field.key }}</label>
               <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ field.type }}</p>
@@ -299,8 +304,7 @@ void loadFiles()
           </div>
         </form>
       @endif
-    </Card>
-  </div>
+  </SettingsGroup>
 
   <ConfirmDialog
     :isOpen="Boolean(pendingSelection())"

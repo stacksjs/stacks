@@ -32,16 +32,9 @@ function date(value: string): string {
 }
 </script>
 
-<section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <header class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-neutral-700">
-    <div>
-      <h2 class="font-semibold text-base text-gray-900 dark:text-white">Subscription</h2>
-      <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">The active local subscription joined with its payment provider state.</p>
-    </div>
-    <span class="h-5 w-5 text-gray-400 i-hugeicons-invoice-03"></span>
-  </header>
+<SettingsGroup header="Subscription">
 
-  <div :if="!subscription()" class="px-6 py-14 text-center">
+  <div :if="!subscription()" class="px-4 py-7 text-center">
     <span class="inline-block h-7 w-7 text-gray-400 i-hugeicons-calendar-remove-02"></span>
     <p class="mt-3 font-medium text-gray-900 text-sm dark:text-white">No active subscription</p>
     <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">An active persisted subscription will appear here after the payment provider confirms it.</p>
@@ -62,4 +55,4 @@ function date(value: string): string {
       <div class="p-3 bg-gray-50 dark:bg-neutral-900/60 rounded-md"><dt class="text-gray-500 text-xs dark:text-neutral-400">Renewal</dt><dd class="mt-1 font-semibold text-gray-900 text-sm dark:text-white">{{ subscription()?.cancelAtPeriodEnd ? 'Cancellation scheduled' : 'Provider managed' }}</dd></div>
     </dl>
   </div>
-</section>
+</SettingsGroup>

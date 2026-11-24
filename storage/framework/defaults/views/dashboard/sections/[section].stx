@@ -12,12 +12,7 @@ export const sectionTitle = hub ? `Dashboard - ${hub.label}` : 'Section not foun
 @section('content')
 @title(sectionTitle)
 @if(hub)
-  <div data-dashboard-section-page data-section-id="{{ hub.id }}" class="mx-auto px-4 py-6 sm:px-8 sm:py-8 max-w-6xl">
-    <div data-dashboard-hero class="mb-6">
-      <PageHeader :title="hub.label" :description="hub.description || ''" />
-    </div>
-    <DashboardNavigationCards :navigationCards="hub.destinations" emptyLabel="No pages are available in this section." />
-  </div>
+  <DashboardSectionLanding :hub="hub" />
 @else
   <NotFoundDashboard />
 @endif

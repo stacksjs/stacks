@@ -63,7 +63,7 @@ describe.skipIf(!dashboardE2EAvailable)('settings that write the project', () =>
     writeFileSync(join(e2e!.project, '.env.test'), 'MAIL_HOST=layered.quillwort.test\n')
     await openMailSettings(cdp, e2e!.origin)
     await waitFor(async () => await valueOf(cdp, 'input[aria-label="Host"]') === 'layered.quillwort.test' || null, 5_000, { label: 'the host from .env.test' })
-    expect(await cdp.evaluate<string>(`[...document.querySelectorAll('p')].find(node => node.textContent.trim() === 'Source')?.nextElementSibling?.textContent ?? ''`)).toBe('.env, .env.test')
+    expect(await cdp.evaluate<string>(`document.querySelector('[data-mail-source]')?.textContent ?? ''`)).toBe('.env, .env.test')
 
     await fill(cdp, 'input[aria-label="Host"]', 'saved-layer.quillwort.test')
     await click(cdp, { selector: 'button[type="submit"]', text: 'Save mail settings' }, { timeoutMs: 5_000 })
@@ -130,6 +130,7 @@ async function openMailSettings(cdp: Cdp, origin: string): Promise<void> {
 async function openConfig(cdp: Cdp, origin: string, title: string): Promise<void> {
   await navigate(cdp, `${origin}/settings`)
   await waitFor(async () => await cdp.evaluate<boolean>(`[...document.querySelectorAll('main button')].some(button => button.textContent.trim().startsWith(${JSON.stringify(title)}))`) || null, 20_000, { label: 'the config list' })
+  await click(cdp, '.dashboard-settings-config-picker summary')
   await cdp.evaluate(`[...document.querySelectorAll('main button')].find(button => button.textContent.trim().split('\\n')[0].trim() === ${JSON.stringify(title)}).click()`)
   await waitFor(async () => await cdp.evaluate<boolean>(`Boolean(document.querySelector('#config-description'))`) || null, 10_000, { label: `config/${title.toLowerCase()}.ts` })
 }

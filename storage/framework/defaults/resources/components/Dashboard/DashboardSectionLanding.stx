@@ -1,0 +1,72 @@
+<script server>
+import type { DashboardNavigationHub } from '@stacksjs/defaults/resources/functions/dashboard/section-navigation'
+
+const { hub } = defineProps<{ hub: DashboardNavigationHub }>()
+defineClientPayload({ hub })
+</script>
+
+<script client>
+import { getDashboardSectionLanding } from '@stacksjs/defaults/resources/functions/dashboard/section-landing'
+import { authStore } from '@stacksjs/defaults/views/dashboard/stores/auth'
+
+const section = {{ hub }}
+const landing = derived(() => getDashboardSectionLanding(section, authStore.roles(), authStore.unauthenticated()))
+const primary = derived(() => landing().primary)
+</script>
+
+<div class="dashboard-section-landing" data-dashboard-section-page data-section-id="{{ hub.id }}">
+  <div class="dashboard-section-stage">
+    <header class="dashboard-section-intro">
+      <h1 data-dashboard-ink>{{ hub.label }}</h1>
+      <p :if="landing().introduction" data-dashboard-muted :text="landing().introduction"></p>
+    </header>
+
+    <div class="dashboard-section-art">
+      <div class="dashboard-section-orb" aria-hidden="true">
+        <span class="{{ hub.icon }}"></span>
+      </div>
+      <div :if="primary()" class="dashboard-section-primary">
+        <a :href="primary()?.href" data-stx-link data-dashboard-section-primary
+          :aria-label="'Open ' + primary()?.label">
+          <span class="i-f7-arrow-right" aria-hidden="true"></span>
+          Open
+        </a>
+        <span data-dashboard-muted :text="primary()?.label"></span>
+      </div>
+    </div>
+
+    <nav :if="landing().featured.length > 0" class="dashboard-section-features" aria-label="Featured pages">
+      <a :for="page in landing().featured" :href="page.href" data-stx-link class="dashboard-section-row" data-dashboard-destination>
+        <span class="dashboard-section-row-icon" aria-hidden="true"><span :class="page.icon"></span></span>
+        <span class="dashboard-section-row-copy">
+          <strong :text="page.label"></strong>
+          <span :if="page.description" data-dashboard-muted :text="page.description"></span>
+        </span>
+        <span class="dashboard-section-chevron i-f7-chevron-right" aria-hidden="true"></span>
+      </a>
+    </nav>
+    <p :if="!authStore.loading() && !primary()" class="dashboard-section-features" data-dashboard-muted>No pages are available in this section.</p>
+  </div>
+
+  <div :if="landing().groups.length > 0" class="dashboard-section-panels">
+    <section :for="group in landing().groups" class="dashboard-section-panel">
+      <h2 data-dashboard-ink :text="group.title"></h2>
+      <a :for="page in group.first" :href="page.href" data-stx-link class="dashboard-section-row" data-dashboard-destination>
+        <span class="dashboard-section-row-icon" aria-hidden="true"><span :class="page.icon"></span></span>
+        <span class="dashboard-section-row-copy">
+          <strong :text="page.label"></strong>
+          <span :if="page.description && group.title !== 'Model records'" data-dashboard-muted :text="page.description"></span>
+        </span>
+        <span class="dashboard-section-chevron i-f7-chevron-right" aria-hidden="true"></span>
+      </a>
+      <details :if="group.more.length > 0" class="dashboard-section-more">
+        <summary :text="'Show ' + group.more.length + ' more'"></summary>
+        <a :for="page in group.more" :href="page.href" data-stx-link class="dashboard-section-row" data-dashboard-destination>
+          <span class="dashboard-section-row-icon" aria-hidden="true"><span :class="page.icon"></span></span>
+          <span class="dashboard-section-row-copy"><strong :text="page.label"></strong></span>
+          <span class="dashboard-section-chevron i-f7-chevron-right" aria-hidden="true"></span>
+        </a>
+      </details>
+    </section>
+  </div>
+</div>

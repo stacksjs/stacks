@@ -93,7 +93,7 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     await click(cdp, { selector: 'button', text: 'Reset to defaults' })
   }, 120_000)
 
-  test('System Cleaner opens section indexes and child pages from flat links and cards', async () => {
+  test('System Cleaner opens designed section indexes from flat links and home cards', async () => {
     const { cdp } = e2e!.browser
     const origin = e2e!.origin
     await openAppearance(cdp, origin)
@@ -105,20 +105,35 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     expect(await cdp.evaluate(`document.querySelector('${appLink}')?.getClientRects().length`)).toBe(1)
     expect(await cdp.evaluate(`[...document.querySelectorAll('[data-sidebar-section-header], [data-sidebar-disclosure]')].some(element => element.getClientRects().length > 0)`)).toBe(false)
 
+    const metrics = await cdp.evaluate(`(() => {
+      const panel = document.querySelector('[data-dashboard-metrics]')
+      return { background: getComputedStyle(panel).backgroundColor, border: getComputedStyle(panel).borderTopWidth }
+    })()`)
+    expect(metrics).toEqual({ background: 'rgba(0, 0, 0, 0)', border: '0px' })
+
     await click(cdp, appLink)
     await waitFor(() => cdp.evaluate(`location.pathname === '/sections/app' && document.querySelector('h1')?.textContent.trim() === 'App'`), 10_000)
     expect(await cdp.evaluate(`document.querySelector('${appLink}')?.getAttribute('aria-current')`)).toBe('page')
 
-    await click(cdp, '[data-dashboard-navigation-card][href="/jobs/history"]')
+    await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('[data-dashboard-section-primary][href="/deployments"]'))`), 10_000)
+    expect(await cdp.evaluate(`document.querySelector('.dashboard-section-intro p')?.textContent`)).toContain('Ship changes')
+    const appGradient = await cdp.evaluate<string>('getComputedStyle(document.body).backgroundImage')
+    expect(appGradient).toContain('gradient')
+    await click(cdp, '[data-dashboard-destination][href="/jobs/history"]')
     await waitFor(() => cdp.evaluate(`location.pathname === '/jobs/history' && document.querySelector('${appLink}')?.getAttribute('aria-current') === 'location'`), 10_000)
 
     await navigate(cdp, origin)
     await click(cdp, appCard)
-    await waitFor(() => cdp.evaluate(`location.pathname === '/sections/app' && !!document.querySelector('[data-dashboard-navigation-card][href="/deployments"]')`), 10_000)
+    await waitFor(() => cdp.evaluate(`location.pathname === '/sections/app' && !!document.querySelector('[data-dashboard-section-primary][href="/deployments"]')`), 10_000)
+
+    await click(cdp, '[data-dashboard-section-sidebar] [href="/sections/data"]')
+    await waitFor(() => cdp.evaluate(`location.pathname === '/sections/data' && !!document.querySelector('[data-dashboard-section-primary][href="/models"]')`), 10_000)
+    expect(await cdp.evaluate('getComputedStyle(document.body).backgroundImage')).not.toBe(appGradient)
 
     await openAppearance(cdp, origin)
     await click(cdp, 'button[data-theme-id="original"]')
-    expect(await cdp.evaluate(`[...document.querySelectorAll('[data-sidebar-section-header]')].some(element => element.getClientRects().length > 0)`)).toBe(true)
+    await navigate(cdp, origin)
+    expect(await cdp.evaluate(`[...document.querySelectorAll('[data-sidebar-section-header')].some(element => element.getClientRects().length > 0)`)).toBe(true)
   }, 120_000)
 
   test('selects, imports, updates and removes themes across real dashboard pages', async () => {
@@ -135,7 +150,7 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     const starter = JSON.parse(decodeURIComponent(starterUrl.slice(starterUrl.indexOf(',') + 1)))
 
     await click(cdp, cleaner)
-    await waitFor(() => themeApplied(cdp, 'system-cleaner', 14), 5_000)
+    await waitFor(() => themeApplied(cdp, 'system-cleaner', 0), 5_000)
     expect(await pressed(cdp, 'System Cleaner')).toBe('true')
 
     await navigate(cdp, origin)
@@ -168,7 +183,7 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     await Bun.write(manifest, JSON.stringify({ ...imported, light: { ...imported.light, canvas: 'url(/unknown)' } }))
     await chooseThemeFile(cdp, manifest)
     await waitFor(() => cdp.evaluate(`document.querySelector('[role="alert"]')?.textContent.includes('light.canvas') === true`), 5_000)
-    expect(await themeApplied(cdp, 'system-cleaner', 14)).toBe(true)
+    expect(await themeApplied(cdp, 'system-cleaner', 0)).toBe(true)
 
     await Bun.write(manifest, JSON.stringify(imported))
     await chooseThemeFile(cdp, manifest)
@@ -177,7 +192,7 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
 
     await Bun.write(manifest, JSON.stringify({ ...imported, layout: 'inset', radius: 18 }))
     await chooseThemeFile(cdp, manifest)
-    await waitFor(() => themeApplied(cdp, imported.id, 18), 5_000)
+    await waitFor(() => themeApplied(cdp, imported.id, 0), 5_000)
     expect(await cdp.evaluate(`document.querySelectorAll('button[data-theme-id="${imported.id}"]').length`)).toBe(1)
 
     await click(cdp, { selector: '[aria-label="Color mode"] button', text: 'Dark' })
@@ -194,31 +209,72 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     await click(cdp, { selector: 'button', text: 'Reset to defaults' })
   }, 120_000)
 
+  test('the Settings panes use the same native-style layout in both themes', async () => {
+    const { cdp } = e2e!.browser
+    const { origin } = e2e!
+    await openAppearance(cdp, origin)
+    await click(cdp, { selector: '[aria-label="Color mode"] button', text: 'Light' })
+    const original = await settingsStyle(cdp)
+    await click(cdp, 'button[data-theme-id="system-cleaner"]')
+    await waitFor(() => themeApplied(cdp, 'system-cleaner', 0), 5_000)
+    expect(await settingsStyle(cdp)).toEqual(original)
+
+    await click(cdp, { selector: '[aria-label="Color mode"] button', text: 'Dark' })
+    const cleanerDark = await settingsStyle(cdp)
+    expect(cleanerDark).not.toEqual(original)
+    await click(cdp, 'button[data-theme-id="original"]')
+    await waitFor(() => themeApplied(cdp, 'original', 0), 5_000)
+    expect(await settingsStyle(cdp)).toEqual(cleanerDark)
+
+    for (const pane of ['mail', 'billing']) {
+      const link = `[aria-label="Settings"] a[href="/settings/${pane}"]`
+      await click(cdp, link)
+      await waitFor(() => cdp.evaluate(`document.querySelector('${link}')?.getAttribute('aria-current') === 'page' && !!document.querySelector('[data-settings-section]')`), 10_000)
+    }
+
+    await openAppearance(cdp, origin)
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 840, deviceScaleFactor: 1, mobile: true })
+    try {
+      expect(await cdp.evaluate('document.documentElement.scrollWidth <= innerWidth')).toBe(true)
+      expect(await cdp.evaluate(`document.querySelector('[aria-label="Settings"] [aria-current="page"]')?.getClientRects().length`)).toBe(1)
+    }
+    finally {
+      await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })
+    }
+    await click(cdp, { selector: 'button', text: 'Reset to defaults' })
+  }, 120_000)
+
   test('a hidden section leaves the sidebar, and comes back', async () => {
     const { cdp } = e2e!.browser
-    await openAppearance(cdp, e2e!.origin)
-    // The first section the page offers to hide, and its id in the sidebar.
-    const label = (await cdp.evaluate<string>(`document.querySelector('input[role="switch"][aria-label^="Show "]')?.getAttribute('aria-label') ?? ''`)).replace(/^Show (.+) section$/, '$1')
-    const id = await cdp.evaluate<string | null>(`[...document.querySelectorAll('[data-sidebar-section]')].find(node => node.querySelector('[data-sidebar-section-header]')?.textContent.trim().startsWith(${JSON.stringify(label)}))?.dataset.sectionId ?? null`)
-    expect(label).toBeTruthy()
-    expect(id).toBeTruthy()
-    expect(await sectionShown(cdp, id!)).toBe(true)
+    const { origin } = e2e!
+    await navigate(cdp, origin)
+    await waitFor(async () => await sectionShown(cdp, 'app') || null, 5_000, { label: 'the App section in the sidebar' })
 
-    await click(cdp, `label:has(input[role="switch"][aria-label="Show ${label} section"])`)
-    await waitFor(async () => !(await sectionShown(cdp, id!)) || null, 5_000, { label: `the ${label} section to leave the sidebar` })
+    const toggle = 'button[role="switch"][aria-label="Show App section"]'
+    await openAppearance(cdp, origin)
+    await click(cdp, toggle)
+    await waitFor(() => cdp.evaluate(`document.querySelector('${toggle}')?.getAttribute('aria-checked') === 'false'`), 5_000)
+    await navigate(cdp, `${origin}/models/team`)
+    expect(await sectionShown(cdp, 'app')).toBe(false)
 
-    await navigate(cdp, `${e2e!.origin}/models/team`)
-    expect(await sectionShown(cdp, id!)).toBe(false)
-
-    await openAppearance(cdp, e2e!.origin)
-    await click(cdp, `label:has(input[role="switch"][aria-label="Show ${label} section"])`)
-    await waitFor(async () => await sectionShown(cdp, id!) || null, 5_000, { label: `the ${label} section back in the sidebar` })
+    await openAppearance(cdp, origin)
+    await click(cdp, toggle)
+    await waitFor(() => cdp.evaluate(`document.querySelector('${toggle}')?.getAttribute('aria-checked') === 'true'`), 5_000)
+    await navigate(cdp, origin)
+    await waitFor(async () => await sectionShown(cdp, 'app') || null, 5_000, { label: 'the App section back in the sidebar' })
   }, 120_000)
 })
 
 async function openAppearance(cdp: Cdp, origin: string): Promise<void> {
   await navigate(cdp, `${origin}/settings/appearance`)
-  await waitFor(async () => await cdp.evaluate<boolean>(`!!document.querySelector('[aria-label="Color mode"] button') && !!document.querySelector('input[role="switch"]')`) || null, 20_000, { label: 'the appearance settings' })
+  await waitFor(async () => await cdp.evaluate<boolean>(`!!document.querySelector('[aria-label="Color mode"] button') && !!document.querySelector('button[role="switch"][aria-label^="Show "]')`) || null, 20_000, { label: 'the appearance settings' })
+}
+
+async function settingsStyle(cdp: Cdp): Promise<string[]> {
+  return await cdp.evaluate(`['.dashboard-settings-sidebar', '.dashboard-settings-pane', '[data-settings-pane-header]', '.stx-settings-card'].map(selector => {
+    const style = getComputedStyle(document.querySelector(selector))
+    return [style.backgroundColor, style.color, style.borderRadius].join(' ')
+  })`)
 }
 
 /** What `<html>` says about the page's look. */

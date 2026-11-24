@@ -179,12 +179,8 @@ function removeTheme(): void {
 </style>
 
 <template>
-<Card variant="default" padding="none">
-  <div class="px-6 py-5 border-b border-neutral-200/60 dark:border-white/5">
-    <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Dashboard theme</h2>
-    <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Choose a theme or install one from a JSON file.</p>
-  </div>
-  <div class="grid gap-4 sm:grid-cols-2 p-6" role="group" aria-label="Dashboard theme">
+<SettingsGroup header="Dashboard theme" footer="Download the starter JSON to build and install your own theme.">
+  <div class="grid gap-4 sm:grid-cols-2 p-3" role="group" aria-label="Dashboard theme">
     <button
       :for="theme in themesToShow()"
       type="button"
@@ -201,7 +197,7 @@ function removeTheme(): void {
       <span :if="theme.description" class="text-neutral-500 text-xs dark:text-neutral-400" :text="theme.description"></span>
     </button>
   </div>
-  <div class="pb-6 px-6">
+  <div class="pb-3 px-3">
     <div class="flex flex-wrap gap-2">
       <input ref="dashboardThemeFile" hidden type="file" accept=".json,application/json" @change="importTheme($event)" />
       <Button variant="secondary" size="sm" @click="themeFile.current?.click()">Install theme</Button>
@@ -210,9 +206,8 @@ function removeTheme(): void {
       </Button>
       <Button :if="selectedInstallation()" variant="outline" size="sm" @click="removeTheme()">Remove theme</Button>
     </div>
-    <p class="mt-3 text-neutral-500 text-xs dark:text-neutral-400">To build a theme, download the starter, edit its JSON, and install the file.</p>
     <p :if="feedback()" class="mt-2 text-neutral-700 text-sm dark:text-neutral-200" role="status" :text="feedback()"></p>
     <p :if="failure()" class="mt-2 text-red-700 text-sm dark:text-red-300" role="alert" :text="failure()"></p>
   </div>
-</Card>
+</SettingsGroup>
 </template>

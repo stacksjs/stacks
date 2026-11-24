@@ -177,7 +177,7 @@ onMount(() => {
     </ul>
   </details>
 
-  <section aria-labelledby="application-overview" class="mb-5 p-3 sm:p-4 overview-panel">
+  <section data-dashboard-metrics aria-labelledby="application-overview" class="mb-5 p-3 sm:p-4 overview-panel">
     <div class="flex flex-wrap gap-2 items-center justify-between mb-3">
       <h2 data-dashboard-ink id="application-overview" class="font-semibold text-base text-neutral-900 dark:text-white">Overview</h2>
       <StxLink data-dashboard-muted to="/requests" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">Request history</StxLink>
