@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.671...v0.75.672)
+
+## 🐛 Bug Fixes
+
+- **alias**: map @stacksjs/video subpaths for the browser entry ([47a345b](https://github.com/stacksjs/stacks/commit/47a345b)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.670...v0.75.671)
 
 ## 💚 Continuous Integration
