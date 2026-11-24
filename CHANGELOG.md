@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.664...v0.75.665)
+
+## ✨ Features
+
+- **workflows**: publish independent native evidence archives ([68b7fc5](https://github.com/stacksjs/stacks/commit/68b7fc5)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **buddy**: read the Pantry token from PANTRY_TOKEN only ([635006a](https://github.com/stacksjs/stacks/commit/635006a)) _(by Chris Breuer)_
+- **scaffold**: a new app does not inherit stacksjs.com's shared render cache ([b38697b](https://github.com/stacksjs/stacks/commit/b38697b)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **release**: name the Pantry secret PANTRY_TOKEN ([549806c](https://github.com/stacksjs/stacks/commit/549806c)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.663...v0.75.664)
 
 ## ✨ Features
