@@ -76,6 +76,16 @@ export function driverOptions(
   return {}
 }
 
+/**
+ * The driver options a Bluesky post is sent with: the PDS the session was
+ * made at, which for an account on its own PDS is not bsky.social, unless one
+ * was configured (stacksjs/stacks#3376).
+ */
+export function blueskyTargetOptions(options: SocialDriverOptions, session: { service?: string }): SocialDriverOptions {
+  if (options.service || !session.service) return options
+  return { ...options, service: session.service }
+}
+
 /** The driver for a platform. */
 export function publishingDriver(
   platform: SocialCredentialPlatform,
@@ -206,7 +216,7 @@ export async function socialPublishTarget(
         accessToken: session.accessJwt,
         refreshToken: session.refreshJwt,
       },
-      options,
+      options: blueskyTargetOptions(options, session),
     }
   }
 

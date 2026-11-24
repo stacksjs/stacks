@@ -129,7 +129,11 @@ limits. Bluesky uploads external.thumb for link cards, and its publish takes a
 third argument too: { rkey } from blueskyRecordKey(), kept per post, so a retry
 answers with the post that already went out instead of posting twice. Bluesky
 hashtags take letters from any script (#café, #日本), and images leave a link
-card out with a warning, since a post holds one attachment. Instagram waits for
+card out with a warning, since a post holds one attachment. A Bluesky account on
+its own PDS signs in there: when no service is configured and bsky.social refuses
+the password, createSession looks the account's PDS up from its DID document
+(resolveBlueskyService), and the session's service is where its posts go.
+Instagram waits for
 each media container to be FINISHED before publishing it (containerTimeoutMs,
 five minutes by default), sends alt text on images and carousel items, refuses an
 image whose mimeType is not JPEG, and looks through every page of the user's

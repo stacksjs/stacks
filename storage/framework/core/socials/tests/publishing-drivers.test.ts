@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { blueskyRecordKey, BlueskyPublishingDriver, detectFacetCandidates } from '../src/drivers/bluesky'
+import { blueskyRecordKey, BlueskyPublishingDriver, detectFacetCandidates, resolveBlueskyService } from '../src/drivers/bluesky'
 import { InstagramPublishingDriver } from '../src/drivers/instagram'
 import {
   escapeLinkedInText,
@@ -251,6 +251,78 @@ describe('Bluesky', () => {
       return {}
     })
     await expect(new BlueskyPublishingDriver().publish(identity, { text: 'x' }, { rkey: blueskyRecordKey() })).rejects.toThrow('Invalid record')
+  })
+})
+
+// stacksjs/stacks#3376: an account on its own PDS cannot sign in at
+// bsky.social, and nothing found where it lives.
+describe('Bluesky hosting', () => {
+  const plcDoc = (endpoint: string) => ({
+    id: 'did:plc:self',
+    service: [{ id: '#atproto_pds', type: 'AtprotoPersonalDataServer', serviceEndpoint: endpoint }],
+  })
+  const session = { did: 'did:plc:self', handle: 'me.example.org', accessJwt: 'AJ', refreshJwt: 'RJ' }
+
+  it('signs a self-hosted account in at its own PDS, and posts there', async () => {
+    const sent = mockFetch((url) => {
+      const u = new URL(url)
+      if (u.host === 'bsky.social' && u.pathname.endsWith('createSession'))
+        return new Response('{"error":"AuthenticationRequired","message":"Invalid identifier or password"}', { status: 401 })
+      if (u.host === 'bsky.social' && u.pathname.endsWith('resolveHandle')) return { did: 'did:plc:self' }
+      if (u.host === 'plc.directory') return plcDoc('https://pds.example.org/')
+      if (u.host === 'pds.example.org' && u.pathname.endsWith('createSession')) return session
+      if (u.host === 'pds.example.org' && u.pathname.endsWith('createRecord')) return { uri: 'at://did:plc:self/app.bsky.feed.post/3k', cid: 'c' }
+      return {}
+    })
+    const driver = new BlueskyPublishingDriver()
+    const signedIn = await driver.createSession({ identifier: 'me.example.org', password: 'app-pass' })
+
+    expect(signedIn).toMatchObject({ did: 'did:plc:self', accessJwt: 'AJ', service: 'https://pds.example.org' })
+    expect(new URL(sent.find(s => s.url.includes('plc.directory'))!.url).pathname).toBe('/did:plc:self')
+    await driver.publish({ handle: 'me.example.org', did: 'did:plc:self', accessToken: 'AJ' }, { text: 'hello' })
+    expect(new URL(sent.at(-1)!.url).host).toBe('pds.example.org')
+    // The password went to bsky.social first, which refused it, and then to the account's own PDS.
+    expect(sent.filter(s => s.url.endsWith('createSession')).map(s => new URL(s.url).host)).toEqual(['bsky.social', 'pds.example.org'])
+  })
+
+  it('keeps an account Bluesky hosts on bsky.social, with no lookup', async () => {
+    const sent = mockFetch((url) => url.endsWith('createSession') ? session : {})
+    const signedIn = await new BlueskyPublishingDriver().createSession({ identifier: 'me.bsky.social', password: 'p' })
+    expect(signedIn.service).toBe('https://bsky.social')
+    expect(sent.map(s => new URL(s.url).pathname)).toEqual(['/xrpc/com.atproto.server.createSession', '/xrpc/app.bsky.actor.getProfile'])
+  })
+
+  it('does not look anywhere else when a PDS is configured', async () => {
+    const sent = mockFetch(() => new Response('{"error":"AuthenticationRequired"}', { status: 401 }))
+    await expect(new BlueskyPublishingDriver({ service: 'https://pds.mine' }).createSession({ identifier: 'me.example.org', password: 'p' })).rejects.toThrow('401')
+    expect(sent).toHaveLength(1)
+  })
+
+  it('reports the refusal when the account\'s own PDS refuses the password too', async () => {
+    const sent = mockFetch((url) => {
+      if (url.endsWith('createSession')) return new Response('{"error":"AuthenticationRequired","message":"Invalid identifier or password"}', { status: 401 })
+      if (url.includes('resolveHandle')) return { did: 'did:plc:self' }
+      return plcDoc('https://pds.example.org')
+    })
+    await expect(new BlueskyPublishingDriver().createSession({ identifier: 'me.example.org', password: 'wrong' })).rejects.toThrow('Invalid identifier or password')
+    expect(sent.filter(s => s.url.endsWith('createSession'))).toHaveLength(2)
+  })
+})
+
+describe('resolveBlueskyService', () => {
+  const doc = (endpoint: string, id = '#atproto_pds') => ({ service: [{ id, type: 'AtprotoPersonalDataServer', serviceEndpoint: endpoint }] })
+
+  it('reads a did:web document from its own host', async () => {
+    const asked: string[] = []
+    const found = await resolveBlueskyService('did:web:me.example.org', { fetchJson: async (url) => { asked.push(url); return doc('https://pds.example.org', 'did:web:me.example.org#atproto_pds') } })
+    expect(asked).toEqual(['https://me.example.org/.well-known/did.json'])
+    expect(found).toBe('https://pds.example.org')
+  })
+
+  it('takes only an https PDS, and only a document that names one', async () => {
+    expect(await resolveBlueskyService('did:plc:x', { fetchJson: async () => doc('http://pds.example.org') })).toBeUndefined()
+    expect(await resolveBlueskyService('did:plc:x', { fetchJson: async () => ({ service: [] }) })).toBeUndefined()
+    expect(await resolveBlueskyService('did:plc:x', { fetchJson: async () => { throw new Error('offline') } })).toBeUndefined()
   })
 })
 

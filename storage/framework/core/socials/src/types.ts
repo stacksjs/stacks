@@ -140,6 +140,11 @@ export interface BlueskySession {
   displayName?: string
   accessJwt: string
   refreshJwt: string
+  /**
+   * The PDS the session was made at. Requests for this account go there:
+   * pass it as the driver's `service` (stacksjs/stacks#3376).
+   */
+  service?: string
 }
 
 export interface SocialIdentityCredentials {

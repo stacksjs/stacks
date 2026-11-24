@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { REQUIRED_SOCIAL_CREDENTIALS, SOCIAL_CREDENTIAL_FIELDS } from '../src/identities'
-import { assertPlatformDeclared, driverOptions, DRIVER_DID_FIELD, publishingDriver, toDriverIdentity } from '../src/publish'
+import { assertPlatformDeclared, blueskyTargetOptions, driverOptions, DRIVER_DID_FIELD, publishingDriver, toDriverIdentity } from '../src/publish'
 
 /**
  * The join between a resolved credential and the shape a driver reads.
@@ -164,5 +164,13 @@ describe('assertPlatformDeclared', () => {
     // not a hole.
     for (const platform of ALL)
       expect(() => assertPlatformDeclared('stacks', platform, undefined)).not.toThrow()
+  })
+})
+
+describe('blueskyTargetOptions (stacksjs/stacks#3376)', () => {
+  it('posts to the PDS the session was made at, unless one is configured', () => {
+    expect(blueskyTargetOptions({}, { service: 'https://pds.example.org' })).toEqual({ service: 'https://pds.example.org' })
+    expect(blueskyTargetOptions({ service: 'https://pds.mine' }, { service: 'https://pds.example.org' })).toEqual({ service: 'https://pds.mine' })
+    expect(blueskyTargetOptions({}, {})).toEqual({})
   })
 })

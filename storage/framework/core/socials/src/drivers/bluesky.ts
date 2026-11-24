@@ -11,6 +11,7 @@ import type {
   TimelineQuery,
   TimelineResult,
 } from '../types'
+import { fetchPublicUrl } from '@stacksjs/security'
 import { exceedsLimit } from '../text'
 
 /** The ATProto collection every Bluesky post record lives in. */
@@ -158,6 +159,61 @@ export function detectFacetCandidates(text: string): FacetCandidate[] {
   return candidates.sort((a, b) => a.byteStart - b.byteStart)
 }
 
+/**
+ * Where an account lives: the PDS named in its DID document
+ * (stacksjs/stacks#3376).
+ *
+ * `identifier` is a handle or a DID. A handle is resolved to its DID through
+ * `entryway`'s `resolveHandle`, which answers for any handle. A `did:plc`
+ * document comes from the PLC directory, and a `did:web` one from
+ * `https://<host>/.well-known/did.json` through the outbound guard. Only an
+ * https endpoint is taken: the account's token goes there. Anything that does
+ * not resolve answers `undefined`, never an error.
+ */
+export async function resolveBlueskyService(
+  identifier: string,
+  options: { entryway?: string, directory?: string, fetchJson?: (url: string) => Promise<unknown> } = {},
+): Promise<string | undefined> {
+  const entryway = (options.entryway ?? 'https://bsky.social').replace(/\/+$/, '')
+  const directory = (options.directory ?? 'https://plc.directory').replace(/\/+$/, '')
+  const fetchJson = options.fetchJson ?? (async (url: string) => {
+    // A did:web host is whatever the DID says, so it goes through the guard;
+    // the entryway and the PLC directory are fixed, known hosts.
+    const known = url.startsWith(`${entryway}/`) || url.startsWith(`${directory}/`)
+    const response = known ? await fetch(url) : await fetchPublicUrl(url, {}, { timeoutMs: 10_000, maxBytes: 256 * 1024 })
+    if (!response.ok) throw new Error(`${response.status}`)
+    return await response.json()
+  })
+
+  try {
+    let did = identifier.trim()
+    if (!did.startsWith('did:')) {
+      const resolved = await fetchJson(`${entryway}/xrpc/com.atproto.identity.resolveHandle?handle=${encodeURIComponent(did)}`) as { did?: unknown }
+      if (typeof resolved?.did !== 'string') return undefined
+      did = resolved.did
+    }
+
+    let documentUrl: string
+    // Checked rather than encoded: the directory reads the DID's colons as they are.
+    if (/^did:plc:[a-z0-9]+$/i.test(did))
+      documentUrl = `${directory}/${did}`
+    else if (/^did:web:[a-z0-9.-]+$/i.test(did))
+      documentUrl = `https://${did.slice('did:web:'.length)}/.well-known/did.json`
+    else
+      return undefined
+
+    const document = await fetchJson(documentUrl) as { service?: Array<{ id?: unknown, type?: unknown, serviceEndpoint?: unknown }> }
+    const pds = (document?.service ?? []).find(entry =>
+      typeof entry?.id === 'string' && entry.id.endsWith('#atproto_pds') && entry.type === 'AtprotoPersonalDataServer')
+    const endpoint = typeof pds?.serviceEndpoint === 'string' ? pds.serviceEndpoint : ''
+    if (!/^https:\/\/[^/\s]+/i.test(endpoint)) return undefined
+    return endpoint.replace(/\/+$/, '')
+  }
+  catch {
+    return undefined
+  }
+}
+
 /** What only Bluesky takes, as the third argument to `publish`. */
 export interface BlueskyPublishOptions {
   /**
@@ -193,8 +249,12 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
 
   protected service: string
 
+  /** Whether the PDS was configured, in which case nothing else is tried. */
+  protected configuredService: boolean
+
   constructor(options: BlueskyDriverOptions = {}) {
     this.service = options.service || 'https://bsky.social'
+    this.configuredService = Boolean(options.service)
   }
 
   async createSession(credentials: BlueskySessionCredentials): Promise<BlueskySession> {
@@ -204,10 +264,7 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
     if (!identifier) throw new Error('Bluesky identifier is required.')
     if (!password) throw new Error('Bluesky app password is required.')
 
-    const session = await this.post<CreateSessionResponse>('/xrpc/com.atproto.server.createSession', {
-      identifier,
-      password,
-    })
+    const session = await this.signIn(identifier, password)
 
     const profile = await this.getProfile({
       did: session.did,
@@ -222,6 +279,30 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
       displayName: profile?.displayName,
       accessJwt: session.accessJwt,
       refreshJwt: session.refreshJwt,
+      service: this.service,
+    }
+  }
+
+  /**
+   * Sign in at the configured PDS, bsky.social unless told otherwise. An
+   * account on its own PDS cannot sign in there, so when no PDS was
+   * configured and the password is refused, the account's own PDS is looked
+   * up and tried once; this driver then talks to it (stacksjs/stacks#3376).
+   */
+  protected async signIn(identifier: string, password: string): Promise<CreateSessionResponse> {
+    const attempt = () => this.post<CreateSessionResponse>('/xrpc/com.atproto.server.createSession', { identifier, password })
+    try {
+      return await attempt()
+    }
+    catch (error) {
+      const refused = error instanceof BlueskyApiError && (error.status === 400 || error.status === 401)
+      if (!refused || this.configuredService)
+        throw error
+      const home = await resolveBlueskyService(identifier, { entryway: this.service })
+      if (!home || home === this.service)
+        throw error
+      this.service = home
+      return await attempt()
     }
   }
 
