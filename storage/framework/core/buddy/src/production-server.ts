@@ -196,7 +196,7 @@ export async function startProductionServer(options?: { port?: string | number, 
   const { ensureDiscoveredPackages } = await import('@stacksjs/actions')
   await ensureDiscoveredPackages()
 
-  const { applyResponseHeaders, applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, loadRouteRedirects, resolveApiBase, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirectRules, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
+  const { applyResponseHeaders, applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, loadRouteRedirects, resolveApiBase, resolveApiProxyRules, resolveViewSecurityRules, resolveRedirectRules, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
   // The one copy of this. It used to be duplicated here verbatim — the shared
   // module was extracted precisely so the dev and production servers could not
   // drift, and then this half kept its own.
@@ -357,7 +357,7 @@ export async function startProductionServer(options?: { port?: string | number, 
         log.info(`Document cache: ${documentCacheControl}`)
 
       // Resolved at boot for the same reason (stacksjs/stacks#2325).
-      const embeddableRules = resolveEmbeddableRules(config.server?.security?.embeddable)
+      const embeddableRules = resolveViewSecurityRules(config.server?.security, config.app?.url)
       if (embeddableRules.paths.length > 0 || embeddableRules.prefixes.length > 0)
         log.info(`Frameable by other origins: ${[...embeddableRules.paths, ...embeddableRules.prefixes].join(' ')}`)
 

@@ -61,7 +61,7 @@ catch {
 async function startDefaultServer() {
   await overridesReady
 
-  const { applyResponseHeaders, applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, isApiBoundRequest, loadRouteRedirects, proxyToBackend, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirect, resolveRedirectRules, resolveRewrite, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
+  const { applyResponseHeaders, applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, isApiBoundRequest, loadRouteRedirects, proxyToBackend, resolveApiProxyRules, resolveViewSecurityRules, resolveRedirect, resolveRedirectRules, resolveRewrite, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
   const { applyRequestLocale } = await import('@stacksjs/i18n')
   await injectGlobalAutoImports()
 
@@ -108,7 +108,7 @@ async function startDefaultServer() {
   // `route.redirect()` page paths from routes/, then config/server.ts, which wins a clash.
   const redirectRules = resolveRedirectRules({ ...await loadRouteRedirects(), ...config.server?.redirects })
   const rewriteRules = resolveRewriteRules(config.server?.rewrites)
-  const embeddableRules = resolveEmbeddableRules(config.server?.security?.embeddable)
+  const embeddableRules = resolveViewSecurityRules(config.server?.security, config.app?.url)
 
   // Announce the rules only when the app has widened them. A route that
   // definitely exists returning 404 is very hard to diagnose when the rule

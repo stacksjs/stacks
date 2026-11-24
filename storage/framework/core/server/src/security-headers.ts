@@ -33,6 +33,15 @@
  *
  * What is left is the three headers the report asked for, all of which are
  * safe on an HTML response.
+ *
+ * ## Since stacksjs/stacks#3358
+ *
+ * `resolveViewSecurityRules()` adds what can be sent safely after all:
+ * HSTS once `APP_URL` says the app is https on a real host (the laptop case
+ * above has a local host, or no https), `Cross-Origin-Opener-Policy:
+ * same-origin-allow-popups`, and a `Permissions-Policy` that turns off only
+ * features no stx composable uses. Each is configurable in
+ * `config.server.security`. The API's `STACKS_CSP` still never reaches a page.
  */
 
 import process from 'node:process'
@@ -43,6 +52,80 @@ export interface EmbeddableRules {
   paths: string[]
   /** Path prefixes, stored with a trailing slash. */
   prefixes: string[]
+}
+
+/**
+ * Everything the views server stamps on a page, resolved once at boot.
+ *
+ * A `null` header is not sent. `resolveEmbeddableRules()` alone still gives
+ * the original three headers, so a caller that never resolved these is
+ * unchanged.
+ */
+export interface ViewSecurityRules extends EmbeddableRules {
+  hsts?: string | null
+  crossOriginOpenerPolicy?: string | null
+  permissionsPolicy?: string | null
+}
+
+/** The page security settings in `config.server.security`. */
+export interface ViewSecurityOptions {
+  embeddable?: readonly string[]
+  hsts?: boolean | string
+  crossOriginOpenerPolicy?: string | false
+  permissionsPolicy?: Record<string, string> | false
+}
+
+const HSTS_DEFAULT = 'max-age=31536000; includeSubDomains'
+
+/**
+ * Off only for features no stx composable uses: camera, microphone,
+ * geolocation, clipboard, fullscreen, wake lock and the sensors all have
+ * one, and Stripe's payment iframe needs `payment`.
+ */
+const PERMISSIONS_POLICY_DEFAULT: Record<string, string> = {
+  'browsing-topics': '()',
+  'usb': '()',
+  'serial': '()',
+  'hid': '()',
+  'bluetooth': '()',
+  'midi': '()',
+}
+
+/**
+ * Whether `APP_URL` is an https address on a real host, which is when HSTS is
+ * safe to send. Over http a browser ignores HSTS anyway; on a local host it
+ * would pin `*.localhost` or a `.test` domain to HTTPS for a year, which is
+ * why this path never sent it before.
+ */
+export function servesHttpsPublicly(appUrl: string | undefined): boolean {
+  if (!appUrl) return false
+  let url: URL
+  try { url = new URL(appUrl.includes('://') ? appUrl : `https://${appUrl}`) }
+  catch { return false }
+  if (url.protocol !== 'https:') return false
+  const host = url.hostname.replace(/^\[|\]$/g, '')
+  return !(host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.test') || host === '::1' || /^127\.\d+\.\d+\.\d+$/.test(host))
+}
+
+/**
+ * The page security rules from `config.server.security` and `APP_URL`
+ * (stacksjs/stacks#3358). Resolved once at boot, like the embeddable rules.
+ */
+export function resolveViewSecurityRules(security: ViewSecurityOptions | undefined, appUrl: string | undefined): ViewSecurityRules {
+  const rules: ViewSecurityRules = resolveEmbeddableRules(security?.embeddable)
+
+  const hsts = security?.hsts
+  rules.hsts = hsts === false ? null : typeof hsts === 'string' ? hsts : servesHttpsPublicly(appUrl) ? HSTS_DEFAULT : null
+
+  const coop = security?.crossOriginOpenerPolicy
+  rules.crossOriginOpenerPolicy = coop === false ? null : coop || 'same-origin-allow-popups'
+
+  const permissions = security?.permissionsPolicy
+  rules.permissionsPolicy = permissions === false
+    ? null
+    : Object.entries({ ...PERMISSIONS_POLICY_DEFAULT, ...permissions }).map(([feature, allow]) => `${feature}=${allow}`).join(', ')
+
+  return rules
 }
 
 let _isDisabledCache: boolean | undefined
@@ -120,7 +203,7 @@ export function isEmbeddablePath(pathname: string, rules: EmbeddableRules): bool
 export function applyViewSecurityHeaders(
   req: Request,
   response: Response,
-  rules: EmbeddableRules,
+  rules: EmbeddableRules | ViewSecurityRules,
 ): Response | undefined {
   if (isDisabled())
     return undefined
@@ -138,6 +221,14 @@ export function applyViewSecurityHeaders(
   // now that nothing overwrites it.
   if (!embeddable)
     wanted.push(['X-Frame-Options', 'SAMEORIGIN'])
+
+  const view = rules as ViewSecurityRules
+  if (view.hsts)
+    wanted.push(['Strict-Transport-Security', view.hsts])
+  if (view.crossOriginOpenerPolicy)
+    wanted.push(['Cross-Origin-Opener-Policy', view.crossOriginOpenerPolicy])
+  if (view.permissionsPolicy)
+    wanted.push(['Permissions-Policy', view.permissionsPolicy])
 
   const missing = wanted.filter(([name]) => !response.headers.has(name))
   if (missing.length === 0)

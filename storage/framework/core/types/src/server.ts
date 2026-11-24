@@ -282,6 +282,30 @@ export interface ServerSecurityOptions {
    * exact path.
    */
   embeddable?: string[]
+
+  /**
+   * `Strict-Transport-Security` on pages. Sent by default when `APP_URL` is
+   * https on a real host (not `localhost`, `*.localhost`, `*.test` or an IP
+   * loopback): `max-age=31536000; includeSubDomains`. `false` turns it off; a
+   * string replaces the value (for `preload`).
+   */
+  hsts?: boolean | string
+
+  /**
+   * `Cross-Origin-Opener-Policy` on pages. Default `same-origin-allow-popups`,
+   * which isolates the page from windows that open it while keeping the
+   * popups it opens (OAuth, payment) able to report back. `false` turns it off.
+   */
+  crossOriginOpenerPolicy?: string | false
+
+  /**
+   * `Permissions-Policy` features, merged over the defaults, which turn off only
+   * features no stx composable uses: `browsing-topics`, `usb`, `serial`, `hid`,
+   * `bluetooth`, `midi`. A value is the allowlist as the header writes it:
+   * `'()'` for none, `'self'`, `'(self "https://js.stripe.com")'`. `false`
+   * turns the header off.
+   */
+  permissionsPolicy?: Record<string, string> | false
 }
 
 export interface ServerOptions {
