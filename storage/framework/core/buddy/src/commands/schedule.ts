@@ -72,10 +72,11 @@ export function schedule(buddy: CLI): void {
         // would add a dep, this is enough for operators.
         const nameWidth = Math.max(4, ...jobs.map(j => j.name.length))
         const patternWidth = Math.max(7, ...jobs.map(j => (j.pattern ?? '').length))
-        log.info(`${'NAME'.padEnd(nameWidth)}  ${'PATTERN'.padEnd(patternWidth)}  STATUS  TIMEZONE                   NEXT RUN (UTC)`)
+        log.info(`${'NAME'.padEnd(nameWidth)}  ${'PATTERN'.padEnd(patternWidth)}  STATUS  TIMEZONE                   NEXT RUN (UTC)            LAST RUN (UTC)`)
         for (const j of jobs) {
           const next = j.nextRun ? j.nextRun.toISOString() : '-'
-          log.info(`${j.name.padEnd(nameWidth)}  ${(j.pattern ?? '').padEnd(patternWidth)}  ${(j.enabled ? 'active' : 'paused').padEnd(6)}  ${(j.timezone ?? 'UTC').padEnd(25)}  ${next}`)
+          const last = j.lastRun ? `${j.lastRun.startedAt} ${j.lastRun.status}${j.lastRun.error ? `: ${j.lastRun.error.slice(0, 80)}` : ''}` : 'never'
+          log.info(`${j.name.padEnd(nameWidth)}  ${(j.pattern ?? '').padEnd(patternWidth)}  ${(j.enabled ? 'active' : 'paused').padEnd(6)}  ${(j.timezone ?? 'UTC').padEnd(25)}  ${next.padEnd(24)}  ${last}`)
         }
         await Schedule.gracefulShutdown()
         process.exit(ExitCode.Success)

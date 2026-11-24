@@ -4,6 +4,7 @@ import type { NotificationChannel, NotificationPayload, NotificationRecipient, N
 import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { closeSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { runNamedAction } from '@stacksjs/action-runner'
@@ -114,6 +115,8 @@ export class Schedule implements UntimedSchedule {
   // must read the same pauses and take the same locks (#3386).
   private static lockDir = frameworkPath('locks')
   private static stateFile = frameworkPath('runtime/scheduler-state.json')
+  /** Each task's last run, beside the pause state, so every process sees it (#3364). */
+  private static historyFile = defaultHistoryFile()
   private static activeLocks = new Map<string, SchedulerLockHandle>()
   /** Runs in progress in this process, by task, so a shutdown can wait for them. */
   private static inFlight = new Map<Promise<void>, string>()
@@ -635,8 +638,9 @@ export class Schedule implements UntimedSchedule {
    * operators a view of what's scheduled and when it next runs,
    * without having to read source.
    */
-  static listJobs(): Array<{ name: string, pattern?: string, timezone?: Timezone, nextRun: Date | null, enabled: boolean }> {
-    const out: Array<{ name: string, pattern?: string, timezone?: Timezone, nextRun: Date | null, enabled: boolean }> = []
+  static listJobs(): Array<{ name: string, pattern?: string, timezone?: Timezone, nextRun: Date | null, enabled: boolean, lastRun?: ScheduledRun }> {
+    const out: Array<{ name: string, pattern?: string, timezone?: Timezone, nextRun: Date | null, enabled: boolean, lastRun?: ScheduledRun }> = []
+    const history = Schedule.lastRuns()
     for (const [name, job] of Schedule.jobs) {
       out.push({
         name,
@@ -644,9 +648,46 @@ export class Schedule implements UntimedSchedule {
         timezone: job.timezone,
         nextRun: job.nextRun ? job.nextRun() : null,
         enabled: Schedule.isEnabled(name),
+        lastRun: history[name],
       })
     }
     return out
+  }
+
+  /**
+   * Each task's last run, as every scheduler process on this machine recorded
+   * it: when it started and finished, how it ended, its error, and when it
+   * last succeeded. A missing or unreadable file is no history.
+   */
+  static lastRuns(): Record<string, ScheduledRun> {
+    try {
+      const value = JSON.parse(readFileSync(Schedule.historyFile, 'utf8')) as { runs?: Record<string, ScheduledRun> }
+      return value.runs && typeof value.runs === 'object' ? value.runs : {}
+    }
+    catch {
+      return {}
+    }
+  }
+
+  /**
+   * Record a run's start or end. Read-modify-write through a temporary file and
+   * a rename, so a reader never sees half a file; two processes finishing in
+   * the same instant can lose one record, which the next run replaces.
+   * Best effort: a history that cannot be written never fails the task.
+   */
+  private static recordRun(name: string, run: Omit<ScheduledRun, 'lastSuccessAt'>): void {
+    try {
+      const runs = Schedule.lastRuns()
+      const lastSuccessAt = run.status === 'success' ? run.finishedAt : runs[name]?.lastSuccessAt
+      runs[name] = { ...run, ...(lastSuccessAt ? { lastSuccessAt } : {}) }
+      mkdirSync(dirname(Schedule.historyFile), { recursive: true })
+      const temporary = `${Schedule.historyFile}.${process.pid}.tmp`
+      writeFileSync(temporary, `${JSON.stringify({ runs }, null, 2)}\n`, { mode: 0o600 })
+      renameSync(temporary, Schedule.historyFile)
+    }
+    catch (error) {
+      log.debug(`[scheduler] could not record the run of ${name}: ${error instanceof Error ? error.message : String(error)}`)
+    }
   }
 
   /**
@@ -1091,6 +1132,8 @@ export class Schedule implements UntimedSchedule {
       let settle: () => void = () => {}
       const tracked = new Promise<void>((resolve) => { settle = resolve })
       Schedule.inFlight.set(tracked, taskName)
+      Schedule.recordRun(taskName, { startedAt: new Date(now).toISOString(), status: 'running' })
+      let failure: unknown
       try {
         const result = body()
         // Handle promise-returning tasks: a rejection from an async task
@@ -1110,11 +1153,20 @@ export class Schedule implements UntimedSchedule {
           await (result as Promise<unknown>)
       }
       catch (error) {
+        failure = error
         reportFailure(error)
         throw error
       }
       finally {
         running = false
+        const finished = Date.now()
+        Schedule.recordRun(taskName, {
+          startedAt: new Date(now).toISOString(),
+          finishedAt: new Date(finished).toISOString(),
+          durationMs: finished - now,
+          status: failure === undefined ? 'success' : 'failed',
+          error: failure === undefined ? undefined : String(failure instanceof Error ? failure.message : failure).slice(0, 500),
+        })
         Schedule.inFlight.delete(tracked)
         settle()
       }
@@ -1404,6 +1456,32 @@ export class Schedule implements UntimedSchedule {
     process.on('SIGTERM', stopAndExit)
     process.on('SIGINT', stopAndExit)
   }
+}
+
+/**
+ * Where run history is kept: the project's runtime directory, except in a test
+ * process (Bun's runner sets NODE_ENV=test), where every task a test runs would
+ * otherwise land in the developer's real history. Tests share one file in the
+ * temporary directory: Bun's runner does not emit `exit`, so a file per
+ * process could never be cleaned up, and a test that asserts history points
+ * `historyFile` at its own.
+ */
+function defaultHistoryFile(): string {
+  return process.env.NODE_ENV === 'test'
+    ? join(tmpdir(), 'stacks-scheduler-history-test.json')
+    : frameworkPath('runtime/scheduler-history.json')
+}
+
+/** A task's last run, as `Schedule.lastRuns()` reports it. */
+export interface ScheduledRun {
+  startedAt: string
+  finishedAt?: string
+  durationMs?: number
+  status: 'running' | 'success' | 'failed'
+  /** The failure's message, at most 500 characters. */
+  error?: string
+  /** When it last finished successfully, kept through later failures. */
+  lastSuccessAt?: string
 }
 
 export class Queue extends Schedule { }
