@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.676...v0.75.677)
+
+## ✨ Features
+
+- **dashboard**: roll dashboard workers without downtime ([4d3a823](https://github.com/stacksjs/stacks/commit/4d3a823)) _(by Chris Breuer)_
+- **uploads**: one handler for the session routes, receiveUpload, sendUpload, locateFile ([b1053a4](https://github.com/stacksjs/stacks/commit/b1053a4)) _(by Chris Breuer)_
+- **buddy**: roll served apps without downtime on Windows ([4c2adc6](https://github.com/stacksjs/stacks/commit/4c2adc6)) _(by Chris Breuer)_
+- **desktop**: desktop.webview.agent.database compiles in the app's migrations ([f4f5788](https://github.com/stacksjs/stacks/commit/f4f5788)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+- **desktop**: a web view app migrates its own database at launch ([f15de7d](https://github.com/stacksjs/stacks/commit/f15de7d)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+
+## 🐛 Bug Fixes
+
+- **uploads**: receiveUpload takes the router's UploadedFile ([897d233](https://github.com/stacksjs/stacks/commit/897d233)) _(by Chris Breuer)_
+- **dashboard**: wait for the replacement worker on restart ([c6713fb](https://github.com/stacksjs/stacks/commit/c6713fb)) _(by Chris Breuer)_
+
+## 💚 Continuous Integration
+
+- **buddy**: verify Windows server handoffs independently ([521c8a9](https://github.com/stacksjs/stacks/commit/521c8a9)) _(by Chris Breuer)_
+
+## ⏪ Reverts
+
+- install new apps from npm again until Pantry serves lockfile tarball paths ([645de01](https://github.com/stacksjs/stacks/commit/645de01)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.675...v0.75.676)
 
 ## ✨ Features
