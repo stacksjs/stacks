@@ -29,7 +29,7 @@
  */
 
 import { Database } from 'bun:sqlite'
-import { chmodSync, copyFileSync, existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs'
+import { chmodSync, closeSync, copyFileSync, existsSync, mkdirSync, openSync, readdirSync, readSync, rmSync, statSync } from 'node:fs'
 import { basename, dirname, extname, join } from 'node:path'
 
 export interface CompiledMigrationOptions {
@@ -94,8 +94,18 @@ export function schemaVersion(migrations: Record<string, string>): number {
   return Object.keys(migrations).reduce((highest, name) => Math.max(highest, migrationNumber(name)), 0)
 }
 
-/** The schema version recorded in a database, or 0 for one that has none. */
+/**
+ * The schema version recorded in a database, or 0 for one that has none.
+ *
+ * Read from the file header when no write-ahead log is pending, so asking
+ * changes nothing on disk: on Linux even a read-only connection to a WAL
+ * database creates `-shm` and `-wal` files it cannot remove, and the refusal
+ * of a newer database is meant to leave it exactly as it was found.
+ */
 export function databaseVersion(databasePath: string): number {
+  const header = headerUserVersion(databasePath)
+  if (header !== undefined)
+    return header
   const database = new Database(databasePath, { readonly: true })
   try {
     return Number((database.query('PRAGMA user_version').get() as { user_version: number }).user_version)
@@ -103,6 +113,29 @@ export function databaseVersion(databasePath: string): number {
   finally {
     database.close()
   }
+}
+
+/**
+ * `PRAGMA user_version` straight from the 100-byte database header (a
+ * big-endian integer at offset 60), or undefined when the header may be
+ * behind: a non-empty `-wal` holds commits not yet copied into the file.
+ */
+function headerUserVersion(databasePath: string): number | undefined {
+  const wal = `${databasePath}-wal`
+  if (existsSync(wal) && statSync(wal).size > 0)
+    return undefined
+  const header = Buffer.alloc(100)
+  const fd = openSync(databasePath, 'r')
+  try {
+    if (readSync(fd, header, 0, 100, 0) < 100)
+      return 0
+  }
+  finally {
+    closeSync(fd)
+  }
+  if (header.toString('latin1', 0, 16) !== 'SQLite format 3\u0000')
+    return undefined
+  return header.readInt32BE(60)
 }
 
 /** The migrations a build carries that this database has not had, in order. */
