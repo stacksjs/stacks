@@ -3,9 +3,9 @@ import process from 'node:process'
 
 interface SocketPeer { address: string, port?: number }
 
-export function serveRelayPort(worker: 'serve' | 'dashboard' = 'serve'): number | undefined {
+export function serveRelayPort(worker: 'serve' | 'dashboard' | 'dev' = 'serve'): number | undefined {
   const port = Number(process.env.STACKS_SERVE_RELAY_PORT)
-  const key = worker === 'dashboard' ? 'STACKS_DASHBOARD_WORKER' : 'STACKS_SERVE_WORKER'
+  const key = { serve: 'STACKS_SERVE_WORKER', dashboard: 'STACKS_DASHBOARD_WORKER', dev: 'STACKS_DEV_RELAY_WORKER' }[worker]
   if (process.env[key] === '1' && typeof process.send === 'function'
     && Number.isInteger(port) && port > 0 && port <= 65535)
     return port
@@ -45,3 +45,11 @@ export function installServeRelayWorker(drain: () => void) {
     },
   }
 }
+
+// Managed dev actions preload this module so project overrides can participate
+// in the relay without wrapping their entrypoint or changing import.meta.main.
+const devRelayKey = Symbol.for('stacks.serve.devRelayWorker')
+const runtime = globalThis as typeof globalThis & { [devRelayKey]?: ReturnType<typeof installServeRelayWorker> }
+export const devRelayWorker = serveRelayPort('dev')
+  ? (runtime[devRelayKey] ??= installServeRelayWorker(() => process.exit(0)))
+  : undefined

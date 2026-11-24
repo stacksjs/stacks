@@ -10,11 +10,12 @@ import { parseOptions } from '@stacksjs/cli'
 import { config, overridesReady } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 import type { Middleware } from '@stacksjs/router'
-import { disableViewRouting, route } from '@stacksjs/router'
+import { disableViewRouting, registerPeerSource, route } from '@stacksjs/router'
 import { autoImportsAreStale, generateAutoImportFiles, generateServerAutoImportTypes, injectGlobalAutoImports, warnShadowedSecurityDefaults } from '@stacksjs/server'
 import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import { reportApiReady, resolveApiHost, resolveApiPort } from '../helpers/api-host'
 import { exitWithParent } from './exit-with-parent'
+import { devRelayWorker } from '../helpers/serve-relay-worker'
 
 const _options = parseOptions()
 
@@ -34,7 +35,7 @@ await generateServerAutoImportTypes()
 // resolved yet. Env var wins so users can override via .env / shell.
 await overridesReady
 const port = resolveApiPort(process.env.PORT_API, config.ports?.api)
-const hostname = resolveApiHost()
+const hostname = devRelayWorker ? '127.0.0.1' : resolveApiHost()
 
 // Regenerate the model + function auto-import manifest when it is missing
 // OR when a source has changed under it. Regenerating on every boot (and
@@ -237,7 +238,9 @@ try {
   })
   // Most terminals turn `http://localhost:3008` into a click-through
   // link; the leading newline gives the previous output room to breathe.
-  reportApiReady(server)
+  if (devRelayWorker)
+    registerPeerSource(devRelayWorker.wrap(server))
+  reportApiReady(server, !devRelayWorker)
 }
 catch (err: any) {
   const code = err?.code || err?.errno

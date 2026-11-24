@@ -7,6 +7,7 @@ import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import { seedCsrfPageResponse } from './csrf'
 import { resolveDefaultsResources } from './defaults-resources'
 import { exitWithParent } from './exit-with-parent'
+import { devRelayWorker } from '../helpers/serve-relay-worker'
 import type { EnhancedRequest } from '@stacksjs/router'
 import { beginRequestCapture, finishRequestCapture } from '@stacksjs/router/request-capture'
 
@@ -202,7 +203,8 @@ async function startDefaultServer() {
     patterns: viewPatterns.patterns,
     exclude: viewPatterns.exclude,
     port: preferredPort,
-    autoIncrementPort: process.env.STACKS_DEV_FIXED_FRONTEND_PORT !== '1',
+    ...(devRelayWorker && { hostname: '127.0.0.1' }),
+    autoIncrementPort: !devRelayWorker && process.env.STACKS_DEV_FIXED_FRONTEND_PORT !== '1',
     // Wider than the dashboard subdir so both Dashboard/* and
     // Storefront/* (and any future <Namespace>/Component.stx) get
     // resolved. stx-serve walks one subdirectory deep, so this
@@ -234,14 +236,14 @@ async function startDefaultServer() {
     },
     prepareMiddlewareRequest: (request: Request) => enhanceRequest(request as EnhancedRequest),
     // A page's ambient `ip`, resolved as `buddy serve` resolves it.
-    clientAddress: viewClientAddress,
+    clientAddress: (req, server) => viewClientAddress(req, devRelayWorker?.wrap(server) ?? server),
     onRequest: async (req: Request, server?: Parameters<typeof registerPeerSource>[0]) => {
       beginRequestCapture(req)
       // First, before any `await`: this request's scope for its server
       // scripts (see `installRequestScope()` above).
       const snapshot = enterRequestScope(req)
       // Lets `clientAddress()` read the socket peer, as `buddy serve` does.
-      registerPeerSource(server)
+      registerPeerSource(devRelayWorker ? devRelayWorker.wrap(server) : server)
       const url = new URL(req.url)
 
       // Maintenance / coming-soon gate. Runs first so it can intercept

@@ -3,7 +3,8 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { isProcessAlive } from '@stacksjs/path'
-import { runningAppDevSessions } from '../../actions/src/dev/app-session-control'
+import { startAppDevSession } from '../../actions/src/dev/app-session'
+import { findRestartControl, restartAppSession, runningAppDevSessions } from '../../actions/src/dev/app-session-control'
 import { restartUpdatedProject } from '../../actions/src/dev/dashboard-restart'
 
 interface Listener {
@@ -26,13 +27,17 @@ async function waitFor<T>(read: () => T | Promise<T>): Promise<T> {
   }
 }
 
-test.each([
-  [['dev', 'frontend'], ['dev', 'api']],
-  [['dev:frontend'], ['dev:api', '--no-watch-types']],
-])('Software Update can restart separate %j and %j sessions on their original ports', async (frontend, api) => {
+const launchModes = ['combined', 'separate commands', 'separate aliases'] as const
+
+test.each(launchModes)('Software Update rolls dev services on their original ports (%s)', async (mode) => {
+  const combined = mode === 'combined'
+  const commands = mode === 'separate aliases'
+    ? [['dev:frontend'], ['dev:api', '--no-watch-types']]
+    : [['dev', 'frontend'], ['dev', 'api']]
   const root = await mkdtemp(join(tmpdir(), 'stacks-standalone-dev-'))
   const actions = join(root, 'storage/framework/core/actions/src/dev')
   const children: Array<ReturnType<typeof Bun.spawn>> = []
+  let session: ReturnType<typeof startAppDevSession> | undefined
   const occupied = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response('unrelated') })
   try {
     await Promise.all([mkdir(actions, { recursive: true }), mkdir(join(root, 'config'))])
@@ -43,56 +48,178 @@ test.each([
       writeFile(join(root, 'version.txt'), 'before'),
       ...(['views', 'api'] as const).map(name => writeFile(join(actions, `${name}.ts`), `
 const version = await Bun.file('version.txt').text()
+const port = Number(process.env.STACKS_DEV_PUBLIC_PORT)
+if (version === 'failed' && '${name}' === 'views')
+  throw new Error('Replacement frontend failed at startup')
+if ((version === 'after' || version === 'unstable') && '${name}' === 'api') {
+  await Bun.write('hold-api', '')
+  while (!await Bun.file('allow-api').exists())
+    await Bun.sleep(25)
+}
 const server = Bun.serve({
   hostname: '127.0.0.1',
   port: Number(process.env.${name === 'api' ? 'PORT_API' : 'PORT'}),
-  fetch: () => Response.json({ port: server.port, pid: process.pid, version }),
+  async fetch(request) {
+    if (new URL(request.url).pathname === '/slow') {
+      await Bun.write('slow-request', '')
+      while (!await Bun.file('finish-slow').exists())
+        await Bun.sleep(25)
+    }
+    if (version === 'unstable' && '${name}' === 'views')
+      await Bun.write('standby-probed', '')
+    return Response.json({ port, pid: process.pid, version })
+  },
 })
 ${name === 'api' ? "process.send({ type: 'stacks:api-ready', port: server.port })" : ''}
-await Bun.write('${name}-ready.json', JSON.stringify({ port: server.port, pid: process.pid, version }))
+await Bun.write('${name}-ready.json', JSON.stringify({ port, pid: process.pid, version }))
+if (version === 'unstable' && '${name}' === 'views') {
+  while (!await Bun.file('exit-standby').exists())
+    await Bun.sleep(25)
+  process.exit(7)
+}
 `)),
     ])
-    for (const args of [frontend, api]) {
-      children.push(Bun.spawn([process.execPath, '--no-env-file', join(import.meta.dir, 'fixtures/dev-defaults-preflight.ts'), ...args], {
-        cwd: root,
-        env: {
-          ...process.env,
-          PORT: String(occupied.port),
-          PORT_API: '0',
-          STACKS_HOME: join(root, 'state'),
-          STACKS_DEV_NO_OPEN: '1',
+    if (combined) {
+      session = startAppDevSession({
+        root,
+        frontendPort: 0,
+        apiPort: 0,
+        async waitForPort(port, timeoutMs, signal) {
+          const deadline = Date.now() + timeoutMs
+          while (!signal.aborted && Date.now() < deadline) {
+            const response = await fetch(`http://127.0.0.1:${port}`, {
+              headers: { connection: 'close' },
+              signal: AbortSignal.any([signal, AbortSignal.timeout(500)]),
+            }).catch(() => null)
+            if (response?.ok)
+              return true
+            await Bun.sleep(50)
+          }
+          return false
         },
-        stdout: 'ignore',
-        stderr: 'inherit',
-      }))
+        reportError: console.error,
+      })
+    }
+    else {
+      for (const args of commands) {
+        children.push(Bun.spawn([process.execPath, '--no-env-file', join(import.meta.dir, 'fixtures/dev-defaults-preflight.ts'), ...args], {
+          cwd: root,
+          env: {
+            ...process.env,
+            PORT: String(occupied.port),
+            PORT_API: '0',
+            STACKS_HOME: join(root, 'state'),
+            STACKS_DEV_NO_OPEN: '1',
+            SHUTDOWN_GRACE_MS: '2500',
+          },
+          stdout: 'ignore',
+          stderr: 'inherit',
+        }))
+      }
     }
     const [views, backend] = await Promise.all(['views', 'api'].map(name => waitFor(async () => {
       return await Bun.file(join(root, `${name}-ready.json`)).json() as Listener
     })))
-    expect(runningAppDevSessions(root).map(session => session.pid).sort()).toEqual(children.map(child => child.pid).sort())
-    expect(views!.port).not.toBe(occupied.port)
-    await writeFile(join(root, 'version.txt'), 'after')
+    const [frontend, api] = [views!, backend!]
+    expect(runningAppDevSessions(root).map(session => session.pid).sort()).toEqual(
+      combined ? [process.pid] : children.map(child => child.pid).sort(),
+    )
+    expect(frontend.port).not.toBe(occupied.port)
 
-    await restartUpdatedProject(root)
-
-    for (const before of [views!, backend!]) {
-      const response = await fetch(`http://127.0.0.1:${before.port}`)
-      const after = await response.json() as Listener
-      expect(after).toMatchObject({ port: before.port, version: 'after' })
-      expect(after.pid).not.toBe(before.pid)
-      expect(isProcessAlive(before.pid)).toBe(false)
+    async function read(port: number, path = '/'): Promise<Listener> {
+      const response = await fetch(`http://127.0.0.1:${port}${path}`, {
+        headers: { connection: 'close' },
+        signal: AbortSignal.timeout(12_000),
+      })
+      expect(response.ok).toBe(true)
+      return await response.json() as Listener
     }
+    const before = await Promise.all([frontend.port, api.port].map(port => waitFor(() => read(port))))
+    const slow = read(api.port, '/slow')
+    void slow.catch(() => {})
+    await waitFor(() => Bun.file(join(root, 'slow-request')).text())
+    await writeFile(join(root, 'version.txt'), 'after')
+    let monitoring = true
+    const failures: unknown[] = []
+    const traffic = (async () => {
+      while (monitoring) {
+        await Promise.all([frontend.port, api.port].map(port => read(port).catch(error => { failures.push(error) })))
+        await Bun.sleep(10)
+      }
+    })()
+    const restart = restartUpdatedProject(root)
+    void restart.catch(() => {})
+    try {
+      await waitFor(() => Bun.file(join(root, 'hold-api')).text())
+      expect(await read(api.port)).toEqual(api)
+      if (combined) {
+        await waitFor(async () => {
+          const worker = await Bun.file(join(root, 'views-ready.json')).json() as Listener
+          if (worker.version !== 'after')
+            throw new Error('Frontend replacement is not ready')
+        })
+        expect(await read(frontend.port)).toEqual(frontend)
+      }
+      await writeFile(join(root, 'allow-api'), '')
+      await waitFor(async () => {
+        if ((await read(api.port)).version !== 'after')
+          throw new Error('API replacement is not serving')
+      })
+      await writeFile(join(root, 'finish-slow'), '')
+      expect(await slow).toEqual(api)
+      await restart
+
+      const after = await Promise.all(before.map(async (previous) => {
+        const current = await read(previous.port)
+        expect(current).toMatchObject({ port: previous.port, version: 'after' })
+        expect(current.pid).not.toBe(previous.pid)
+        expect(isProcessAlive(previous.pid)).toBe(false)
+        return current
+      }))
+
+      await writeFile(join(root, 'version.txt'), 'failed')
+      const control = findRestartControl(root, 'dev', combined ? process.pid : children[0]!.pid)!
+      await expect(restartAppSession(control)).rejects.toThrow('Frontend exited before it was ready')
+      expect(await Promise.all(after.map(current => read(current.port)))).toEqual(after)
+
+      if (combined) {
+        await rm(join(root, 'allow-api'))
+        await writeFile(join(root, 'version.txt'), 'unstable')
+        const interrupted = restartAppSession(control)
+        void interrupted.catch(() => {})
+        await waitFor(() => Bun.file(join(root, 'standby-probed')).text())
+        const standby = await Bun.file(join(root, 'views-ready.json')).json() as Listener
+        expect(standby.version).toBe('unstable')
+        await writeFile(join(root, 'exit-standby'), '')
+        await waitFor(() => {
+          if (isProcessAlive(standby.pid))
+            throw new Error('Frontend replacement has not exited')
+        })
+        await writeFile(join(root, 'allow-api'), '')
+        await expect(interrupted).rejects.toThrow(/Frontend (stopped|exited)/)
+        expect(await Promise.all(after.map(current => read(current.port)))).toEqual(after)
+      }
+    }
+    finally {
+      monitoring = false
+      await traffic
+    }
+    expect(failures).toEqual([])
     expect(await (await fetch(occupied.url)).text()).toBe('unrelated')
     for (const child of children)
       child.kill('SIGTERM')
-    expect(await Promise.all(children.map(child => child.exited))).toEqual([0, 0])
+    const exitCodes = await Promise.all(children.map(child => child.exited))
+    if (process.platform !== 'win32')
+      expect(exitCodes).toEqual(combined ? [] : [0, 0])
+    await session?.stop()
     expect(runningAppDevSessions(root)).toEqual([])
   }
   finally {
+    await session?.stop()
     for (const child of children)
       child.kill('SIGKILL')
     await Promise.all(children.map(child => child.exited))
     await occupied.stop(true)
     await rm(root, { recursive: true, force: true })
   }
-}, 30_000)
+}, 35_000)
