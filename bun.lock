@@ -739,9 +739,9 @@
         "@stacksjs/path": "workspace:*",
         "@stacksjs/stx": "^0.2.930",
         "@stacksjs/testing": "workspace:*",
-        "@ts-videos/mp4": "^0.1.2",
+        "@ts-videos/mp4": "^0.2.2",
         "craft-native": ">=0.0.499",
-        "ts-videos": "^0.1.2",
+        "ts-videos": "^0.2.2",
       },
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
@@ -1579,10 +1579,10 @@
       "name": "@stacksjs/video",
       "version": "0.75.669",
       "dependencies": {
-        "@ts-videos/mp4": "^0.1.2",
-        "@ts-videos/webm": "^0.1.2",
+        "@ts-videos/mp4": "^0.2.2",
+        "@ts-videos/webm": "^0.2.2",
         "ts-video-player": "^0.1.3",
-        "ts-videos": "^0.1.2",
+        "ts-videos": "^0.2.2",
       },
       "devDependencies": {
         "better-dx": "^0.2.39",
@@ -1967,9 +1967,9 @@
 
     "@ts-cloud/core": ["@ts-cloud/core@0.16.155", "", { "dependencies": { "@ts-cloud/aws-types": "0.16.155" } }, "sha512-z2Z3llEgGNonDMDsW0K5yK8Q8IMdUatICkLvt9YsQHTWKNX5vX3vrfAkxn1E7ZfFqS/Rl/nNU9/Z/s3utsrzYg=="],
 
-    "@ts-videos/mp4": ["@ts-videos/mp4@0.1.2", "", { "peerDependencies": { "ts-videos": "0.1.2" } }, "sha512-pZoSg84mEKPS2006/5vb45z6xQDAsLo2fnTEDwNdBwwzfsmj+y4M7+8mY057KFpxk6WlqIekgcEKslWeb/W/xQ=="],
+    "@ts-videos/mp4": ["@ts-videos/mp4@0.2.2", "", { "peerDependencies": { "ts-videos": "0.2.2" } }, "sha512-8sD9EqOpdpDnQIIvBELPv4bzdDNxQurJVpYTU1L1ZFvdesodSs6RO1Fh2/m1c/MpKKIVY01SVET2qBT5f5Yc4g=="],
 
-    "@ts-videos/webm": ["@ts-videos/webm@0.1.2", "", { "peerDependencies": { "ts-videos": "0.1.2" } }, "sha512-/aeM2LKeyF35pRRQLJdBK/0SJFpmdAHOnT5zbbgc4u+akY3LR7TdEr5GA2vubUKk5bqATx/isCMYPJogv1OPNA=="],
+    "@ts-videos/webm": ["@ts-videos/webm@0.2.2", "", { "peerDependencies": { "ts-videos": "0.2.2" } }, "sha512-b3tX3Jpjll/Y0gmraGqXKAZUtNy5e8A+0i46ThQCu6Ix6QanznqiBL7V0vcNucMxlg8gMbz9DF18c6W2RSTHbA=="],
 
     "@types/bun": ["@types/bun@1.4.5", "", { "dependencies": { "bun-types": "1.4.5" } }, "sha512-DpgwNI9z0L1S0gtb45QLCWgwCUcMLnsHYMJHQvpNj7erGiCGBvpggltAIeARrtobNMKMuy0UP7i56tKKgwFs/Q=="],
 
@@ -2271,7 +2271,7 @@
 
     "ts-video-player": ["ts-video-player@0.1.11", "", { "peerDependencies": { "stx": ">=0.65.0" }, "optionalPeers": ["stx"] }, "sha512-xkQHjqqGTn2OHMRtWfJk+Hkhm64qg7p3bbUnllmM3As57h5Au+2vWZgQyZtlEyZ/+FRtwrsgIDU4v0Jgcck2Gg=="],
 
-    "ts-videos": ["ts-videos@0.1.2", "", { "dependencies": { "bunfig": "^0.15.6" }, "optionalDependencies": { "@ts-videos/mp4": "0.1.2", "@ts-videos/webm": "0.1.2" }, "bin": { "ts-videos": "./dist/bin/cli.js" } }, "sha512-J3s3hd6om0y7f7cANlCY72dTYReS/V/D6x3jKUQa358Y1cw5hdggF5LV/6BAYjhMFK5m6Ss7x2GbPyvKmoNimQ=="],
+    "ts-videos": ["ts-videos@0.2.2", "", { "dependencies": { "bunfig": "^0.15.6" }, "optionalDependencies": { "@ts-videos/mp4": "0.2.2", "@ts-videos/webm": "0.2.2" }, "bin": { "ts-videos": "./dist/bin/cli.js" } }, "sha512-N4JnO8nyS/EW0+1kxd3Y740R4v96rA1gmiy8wKCODCzZ7rA1aog6mTzVhJOhR9vWRh2AZ1utNFzjNl9rUofeNw=="],
 
     "type-is": ["type-is@2.1.0", "", { "dependencies": { "content-type": "^2.0.0", "media-typer": "^1.1.0", "mime-types": "^3.0.0" } }, "sha512-faYHw0anBbc/kWF3zFTEnxSFOAGUX9GFbOBthvDdLsIlEoWOFOtS0zgCiQYwIskL9iGXZL3kAXD8OoZ4GmMATA=="],
 
