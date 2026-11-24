@@ -1,5 +1,46 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.674...v0.75.675)
+
+## ✨ Features
+
+- **scheduler**: keep each task's last run, and show it in schedule:list ([884d4ff](https://github.com/stacksjs/stacks/commit/884d4ff)) _(by glennmichael123)_ ([#3364](https://github.com/stacksjs/stacks/issues/3364))
+- **scheduler**: wait for running jobs on shutdown, and on SIGTERM ([d1cb30c](https://github.com/stacksjs/stacks/commit/d1cb30c)) _(by glennmichael123)_ ([#3364](https://github.com/stacksjs/stacks/issues/3364))
+- **scheduler**: a tick no longer starts on top of a running one ([1a65857](https://github.com/stacksjs/stacks/commit/1a65857)) _(by glennmichael123)_ ([#3364](https://github.com/stacksjs/stacks/issues/3364))
+- **server**: an opt-in page CSP with a nonce on every script ([ef8f67e](https://github.com/stacksjs/stacks/commit/ef8f67e)) _(by glennmichael123)_ ([#3358](https://github.com/stacksjs/stacks/issues/3358))
+- **server**: HSTS, COOP and Permissions-Policy on pages ([08da3d3](https://github.com/stacksjs/stacks/commit/08da3d3)) _(by glennmichael123)_ ([#3358](https://github.com/stacksjs/stacks/issues/3358))
+
+## 🐛 Bug Fixes
+
+- **buddy**: keep waiting through transient release status failures ([e9ae824](https://github.com/stacksjs/stacks/commit/e9ae824)) _(by Chris Breuer)_
+- **scheduler**: await the stop messages before the process exits ([e824341](https://github.com/stacksjs/stacks/commit/e824341)) _(by glennmichael123)_ ([stacksjs/stacks#3364](https://github.com/stacksjs/stacks/issues/3364))
+- **ai**: inline completions set no sampling temperature ([58efc01](https://github.com/stacksjs/stacks/commit/58efc01)) _(by glennmichael123)_ ([stacksjs/stacks#3380](https://github.com/stacksjs/stacks/issues/3380))
+- **ai**: ask Claude for JSON with its own JSON mode, not a forced tool ([13b4a63](https://github.com/stacksjs/stacks/commit/13b4a63)) _(by glennmichael123)_ ([stacksjs/stacks#3380](https://github.com/stacksjs/stacks/issues/3380))
+- **video**: cache protected media in the browser only ([db8261b](https://github.com/stacksjs/stacks/commit/db8261b)) _(by glennmichael123)_
+- **defaults**: SubscribeForm renders its button classes before its script runs ([9c44dd2](https://github.com/stacksjs/stacks/commit/9c44dd2)) _(by Chris Breuer)_
+- **docs**: bring the Stacks docs theme back to Lighthouse 100 ([f15db88](https://github.com/stacksjs/stacks/commit/f15db88)) _(by Chris Breuer)_
+- **defaults**: SubscribeForm renders its text before its script runs ([ad6941c](https://github.com/stacksjs/stacks/commit/ad6941c)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **scheduler**: overlap off by default, graceful stop, run history ([2a4b738](https://github.com/stacksjs/stacks/commit/2a4b738)) _(by glennmichael123)_ ([#3364](https://github.com/stacksjs/stacks/issues/3364))
+- **native**: count the scheduler's overlap-default test ([d5d9b50](https://github.com/stacksjs/stacks/commit/d5d9b50)) _(by glennmichael123)_ ([#3364](https://github.com/stacksjs/stacks/issues/3364))
+- **security**: the page headers, their defaults and the opt-in CSP ([a188157](https://github.com/stacksjs/stacks/commit/a188157)) _(by glennmichael123)_ ([#3358](https://github.com/stacksjs/stacks/issues/3358))
+
+## ✅ Tests
+
+- **server**: pin the page HSTS, COOP and Permissions-Policy defaults ([0e208ea](https://github.com/stacksjs/stacks/commit/0e208ea)) _(by glennmichael123)_ ([#3358](https://github.com/stacksjs/stacks/issues/3358))
+- **defaults**: hold SubscribeForm's pre-hydration markup in place ([488372b](https://github.com/stacksjs/stacks/commit/488372b)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **deps**: bump @stacksjs/bunpress to ^0.2.34 ([0c5d4ec](https://github.com/stacksjs/stacks/commit/0c5d4ec)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.673...v0.75.674)
 
 ## 🐛 Bug Fixes
