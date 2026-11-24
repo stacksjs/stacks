@@ -2,6 +2,7 @@ import type { Server } from 'bun'
 import { randomBytes } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, extname, join, normalize, sep } from 'node:path'
+import { errorBody, internalServerErrorBody } from '@stacksjs/router/error-body'
 
 /**
  * The process behind a desktop app that runs its own API (`macos.agent`): a
@@ -130,6 +131,9 @@ function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
 }
 
+/** A refusal in the router's standard error shape (stacksjs/stacks#3361). */
+const forbidden = (): Response => json(errorBody({ error: 'Forbidden', message: 'This request is not from the app.', status: 403 }), 403)
+
 export async function startDesktopAgent(options: DesktopAgentOptions): Promise<DesktopAgent> {
   const cookieName = options.cookieName ?? 'stacks_desktop'
   let token = newAgentToken()
@@ -150,29 +154,30 @@ export async function startDesktopAgent(options: DesktopAgentOptions): Promise<D
     // AppKit's URLSession keeps the cookie for every native window; the
     // screens' script context never sees it.
     if (url.pathname === '/native/session') {
-      if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405)
-      if (!isAgentHost(host, port)) return json({ error: 'Forbidden' }, 403)
+      if (request.method !== 'GET') return json(errorBody({ error: 'Method Not Allowed', message: 'Fetch the session with GET.', status: 405 }), 405)
+      if (!isAgentHost(host, port)) return forbidden()
       const response = json({ name: options.name ?? null, version: options.version ?? null, renderer: 'appkit' })
       response.headers.set('set-cookie', sessionCookie(cookieName, token))
       return response
     }
 
-    if (!isAgentHost(host, port)) return json({ error: 'Forbidden' }, 403)
+    if (!isAgentHost(host, port)) return forbidden()
 
     if (request.method === 'GET' && !url.pathname.startsWith('/api/')) {
       const file = serveStatic(url.pathname)
       if (file) return file
     }
 
-    if (!hasSessionCookie(request, cookieName, token)) return json({ error: 'Forbidden' }, 403)
+    if (!hasSessionCookie(request, cookieName, token)) return forbidden()
 
     try {
       return await options.handler(request)
     }
     catch (error) {
+      // The cause goes to the log, not to the page.
       const message = error instanceof Error ? error.message : String(error)
       console.error(`[agent] ${request.method} ${url.pathname}: ${message}`)
-      return json({ error: message }, 500)
+      return json(internalServerErrorBody(), 500)
     }
   }
 

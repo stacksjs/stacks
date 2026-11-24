@@ -2,6 +2,7 @@ import type { DesktopFetcher, DesktopUpdateManifest, DesktopUpdateTarget } from 
 import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, renameSync, rmSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
+import { errorBody } from '@stacksjs/router/error-body'
 import { updateFeedUrl } from './update-feed'
 import { checkForDesktopUpdate, stageDesktopUpdate } from './updater'
 
@@ -382,11 +383,11 @@ export function updateRequestHandler(updater: DesktopUpdater): (request: Request
   return async (request) => {
     if (new URL(request.url).pathname !== UPDATE_PATH) return undefined
     if (request.method === 'GET') return json(updater.status())
-    if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
+    if (request.method !== 'POST') return json(errorBody({ error: 'Method Not Allowed', message: 'Read the status with GET, or POST an action.', status: 405 }), 405)
     const body = await request.json().catch(() => null) as { action?: string, acknowledge?: boolean } | null
     if (body?.action === 'check') return json(await updater.check())
     if (body?.action === 'install') return json(await updater.install({ acknowledge: body.acknowledge === true }))
-    return json({ error: 'Send { action: "check" } or { action: "install" }.' }, 400)
+    return json(errorBody({ error: 'Bad Request', message: 'Send { action: "check" } or { action: "install" }.', status: 400 }), 400)
   }
 }
 

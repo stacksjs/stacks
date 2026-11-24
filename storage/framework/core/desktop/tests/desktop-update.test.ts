@@ -492,8 +492,12 @@ describe('the updater an agent holds', () => {
     const post = (body: unknown) => handle(new Request(at, { method: 'POST', body: JSON.stringify(body) }))
     expect(await (await post({ action: 'check' }))!.json()).toMatchObject({ state: 'available', version: '0.4.0' })
     expect(await (await post({ action: 'install' }))!.json()).toMatchObject({ state: 'installed' })
-    expect((await post({ action: 'format-disk' }))!.status).toBe(400)
-    expect((await handle(new Request(at, { method: 'DELETE' })))!.status).toBe(405)
+    const refused = (await post({ action: 'format-disk' }))!
+    expect(refused.status).toBe(400)
+    expect(await refused.json()).toMatchObject({ error: 'Bad Request', status: 400, message: 'Send { action: "check" } or { action: "install" }.' })
+    const wrongMethod = (await handle(new Request(at, { method: 'DELETE' })))!
+    expect(wrongMethod.status).toBe(405)
+    expect(await wrongMethod.json()).toMatchObject({ error: 'Method Not Allowed', status: 405 })
   })
 
   test('staging is what the real install would be given', async () => {

@@ -110,7 +110,19 @@ describe('the API', () => {
     const cookie = cookieFrom(await get(running, '/native/session'))
     const response = await get(running, '/api/x', { cookie })
     expect(response.status).toBe(500)
-    expect(await response.json()).toEqual({ error: 'boom' })
+    // The standard error shape, and not the cause: that is logged
+    // (stacksjs/stacks#3361).
+    const body = await response.json()
+    expect(Object.keys(body).sort()).toEqual(['error', 'message', 'status', 'timestamp'])
+    expect(body).toMatchObject({ error: 'Internal Server Error', message: 'An unexpected error occurred.', status: 500 })
+  })
+
+  test('a refusal answers in the standard error shape', async () => {
+    const running = await agent()
+    const forbidden = await get(running, '/api/history')
+    expect(await forbidden.json()).toMatchObject({ error: 'Forbidden', status: 403, message: expect.any(String) })
+    const notAllowed = await fetch(`${running.url}/native/session`, { method: 'POST' })
+    expect(await notAllowed.json()).toMatchObject({ error: 'Method Not Allowed', status: 405, message: expect.any(String) })
   })
 })
 
