@@ -34,7 +34,7 @@ export interface StripeOperations {
   customer: (payer: Payer) => Promise<Stripe.Customer>
   createIntent: (payer: Payer, params: Stripe.PaymentIntentCreateParams, idempotencyKey?: string) => Promise<Stripe.PaymentIntent>
   refund: (paymentIntentId: string, params: Stripe.RefundCreateParams & { idempotencyKey?: string }) => Promise<Stripe.Refund>
-  createCheckout: (payer: Payer, params: Stripe.Checkout.SessionCreateParams) => Promise<Stripe.Checkout.Session>
+  createCheckout: (payer: Payer, params: Stripe.Checkout.SessionCreateParams, idempotencyKey?: string) => Promise<Stripe.Checkout.Session>
   listPaymentMethods: (customerId: string) => Promise<Stripe.PaymentMethod[]>
   deletePaymentMethod: (payer: Payer, paymentMethodId: string) => Promise<unknown>
   subscribe: (payer: Payer, type: string, lookupKey: string) => Promise<Stripe.Subscription>
@@ -333,7 +333,7 @@ export class StripeDriver implements PaymentDriver {
       ...(request.allowPromotionCodes ? { allow_promotion_codes: true } : {}),
       ...(request.automaticTax ? { automatic_tax: { enabled: true } } : {}),
       ...(request.paymentMethods?.length ? { allowed_payment_method_types: [...request.paymentMethods] as Stripe.Checkout.SessionCreateParams.AllowedPaymentMethodType[] } : {}),
-    })
+    }, request.idempotencyKey)
 
     if (!session.url)
       throw new Error('Stripe returned a checkout session without a url.')

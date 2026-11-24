@@ -304,6 +304,8 @@ export class AdyenDriver implements PaymentDriver {
   }
 
   async checkout(payer: Payer, request: CheckoutRequest): Promise<CheckoutSession> {
+    if (request.idempotencyKey !== undefined)
+      throw new PaymentUnsupportedError('adyen', 'a checkout idempotency key')
     if (request.trialDays && request.mode !== 'subscription')
       throw new TypeError('trialDays applies to a subscription checkout.')
     if (request.mode === 'subscription')

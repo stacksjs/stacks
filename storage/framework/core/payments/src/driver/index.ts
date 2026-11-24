@@ -34,7 +34,7 @@ export const defaultStripeOperations: StripeOperations = {
     idempotencyKey: idempotencyKey ?? freshIdempotencyKey('payment_intent.create', payer.id, params.amount),
   }),
   refund: (paymentIntentId, params) => manageCharge.refund(paymentIntentId, params),
-  createCheckout: (payer, params) => manageCheckout.create(payer as unknown as UserModel, params),
+  createCheckout: (payer, params, idempotencyKey) => manageCheckout.create(payer as unknown as UserModel, params, { idempotencyKey }),
   listPaymentMethods: async customerId => (await stripe.paymentMethods.list({ customer: customerId, limit: 100 })).data,
   deletePaymentMethod: (payer, paymentMethodId) => managePaymentMethod.deletePaymentMethod(payer as unknown as UserModel, paymentMethodId),
   subscribe: (payer, type, lookupKey) => manageSubscription.create(payer as unknown as UserModel, type, lookupKey, {}),
