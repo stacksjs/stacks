@@ -10,6 +10,7 @@ import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { dashboardCraftCommand, resolveDashboardCraftExecutable, type CraftBinaryResolver } from './dashboard-native'
 import { dashboardHttpsAnswers, dashboardOriginUrl, dashboardPendingHeader, dashboardReadyHeader, dashboardReadyPath, resolveDashboardDomain, resolveDashboardProxyStrategy } from './dashboard-proxy'
 import { buildManifest, discoverProjectModels, findAvailablePort, modelsWithEnabledFeatures, waitForServer, writeFileIfChanged } from './dashboard-utils'
+import { dashboardSoftwareUpdateRoutes } from './dashboard-software-updates'
 import { runDashboardSupervisor } from './dashboard-supervisor'
 import { dashboardAssetRoutes } from '../dashboard-assets'
 import { ensureDiscoveredPackages } from '../discover-packages'
@@ -285,6 +286,12 @@ async function startStxServer(): Promise<void> {
       // Loaded on first use: most sessions never switch project, and the
       // daemon is only started by the first one that does.
       openDashboard: async root => (await import('../daemon/client')).openProjectDashboard(root),
+    }),
+    ...dashboardSoftwareUpdateRoutes({
+      root: projectPath(),
+      port: dashboardPort,
+      url: () => dashboardBrowserUrl,
+      validateWrite: validateDevCsrfRequest,
     }),
     '/__deps/charts.js': browserDependencyRoute(
       storagePath('framework/core/charts/src/index.ts'),

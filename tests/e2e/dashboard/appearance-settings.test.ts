@@ -296,6 +296,56 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     }
   }, 120_000)
 
+  test('Software Update shows available releases and submits only the selected projects', async () => {
+    const { cdp } = e2e!.browser
+    const origin = e2e!.origin
+    const projects = [
+      { id: 'shop', name: 'Shop', current: true, installed: '1.0.0', latest: '1.1.0', available: true, supported: true },
+      { id: 'site', name: 'Site', current: false, installed: '1.0.0', latest: '1.1.0', available: true, supported: true },
+    ]
+    let selected: string[] = []
+    let started = false
+    const report = (running: boolean) => ({
+      id: 'fixture',
+      running,
+      projects: projects.map(project => ({ id: project.id, name: project.name, version: '1.1.0', status: running ? 'updating' : 'complete' })),
+      logFile: '/tmp/buddy-upgrade.log',
+    })
+    const stop = await cdp.intercept([{ urlPattern: `${origin}/__buddy/software-update*` }], async ({ requestId, request }, session) => {
+      const install = request.method === 'POST'
+      if (install) {
+        started = true
+        selected = JSON.parse(request.postData ?? '{}').projects
+      }
+      const payload = install
+        ? { update: report(true) }
+        : { checked: true, projects, update: started ? report(false) : null }
+      await session.send('Fetch.fulfillRequest', {
+        requestId,
+        responseCode: install ? 202 : 200,
+        responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
+        body: Buffer.from(JSON.stringify(payload)).toString('base64'),
+      })
+    })
+
+    try {
+      await openAppearance(cdp, origin)
+      const link = '[aria-label="Settings"] a[href="/settings/software-update"]'
+      await click(cdp, link)
+      await waitFor(() => cdp.evaluate(`location.pathname === '/settings/software-update' && document.querySelector('button[aria-label="Update Shop"]')?.getAttribute('aria-checked') === 'true'`), 10_000)
+      expect(await cdp.evaluate(`document.querySelector('[data-setting="available-framework"]').textContent.includes('1.1.0')`)).toBe(true)
+      expect(await cdp.evaluate(`document.querySelector('button[aria-label="Update Site"]')?.getAttribute('aria-checked')`)).toBe('false')
+
+      await click(cdp, 'button[aria-label="Update Site"]')
+      await click(cdp, { selector: 'button', text: 'Update Now' })
+      await waitFor(() => cdp.evaluate(`document.querySelector('[data-dashboard-settings-content]').textContent.includes('Restart any running projects')`), 10_000)
+      expect(selected).toEqual(['shop', 'site'])
+    }
+    finally {
+      await stop()
+    }
+  }, 120_000)
+
   test('a hidden section leaves the sidebar, and comes back', async () => {
     const { cdp } = e2e!.browser
     const { origin } = e2e!

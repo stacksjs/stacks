@@ -1,0 +1,9 @@
+@extends('layouts/settings')
+
+@section('content')
+@title('Dashboard - Software Update')
+
+<DashboardSettingsFrame pane="software-update">
+  <SoftwareUpdateDashboard />
+</DashboardSettingsFrame>
+@endsection

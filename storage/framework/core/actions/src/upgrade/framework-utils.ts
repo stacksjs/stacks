@@ -89,14 +89,15 @@ export function pickLatestStableTag(tags: string[]): string | null {
  * exists. Returns null if the tags can't be listed (offline / no git), letting
  * the caller fall back to the currently-installed version.
  */
-export async function resolveLatestStableTag(): Promise<string | null> {
+export async function resolveLatestStableTag(signal?: AbortSignal): Promise<string | null> {
   try {
     const proc = Bun.spawn({
       // `--refs` drops the `^{}` dereferenced annotated-tag entries, leaving
       // clean `refs/tags/vX.Y.Z` lines.
       cmd: ['git', 'ls-remote', '--tags', '--refs', 'https://github.com/stacksjs/stacks.git', 'v*'],
       stdout: 'pipe',
-      stderr: 'pipe',
+      stderr: 'ignore',
+      signal,
     })
     const out = await new Response(proc.stdout).text()
     if ((await proc.exited) !== 0)

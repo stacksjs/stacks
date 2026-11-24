@@ -1,0 +1,184 @@
+<script server>
+import { dashboardProjectIdentity } from '@stacksjs/defaults/resources/functions/dashboard/project-switcher'
+
+export const localUpdates = dashboardProjectIdentity().enabled
+defineClientPayload({ localUpdates })
+</script>
+
+<script client>
+import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
+
+interface UpdateProject {
+  id: string
+  name: string
+  current: boolean
+  installed: string | null
+  latest: string | null
+  available: boolean
+  supported: boolean
+}
+
+interface UpdateReport {
+  running: boolean
+  projects: Array<{ id: string, name: string, version: string, status: 'queued' | 'updating' | 'complete' | 'failed' | 'interrupted', message?: string }>
+  logFile: string
+}
+
+interface UpdateStatus {
+  checked: boolean
+  projects: UpdateProject[]
+  update: UpdateReport | null
+}
+
+const endpoint = '/__buddy/software-update'
+const enabled = {{ localUpdates }}
+const snapshot = state<UpdateStatus | null>(null)
+const selection = state<string[]>([])
+const checking = state(false)
+const starting = state(false)
+const failure = state('')
+const report = derived(() => snapshot()?.update ?? null)
+const running = derived(() => Boolean(report()?.running))
+const busy = derived(() => checking() || starting() || running())
+const projects = derived(() => snapshot()?.projects ?? [])
+const current = derived(() => projects().find(project => project.current))
+const selectedProjects = derived(() => projects().filter(project => project.available && selection().includes(project.id)))
+const availableCount = derived(() => projects().filter(project => project.available).length)
+
+const willNeedRestart = derived(() => report()?.projects.some(project => project.status === 'complete') === true)
+const reportHasErrors = derived(() => report()?.projects.some(project => project.status === 'failed' || project.status === 'interrupted') === true)
+const reportProjects = derived(() => report()?.projects ?? [])
+const statuses = { queued: 'Waiting', updating: 'Updating…', complete: 'Updated', failed: 'Failed', interrupted: 'Interrupted' }
+
+function statusLabel(status: keyof typeof statuses): string {
+  return statuses[status]
+}
+
+let initialized = false
+
+async function refresh(check = false): Promise<void> {
+  const next = await dashboardApi<UpdateStatus>(endpoint + (check ? '?check=1' : ''))
+  snapshot.set(next)
+  if (!initialized) {
+    selection.set(next.projects.filter(project => project.current && project.available).map(project => project.id))
+    initialized = true
+  }
+}
+
+async function checkUpdates(): Promise<void> {
+  checking.set(true)
+  failure.set('')
+  try {
+    await refresh(true)
+  }
+  catch (error) {
+    failure.set(error instanceof Error ? error.message : 'Could not check for updates.')
+  }
+  finally {
+    checking.set(false)
+  }
+}
+
+async function pollUpdate(): Promise<void> {
+  if (!running() || checking() || starting())
+    return
+  try {
+    await refresh()
+  }
+  catch {
+    // The Buddy worker continues while a dashboard restarts or reconnects.
+  }
+}
+
+function selectProject(id: string, checked: boolean): void {
+  const next = selection().filter(project => project !== id)
+  selection.set(checked ? [...next, id] : next)
+}
+
+async function installUpdates(): Promise<void> {
+  const ids = selectedProjects().map(project => project.id)
+  if (!ids.length || busy())
+    return
+  starting.set(true)
+  failure.set('')
+  try {
+    const result = await dashboardApi<{ update: UpdateReport }>(endpoint + '/install', { method: 'POST', body: { projects: ids } })
+    const previous = snapshot()
+    if (previous)
+      snapshot.set({ ...previous, update: result.update })
+  }
+  catch (error) {
+    failure.set(error instanceof Error ? error.message : 'Buddy could not start the update.')
+  }
+  finally {
+    starting.set(false)
+  }
+}
+
+function projectDescription(project: UpdateProject): string {
+  const installed = project.installed ? `Stacks ${project.installed}` : 'Installed version unavailable'
+  if (project.available)
+    return project.installed === project.latest ? `${installed} · Retry available` : `${installed} → ${project.latest}`
+  if (!project.supported)
+    return `${installed} · Buddy could not identify a Stacks installation`
+  if (!project.latest)
+    return `${installed} · Release check unavailable`
+  return project.installed === project.latest
+    ? `${installed} · Up to date`
+    : `${installed} · Latest stable is ${project.latest}`
+}
+
+useInterval(() => { void pollUpdate() }, 1800)
+onMount(() => {
+  if (enabled)
+    void checkUpdates()
+})
+</script>
+
+<div class="dashboard-settings-stack">
+  @if(!localUpdates)
+    <SettingsGroup>
+      <SettingsRow label="Software Update is available in your local dashboard" description="Open this project through Buddy to check for and install updates." multiline />
+    </SettingsGroup>
+  @else
+    <SettingsGroup header="Stacks Framework">
+      <SettingsRow label="Latest stable release" description="Buddy updates Stacks, installs the project’s framework dependencies, and runs its upgrade hooks." setting="check-for-updates" multiline>
+        <Button variant="secondary" size="sm" :loading="checking()" :disabled="busy()" @click="checkUpdates()">Check for Updates</Button>
+      </SettingsRow>
+      <SettingsRow label="Installed version" setting="installed-framework">
+        <span :text="current()?.installed || 'Unavailable'"></span>
+      </SettingsRow>
+      <SettingsRow label="Available version" setting="available-framework">
+        <span :text="checking() ? 'Checking…' : current()?.latest || 'Unavailable'"></span>
+      </SettingsRow>
+    </SettingsGroup>
+
+    <p :if="failure()" class="px-3 text-red-700 text-sm dark:text-red-300" role="alert" :text="failure()"></p>
+
+    <div :if="projects().length > 0">
+      <SettingsGroup header="Projects" footer="Your current project runs first when selected. Select any other registered projects to update their Stacks installations too.">
+        <div :for="project in projects()" :key="project.id" class="dashboard-settings-section-toggle">
+          <SettingsRow :label="project.current ? project.name + ' (Current project)' : project.name" :description="projectDescription(project)" multiline>
+            <Switch :if="project.available" :checked="selection().includes(project.id)" :disabled="busy()" :label="'Update ' + project.name" variant="mac" @change="selectProject(project.id, $event)" />
+          </SettingsRow>
+        </div>
+        <SettingsRow :if="availableCount() > 0" label="Install updates" setting="install-updates">
+          <Button size="sm" :loading="starting()" :disabled="busy() || selectedProjects().length === 0" @click="installUpdates()">Update Now</Button>
+        </SettingsRow>
+      </SettingsGroup>
+    </div>
+
+    <div :if="report()">
+      <SettingsGroup header="Update progress">
+        <div :for="project in reportProjects()" :key="project.id" class="dashboard-settings-section-toggle">
+          <SettingsRow :label="project.name" :description="project.message || 'Stacks ' + project.version" multiline>
+            <span :text="statusLabel(project.status)"></span>
+          </SettingsRow>
+        </div>
+        <p :if="running()" class="p-3 text-neutral-600 text-xs dark:text-neutral-300" role="status">Buddy is installing updates. You can close this window.</p>
+        <p :if="!running() && willNeedRestart()" class="p-3 text-neutral-600 text-xs dark:text-neutral-300" role="status">Restart any running projects to load the updated framework.</p>
+        <p :if="reportHasErrors()" class="p-3 break-all text-red-700 text-xs dark:text-red-300" role="alert">Buddy log <code :text="report()?.logFile"></code></p>
+      </SettingsGroup>
+    </div>
+  @endif
+</div>
