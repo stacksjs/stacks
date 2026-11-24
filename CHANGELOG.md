@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.665...v0.75.666)
+
+## 🐛 Bug Fixes
+
+- **docs**: story videos and pictures are stored once ([9d392dc](https://github.com/stacksjs/stacks/commit/9d392dc)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.664...v0.75.665)
 
 ## ✨ Features
