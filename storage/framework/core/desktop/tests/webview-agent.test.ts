@@ -466,9 +466,25 @@ describe('the entrypoint the build writes', () => {
     expect(entry).toContain('app: {')
   })
 
+  // stacksjs/stacks#3368: the migrations travel as text, applied at launch by
+  // @stacksjs/database's runner, imported by the entry so the launcher needs
+  // no database dependency of its own.
+  test('carries the migrations as text, with the runner that applies them', () => {
+    const entry = renderWebviewEntry({
+      manifest: { appName: 'F', appId: 'org.f.app', version: '0.1.0', runtime: 'embedded', window: { title: 'F', width: 1, height: 2 } },
+      migrations: { '0000000001-create-posts-table.sql': '/p/database/migrations/0000000001-create-posts-table.sql' },
+      launcherModule: '@stacksjs/desktop-build',
+    })
+    expect(entry).toContain('import { migrateCompiledDatabase } from "@stacksjs/database/compiled-migrations"')
+    expect(entry).toContain('import migration0 from "/p/database/migrations/0000000001-create-posts-table.sql" with { type: \'text\' }')
+    expect(entry).toContain('"0000000001-create-posts-table.sql": migration0,')
+    expect(entry).toContain('migrate: migrateCompiledDatabase,')
+  })
+
   test('carries no app section when no route files are given', () => {
     const entry = renderWebviewEntry({ manifest: { appName: 'F', appId: 'org.f.app', version: '0.1.0', runtime: '/bin/craft', window: { title: 'F', width: 1, height: 2 } } })
     expect(entry).not.toContain('app: {')
+    expect(entry).not.toContain('database: {')
   })
 
   test('in development it serves the project\'s stx views instead', () => {
@@ -566,6 +582,77 @@ describe('runWebviewApp', () => {
     close(0)
     expect(await run).toBe(0)
   }, 30_000)
+
+  test('migrates the app\'s database before the app module loads, and points the app at it (stacksjs/stacks#3368)', async () => {
+    const at = paths()
+    const saved = { path: process.env.DB_DATABASE_PATH, connection: process.env.DB_CONNECTION }
+    const order: string[] = []
+    let close!: (code: number) => void
+    let seen: { path?: string, connection?: string } = {}
+    try {
+      const run = runWebviewApp({
+        manifest,
+        views: { kind: 'none' },
+        paths: at,
+        argv: [],
+        logWhenDetached: false,
+        database: {
+          migrations: { '0000000001-a.sql': 'CREATE TABLE a (id INTEGER);' },
+          migrate: (options) => {
+            order.push(`migrate:${options.databasePath}`)
+            expect(Object.keys(options.migrations)).toEqual(['0000000001-a.sql'])
+            return { applied: ['0000000001-a.sql'], created: true, version: 1 }
+          },
+        },
+        module: async () => {
+          order.push('module')
+          seen = { path: process.env.DB_DATABASE_PATH, connection: process.env.DB_CONNECTION }
+          return {}
+        },
+        spawn: () => ({ exited: new Promise<number>((resolve) => { close = resolve }), kill: () => {} }),
+      })
+      while (!close) await Bun.sleep(5)
+      close(0)
+      expect(await run).toBe(0)
+
+      const databasePath = join(at.dataDir, 'database.sqlite')
+      expect(order).toEqual([`migrate:${databasePath}`, 'module'])
+      expect(seen).toEqual({ path: databasePath, connection: 'sqlite' })
+    }
+    finally {
+      if (saved.path === undefined) delete process.env.DB_DATABASE_PATH
+      else process.env.DB_DATABASE_PATH = saved.path
+      if (saved.connection === undefined) delete process.env.DB_CONNECTION
+      else process.env.DB_CONNECTION = saved.connection
+    }
+  })
+
+  test('does not start when the database cannot be brought up to date, and says why', async () => {
+    const at = paths()
+    let loaded = false
+    let opened = false
+    const errors: string[] = []
+    const error = console.error
+    console.error = (...args: unknown[]) => { errors.push(args.join(' ')) }
+    try {
+      const code = await runWebviewApp({
+        manifest,
+        views: { kind: 'none' },
+        paths: at,
+        argv: [],
+        logWhenDetached: false,
+        database: { migrations: {}, migrate: () => { throw new Error('This data was last used by a newer version of the app') } },
+        module: async () => { loaded = true; return {} },
+        spawn: () => { opened = true; return { exited: Promise.resolve(0), kill: () => {} } },
+      })
+      expect(code).toBe(1)
+    }
+    finally { console.error = error }
+    expect(loaded).toBe(false)
+    expect(opened).toBe(false)
+    expect(errors.join('\n')).toContain('newer version of the app')
+    expect(existsSync(at.lockFile)).toBe(false)
+  })
 
   test('a second launch hands over its arguments and link, raises the window, and boots nothing', async () => {
     const at = paths()

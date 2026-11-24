@@ -290,6 +290,22 @@ export interface RunWebviewAppOptions {
    * (stacksjs/stacks#3368).
    */
   app?: Pick<StacksAgentHandlerOptions, 'routes' | 'actions' | 'middleware'>
+  /**
+   * The app's own SQLite database, at `<dataDir>/database.sqlite`, brought up
+   * to date before the agent module loads (`agent.database`). `migrate` is
+   * `migrateCompiledDatabase` from `@stacksjs/database/compiled-migrations`,
+   * passed in by the generated entry so this launcher depends on no database
+   * package. If it fails, the app does not start, and the reason is logged
+   * (stacksjs/stacks#3368).
+   */
+  database?: WebviewDatabase
+}
+
+/** What `runWebviewApp` needs to bring the app's database up to date. */
+export interface WebviewDatabase {
+  /** Every migration the build applied, by file name, as SQL. */
+  migrations: Record<string, string>
+  migrate: (options: { databasePath: string, migrations: Record<string, string> }) => { applied: string[] }
 }
 
 function defaultArgv(): string[] {
@@ -353,6 +369,15 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
   let agent: WebviewAgent
   let updater: DesktopUpdater | undefined
   try {
+    // Before the module loads: config reads DB_DATABASE_PATH when it is first
+    // evaluated, and the module's code may open the database at once.
+    if (options.database) {
+      const databasePath = join(paths.dataDir, 'database.sqlite')
+      const { applied } = options.database.migrate({ databasePath, migrations: options.database.migrations })
+      if (applied.length) console.log(`${tag} applied ${applied.length} migration(s) to ${databasePath}`)
+      process.env.DB_CONNECTION = 'sqlite'
+      process.env.DB_DATABASE_PATH = databasePath
+    }
     module = options.module ? agentModuleOf(await options.module()) : {}
     if (manifest.updates) {
       updater = createDesktopUpdater({
@@ -461,11 +486,23 @@ export function renderWebviewEntry(options: {
   stxViews?: { dir: string, components?: string[], root: string }
   embeddedRuntime?: string
   launcherModule?: string
+  /** Migrations to apply at launch: file name to its file on the build machine (`agent.database`). */
+  migrations?: Record<string, string>
+  /** Where `migrateCompiledDatabase` comes from. Default `@stacksjs/database/compiled-migrations`. */
+  migrationRunner?: string
 } & AgentBundleFiles): string {
   const launcher = options.launcherModule ?? fileURLToPath(import.meta.url)
   const bundled = options.routes?.length ? agentBundleSource(options) : undefined
   const files = Object.entries(options.viewFiles ?? {})
   const imports = files.map(([, file], index) => `import view${index} from ${JSON.stringify(file)} with { type: 'file' }`)
+  const migrations = options.migrations ? Object.entries(options.migrations) : undefined
+  if (migrations) {
+    imports.push(`import { migrateCompiledDatabase } from ${JSON.stringify(options.migrationRunner ?? '@stacksjs/database/compiled-migrations')}`)
+    migrations.forEach(([, file], index) => imports.push(`import migration${index} from ${JSON.stringify(file)} with { type: 'text' }`))
+  }
+  const database = migrations
+    ? `\n  database: {\n    migrations: {\n${migrations.map(([name], index) => `      ${JSON.stringify(name)}: migration${index},`).join('\n')}\n    },\n    migrate: migrateCompiledDatabase,\n  },`
+    : ''
   if (options.embeddedRuntime) imports.push(`import embeddedRuntime from ${JSON.stringify(options.embeddedRuntime)} with { type: 'file' }`)
   const views = options.stxViews
     ? `{ kind: 'stx', ...${JSON.stringify(options.stxViews)} }`
@@ -480,7 +517,7 @@ ${imports.join('\n')}
 process.exit(await runWebviewApp({
   manifest: ${JSON.stringify(options.manifest, null, 2).replace(/\n/g, '\n  ')},
   views: ${views},
-  module: ${options.agentEntry ? `() => import(${JSON.stringify(options.agentEntry)})` : 'undefined'},${options.embeddedRuntime ? '\n  embeddedRuntime,' : ''}${bundled ? `\n  app: {\n    routes: ${bundled.routes.replace(/\n/g, '\n  ')},\n    actions: ${bundled.actions.replace(/\n/g, '\n  ')},\n    middleware: ${bundled.middleware.replace(/\n/g, '\n  ')},\n  },` : ''}
+  module: ${options.agentEntry ? `() => import(${JSON.stringify(options.agentEntry)})` : 'undefined'},${options.embeddedRuntime ? '\n  embeddedRuntime,' : ''}${bundled ? `\n  app: {\n    routes: ${bundled.routes.replace(/\n/g, '\n  ')},\n    actions: ${bundled.actions.replace(/\n/g, '\n  ')},\n    middleware: ${bundled.middleware.replace(/\n/g, '\n  ')},\n  },` : ''}${database}
 }))
 `
 }
