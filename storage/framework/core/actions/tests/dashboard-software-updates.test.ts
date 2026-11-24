@@ -4,9 +4,10 @@ import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
-import { isProcessAlive, readProjectService, registerProject } from '@stacksjs/path'
+import { clearProjectService, isProcessAlive, readProjectService, registerProject } from '@stacksjs/path'
 import { startAppDevSession } from '../src/dev/app-session'
-import { runningAppDevSessions } from '../src/dev/app-session-control'
+import { findRestartControl, runningAppDevSessions } from '../src/dev/app-session-control'
+import { restartProjectDashboard, runningDashboardInstance } from '../src/dev/dashboard-restart'
 import { dashboardSoftwareUpdateRoutes } from '../src/dev/dashboard-software-updates'
 
 async function waitFor<T>(probe: () => Promise<T | null> | T | null): Promise<T> {
@@ -80,6 +81,54 @@ async function reservePort(): Promise<number> {
   return address.port
 }
 
+function spawnDashboard(root: string, holdRestart = false): ReturnType<typeof Bun.spawn> {
+  return Bun.spawn([process.execPath, '--no-env-file', join(import.meta.dir, 'fixtures/dashboard-restart-worker.ts')], {
+    cwd: root,
+    env: {
+      ...process.env,
+      STACKS_DASHBOARD_WORKER: '0',
+      PORT_ADMIN: '0',
+      STACKS_DASHBOARD_TEST_HOLD_RESTART: holdRestart ? '1' : '0',
+    },
+    stdout: 'ignore',
+    stderr: 'inherit',
+  })
+}
+
+const restartModes = process.platform === 'win32' ? ['supervisor endpoint'] : ['supervisor endpoint', 'legacy signal']
+
+test.each(restartModes)('dashboard restart waits through an unpublished worker (%s)', async (mode) => {
+  const root = mkdtempSync(join(tmpdir(), 'dashboard-worker-restart-'))
+  mkdirSync(join(root, 'config'))
+  writeFileSync(join(root, 'config/app.ts'), 'export default {}')
+  writeFileSync(join(root, 'package.json'), '{"name":"dashboard-fixture"}')
+  const child = spawnDashboard(root, true)
+  try {
+    const before = await waitFor(() => readProjectService(root, 'dashboard'))
+    const control = findRestartControl(root, 'dashboard', before.pid)!
+    expect((await fetch(`${control.url}/restart`, { method: 'POST' })).status).toBe(403)
+    if (mode === 'legacy signal')
+      clearProjectService(root, control.name, control.pid)
+
+    const restart = restartProjectDashboard(root)
+    void restart.catch(() => {})
+    await waitFor(() => readProjectService(root, 'dashboard') ? null : true)
+    expect(isProcessAlive(before.pid)).toBe(true)
+    await Bun.write(join(root, 'publish-dashboard'), '')
+    await restart
+
+    const after = readProjectService(root, 'dashboard')
+    expect(after).toMatchObject({ pid: before.pid, port: before.port })
+    expect(after?.restartInstance).not.toBe(before.restartInstance)
+    expect(await runningDashboardInstance(before.port)).toBe(after?.restartInstance!)
+  }
+  finally {
+    child.kill('SIGTERM')
+    await child.exited
+    rmSync(root, { recursive: true, force: true })
+  }
+}, 15_000)
+
 test('updates projects in order and restarts only successful updates on their existing ports', async () => {
   const workspace = mkdtempSync(join(tmpdir(), 'dashboard-upgrade-'))
   const previousHome = process.env.STACKS_HOME
@@ -89,38 +138,9 @@ test('updates projects in order and restarts only successful updates on their ex
   const runLog = join(workspace, 'invocations')
   const dashboards: Array<ReturnType<typeof Bun.spawn>> = []
   const apps: Array<Awaited<ReturnType<typeof startApp>>> = []
-  const entry = join(workspace, 'dashboard.ts')
-  writeFileSync(entry, `
-import { runDashboardSupervisor } from ${JSON.stringify(new URL('../src/dev/dashboard-supervisor.ts', import.meta.url).pathname)}
-import { recordProjectService } from ${JSON.stringify(new URL('../../path/src/projects.ts', import.meta.url).pathname)}
-if (process.env.STACKS_DASHBOARD_WORKER === '1') {
-  const instance = crypto.randomUUID()
-  const server = Bun.serve({
-    hostname: '127.0.0.1',
-    port: Number(process.env.PORT_ADMIN),
-    fetch: () => new Response(null, { status: 204, headers: { 'x-stacks-dashboard': instance } }),
-  })
-  recordProjectService(process.cwd(), {
-    name: 'dashboard',
-    pid: Number(process.env.STACKS_DASHBOARD_SUPERVISOR_PID),
-    port: server.port,
-    url: server.url.href,
-    startedAt: new Date().toISOString(),
-    restartInstance: instance,
-  })
-  process.on('SIGTERM', () => process.exit(0))
-}
-else {
-  process.exit(await runDashboardSupervisor(import.meta.path, []))
-}
-`)
   async function startDashboard(root: string) {
-    dashboards.push(Bun.spawn([process.execPath, '--no-env-file', entry], {
-      cwd: root,
-      env: { ...process.env, STACKS_DASHBOARD_WORKER: '0', PORT_ADMIN: '0' },
-      stdout: 'ignore',
-      stderr: 'inherit',
-    }))
+    const child = spawnDashboard(root)
+    dashboards.push(child)
     return await waitFor(() => readProjectService(root, 'dashboard'))
   }
 

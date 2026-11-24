@@ -3,6 +3,8 @@ import { existsSync, readdirSync, watch } from 'node:fs'
 import process from 'node:process'
 import { join } from 'node:path'
 import { clearProjectService, defaultsPath, projectPath, readProjectService, storagePath } from '@stacksjs/path'
+import { serveAppRestart } from './app-session-control'
+import { runningDashboardInstance, waitForDashboardRestart } from './dashboard-restart'
 
 const BACKEND_SOURCE_RE = /\.(?:[cm]?[jt]sx?|json)$/i
 const DECLARATION_RE = /\.d\.[cm]?ts$/i
@@ -36,7 +38,10 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
   const watchers: FSWatcher[] = []
   let child: ReturnType<typeof Bun.spawn> | null = null
   let generation = 0
-  let restarting = false
+  let restarting: Promise<void> | undefined
+  let settingsRestart: Promise<void> | undefined
+  let closeRestartControl: (() => void) | undefined
+  const shutdown = new AbortController()
   let stopping = false
   let restartTimer: ReturnType<typeof setTimeout> | undefined
   let settled = false
@@ -48,6 +53,8 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
       if (settled)
         return
       settled = true
+      shutdown.abort()
+      closeRestartControl?.()
       if (restartTimer)
         clearTimeout(restartTimer)
       for (const watcher of watchers)
@@ -63,11 +70,11 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
 
     const startChild = () => {
       const currentGeneration = ++generation
-      child = Bun.spawn([process.execPath, entry, ...args], {
+      child = Bun.spawn([process.execPath, ...process.execArgv, entry, ...args], {
         cwd: process.cwd(),
         env: {
           ...process.env,
-          ...(restartPort === undefined ? {} : { PORT_ADMIN: String(restartPort) }),
+          ...(restartPort === undefined ? {} : { PORT_ADMIN: String(restartPort), STACKS_DASHBOARD_RESTART_PORT: String(restartPort) }),
           STACKS_DASHBOARD_WORKER: '1',
           STACKS_DASHBOARD_SUPERVISOR_PID: String(process.pid),
         },
@@ -76,27 +83,40 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
         stderr: 'inherit',
       })
       void child.exited.then((code) => {
-        if (!stopping && !restarting && currentGeneration === generation)
+        if (!stopping && currentGeneration === generation)
           finish(code)
       })
     }
 
-    const restart = async () => {
-      if (restarting || stopping)
-        return
-      restarting = true
-      const service = readProjectService(root, 'dashboard')
-      if (service?.pid === process.pid)
-        restartPort = service.port
-      const previous = child
-      generation++
-      if (previous) {
-        previous.kill('SIGTERM')
-        await previous.exited
-      }
-      if (!stopping)
-        startChild()
-      restarting = false
+    const restart = (): Promise<void> => {
+      if (stopping)
+        return Promise.resolve()
+      restarting ??= (async () => {
+        const service = readProjectService(root, 'dashboard')
+        if (service?.pid === process.pid)
+          restartPort = service.port
+        const previous = child
+        generation++
+        if (previous) {
+          previous.kill('SIGTERM')
+          await previous.exited
+        }
+        if (!stopping)
+          startChild()
+      })().finally(() => { restarting = undefined })
+      return restarting
+    }
+
+    async function restartReadyDashboard(): Promise<void> {
+      const previous = readProjectService(root, 'dashboard')
+      if (previous?.pid !== process.pid || !previous.restartInstance
+        || await runningDashboardInstance(previous.port) !== previous.restartInstance)
+        throw new Error('This dashboard is still starting. Try again when it is ready.')
+
+      if (restartTimer)
+        clearTimeout(restartTimer)
+      await restart()
+      await waitForDashboardRestart(root, previous, shutdown.signal)
     }
 
     const scheduleRestart = () => {
@@ -104,14 +124,15 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
         clearTimeout(restartTimer)
       restartTimer = setTimeout(() => {
         console.log('\n  Backend source changed. Restarting the dashboard server.\n')
-        void restart()
+        if (!settingsRestart)
+          void restart().catch(error => console.error('Dashboard restart failed:', error))
       }, 100)
     }
 
     function restartFromSettings(): void {
       if (restartTimer)
         clearTimeout(restartTimer)
-      void restart()
+      void restart().catch(error => console.error('Dashboard restart failed:', error))
     }
 
     function stop(): void {
@@ -131,6 +152,15 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
     }
 
     startChild()
+    try {
+      closeRestartControl = serveAppRestart(root, 'dashboard', () => {
+        settingsRestart ??= restartReadyDashboard().finally(() => { settingsRestart = undefined })
+        return settingsRestart
+      })
+    }
+    catch (error) {
+      console.warn('Could not register the dashboard restart endpoint:', error)
+    }
     for (const root of dashboardBackendWatchRoots()) {
       try {
         const watcher = watch(root, { recursive: true }, (_event, filename) => {

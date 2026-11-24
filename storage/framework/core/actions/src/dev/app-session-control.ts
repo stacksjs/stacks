@@ -1,9 +1,10 @@
 import type { ProjectService } from '@stacksjs/path'
 import process from 'node:process'
-import { clearProjectService, listProjectServiceInstances, recordProjectService } from '@stacksjs/path'
+import { clearProjectService, listProjectServiceInstances, readProjectService, recordProjectService } from '@stacksjs/path'
 
 const loopback = '127.0.0.1'
 const restartPath = '/restart'
+type ServiceName = 'dev' | 'serve' | 'dashboard'
 
 export function runningAppDevSessions(root: string): ProjectService[] {
   return runningSessions(root, 'dev')
@@ -13,14 +14,21 @@ export function runningAppSessions(root: string): ProjectService[] {
   return [...runningAppDevSessions(root), ...runningSessions(root, 'serve')]
 }
 
-function runningSessions(root: string, serviceName: 'dev' | 'serve'): ProjectService[] {
-  return listProjectServiceInstances(root, serviceName).filter(service =>
-    Number.isInteger(service.port) && service.port > 0 && service.port <= 65535
-    && typeof service.controlToken === 'string' && /^[\da-f-]{36}$/.test(service.controlToken),
-  )
+function hasRestartControl(service: ProjectService | null): service is ProjectService {
+  return service !== null && Number.isInteger(service.port) && service.port > 0 && service.port <= 65535
+    && typeof service.controlToken === 'string' && /^[\da-f-]{36}$/.test(service.controlToken)
 }
 
-export function serveAppRestart(root: string, serviceName: 'dev' | 'serve', restart: () => Promise<void>): () => void {
+function runningSessions(root: string, serviceName: ServiceName): ProjectService[] {
+  return listProjectServiceInstances(root, serviceName).filter(hasRestartControl)
+}
+
+export function findRestartControl(root: string, serviceName: ServiceName, pid: number): ProjectService | null {
+  const service = readProjectService(root, `${serviceName}-${pid}`)
+  return hasRestartControl(service) && service.pid === pid ? service : null
+}
+
+export function serveAppRestart(root: string, serviceName: ServiceName, restart: () => Promise<void>): () => void {
   const token = crypto.randomUUID()
   const name = `${serviceName}-${process.pid}`
   const server = Bun.serve({

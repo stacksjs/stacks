@@ -1,10 +1,14 @@
-name: Buddy Serve Windows
+name: Buddy Restart Windows
 
 on:
   push:
     branches: [main]
-    paths: &serve_paths
+    paths: &restart_paths
       - '.github/workflows/buddy-serve-windows.yml'
+      - 'storage/framework/core/actions/src/dev/app-session-control.ts'
+      - 'storage/framework/core/actions/src/dev/dashboard*.ts'
+      - 'storage/framework/core/actions/tests/dashboard-software-updates.test.ts'
+      - 'storage/framework/core/actions/tests/fixtures/dashboard-restart-worker.ts'
       - 'storage/framework/core/actions/src/helpers/serve-relay-worker.ts'
       - 'storage/framework/core/actions/src/serve/api.ts'
       - 'storage/framework/core/buddy/src/commands/serve.ts'
@@ -14,7 +18,7 @@ on:
       - 'storage/framework/core/cli/src/owned-process.ts'
   pull_request:
     branches: [main]
-    paths: *serve_paths
+    paths: *restart_paths
 
 permissions:
   contents: read
@@ -34,3 +38,7 @@ jobs:
         env:
           APP_ENV: test
         run: bun test ./storage/framework/core/buddy/tests/serve-restart.test.ts
+      - name: Restart the dashboard supervisor worker
+        env:
+          APP_ENV: test
+        run: bun test ./storage/framework/core/actions/tests/dashboard-software-updates.test.ts --test-name-pattern "dashboard restart waits"

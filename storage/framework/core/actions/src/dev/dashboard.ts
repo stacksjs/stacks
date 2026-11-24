@@ -69,10 +69,11 @@ const userDashboardPath = projectPath('resources/views/dashboard')
 const dashboardComponentsPath = defaultsPath('resources/components/Dashboard')
 const userDashboardComponentsPath = projectPath('resources/components/Dashboard')
 const preferredPort = Number(process.env.PORT_ADMIN) || 3002
+const restartPort = Number(process.env.STACKS_DASHBOARD_RESTART_PORT) || undefined
 const dashboardHostname = '127.0.0.1'
 const dashboardListener = { hostname: dashboardHostname }
 // eslint-disable-next-line ts/no-top-level-await
-const dashboardPort = await findAvailablePort(preferredPort)
+const dashboardPort = restartPort ?? await findAvailablePort(preferredPort)
 const dashboardAddress = `${dashboardHostname}:${dashboardPort}`
 const dashboardLocalUrl = `http://${dashboardAddress}`
 
@@ -452,6 +453,7 @@ async function startStxServer(): Promise<void> {
     // Local dashboard actions can run without an authenticated browser session.
     ...dashboardListener,
     port: dashboardPort,
+    ...(restartPort !== undefined && { autoIncrementPort: false }),
     // The app's dashboard components first, then the framework's, both ahead
     // of `@stacksjs/components` below: that library shares names with the
     // dashboard's own (`Button`, `Card`, `Table`, ...), so the framework's
@@ -751,7 +753,7 @@ recordProjectService(projectPath(), {
   port: dashboardPort,
   url: dashboardBrowserUrl,
   startedAt: new Date().toISOString(),
-  ...(servicePid !== process.pid && process.platform !== 'win32' ? { restartInstance: dashboardInstance } : {}),
+  ...(servicePid !== process.pid ? { restartInstance: dashboardInstance } : {}),
   ...(idleExitMs > 0 ? { idleExitMs } : {}),
 })
 dashboardPublished = true

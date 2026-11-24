@@ -1,19 +1,22 @@
+import type { ProjectService } from '@stacksjs/path'
 import process from 'node:process'
-import { isProjectRoot, readProjectService } from '@stacksjs/path'
+import { isProcessAlive, isProjectRoot, readProjectService } from '@stacksjs/path'
 import { daemonStatus, openProjectDashboard, stopProjectDashboard } from '../daemon/client'
-import { restartAppSession, runningAppSessions } from './app-session-control'
+import { findRestartControl, restartAppSession, runningAppSessions } from './app-session-control'
 import { dashboardPendingHeader, dashboardReadyHeader, dashboardReadyPath } from './dashboard-proxy'
 
 /** A dashboard must be supervised or owned by the Buddy daemon to be restarted. */
 export function canRestartDashboard(root: string): boolean {
   const service = isProjectRoot(root) ? readProjectService(root, 'dashboard') : null
-  return Boolean(service && (service.restartInstance || service.idleExitMs))
+  return Boolean(service && (service.idleExitMs
+    || (service.restartInstance && (process.platform !== 'win32' || findRestartControl(root, 'dashboard', service.pid)))))
 }
 
-async function runningInstance(port: number): Promise<string | null> {
+export async function runningDashboardInstance(port: number): Promise<string | null> {
   const response = await fetch(`http://127.0.0.1:${port}${dashboardReadyPath}`, {
     method: 'HEAD',
     redirect: 'error',
+    headers: { connection: 'close' },
     signal: AbortSignal.timeout(800),
   }).catch(() => null)
   if (!response?.ok || response.headers.get(dashboardPendingHeader) === '1')
@@ -21,31 +24,41 @@ async function runningInstance(port: number): Promise<string | null> {
   return response.headers.get(dashboardReadyHeader)
 }
 
+/** The supervisor can stay alive while no worker has a published service record. */
+export async function waitForDashboardRestart(root: string, previous: ProjectService, signal?: AbortSignal): Promise<void> {
+  const deadline = Date.now() + 115_000
+  while (Date.now() < deadline) {
+    signal?.throwIfAborted()
+    const next = readProjectService(root, 'dashboard')
+    if (!isProcessAlive(previous.pid) || (next && next.pid !== previous.pid))
+      throw new Error('The dashboard stopped before it could restart.')
+    if (next?.restartInstance && next.restartInstance !== previous.restartInstance
+      && await runningDashboardInstance(next.port) === next.restartInstance)
+      return
+    await Bun.sleep(100)
+  }
+  throw new Error('The dashboard restarted but has not finished starting.')
+}
+
 export async function restartProjectDashboard(root: string): Promise<void> {
   const service = isProjectRoot(root) ? readProjectService(root, 'dashboard') : null
   if (!service)
     throw new Error('This dashboard has already stopped.')
 
-  // A current supervisor reloads its own worker, preserving the launch mode,
-  // environment, port, and the terminal that owns a foreground dashboard.
-  if (service.restartInstance) {
-    if (await runningInstance(service.port) !== service.restartInstance)
+  const control = service.restartInstance ? findRestartControl(root, 'dashboard', service.pid) : null
+  if (control) {
+    await restartAppSession(control)
+    return
+  }
+
+  // A supervisor predating the restart endpoint still handles this signal.
+  if (service.restartInstance && process.platform !== 'win32') {
+    if (await runningDashboardInstance(service.port) !== service.restartInstance)
       throw new Error('This dashboard is still starting. Try again when it is ready.')
 
     process.kill(service.pid, 'SIGUSR2')
-    const deadline = Date.now() + 120_000
-    while (Date.now() < deadline) {
-      const next = readProjectService(root, 'dashboard')
-      if (!next)
-        throw new Error('The dashboard stopped before it could restart.')
-      if (next.restartInstance !== service.restartInstance) {
-        const ready = await runningInstance(next.port)
-        if (ready && ready !== service.restartInstance && (!next.restartInstance || ready === next.restartInstance))
-          return
-      }
-      await Bun.sleep(200)
-    }
-    throw new Error('The dashboard restarted but has not finished starting.')
+    await waitForDashboardRestart(root, service)
+    return
   }
 
   // Older backgrounds cannot handle a restart signal. Only Buddy's daemon
