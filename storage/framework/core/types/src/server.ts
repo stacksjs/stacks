@@ -235,8 +235,16 @@ export interface ServerCacheOptions {
    *    the reason a `<script server>` block cannot vary such a page per
    *    record: whichever record rendered first would supply the markup for
    *    all of them.
+   *  - `url` - the address: the view file, the host, the path, the query
+   *    string and the locale. One render answers every anonymous visitor to
+   *    that address, and `post/[slug].stx` keeps one per slug. For a public
+   *    site rendered on the server from data that changes only with a deploy
+   *    (marketing pages, a blog). A request that carries anything of a
+   *    visitor's own (a sign-in, a session, any cookie but the CSRF one) is
+   *    rendered for that visitor and never kept, and a page can opt out with
+   *    `definePageMeta({ cache: false })`. Needs stx 0.2.930 or newer.
    */
-  renderVary?: 'request' | 'source'
+  renderVary?: 'request' | 'source' | 'url'
 
   /** Render the discoverable static routes at boot, before real traffic. */
   prewarm?: boolean

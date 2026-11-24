@@ -12,6 +12,16 @@ import type { ServerConfig } from '@stacksjs/types'
 export default {
   // Opt in after publishing the native Request model and migrating its table.
   captureRequests: false,
+
+  // Every page of this site is the same for every anonymous visitor and
+  // changes only with a deploy, which restarts the server. Rendering one took
+  // 100 to 550 ms on the box for each request; kept per address, the second
+  // visitor to a page gets the first one's render. A request carrying a
+  // cookie of its own (a refused form's messages, a sign-in) still renders.
+  cache: {
+    renders: true,
+    renderVary: 'url',
+  },
   /**
    * **API Proxy**
    *

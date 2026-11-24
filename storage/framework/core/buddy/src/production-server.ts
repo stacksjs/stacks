@@ -411,6 +411,9 @@ export async function startProductionServer(options?: { port?: string | number, 
         ...(cacheConfig?.renders && {
           renderCache: true,
           renderCacheVary: cacheConfig.renderVary ?? 'request',
+          // A cache shared between visitors (`source`, `url`) holds nothing
+          // of theirs in its key, so the request says who is not anonymous.
+          renderCacheSkip: carriesVisitorState,
           ...(cacheConfig.prewarm && { prewarmRenderCache: true }),
         }),
         ...(stxModule && { stxModule }),
@@ -685,6 +688,33 @@ export function isAuthenticatedRequest(request: Request): boolean {
     .split(';')
     .map(part => part.trim().split('=')[0]?.toLowerCase() ?? '')
     .some(name => name !== '' && !name.includes('csrf') && /session|auth|token|remember/.test(name))
+}
+
+/**
+ * Could the page for this request be about its visitor?
+ *
+ * Asked before a render is taken from, or kept in, a cache that visitors
+ * share (`cache.renderVary` of `source` or `url`). It is deliberately wider
+ * than `isAuthenticatedRequest`: that one names cookies that look like a
+ * session, and a page can also render from cookies that do not - a refused
+ * form's messages and old input, the coming-soon bypass, whatever an app sets
+ * for itself. So any cookie counts, except the CSRF double-submit token,
+ * which every visitor carries from their first page and which no page
+ * renders. Counting it would mean only a visitor's very first request could
+ * ever be answered from the cache.
+ */
+export function carriesVisitorState(request: Request): boolean {
+  if (request.headers.get('authorization'))
+    return true
+
+  const cookie = request.headers.get('cookie') || ''
+  if (!cookie)
+    return false
+
+  return cookie
+    .split(';')
+    .map(part => part.trim().split('=')[0]?.toLowerCase() ?? '')
+    .some(name => name !== '' && !name.includes('csrf'))
 }
 
 /**

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { applyDocumentCacheControl, buildDocumentCacheControl, isAuthenticatedRequest, isSpaFragmentExchange } from '../src/production-server'
+import { applyDocumentCacheControl, buildDocumentCacheControl, carriesVisitorState, isAuthenticatedRequest, isSpaFragmentExchange } from '../src/production-server'
 
 function anon(headers: Record<string, string> = {}): Request {
   return new Request('https://example.com/privacy', { headers })
@@ -176,5 +176,27 @@ describe('isSpaFragmentExchange', () => {
   // literal 'true' the router sends must not switch behaviour on.
   it('is false for a header that is present but not the router\'s value', () => {
     expect(isSpaFragmentExchange(new Request('https://example.com/a', { headers: { 'x-stx-router': 'false' } }), plainRes)).toBe(false)
+  })
+})
+
+describe('carriesVisitorState', () => {
+  const req = (headers: Record<string, string>) => new Request('https://example.com/', { headers })
+
+  it('lets a first visit and a returning anonymous visitor share a render', () => {
+    expect(carriesVisitorState(req({}))).toBe(false)
+    // Every visitor has this from their first page on, and no page renders it.
+    expect(carriesVisitorState(req({ cookie: 'X-CSRF-Token=abc123' }))).toBe(false)
+  })
+
+  it('keeps a signed-in visitor out of the shared render cache', () => {
+    expect(carriesVisitorState(req({ authorization: 'Bearer abc' }))).toBe(true)
+    expect(carriesVisitorState(req({ cookie: 'X-CSRF-Token=t; auth_token=x' }))).toBe(true)
+  })
+
+  it('counts any other cookie, since a page can render from one that is not a session', () => {
+    // A refused form's messages, the coming-soon bypass, an app's own cookie:
+    // none of them look like a session, and each can change the page.
+    expect(carriesVisitorState(req({ cookie: 'form_flash=eyJ' }))).toBe(true)
+    expect(carriesVisitorState(req({ cookie: 'X-CSRF-Token=t; preview=1' }))).toBe(true)
   })
 })
