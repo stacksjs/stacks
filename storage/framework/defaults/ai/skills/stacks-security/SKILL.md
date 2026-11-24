@@ -153,6 +153,30 @@ interface HashMakeOptions {
 }
 ```
 
+## Page security headers (`config.server.security`)
+
+The views server stamps `X-Content-Type-Options`, `Referrer-Policy` and
+`X-Frame-Options: SAMEORIGIN` (not on `embeddable` paths) on every page, plus:
+
+- `Strict-Transport-Security: max-age=31536000; includeSubDomains` when `APP_URL`
+  is https on a real host. Never for localhost, `*.localhost`, `*.test` or a
+  loopback IP. `hsts: false` turns it off; a string replaces the value.
+- `Cross-Origin-Opener-Policy: same-origin-allow-popups`, which keeps OAuth and
+  payment popups working (`crossOriginOpenerPolicy`).
+- `Permissions-Policy` turning off `browsing-topics`, `usb`, `serial`, `hid`,
+  `bluetooth` and `midi`, the features no stx composable uses. `permissionsPolicy`
+  merges features over that; `false` drops the header.
+- An opt-in page CSP (`csp: 'report-only'` to observe, then `csp: true`): a
+  fresh nonce on every `<script>`, `script-src 'self' 'nonce-...'`, inline
+  styles allowed, `object-src 'none'`. `csp.directives` merge over the defaults;
+  `false` drops one. Inline `on*=` attributes are blocked when enforced, so
+  start report-only.
+
+A header the response already carries always wins, and
+`STACKS_SECURITY_HEADERS_DISABLE=true` turns the set off behind a proxy that
+adds its own. The API's `STACKS_CSP` never reaches a page. Source:
+`core/server/src/security-headers.ts`.
+
 ## Personal data and GDPR
 
 Data-subject requests are driven by model declarations, not by code you write per

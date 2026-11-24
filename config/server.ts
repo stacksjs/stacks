@@ -135,12 +135,16 @@ export default {
    * `buddy dev` and `buddy serve` both print the list at boot, because a page
    * that can be framed is a deliberate exception worth seeing.
    *
-   * Two headers are deliberately NOT sent on pages. A `STACKS_CSP` policy is
-   * not, because it has only ever reached JSON responses and a blanket policy
-   * breaks inline stx script bootstrapping, Stripe iframes and OAuth popups.
-   * `Strict-Transport-Security` is not, because `buddy serve` treats itself as
-   * production even on a laptop, and HSTS on localhost pins that host to
-   * HTTPS in your browser for a year.
+   * Pages also get `Cross-Origin-Opener-Policy: same-origin-allow-popups`, a
+   * `Permissions-Policy` that turns off only features no stx composable uses,
+   * and `Strict-Transport-Security` once `APP_URL` is https on a real host
+   * (never for localhost, `*.localhost` or `*.test`). `hsts`,
+   * `crossOriginOpenerPolicy` and `permissionsPolicy` adjust them; `false`
+   * turns one off.
+   *
+   * A page CSP is opt-in: `csp: 'report-only'` to see what it would block,
+   * then `csp: true`. Every `<script>` gets a per-response nonce. The API's
+   * `STACKS_CSP` never reaches a page.
    *
    * `STACKS_SECURITY_HEADERS_DISABLE=true` turns the whole set off, for a
    * deployment behind a proxy that injects its own.
