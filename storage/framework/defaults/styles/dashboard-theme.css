@@ -635,28 +635,29 @@ html[data-dashboard-theme="system-cleaner"] [data-dashboard-metrics] {
   [data-dashboard-section-primary]:is(:hover, :active) { transform: none; }
 }
 
-/* Settings is a shared split view. Dashboard theme colors stop at its edges. */
-html:has([data-dashboard-settings]) :is([data-dashboard-web-sidebar], [data-dashboard-mobile-bar]) {
-  display: none;
-}
-
-html:has([data-dashboard-settings]) [data-stx-content][data-dashboard-content] {
+/* Settings uses the same split view in a browser and its own Craft window. */
+html:has([data-dashboard-settings-content]) [data-dashboard-content][data-dashboard-settings-content] {
   height: auto;
   min-height: 100dvh;
   margin: 0;
   border-radius: 0;
   background: light-dark(#fff, #1e1e20);
   box-shadow: none;
-  transition: none;
 }
 
-html:has([data-dashboard-settings]) .dashboard-modal-layer {
+html:has([data-dashboard-settings][data-settings-native="true"]),
+html:has([data-dashboard-settings][data-settings-native="true"]) body,
+html:has([data-dashboard-settings][data-settings-native="true"]) [data-dashboard-settings-content] {
+  background: transparent;
+}
+
+html:has([data-dashboard-settings-content]) .dashboard-modal-layer {
   left: 0;
 }
 
 .dashboard-settings {
   --stx-mac-window: light-dark(#fff, #1e1e20);
-  --stx-mac-sidebar: light-dark(#eeeef0, #272729);
+  --stx-mac-sidebar: light-dark(#ededef, #29292d);
   --stx-mac-accent: light-dark(#0765d4, #6db4ff);
   --stx-mac-ink: light-dark(#202024, #f1f1f3);
   --stx-mac-ink-secondary: light-dark(#56565f, #b2b2bb);
@@ -679,58 +680,115 @@ html:has([data-dashboard-settings]) .dashboard-modal-layer {
   --dashboard-original-field: var(--dashboard-surface);
   --dashboard-original-field-border: var(--stx-mac-control-line);
   display: grid;
-  grid-template-columns: clamp(208px, 23vw, 250px) minmax(0, 1fr);
+  grid-template-columns: clamp(192px, 29vw, 225px) minmax(0, 1fr);
   height: 100dvh;
   color: var(--stx-mac-ink);
   font-family: var(--stx-mac-font);
 }
 
 .dashboard-settings-sidebar {
-  padding: max(18px, env(safe-area-inset-top)) 13px 18px;
+  padding: 0 11px 14px;
   overflow-y: auto;
   background: var(--stx-mac-sidebar);
   border-inline-end: 1px solid var(--stx-mac-separator);
 }
 
-.dashboard-settings-sidebar h1 {
-  margin: 22px 9px 12px;
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: -.025em;
+[data-settings-native="true"] .dashboard-settings-sidebar {
+  background: color-mix(in srgb, var(--stx-mac-sidebar) 74%, transparent);
+}
+
+.dashboard-settings-sidebar-chrome {
+  position: relative;
+  min-height: 50px;
+  margin-inline: -11px;
 }
 
 .dashboard-settings-back,
 .dashboard-settings-nav-item {
   display: flex;
   align-items: center;
-  gap: 9px;
-  border-radius: 8px;
+  gap: 8px;
+  border-radius: 7px;
   font-size: 13px;
   font-weight: 500;
   text-decoration: none;
 }
 
 .dashboard-settings-back {
-  width: fit-content;
+  position: absolute;
+  inset: 8px auto auto 11px;
   min-height: 34px;
   padding-inline: 8px;
   color: var(--stx-mac-ink-secondary);
 }
 
+[data-settings-native="true"] .dashboard-settings-back { display: none; }
+
+.dashboard-settings-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 29px;
+  margin: 0 2px 11px;
+  padding: 0 7px;
+  border-radius: 8px;
+  background: var(--stx-mac-well);
+  color: var(--stx-mac-ink-secondary);
+}
+
+.dashboard-settings-search:focus-within {
+  box-shadow: var(--stx-mac-focus-ring);
+}
+
+.dashboard-settings-search > span {
+  flex: 0 0 14px;
+  height: 14px;
+}
+
+.dashboard-settings-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--stx-mac-ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.dashboard-settings-search input::placeholder {
+  color: var(--stx-mac-ink-secondary);
+  opacity: 1;
+}
+
+.dashboard-settings-search-empty {
+  padding: 3px 8px;
+  color: var(--stx-mac-ink-secondary);
+  font-size: 12px;
+}
+
 .dashboard-settings-nav-item {
-  min-height: 36px;
-  padding: 4px 8px;
+  min-height: 31px;
+  padding: 3px 7px;
   color: inherit;
 }
 
+.dashboard-settings-nav-item[hidden] { display: none; }
 .dashboard-settings-back:hover,
 .dashboard-settings-nav-item:hover {
   background: var(--stx-mac-hover);
 }
 
 .dashboard-settings-nav-item[aria-current="page"] {
-  background: light-dark(#d8d8de, #404046);
+  background: light-dark(#1667cf, #275caa);
+  color: white;
   font-weight: 600;
+}
+
+:root[data-craft-window-active="false"] .dashboard-settings-nav-item[aria-current="page"] {
+  background: var(--stx-mac-selection-inactive);
+  color: var(--stx-mac-ink);
 }
 
 .dashboard-settings :is(a, summary):focus-visible {
@@ -740,10 +798,10 @@ html:has([data-dashboard-settings]) .dashboard-modal-layer {
 
 .dashboard-settings-tile {
   display: grid;
-  flex: 0 0 23px;
+  flex: 0 0 21px;
   place-items: center;
-  width: 23px;
-  height: 23px;
+  width: 21px;
+  height: 21px;
   border-radius: 6px;
   color: #fff;
   background: linear-gradient(#87878f, #62626c);
@@ -761,16 +819,72 @@ html:has([data-dashboard-settings]) .dashboard-modal-layer {
 .dashboard-settings-tile[data-tone="blue"] { background: linear-gradient(#479ef2, #1770c6); }
 .dashboard-settings-tile[data-tone="green"] { background: linear-gradient(#44af7e, #218659); }
 
+.dashboard-settings-detail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--stx-mac-window);
+}
+
+.dashboard-settings-toolbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 11px;
+  min-height: 51px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--stx-mac-separator);
+  user-select: none;
+}
+
+.dashboard-settings-toolbar h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -.012em;
+  pointer-events: none;
+}
+
+.dashboard-settings-history {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--stx-mac-well);
+}
+
+.dashboard-settings-history button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--stx-mac-ink);
+}
+
+.dashboard-settings-history button:not(:disabled):hover { background: var(--stx-mac-hover); }
+.dashboard-settings-history button:disabled { opacity: .35; }
+.dashboard-settings-history button:focus-visible { outline: 2px solid var(--stx-mac-accent); }
+
+.dashboard-settings-history button > span {
+  width: 12px;
+  height: 12px;
+}
+
 .dashboard-settings-pane {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
   overscroll-behavior: contain;
   background: var(--stx-mac-window);
 }
 
 .dashboard-settings-inner {
-  max-width: 810px;
+  max-width: 780px;
   margin-inline: auto;
-  padding: clamp(18px, 4vw, 42px) clamp(15px, 4vw, 36px) 42px;
+  padding: 18px clamp(14px, 3vw, 30px) 30px;
 }
 
 .dashboard-settings-stack {
@@ -789,7 +903,8 @@ html:has([data-dashboard-settings]) .dashboard-modal-layer {
 }
 
 .dashboard-settings [data-settings-pane-header] {
-  margin-block-end: 13px;
+  margin-block-end: 8px;
+  --stx-settings-hero-padding: 18px;
 }
 
 .dashboard-settings [data-settings-row] {
@@ -864,21 +979,17 @@ html .dashboard-settings [data-dashboard-button="secondary"]:hover {
   background: var(--stx-mac-sidebar);
 }
 
-@media (max-width: 620px) {
+@media (max-width: 590px) {
   .dashboard-settings {
     display: block;
     height: auto;
   }
 
   .dashboard-settings-sidebar {
-    padding: 10px 12px 12px;
+    padding-bottom: 10px;
     overflow: visible;
     border-inline-end: 0;
     border-block-end: 1px solid var(--stx-mac-separator);
-  }
-
-  .dashboard-settings-sidebar h1 {
-    margin: 4px 8px 8px;
   }
 
   .dashboard-settings-sidebar [data-settings-group] {

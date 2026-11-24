@@ -1,0 +1,48 @@
+@head
+<link rel="icon" href="/images/logos/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/__deps/dashboard-theme.css">
+<link rel="stylesheet" href="/__deps/dashboard-icons.css">
+<script src="/__deps/dashboard-theme.js"></script>
+@endhead
+
+@appearanceBootstrap({
+  storageKey: 'stacks-dashboard-appearance',
+  appearance: {
+    key: 'sidebarStyle',
+    attribute: 'appearance',
+    allowed: ['macos', 'arc'],
+    default: 'macos',
+  },
+  colorMode: {
+    key: 'colorMode',
+    attribute: 'color-mode',
+    default: 'system',
+  },
+})
+
+<script client>
+import { listenForSettingsPane, setSettingsWindowAppearance } from '@stacksjs/defaults/views/dashboard/composables/settings-window'
+import { useAppearance } from '@stacksjs/defaults/views/dashboard/composables/useAppearance'
+import { useSettingsWindow } from '@stacksjs/defaults/views/dashboard/composables/useSettingsWindow'
+
+const settingsWindow = useSettingsWindow
+const appearance = useAppearance()
+let stopListening: (() => void) | undefined
+
+effect(() => {
+  const mode = appearance.colorMode()
+  setSettingsWindowAppearance(mode)
+})
+
+useEventListener('stx:load', () => settingsWindow.syncHistory())
+useEventListener('popstate', () => settingsWindow.syncHistory())
+onMount(() => {
+  settingsWindow.syncHistory()
+  stopListening = listenForSettingsPane(navigate)
+})
+onDestroy(() => stopListening?.())
+</script>
+
+<main data-stx-content data-dashboard-content data-dashboard-settings-content>
+  @slot('content')
+</main>

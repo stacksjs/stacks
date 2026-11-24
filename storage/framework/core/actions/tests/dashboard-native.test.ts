@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { resolveDashboardCraftExecutable } from '../src/dev/dashboard-native'
+import { dashboardCraftCommand, resolveDashboardCraftExecutable } from '../src/dev/dashboard-native'
 
 describe('dashboard native Craft resolution', () => {
   it('skips resolution only through the explicit headless flag', () => {
@@ -42,6 +42,14 @@ describe('dashboard native Craft resolution', () => {
     expect(() => resolveDashboardCraftExecutable(() => {
       throw new Error('CRAFT_BIN does not exist')
     }, { explicit: '/missing/craft' })).toThrow('CRAFT_BIN does not exist')
+  })
+
+  it('launches the dashboard with the website data store used by its Settings window', () => {
+    const url = 'http://127.0.0.1:3002'
+    const command = dashboardCraftCommand({ binary: '/pantry/bin/craft', url })
+    expect(command.slice(0, 3)).toEqual(['/pantry/bin/craft', '--url', url])
+    expect(command).toContain('--persistent-storage')
+    expect(command).toContain('--titlebar-hidden')
   })
 
   it('keeps the dashboard launcher on the canonical Craft contract', async () => {

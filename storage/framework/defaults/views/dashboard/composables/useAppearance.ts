@@ -312,17 +312,26 @@ export type AppearanceSnapshot = typeof appearanceStore
  * mirroring happens here instead — otherwise `system` would be resolved once,
  * at load, and changing the OS theme would do nothing until a reload.
  */
-function installSystemThemeListener(): void {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function')
+function installAppearanceListeners(): void {
+  if (typeof window === 'undefined')
     return
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  window.addEventListener('storage', (event) => {
+    if (event.key !== APPEARANCE_STORAGE_KEY && event.key !== null)
+      return
+    const next = readStoredAppearance()
+    appearanceStore.sidebarStyle.set(next.sidebarStyle)
+    appearanceStore.colorMode.set(next.colorMode)
+    appearanceStore.hiddenSections.set(next.hiddenSections)
+    appearanceStore.apply()
+  })
+  window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener('change', () => {
     const store = appearanceStore
     if (store.colorMode() === 'system')
       store.apply()
   })
 }
 
-installSystemThemeListener()
+installAppearanceListeners()
 
 export function useAppearance(): AppearanceSnapshot {
   return appearanceStore

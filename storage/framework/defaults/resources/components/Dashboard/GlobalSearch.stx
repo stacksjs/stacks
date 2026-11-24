@@ -1,5 +1,6 @@
 <script client>
 import type { SearchResultItem, SearchResults, SearchUnavailable } from '../../../functions/search'
+import { openDashboardSettings } from '@stacksjs/defaults/views/dashboard/composables/settings-window'
 import { fetchGlobalSearch } from '../../../functions/search'
 
 const query = state('')
@@ -91,7 +92,8 @@ function moveDown(): void {
 
 function openResult(item: SearchResultItem): void {
   close()
-  navigate(item.href)
+  if (!openDashboardSettings(item.href))
+    navigate(item.href)
 }
 
 function selectCurrent(): void {

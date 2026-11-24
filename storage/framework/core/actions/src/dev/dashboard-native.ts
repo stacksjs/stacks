@@ -23,3 +23,25 @@ export function resolveDashboardCraftExecutable(
   const findOnPath = options.findOnPath ?? (binary => Bun.which(binary))
   return findOnPath(resolved) ?? undefined
 }
+
+export function dashboardCraftCommand(options: {
+  binary: string
+  url: string
+  icon?: string
+  verbose?: boolean
+}): string[] {
+  // Both webviews need the same WebKit data store for the session cookie and
+  // for appearance changes to reach the dashboard while Settings is open.
+  return [
+    options.binary,
+    '--url', options.url,
+    '--title', 'Stacks Dashboard',
+    '--app-name', 'Stacks Dashboard',
+    '--width', '1400',
+    '--height', '900',
+    '--titlebar-hidden',
+    '--persistent-storage',
+    ...(options.icon ? ['--icon', options.icon] : []),
+    ...(options.verbose ? ['--dev-tools'] : ['--quiet']),
+  ]
+}

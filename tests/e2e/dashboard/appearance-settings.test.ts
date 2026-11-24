@@ -11,9 +11,15 @@
 import type { Cdp } from '@stacksjs/testing/browser'
 import type { DashboardE2E } from './harness'
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
-import { click, navigate, waitFor } from '@stacksjs/testing/browser'
+import { click, connect, navigate, waitFor } from '@stacksjs/testing/browser'
 import { join } from 'node:path'
 import { dashboardE2EAvailable, signIn, startDashboardE2E } from './harness'
+
+interface DashboardTarget {
+  id: string
+  url: string
+  webSocketDebuggerUrl: string
+}
 
 describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
   let e2e: DashboardE2E | undefined
@@ -242,6 +248,52 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
       await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })
     }
     await click(cdp, { selector: 'button', text: 'Reset to defaults' })
+  }, 120_000)
+
+  test('opens and reuses a separate Settings window and applies preferences in the dashboard', async () => {
+    const { browser, origin } = e2e!
+    const { cdp } = browser
+    await navigate(cdp, origin)
+    const dashboardTarget = browser.target.split('/').pop()
+    const settingsTargets = async () => {
+      const targets = await (await fetch(`http://127.0.0.1:${browser.port}/json/list`)).json() as DashboardTarget[]
+      return targets.filter(target => target.id !== dashboardTarget && target.url.startsWith(`${origin}/settings`))
+    }
+
+    await click(cdp, '[data-dashboard-sidebar-tree] a[href="/settings"]')
+    const target = await waitFor(async () => (await settingsTargets())[0] ?? null, 15_000, { label: 'the separate Settings window' })
+    const settings = await connect(target.webSocketDebuggerUrl)
+    try {
+      expect(await cdp.evaluate('location.pathname')).toBe('/')
+      await waitFor(() => settings.evaluate(`Boolean(document.querySelector('[data-settings-pane-header]'))`), 10_000)
+      expect(await settings.evaluate(`document.querySelector('[data-dashboard-web-sidebar]') === null`)).toBe(true)
+      expect(await settings.evaluate(`document.querySelector('[aria-label="Back"]').disabled`)).toBe(true)
+
+      await click(settings, 'input[aria-label="Search settings"]')
+      await settings.send('Input.insertText', { text: 'theme' })
+      await waitFor(() => settings.evaluate(`document.querySelector('[aria-label="Settings"] a[href="/settings/mail"]').hidden`), 5_000)
+      await click(settings, '[aria-label="Settings"] a[href="/settings/appearance"]')
+      await waitFor(() => settings.evaluate(`location.pathname === '/settings/appearance' && !document.querySelector('[aria-label="Back"]').disabled`), 10_000)
+      await click(settings, 'button[aria-label="Back"]')
+      await waitFor(() => settings.evaluate(`location.pathname === '/settings' && !document.querySelector('[aria-label="Forward"]').disabled`), 10_000)
+      await click(settings, 'button[aria-label="Forward"]')
+      await waitFor(() => settings.evaluate(`location.pathname === '/settings/appearance' && Boolean(document.querySelector('button[data-theme-id="system-cleaner"]'))`), 10_000)
+
+      await click(settings, { selector: '[aria-label="Color mode"] button', text: 'Dark' })
+      await click(settings, 'button[data-theme-id="system-cleaner"]')
+      await waitFor(() => cdp.evaluate(`document.documentElement.dataset.dashboardTheme === 'system-cleaner' && document.documentElement.dataset.colorMode === 'dark'`), 10_000)
+      await click(cdp, '[data-dashboard-section-sidebar] [href="/settings"]')
+      expect((await settingsTargets()).map(window => window.id)).toEqual([target.id])
+      expect(await settings.evaluate('location.pathname')).toBe('/settings/appearance')
+      expect(await cdp.evaluate('location.pathname')).toBe('/')
+
+      await click(settings, { selector: 'button', text: 'Reset to defaults' })
+      await waitFor(() => cdp.evaluate(`document.documentElement.dataset.dashboardTheme === 'original'`), 5_000)
+    }
+    finally {
+      await settings.evaluate('window.close()').catch(() => {})
+      settings.disconnect()
+    }
   }, 120_000)
 
   test('a hidden section leaves the sidebar, and comes back', async () => {

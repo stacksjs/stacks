@@ -7,7 +7,7 @@ import { seedCsrfPageResponse, validateDevCsrfRequest } from './csrf'
 import { resolveComponentsLibraryRoot } from './defaults-resources'
 import { createIdleExit, projectSwitcherRoutes } from './dashboard-projects'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
-import { resolveDashboardCraftExecutable, type CraftBinaryResolver } from './dashboard-native'
+import { dashboardCraftCommand, resolveDashboardCraftExecutable, type CraftBinaryResolver } from './dashboard-native'
 import { dashboardHttpsAnswers, dashboardOriginUrl, dashboardPendingHeader, dashboardReadyHeader, dashboardReadyPath, resolveDashboardDomain, resolveDashboardProxyStrategy } from './dashboard-proxy'
 import { buildManifest, discoverProjectModels, findAvailablePort, modelsWithEnabledFeatures, waitForServer, writeFileIfChanged } from './dashboard-utils'
 import { runDashboardSupervisor } from './dashboard-supervisor'
@@ -808,29 +808,16 @@ console.log()
 // config loading which prints warnings before our console.log override is
 // active. We also let it be missing — the native window is a nicety, not a
 // requirement; the dashboard runs fine as a plain web server in that case.
-interface CraftApplication {
-  show: () => Promise<void>
-  close: () => void
-}
-
-type CraftCreateApp = (options: Record<string, unknown>) => CraftApplication
-
-let createApp: CraftCreateApp | undefined
 let resolveCraftBinary: CraftBinaryResolver | undefined
 const nativeDisabled = process.env.STACKS_NO_NATIVE === '1'
 const explicitCraftSdk = process.env.CRAFT_SDK_SRC
 
 if (!nativeDisabled && explicitCraftSdk) {
-  if (!existsSync(explicitCraftSdk))
-    throw new Error(`CRAFT_SDK_SRC not found: ${explicitCraftSdk}`)
-
   try {
-    ;({ createApp, resolveCraftBinary } = await import(explicitCraftSdk) as {
-      createApp?: CraftCreateApp
-      resolveCraftBinary?: CraftBinaryResolver
-    })
-    if (!createApp || !resolveCraftBinary)
-      throw new Error('CRAFT_SDK_SRC must export createApp and resolveCraftBinary')
+    // eslint-disable-next-line ts/no-top-level-await
+    ;({ resolveCraftBinary } = await import(explicitCraftSdk) as { resolveCraftBinary?: CraftBinaryResolver })
+    if (!resolveCraftBinary)
+      throw new Error('CRAFT_SDK_SRC must export resolveCraftBinary')
   }
   catch (error) {
     throw new Error(`Could not load CRAFT_SDK_SRC ${explicitCraftSdk}: ${error instanceof Error ? error.message : String(error)}`)
@@ -839,21 +826,17 @@ if (!nativeDisabled && explicitCraftSdk) {
 
 if (!nativeDisabled && !explicitCraftSdk) {
   try {
-    ;({ createApp, resolveCraftBinary } = await import('craft-native') as {
-      createApp?: CraftCreateApp
-      resolveCraftBinary?: CraftBinaryResolver
-    })
+    // eslint-disable-next-line ts/no-top-level-await
+    ;({ resolveCraftBinary } = await import('craft-native') as { resolveCraftBinary?: CraftBinaryResolver })
   }
   catch {
     // The canonical Craft SDK is unavailable. Keep serving the web dashboard.
   }
 }
 
-const craftBinaryPath = createApp && resolveCraftBinary
-  ? resolveDashboardCraftExecutable(resolveCraftBinary)
-  : undefined
+const craftBinaryPath = resolveCraftBinary ? resolveDashboardCraftExecutable(resolveCraftBinary) : undefined
 
-if (createApp && craftBinaryPath) {
+if (craftBinaryPath) {
   // Resolve the dock icon. Userland gets first crack at customizing via
   // `resources/assets/images/app-icon.png` in the project; if absent, fall
   // back to the framework's bundled placeholder so the dock never shows the
@@ -865,36 +848,31 @@ if (createApp && craftBinaryPath) {
     ? userIconPath
     : (await Bun.file(defaultIconPath).exists()) ? defaultIconPath : undefined
 
-  const app = createApp({
-    // Craft loads the server through loopback HTTP. The pretty HTTPS domain is
-    // for browsers whose trust store contains the local development CA; passing
-    // it to WKWebView leaves a blank window when that CA is not trusted. The
-    // origin server is already bound and carries the exact same dashboard.
-    url: dashboardLocalUrl,
-    quiet: !verbose,
-    craftPath: craftBinaryPath,
-    window: {
-      title: 'Stacks Dashboard',
-      width: 1400,
-      height: 900,
-      titlebarHidden: true,
-      ...(appIconPath && { icon: appIconPath }),
-    },
-  })
-
-  // Clean up on exit
-  process.on('SIGINT', () => {
-    app.close()
-    process.exit(0)
-  })
-  process.on('SIGTERM', () => {
-    app.close()
-    process.exit(0)
-  })
-
   try {
-    await app.show()
-    process.exit(0)
+    // Loopback HTTP works in WKWebView without trusting the browser's local
+    // development CA. The shared storage flag is currently exposed by the CLI.
+    const app = Bun.spawn(dashboardCraftCommand({
+      binary: craftBinaryPath,
+      url: dashboardLocalUrl,
+      icon: appIconPath,
+      verbose,
+    }), {
+      stdin: verbose ? 'inherit' : 'ignore',
+      stdout: verbose ? 'inherit' : 'ignore',
+      stderr: 'inherit',
+    })
+
+    for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+      process.once(signal, () => {
+        app.kill()
+        process.exit(0)
+      })
+    }
+
+    const exitCode = await app.exited
+    if (exitCode === 0)
+      process.exit(0)
+    throw new Error(`Craft exited with code ${exitCode}`)
   }
   catch (error) {
     const fallbackUrl = dashboardBrowserUrl

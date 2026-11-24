@@ -2,25 +2,67 @@
 const { pane } = defineProps<{ pane: 'general' | 'appearance' | 'mail' | 'billing' }>()
 
 export const panes = [
-  { id: 'general', label: 'General', href: '/settings', icon: 'i-f7-gear-alt-fill', tone: 'grey', description: 'Manage this project’s configuration and environment bindings.' },
-  { id: 'appearance', label: 'Appearance', href: '/settings/appearance', icon: 'i-f7-circle-lefthalf-fill', tone: 'purple', description: 'Choose how the dashboard looks and which sections are shown in the sidebar.' },
-  { id: 'mail', label: 'Mail', href: '/settings/mail', icon: 'i-f7-envelope-fill', tone: 'blue', description: 'Set the sender, delivery driver, and credentials for outgoing mail.' },
-  { id: 'billing', label: 'Billing', href: '/settings/billing', icon: 'i-f7-creditcard-fill', tone: 'green', description: 'View your subscription, payment methods, and transactions.' },
+  { id: 'general', label: 'General', href: '/settings', icon: 'i-f7-gear-alt-fill', tone: 'grey', description: 'Manage this project’s configuration and environment bindings.', keywords: 'config project environment' },
+  { id: 'appearance', label: 'Appearance', href: '/settings/appearance', icon: 'i-f7-circle-lefthalf-fill', tone: 'purple', description: 'Choose how the dashboard looks and which sections are shown in the sidebar.', keywords: 'theme color mode dark light sidebar display' },
+  { id: 'mail', label: 'Mail', href: '/settings/mail', icon: 'i-f7-envelope-fill', tone: 'blue', description: 'Set the sender, delivery driver, and credentials for outgoing mail.', keywords: 'email smtp sender transport' },
+  { id: 'billing', label: 'Billing', href: '/settings/billing', icon: 'i-f7-creditcard-fill', tone: 'green', description: 'View your subscription, payment methods, and transactions.', keywords: 'subscription payment transaction invoice' },
 ] as const
 export const activePane = panes.find(item => item.id === pane) ?? panes[0]
+defineClientPayload({ panes, activePane })
 </script>
 
-<div data-dashboard-settings class="dashboard-settings">
+<script client>
+import { dragSettingsWindow, isNativeSettingsWindow, returnToDashboard } from '@stacksjs/defaults/views/dashboard/composables/settings-window'
+import { useSettingsWindow } from '@stacksjs/defaults/views/dashboard/composables/useSettingsWindow'
+
+const settingsWindow = useSettingsWindow
+const query = settingsWindow.query
+const search = useRef<HTMLInputElement>('settingsSearch')
+const native = state(isNativeSettingsWindow())
+const entries = {{ panes }}
+const selectedHref = {{ activePane.href }}
+const matching = derived(() => {
+  const searchText = query().trim().toLowerCase()
+  return entries.filter(({ label, keywords }) => `${label.toLowerCase()} ${keywords}`.includes(searchText))
+})
+
+function matches(id: string): boolean {
+  return matching().some(item => item.id === id)
+}
+
+function openSearchResult(): void {
+  const [result, another] = matching()
+  if (result && !another && result.href !== selectedHref)
+    navigate(result.href)
+}
+
+useEventListener('craft:ready', () => native.set(isNativeSettingsWindow()))
+useEventListener('keydown', (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'f') {
+    event.preventDefault()
+    search.current?.focus()
+    search.current?.select()
+  }
+})
+</script>
+
+<div data-dashboard-settings class="dashboard-settings" :data-settings-native="String(native())">
   <aside class="dashboard-settings-sidebar">
-    <a href="/" data-stx-link class="dashboard-settings-back">
-      <span class="i-f7-chevron-left" aria-hidden="true"></span>
-      Dashboard
-    </a>
-    <h1>Settings</h1>
+    <div class="dashboard-settings-sidebar-chrome">
+      <SidebarHeader windowControls="native" />
+      <a href="/" class="dashboard-settings-back" @click="returnToDashboard($event)">
+        <span class="i-f7-chevron-left" aria-hidden="true"></span>
+        Dashboard
+      </a>
+    </div>
+    <form class="dashboard-settings-search" role="search" @submit.prevent="openSearchResult()">
+      <span class="i-f7-search" aria-hidden="true"></span>
+      <input x-model="query" ref="settingsSearch" type="search" placeholder="Search" aria-label="Search settings" autocomplete="off">
+    </form>
     <nav aria-label="Settings">
       <SettingsSidebarGroup>
         @foreach(panes as item)
-          <a href="{{ item.href }}" data-stx-link class="dashboard-settings-nav-item"
+          <a href="{{ item.href }}" data-stx-link class="dashboard-settings-nav-item" :hidden="!matches('{{ item.id }}')"
             @if(item.id === activePane.id)aria-current="page"@endif>
             <span class="dashboard-settings-tile" data-tone="{{ item.tone }}" aria-hidden="true">
               <span class="{{ item.icon }}"></span>
@@ -29,13 +71,27 @@ export const activePane = panes.find(item => item.id === pane) ?? panes[0]
           </a>
         @endforeach
       </SettingsSidebarGroup>
+      <p :if="matching().length === 0" class="dashboard-settings-search-empty" role="status">No matching settings</p>
     </nav>
   </aside>
 
-  <div class="dashboard-settings-pane">
-    <div class="dashboard-settings-inner">
-      <SettingsPaneHeader :title="activePane.label" :description="activePane.description" :icon="activePane.icon" :tone="activePane.tone" />
-      <slot />
+  <div class="dashboard-settings-detail">
+    <header class="dashboard-settings-toolbar" @mousedown="dragSettingsWindow($event)">
+      <div class="dashboard-settings-history" role="group" aria-label="Settings history">
+        <button type="button" aria-label="Back" :disabled="settingsWindow.index() === 0" @click="goBack()">
+          <span class="i-f7-chevron-left" aria-hidden="true"></span>
+        </button>
+        <button type="button" aria-label="Forward" :disabled="settingsWindow.index() >= settingsWindow.lastIndex()" @click="goForward()">
+          <span class="i-f7-chevron-right" aria-hidden="true"></span>
+        </button>
+      </div>
+      <h1>{{ activePane.label }}</h1>
+    </header>
+    <div class="dashboard-settings-pane" data-stx-scroll="settings">
+      <div class="dashboard-settings-inner">
+        <SettingsPaneHeader :title="activePane.label" :description="activePane.description" :icon="activePane.icon" :tone="activePane.tone" />
+        <slot />
+      </div>
     </div>
   </div>
 </div>

@@ -497,7 +497,8 @@ import type { CraftSidebarSelectEvent } from '@stacksjs/defaults/functions/craft
 import { useToasts, dismissToast } from '@stacksjs/defaults/functions/toasts'
 import { ensureCraftNativeSidebarMarker, useCraftSidebarSelection } from '@stacksjs/defaults/functions/craft'
 import { dashboardNavigationPath } from '@stacksjs/defaults/resources/functions/dashboard/section-navigation'
-import { APPEARANCE_STORAGE_KEY, readStoredAppearance, useAppearance } from '@stacksjs/defaults/views/dashboard/composables/useAppearance'
+import { useAppearance } from '@stacksjs/defaults/views/dashboard/composables/useAppearance'
+import { handleDashboardSettingsClick, listenForSettingsCommand, openDashboardSettings } from '@stacksjs/defaults/views/dashboard/composables/settings-window'
 import { useDashboardThemes } from '@stacksjs/defaults/views/dashboard/composables/useDashboardThemes'
 import { authStore } from '@stacksjs/defaults/views/dashboard/stores/auth'
 import { kanbanStore } from '@stacksjs/defaults/views/dashboard/stores/kanban'
@@ -546,6 +547,7 @@ const sidebarOrder = createDashboardSidebarOrder({
   status: value => sidebarOrderStatus.set(value),
 })
 let removeCraftSidebarSelection = () => {}
+let removeSettingsCommand: (() => void) | undefined
 ensureCraftNativeSidebarMarker()
 auth.load()
 
@@ -628,14 +630,10 @@ function applySectionVisibility() {
 effect(applySectionVisibility)
 
 
-// Apply edits from other tabs without writing those preferences back.
-useEventListener('storage', (event) => {
-  if (event.key !== APPEARANCE_STORAGE_KEY && event.key !== null) return
-  const next = readStoredAppearance()
-  appearance.sidebarStyle.set(next.sidebarStyle)
-  appearance.colorMode.set(next.colorMode)
-  appearance.hiddenSections.set(next.hiddenSections)
-  appearance.apply()
+useEventListener('click', handleDashboardSettingsClick, { capture: true })
+useEventListener('keydown', (event) => {
+  if (!removeSettingsCommand && event.metaKey && event.key === ',' && openDashboardSettings())
+    event.preventDefault()
 })
 
 // Highlight the current route. Longest-prefix matching keeps a detail page
@@ -682,7 +680,8 @@ function handleSidebarItemClick(payload: { item?: { href?: string }, event?: { p
   const href = payload?.item?.href
   if (!href || href.startsWith('http')) return
   payload.event?.preventDefault()
-  navigate(href)
+  if (!openDashboardSettings(href))
+    navigate(href)
 }
 
 // Where the Sidebar sat in the window while it is lent to the drawer.
@@ -724,10 +723,15 @@ function handleCraftSidebarSelection(event: CraftSidebarSelectEvent | undefined)
     const link = row?.querySelector('a[data-sidebar-item][href]')
     const href = link?.getAttribute('href')
     if (href) {
-      navigate(href)
+      if (!openDashboardSettings(href))
+        navigate(href)
       return
     }
   }
+}
+
+function attachSettingsCommand(): void {
+  removeSettingsCommand ??= listenForSettingsCommand(() => { openDashboardSettings() })
 }
 
 function attachCraftSidebarSelection() {
@@ -740,6 +744,7 @@ useEventListener('stx:hydrated', () => syncActiveSidebarRow(), { once: true })
 useEventListener('craft:ready', () => {
   ensureCraftNativeSidebarMarker()
   attachCraftSidebarSelection()
+  attachSettingsCommand()
 })
 
 onMount(() => {
@@ -750,10 +755,12 @@ onMount(() => {
   applyRoleFilter()
   applySectionVisibility()
   attachCraftSidebarSelection()
+  attachSettingsCommand()
 })
 
 onDestroy(() => {
   sidebarOrder.destroy()
+  removeSettingsCommand?.()
   removeCraftSidebarSelection()
 })
 </script>
