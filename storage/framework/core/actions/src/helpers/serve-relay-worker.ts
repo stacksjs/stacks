@@ -53,3 +53,5 @@ const runtime = globalThis as typeof globalThis & { [devRelayKey]?: ReturnType<t
 export const devRelayWorker = serveRelayPort('dev')
   ? (runtime[devRelayKey] ??= installServeRelayWorker(() => process.exit(0)))
   : undefined
+if (devRelayWorker)
+  process.send?.({ type: 'stacks:dev-relay-ready' })

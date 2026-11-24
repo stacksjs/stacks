@@ -1,4 +1,5 @@
 import type { OwnedProcess } from '@stacksjs/cli/owned-process'
+import { watch } from 'node:fs'
 import { dirname, extname, resolve } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
@@ -36,6 +37,8 @@ interface AppService {
 
 const readyTimeoutMs = 90_000
 const relayPreload = fileURLToPath(new URL(`../helpers/serve-relay-worker${extname(import.meta.path)}`, import.meta.url))
+const ignoredApiWatchPaths = /(?:^|\/)(?:\.[^/]+|node_modules|dist|vendor)(?:\/|$)|^storage\/(?!framework\/(?:core|defaults|models)\/)/i
+const apiSourceExtension = /\.(?:[cm]?[jt]s|[jt]sx|json)$/i
 
 export function startAppDevSession(options: AppDevSessionOptions): { finished: Promise<void>, stop: () => Promise<void> } {
   const { root, target, frontendPort, apiPort, verbose, waitForPort, reportError } = options
@@ -104,10 +107,12 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
     const port = await reserveRelayWorkerPort()
     signal.throwIfAborted()
     const api = service.action === Action.DevApi
-    // The API still watches imported source. STX owns frontend HMR.
-    const watch = api ? developmentWatchFlag(service.action) : ''
+    // Bun's Windows --watch launcher can lose the worker's IPC pipe.
+    // The owner watches API source on Windows. STX owns frontend HMR.
+    const watchFlag = api && process.platform !== 'win32' ? developmentWatchFlag(service.action) : ''
+    const { promise: relayReady, resolve: markRelayReady } = Promise.withResolvers<void>()
     let relayTarget: AppWorker['target'] | undefined
-    const child = spawnOwnedProcess([bun, developmentConditionForProject(root), watch, '--preload', preload, entry].filter(Boolean), {
+    const child = spawnOwnedProcess([bun, developmentConditionForProject(root), watchFlag, '--preload', preload, entry].filter(Boolean), {
       ownerRuntime: bun,
       cwd: root,
       env: {
@@ -128,13 +133,17 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
       stdout: verbose ? 'inherit' : 'ignore',
       stderr: verbose || !api ? 'inherit' : 'ignore',
       stopGraceMs: 0,
-      ipc(message) { relayTarget?.onMessage(message) },
+      ipc(message) {
+        if (message && typeof message === 'object' && 'type' in message && message.type === 'stacks:dev-relay-ready')
+          markRelayReady()
+        relayTarget?.onMessage(message)
+      },
     })
     const probe = new AbortController()
     const deadline = AbortSignal.any([signal, AbortSignal.timeout(readyTimeoutMs)])
     const error = new Error(`${service.name} did not become ready on port ${service.port}.`)
     const ready = Promise.race([
-      child.started.then(() => waitForPort(port, readyTimeoutMs, AbortSignal.any([probe.signal, deadline]))).then((listening) => {
+      relayReady.then(() => waitForPort(port, readyTimeoutMs, AbortSignal.any([probe.signal, deadline]))).then((listening) => {
         if (!listening || deadline.aborted)
           throw error
         return true
@@ -204,10 +213,10 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
     service.worker = worker
   }
 
-  async function restart(): Promise<void> {
+  async function restart(replacements: AppService[]): Promise<void> {
     const batch = new AbortController()
     const signal = AbortSignal.any([shutdown.signal, batch.signal])
-    const candidates = await Promise.allSettled(services.map(async (service) => {
+    const candidates = await Promise.allSettled(replacements.map(async (service) => {
       try {
         return await prepare(service, signal)
       }
@@ -220,17 +229,17 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
       candidate.status === 'fulfilled' && candidate.value?.alive === false,
     )
     if (stoppedCandidate !== -1)
-      batch.abort(new Error(`${services[stoppedCandidate]!.name} stopped before the dev services could switch over.`))
+      batch.abort(new Error(`${replacements[stoppedCandidate]!.name} stopped before the dev services could switch over.`))
     if (signal.aborted) {
       await Promise.allSettled(candidates.map(candidate => candidate.status === 'fulfilled' ? candidate.value?.child.stop() : undefined))
-      services.forEach(releaseUnusedRelay)
+      replacements.forEach(releaseUnusedRelay)
       signal.throwIfAborted()
     }
 
     // Keep the old services together until the whole replacement session is
     // ready. Swapping the targets in one tick also keeps the public API URL
     // used by the frontend's same-origin proxy stable.
-    const old = services.map((service, index) => {
+    const old = replacements.map((service, index) => {
       const previous = service.worker
       const candidate = candidates[index]!
       if (candidate.status === 'fulfilled' && candidate.value)
@@ -256,9 +265,19 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
       onWorkerExit(error instanceof Error ? error : new Error(String(error)))
     }
   }))
+  let restartQueue = initialStart.then(() => {})
+  function enqueueRestart(replacements: AppService[]): Promise<void> {
+    const next = restartQueue.then(() => {
+      shutdown.signal.throwIfAborted()
+      return restart(replacements)
+    })
+    restartQueue = next.catch(() => {})
+    return next
+  }
+
   try {
     closeRestart = serveAppRestart(root, 'dev', () => {
-      restarting ??= initialStart.then(restart).finally(() => { restarting = undefined })
+      restarting ??= enqueueRestart(services).finally(() => { restarting = undefined })
       return restarting
     })
   }
@@ -273,12 +292,18 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
     })
   }
 
+  const apiService = services.find(service => service.action === Action.DevApi)
+  const stopWatching = process.platform === 'win32' && apiService
+    ? watchApiSource(root, () => enqueueRestart([apiService]), reportError)
+    : undefined
+
   return {
     finished,
     stop() {
       if (stopping)
         return stopping
       shutdown.abort()
+      stopWatching?.()
       closeRestart?.()
       for (const service of services)
         service.relay?.stop()
@@ -288,5 +313,54 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
       })).then(() => finish())
       return stopping
     },
+  }
+}
+
+function watchApiSource(root: string, reload: () => Promise<void>, reportError: (message: string) => void): (() => void) | undefined {
+  let debounce: ReturnType<typeof setTimeout> | undefined
+  let reloading = false
+  let changed = false
+  let stopped = false
+
+  function schedule(): void {
+    clearTimeout(debounce)
+    if (stopped || reloading)
+      return
+    debounce = setTimeout(async () => {
+      changed = false
+      reloading = true
+      try {
+        await reload()
+      }
+      catch (error) {
+        if (!stopped)
+          reportError(`API source reload failed: ${error instanceof Error ? error.message : error}`)
+      }
+      finally {
+        reloading = false
+        if (changed)
+          schedule()
+      }
+    }, 200)
+  }
+
+  const reportWatchError = (error: unknown) => reportError(`Could not watch API source: ${error instanceof Error ? error.message : error}`)
+  try {
+    const watcher = watch(root, { recursive: true }, (_event, filename) => {
+      const path = filename?.replaceAll('\\', '/')
+      if (path && (ignoredApiWatchPaths.test(path) || /\.d\.[cm]?ts$/i.test(path) || !apiSourceExtension.test(path)))
+        return
+      changed = true
+      schedule()
+    })
+    watcher.on('error', reportWatchError)
+    return () => {
+      stopped = true
+      clearTimeout(debounce)
+      watcher.close()
+    }
+  }
+  catch (error) {
+    reportWatchError(error)
   }
 }

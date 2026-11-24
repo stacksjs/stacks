@@ -11,6 +11,7 @@ interface Listener {
   port: number
   pid: number
   version: string
+  source: string
 }
 
 async function waitFor<T>(read: () => T | Promise<T>): Promise<T> {
@@ -36,17 +37,20 @@ test.each(launchModes)('Software Update rolls dev services on their original por
     : [['dev', 'frontend'], ['dev', 'api']]
   const root = await mkdtemp(join(tmpdir(), 'stacks-standalone-dev-'))
   const actions = join(root, 'storage/framework/core/actions/src/dev')
+  const sourceFile = join(root, 'routes/source.ts')
   const children: Array<ReturnType<typeof Bun.spawn>> = []
   let session: ReturnType<typeof startAppDevSession> | undefined
   const occupied = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response('unrelated') })
   try {
-    await Promise.all([mkdir(actions, { recursive: true }), mkdir(join(root, 'config'))])
+    await Promise.all([mkdir(actions, { recursive: true }), mkdir(join(root, 'config')), mkdir(join(root, 'routes'))])
     await Promise.all([
       writeFile(join(root, 'package.json'), '{"name":"standalone-restart-fixture"}'),
       writeFile(join(root, 'config/app.ts'), 'export default {}'),
       writeFile(join(root, 'bunfig.toml'), 'preload = []\n'),
       writeFile(join(root, 'version.txt'), 'before'),
+      writeFile(sourceFile, 'export default "old source"'),
       ...(['views', 'api'] as const).map(name => writeFile(join(actions, `${name}.ts`), `
+${name === 'api' ? "import source from '../../../../../../routes/source'" : "const source = 'frontend'"}
 const version = await Bun.file('version.txt').text()
 const port = Number(process.env.STACKS_DEV_PUBLIC_PORT)
 if (version === 'failed' && '${name}' === 'views')
@@ -67,11 +71,11 @@ const server = Bun.serve({
     }
     if (version === 'unstable' && '${name}' === 'views')
       await Bun.write('standby-probed', '')
-    return Response.json({ port, pid: process.pid, version })
+    return Response.json({ port, pid: process.pid, version, source })
   },
 })
 ${name === 'api' ? "process.send({ type: 'stacks:api-ready', port: server.port })" : ''}
-await Bun.write('${name}-ready.json', JSON.stringify({ port, pid: process.pid, version }))
+await Bun.write('${name}-ready.txt', JSON.stringify({ port, pid: process.pid, version, source }))
 if (version === 'unstable' && '${name}' === 'views') {
   while (!await Bun.file('exit-standby').exists())
     await Bun.sleep(25)
@@ -108,7 +112,7 @@ if (version === 'unstable' && '${name}' === 'views') {
             ...process.env,
             PORT: String(occupied.port),
             PORT_API: '0',
-            STACKS_HOME: join(root, 'state'),
+            STACKS_HOME: join(root, '.state'),
             STACKS_DEV_NO_OPEN: '1',
             SHUTDOWN_GRACE_MS: '2500',
           },
@@ -118,7 +122,7 @@ if (version === 'unstable' && '${name}' === 'views') {
       }
     }
     const [views, backend] = await Promise.all(['views', 'api'].map(name => waitFor(async () => {
-      return await Bun.file(join(root, `${name}-ready.json`)).json() as Listener
+      return await Bun.file(join(root, `${name}-ready.txt`)).json() as Listener
     })))
     const [frontend, api] = [views!, backend!]
     expect(runningAppDevSessions(root).map(session => session.pid).sort()).toEqual(
@@ -154,7 +158,7 @@ if (version === 'unstable' && '${name}' === 'views') {
       expect(await read(api.port)).toEqual(api)
       if (combined) {
         await waitFor(async () => {
-          const worker = await Bun.file(join(root, 'views-ready.json')).json() as Listener
+          const worker = await Bun.file(join(root, 'views-ready.txt')).json() as Listener
           if (worker.version !== 'after')
             throw new Error('Frontend replacement is not ready')
         })
@@ -188,7 +192,7 @@ if (version === 'unstable' && '${name}' === 'views') {
         const interrupted = restartAppSession(control)
         void interrupted.catch(() => {})
         await waitFor(() => Bun.file(join(root, 'standby-probed')).text())
-        const standby = await Bun.file(join(root, 'views-ready.json')).json() as Listener
+        const standby = await Bun.file(join(root, 'views-ready.txt')).json() as Listener
         expect(standby.version).toBe('unstable')
         await writeFile(join(root, 'exit-standby'), '')
         await waitFor(() => {
@@ -205,6 +209,12 @@ if (version === 'unstable' && '${name}' === 'views') {
       await traffic
     }
     expect(failures).toEqual([])
+    await writeFile(join(root, 'version.txt'), 'after')
+    await writeFile(sourceFile, 'export default "new source"')
+    await waitFor(async () => {
+      expect((await read(api.port)).source).toBe('new source')
+    })
+    expect((await read(frontend.port)).source).toBe('frontend')
     expect(await (await fetch(occupied.url)).text()).toBe('unrelated')
     for (const child of children)
       child.kill('SIGTERM')
