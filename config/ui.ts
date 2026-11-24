@@ -29,6 +29,12 @@ export default {
   // file, where a long-lived cache is worth more than one saved round trip.
   inlineGeneratedCssBytes: 200_000,
 
+  // A page whose only reactive parts are islands paints without the signals
+  // runtime: the first island a visitor touches loads it. On stacksjs.com the
+  // signup form is the only one, and it posts without JavaScript anyway, so
+  // the home page and the blog no longer fetch 69 KB before their first paint.
+  lazyIslandRuntime: true,
+
   // Components, layouts and partials directories.
   //
   // These are resolved RELATIVE TO the explicit `resources` stx root.
