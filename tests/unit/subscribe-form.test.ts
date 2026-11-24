@@ -30,6 +30,19 @@ describe('SubscribeForm', () => {
       expect(component).toContain(`name="${field}"`)
   })
 
+  test('renders what it shows before its script has run', () => {
+    // As an island the form paints before hydration. Every string and class a
+    // reader sees, and every value a plain post sends, has to be in the
+    // server-rendered markup, with the binding taking over afterwards.
+    expect(component).toMatch(/<script server>[\s\S]*defineProps\(\)[\s\S]*<\/script>/)
+    expect(component).toContain('<span :text="label()">{{ initial.label }}</span>')
+    expect(component).toContain(':text="intro() || \'Email address\'">{{ initial.intro || \'Email address\' }}</label>')
+    expect(component).toContain('placeholder="{{ initial.placeholder }}"')
+    expect(component).toContain('class="subscribe-form__button {{ initial.buttonClass }}"')
+    for (const [field, value] of [['source', 'source'], ['list', 'list'], ['return', 'returnTo']])
+      expect(component).toContain(`name="${field}" value="{{ initial.${value} }}"`)
+  })
+
   test('has something to say for every outcome the endpoint gives', () => {
     const action = read('storage/framework/defaults/app/Actions/SubscriberEmailAction.ts')
     const outcomes = action.match(/type Outcome = ([^\n]+)/)?.[1]?.match(/'([a-z]+)'/g)?.map(s => s.slice(1, -1)) ?? []
