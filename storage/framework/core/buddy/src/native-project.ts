@@ -3,6 +3,7 @@ import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileS
 import { basename, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { nativeProjectTemplates } from './native-project-templates'
+import { frameworkRegistryFetch } from '@stacksjs/actions/framework-registry'
 import { setEnv } from '@stacksjs/env/cli'
 import { generateAppKey } from '@stacksjs/security/key'
 import { auditNativeEnvironment, defaultCraftRuntime, prepareNativeAppBuild, readNativeAppConfig, recordNativeArtifact } from 'ts-pantry/native'
@@ -143,7 +144,7 @@ export async function raiseExactFrameworkPins(
   root: string,
   options: { dryRun?: boolean, read?: typeof fetch } = {},
 ): Promise<Array<{ name: string, from: string, to: string }>> {
-  const read = options.read ?? fetch
+  const read = options.read ?? frameworkRegistryFetch()
   const path = join(root, 'package.json')
   const raw = readFileSync(path, 'utf8')
   const manifest = JSON.parse(raw) as Record<string, Record<string, string> | undefined>

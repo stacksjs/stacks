@@ -10,6 +10,7 @@ import { isAbsolute, join, relative } from 'node:path'
 import process from 'node:process'
 import { buddyOptionArgs, runCommand } from '@stacksjs/cli'
 import { installedDefaultsVersion } from '@stacksjs/path'
+import { frameworkRegistryFetch } from '../framework-registry'
 import { runPostSyncAiRefresh, runPostSyncDatabaseTypesRefresh } from './framework-hooks'
 import {
   measureDefaultsDrift,
@@ -213,9 +214,11 @@ export function declaredPins(pkg: PkgJson, names: string[]): Record<string, stri
 
 /** Resolve the target version + the `stacks` meta's declared dependency ranges. */
 async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version: string, metaDeps: Record<string, string>, runtimePins: Record<string, string>, craftFloor?: string }> {
-  const res = await fetch('https://registry.npmjs.org/stacks').catch(() => null)
+  // Pantry first (where releases publish by default), npm when it cannot answer.
+  const read = frameworkRegistryFetch()
+  const res = await read('https://registry.npmjs.org/stacks').catch(() => null)
   if (!res || !res.ok)
-    throw new Error('Could not reach the npm registry to resolve the target `stacks` version.')
+    throw new Error('Could not reach the Pantry or npm registry to resolve the target `stacks` version.')
 
   const meta = (await res.json()) as {
     'dist-tags'?: Record<string, string>
@@ -227,7 +230,7 @@ async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version:
   let version: string
   if (options.version) {
     if (!versions[options.version])
-      throw new Error(`stacks@${options.version} was not found on the npm registry.`)
+      throw new Error(`stacks@${options.version} was not found on the Pantry or npm registry.`)
     version = options.version
   }
   else {
@@ -249,13 +252,13 @@ async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version:
   // STX has its own release line, but its compiler, components and runtime
   // must agree with the framework being installed. Resolve that release's
   // published actions manifest, never the independently moving latest tag.
-  const actions = await fetch(`https://registry.npmjs.org/@stacksjs%2factions/${version}`)
+  const actions = await read(`https://registry.npmjs.org/@stacksjs%2factions/${version}`)
   if (!actions.ok)
     throw new Error(`Could not resolve the frontend dependencies shipped by @stacksjs/actions@${version}.`)
   const manifest = await actions.json() as { version?: string, dependencies?: Record<string, string>, peerDependencies?: Record<string, string> }
   if (manifest.version !== version)
     throw new Error('The published actions manifest does not match the requested framework release.')
-  return { version, metaDeps, runtimePins: await resolvePublishedRuntimePins(manifest.dependencies ?? {}), craftFloor: craftFloor(manifest) }
+  return { version, metaDeps, runtimePins: await resolvePublishedRuntimePins(manifest.dependencies ?? {}, read), craftFloor: craftFloor(manifest) }
 }
 
 const RUNTIME_PACKAGES = ['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx', '@stacksjs/desktop', '@stacksjs/sanitizer', 'stx-router'] as const
@@ -366,7 +369,7 @@ export function publishedRuntimePins(dependencies: Record<string, string>): Reco
  * not share what they register. Pinned to what the framework's ranges resolve
  * to, the app and the framework install one copy.
  */
-export async function newestRuntimeRelease(floor: string, names: string[], read: typeof fetch = fetch): Promise<string> {
+export async function newestRuntimeRelease(floor: string, names: string[], read: typeof fetch = frameworkRegistryFetch()): Promise<string> {
   const published = await Promise.all(names.map(async (name) => {
     const response = await read(`https://registry.npmjs.org/${name.replace('/', '%2f')}`, { headers: { accept: 'application/vnd.npm.install-v1+json' } })
     if (!response.ok)
@@ -386,7 +389,7 @@ export async function newestRuntimeRelease(floor: string, names: string[], read:
 }
 
 /** Read the STX release's nested runtime pins before changing an app. */
-export async function resolvePublishedRuntimePins(dependencies: Record<string, string>, read: typeof fetch = fetch): Promise<Record<string, string>> {
+export async function resolvePublishedRuntimePins(dependencies: Record<string, string>, read: typeof fetch = frameworkRegistryFetch()): Promise<Record<string, string>> {
   const pins = publishedRuntimePins(dependencies)
   const floor = pins['@stacksjs/stx']
   if (!floor)
@@ -484,7 +487,7 @@ export function declaredCraftPackages(pkg: PkgJson): string[] {
  * The platform builders share Craft's version, but one that never published
  * it is left alone rather than pinned to a version that cannot install.
  */
-export async function resolveCraftPins(pkg: PkgJson, floor: string | undefined, read: typeof fetch = fetch): Promise<Record<string, string>> {
+export async function resolveCraftPins(pkg: PkgJson, floor: string | undefined, read: typeof fetch = frameworkRegistryFetch()): Promise<Record<string, string>> {
   const pins: Record<string, string> = {}
   if (!floor) return pins
   for (const name of declaredCraftPackages(pkg)) {

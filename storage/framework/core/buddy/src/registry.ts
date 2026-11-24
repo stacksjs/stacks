@@ -1,5 +1,8 @@
+import { frameworkRegistryFetch } from '@stacksjs/actions/framework-registry'
+
 /**
- * What npm actually has.
+ * What the registry actually has: Pantry's npm endpoint, which merges in what
+ * only npm holds, with npm itself as the fallback (`framework-registry.ts`).
  *
  * Both scaffolding and unvendoring have to reconcile the checkout in front of
  * them with the versions a user can install, and they were reconciling it
@@ -24,7 +27,7 @@ export interface PublishedVersions {
  * registry means for them; it is not always fatal.
  */
 export async function fetchPublishedVersions(depName: string): Promise<PublishedVersions> {
-  const response = await fetch(`https://registry.npmjs.org/${depName.replace('/', '%2F')}`, {
+  const response = await frameworkRegistryFetch()(`https://registry.npmjs.org/${depName.replace('/', '%2F')}`, {
     headers: { accept: 'application/vnd.npm.install-v1+json' },
   })
 
