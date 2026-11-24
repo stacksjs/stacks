@@ -1,4 +1,7 @@
 import { afterEach, describe, expect, spyOn, test } from 'bun:test'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { prepareSpeechAudio } from '../src/speech-input'
 
 const fixtures = `${import.meta.dir}/fixtures/`
@@ -69,6 +72,21 @@ function oggPages(bytes: Uint8Array): Uint8Array[] {
     offset += size
   }
   return pages
+}
+
+/** Real SILK speech repeated to about `seconds`, with granule positions that agree, so all of it decodes. */
+async function longOgg(seconds: number): Promise<Uint8Array> {
+  const [head, tags, ...audio] = oggPages(await fixture('voice-opus-silk.opus'))
+  const perCopy = 0.832 * 48000
+  const pages = [head!, tags!]
+  for (let copy = 0; copy < Math.floor(seconds / 0.832); copy++) {
+    for (const [index, page] of audio.entries()) {
+      const moved = page.slice()
+      new DataView(moved.buffer).setBigInt64(6, BigInt(Math.round(copy * perCopy + (index + 1) * perCopy / audio.length)), true)
+      pages.push(moved)
+    }
+  }
+  return concat(pages)
 }
 
 /** A page of 255 empty packets: each is a lost packet, which an Opus decoder conceals as 20 ms. */
@@ -210,7 +228,81 @@ describe('cancellation and the decoder deadline', () => {
   })
 })
 
-describe('the decoder is in-process', () => {
+describe('the decode runs in a worker thread', () => {
+  // About four minutes of speech: over a second of decoding on a fast machine.
+  const long = longOgg(240)
+
+  test('the event loop stays free while it decodes', async () => {
+    let ticks = 0
+    const interval = setInterval(() => ticks++, 5)
+    try {
+      const prepared = await prepareSpeechAudio(await long)
+      expect(prepared.durationSeconds).toBeGreaterThan(235)
+    }
+    finally { clearInterval(interval) }
+    // Decoding on this thread, not one tick would run until it was done.
+    expect(ticks).toBeGreaterThan(20)
+  })
+
+  test('the deadline stops a decode midway, not after it', async () => {
+    const started = performance.now()
+    await expect(prepareSpeechAudio(await long, { timeoutMs: 100 })).rejects.toThrow('Audio decoder timed out')
+    expect(performance.now() - started).toBeLessThan(600)
+    // And the decode itself is gone, not still burning a core behind the error.
+    const cpu = process.cpuUsage()
+    await Bun.sleep(300)
+    const spent = process.cpuUsage(cpu)
+    expect((spent.user + spent.system) / 1000).toBeLessThan(120)
+  })
+
+  test('an abort stops a decode midway, with its own reason', async () => {
+    const controller = new AbortController()
+    const reason = new Error('the athlete cancelled')
+    setTimeout(() => controller.abort(reason), 50)
+    const started = performance.now()
+    await expect(prepareSpeechAudio(await long, { signal: controller.signal })).rejects.toBe(reason)
+    expect(performance.now() - started).toBeLessThan(600)
+  })
+
+  test('the caller keeps its bytes: the worker gets a copy', async () => {
+    // A small Buffer comes from a shared pool; transferring its memory would
+    // empty every other Buffer in that pool too.
+    const upload = Buffer.from(await fixture('voice-opus-silk.opus'))
+    const before = Buffer.from(upload)
+    await prepareSpeechAudio(upload)
+    expect(upload.length).toBe(before.length)
+    expect(upload.equals(before)).toBeTrue()
+  })
+})
+
+test('a bundled app, where the worker file is not beside its caller, decodes on the calling thread', async () => {
+  const out = await mkdtemp(join(tmpdir(), 'speech-bundle-'))
+  try {
+    const built = await Bun.build({ entrypoints: [`${import.meta.dir}/../src/index.ts`], outdir: out, target: 'bun', format: 'esm' })
+    expect(built.success).toBeTrue()
+    expect(await Bun.file(join(out, 'speech-decode-worker.ts')).exists()).toBeFalse()
+    const bundled: typeof import('../src/speech-input') = await import(join(out, 'index.js'))
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const prepared = await bundled.prepareSpeechAudio(await fixture('voice-opus-silk.opus'))
+      expect(readWav(prepared.audio).rate).toBe(16000)
+      expect(prepared.durationSeconds).toBeCloseTo(0.83, 1)
+      await expect(bundled.prepareSpeechAudio(await fixture('voice.m4a'), { maxDurationSeconds: 30 })).rejects.toThrow('duration')
+      await expect(bundled.prepareSpeechAudio(await fixture('voice.m4a'), { timeoutMs: 1 })).rejects.toThrow('Audio decoder timed out')
+      const controller = new AbortController()
+      const pending = bundled.prepareSpeechAudio(await fixture('voice.m4a'), { signal: controller.signal })
+      controller.abort()
+      await expect(pending).rejects.toBe(controller.signal.reason)
+      // Said once, not on every upload.
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(String(warn.mock.calls[0]?.[0])).toContain('calling thread')
+    }
+    finally { warn.mockRestore() }
+  }
+  finally { await rm(out, { recursive: true, force: true }) }
+})
+
+describe('no external decoder', () => {
   const spies: Array<{ mockRestore: () => void }> = []
   afterEach(() => spies.splice(0).forEach(spy => spy.mockRestore()))
 
