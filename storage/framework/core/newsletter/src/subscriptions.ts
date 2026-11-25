@@ -99,14 +99,15 @@ function truthy(value: unknown): boolean {
   return value === true || value === 1 || value === '1' || value === 'true'
 }
 
-async function resolveList(listRef: string | number | undefined, publicOnly = false): Promise<{ id: number, doubleOptIn: boolean }> {
+async function resolveList(listRef: string | number | undefined, publicOnly = false, defaultDoubleOptIn = false): Promise<{ id: number, doubleOptIn: boolean }> {
   if (listRef == null || listRef === '') {
     // Default list — auto-create on first use so dev/staging works
-    // out of the box without a "go seed a list first" step. Single opt-in:
-    // nobody chose double opt-in for a list that made itself.
+    // out of the box without a "go seed a list first" step. Single opt-in
+    // unless the caller asks (the signup action does, from
+    // `email.newsletter.doubleOptIn`): nobody chose it for a list that made itself.
     let list = await lists.find('default')
     if (!list)
-      list = await lists.create({ name: 'Default', slug: 'default', doubleOptIn: false })
+      list = await lists.create({ name: 'Default', slug: 'default', doubleOptIn: defaultDoubleOptIn })
     return { id: list.id, doubleOptIn: truthy((list as { double_opt_in?: unknown }).double_opt_in) }
   }
   const list = await lists.find(listRef)
@@ -168,7 +169,7 @@ export async function subscribe(email: string, options: SubscribeOptions = {}): 
     throw new Error('[newsletter] subscribe() requires a valid email address')
 
   email = address
-  const list = await resolveList(options.list, options.publicOnly)
+  const list = await resolveList(options.list, options.publicOnly, options.defaultListDoubleOptIn === true)
   const listId = list.id
   const source = (options.source ?? 'api').slice(0, 100)
   const confirming = options.confirmation === 'list' && list.doubleOptIn
@@ -201,7 +202,7 @@ export async function subscribe(email: string, options: SubscribeOptions = {}): 
         .set({ status: 'subscribed', subscribed_at: sqlDateTime() })
         .where('id', '=', Number(existing.id))
         .execute()
-      return { created: false, reactivated, email, listId, subscriberId, pending: false, token: existing.uuid }
+      return { created: false, reactivated, email, listId, subscriberId, pending: false, confirms: confirming, token: existing.uuid }
     }
 
     if (existing.status === 'unsubscribed') {
@@ -221,6 +222,7 @@ export async function subscribe(email: string, options: SubscribeOptions = {}): 
       listId,
       subscriberId,
       pending: existing.status === 'pending' || (existing.status === 'unsubscribed' && confirming),
+      confirms: confirming,
       token: existing.uuid,
     }
   }
@@ -245,6 +247,7 @@ export async function subscribe(email: string, options: SubscribeOptions = {}): 
     listId,
     subscriberId,
     pending: confirming,
+    confirms: confirming,
     token: uuid,
   }
 }

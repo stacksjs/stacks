@@ -65,6 +65,10 @@ assert.equal((await subscribe('reader@example.com', { list: 'staff' })).created,
 // The default list made itself, so it is single opt-in.
 const defaultList = await db.selectFrom('email_lists').selectAll().where('slug', '=', 'default').executeTakeFirst() as { double_opt_in: unknown }
 assert.ok(!defaultList.double_opt_in || defaultList.double_opt_in === '0', 'the auto-created default list does not ask for confirmation')
+// Asking for double opt-in on the default list only matters when it is created; this one exists.
+const onExistingDefault = await subscribe('later@example.com', { confirmation: 'list', defaultListDoubleOptIn: true })
+assert.equal(onExistingDefault.pending, false)
+assert.equal(onExistingDefault.confirms, false)
 
 // Double opt-in, honoured only when the caller asks for the list's rule.
 await lists.create({ name: 'Digest', slug: 'digest', isPublic: true, doubleOptIn: true })
@@ -79,6 +83,8 @@ assert.equal(waitingPerson.status, 'pending')
 // Asking again while pending changes nothing and stays pending, so the
 // confirmation email can go out again.
 const askedAgain = await subscribe('new@example.com', { list: 'digest', confirmation: 'list' })
+assert.equal(asked.confirms, true)
+assert.equal(askedAgain.confirms, true)
 assert.equal(askedAgain.pending, true)
 assert.equal(askedAgain.token, asked.token)
 
@@ -103,6 +109,13 @@ assert.equal((await confirm('not-a-token')).ok, false)
 // Without asking for the list's rule (an import, an admin), it subscribes at once.
 const imported = await subscribe('imported@example.com', { list: 'digest' })
 assert.equal(imported.pending, false)
+assert.equal(imported.confirms, false)
+// Already confirmed and asked again through the form: still a double opt-in list,
+// so the form can answer it like a new address.
+const confirmedAgain = await subscribe('imported@example.com', { list: 'digest', confirmation: 'list' })
+assert.equal(confirmedAgain.created, false)
+assert.equal(confirmedAgain.pending, false)
+assert.equal(confirmedAgain.confirms, true)
 assert.equal((await membership(imported.token)).status, 'subscribed')
 // And a pending membership added that way is subscribed.
 const promoted = await subscribe('new@example.com', { list: 'digest' })

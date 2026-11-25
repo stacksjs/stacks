@@ -410,6 +410,15 @@ export interface EmailOptions {
   server: EmailServerConfig
   notifications?: EmailNotificationsConfig
 
+  /**
+   * The public newsletter signup (`POST /api/email/subscribe`).
+   *
+   * `doubleOptIn`: the default list, when the first signup creates it, asks
+   * each address to confirm by email before it joins. Off by default. A list
+   * that already exists keeps its own `double_opt_in`.
+   */
+  newsletter?: { doubleOptIn?: boolean }
+
   default: 'log' | 'capture' | 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp'
 
   /**

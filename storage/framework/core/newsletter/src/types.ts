@@ -80,6 +80,12 @@ export interface SubscribeOptions {
    * admin adding someone wants. The public signup endpoint passes `'list'`.
    */
   confirmation?: 'list' | 'skip'
+  /**
+   * Whether the default list asks new addresses to confirm, used only when
+   * that list does not exist yet and this call creates it. An existing list
+   * keeps the setting it has. Defaults to false.
+   */
+  defaultListDoubleOptIn?: boolean
 }
 
 export interface SubscribeResult {
@@ -100,6 +106,13 @@ export interface SubscribeResult {
    * the subscription.
    */
   pending: boolean
+  /**
+   * True when this call went through double opt-in: `confirmation: 'list'` on
+   * a list that has it. A public form uses it to answer an address that is
+   * already on the list exactly as it answers a new one, so the form cannot
+   * be used to find out who has signed up.
+   */
+  confirms: boolean
   /** Per-list unsubscribe token — embed in the unsubscribe URL / mailto. */
   token: string
 }
