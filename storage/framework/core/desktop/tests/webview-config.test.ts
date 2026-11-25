@@ -24,13 +24,13 @@ writeFileSync(join(root, 'compiled-broken.ts'), `throw new Error('cache config i
 afterAll(() => rmSync(root, { recursive: true, force: true }))
 
 /** Launch the app in a child; the agent module reports the app name config resolved. */
-async function launch(config: string | undefined, options: { awaitConfig?: boolean } = {}): Promise<{ code: number, seen?: string, opened: boolean, output: string }> {
+async function launch(config: string | undefined, options: { awaitConfig?: boolean } = {}): Promise<{ code: number, seen?: string, opened: string, output: string }> {
   const script = join(root, `launch-${Math.random().toString(36).slice(2)}.ts`)
   writeFileSync(script, `
     import { runWebviewApp, } from ${JSON.stringify(launcher)}
     import { desktopAppPaths } from ${JSON.stringify(join(import.meta.dir, '../src/webview-agent.ts'))}
     let seen
-    let opened = false
+    let opened = ''
     const code = await runWebviewApp({
       manifest: { appName: 'Fixture', appId: 'org.example.fixture', version: '0.3.0', runtime: process.execPath, window: { title: 'Fixture', width: 8, height: 6 } },
       views: { kind: 'none' },
@@ -44,7 +44,10 @@ async function launch(config: string | undefined, options: { awaitConfig?: boole
         seen = config.app.name
         return {}
       },
-      spawn: () => { opened = true; return { exited: Promise.resolve(0), kill: () => {} } },
+      spawn: (command) => {
+        opened = command[command.indexOf('--title') + 1]
+        return { exited: Promise.resolve(0), kill: () => {} }
+      },
     })
     console.log('RESULT=' + JSON.stringify({ code, seen, opened }))
     process.exit(0)
@@ -56,7 +59,7 @@ async function launch(config: string | undefined, options: { awaitConfig?: boole
     stderr: 'pipe',
   })
   const [stdout, stderr] = await Promise.all([new Response(child.stdout).text(), new Response(child.stderr).text(), child.exited])
-  const result = JSON.parse(stdout.match(/RESULT=(.*)/)?.[1] ?? '{"code":-1}') as { code: number, seen?: string, opened: boolean }
+  const result = JSON.parse(stdout.match(/RESULT=(.*)/)?.[1] ?? '{"code":-1}') as { code: number, seen?: string, opened: string }
   return { ...result, output: `${stdout}\n${stderr}` }
 }
 
@@ -76,11 +79,11 @@ describe('the config a web view app boots with', () => {
     expect(result.output).toMatch(/\[Fixture\] config: app\.ts from .*\/config; framework defaults for the rest/)
   }, 30_000)
 
-  test('a compiled-in file that throws stops the start, says why, and opens no window', async () => {
+  test('a compiled-in file that throws stops the start and says why, in the log and a window', async () => {
     const result = await launch(`{ app: () => import(${JSON.stringify(join(root, 'compiled-app.ts'))}), cache: () => import(${JSON.stringify(join(root, 'compiled-broken.ts'))}) }`)
     expect(result.code, result.output).toBe(1)
     expect(result.seen).toBeUndefined()
-    expect(result.opened).toBe(false)
+    expect(result.opened).toBe('Fixture could not start')
     expect(result.output).toContain('config/cache.ts: cache config is broken')
   }, 30_000)
 })

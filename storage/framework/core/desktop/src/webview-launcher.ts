@@ -340,7 +340,7 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
   const { manifest } = options
   const paths = options.paths ?? desktopAppPaths(manifest.appName)
   const tag = `[${manifest.appName}]`
-  if (options.logWhenDetached !== false) logToFileWhenDetached(paths.logFile)
+  const loggingToFile = options.logWhenDetached !== false && logToFileWhenDetached(paths.logFile)
   const launch = parseLaunchArguments(options.argv ?? defaultArgv(), manifest.urlSchemes)
   const incoming: SecondInstanceLaunch = { args: launch.args, cwd: process.cwd(), ...(launch.url ? { url: launch.url } : {}) }
   const spawn = options.spawn ?? spawnCraft
@@ -376,6 +376,8 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
 
   let module: WebviewAgentModule = {}
   let agent: WebviewAgent
+  // Set once the agent serves, for the failure path to stop it.
+  let serving: WebviewAgent | undefined
   let updater: DesktopUpdater | undefined
   try {
     // Before the module loads: config reads DB_DATABASE_PATH when it is first
@@ -422,11 +424,25 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
       handler: async (request, context) => (await answerUpdate?.(request)) ?? (await module.fetch?.(request, context)) ?? answerApp?.(request),
       onSecondInstance: next => module.secondInstance?.(next),
     })
+    serving = agent
     publishInstancePort(paths.lockFile, lock.record, agent.port)
     await module.start?.({ appName: manifest.appName, version: manifest.version, origin: agent.origin, port: agent.port, dataDir: paths.dataDir, launch: incoming, ...(updater ? { updater } : {}) })
   }
   catch (error) {
     console.error(`${tag} could not start: ${error instanceof Error ? error.stack ?? error.message : String(error)}`)
+    // A start can fail after the agent is serving (in the module's `start`):
+    // nothing should answer for an app that is not running.
+    serving?.stop()
+    // Launched from Finder or a desktop entry, nobody reads the log: say why
+    // in a window, the one thing a person who opened the app is looking at.
+    await showFailureWindow({
+      manifest,
+      runtime,
+      reason: error instanceof Error ? error.message : String(error),
+      ...(loggingToFile ? { logFile: paths.logFile } : {}),
+      spawn,
+      launch: incoming,
+    }).catch((shown: unknown) => console.error(`${tag} could not show why: ${shown instanceof Error ? shown.message : String(shown)}`))
     releaseWebviewInstance(paths.lockFile)
     return 1
   }
@@ -470,6 +486,82 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
   // An installed update asked for the new version to start once this one is gone.
   await updater?.relaunchIfInstalled()
   return 0
+}
+
+/**
+ * The page a failed start shows: the app's name, the reason, and where the
+ * log is. Static, with no script, and every value escaped.
+ */
+export function renderFailurePage(options: { appName: string, reason: string, logFile?: string }): string {
+  const escape = (text: string): string => text.replace(/[&<>"']/g, char => `&#${char.charCodeAt(0)};`)
+  const name = escape(options.appName)
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>${name} could not start</title>
+<style>
+  :root { color-scheme: light dark; --fg: #1d1d1f; --muted: #6e6e73; --bg: #ffffff; --panel: #f5f5f7; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #f5f5f7; --muted: #a1a1a6; --bg: #1d1d1f; --panel: #2c2c2e; } }
+  body { margin: 0; padding: 28px 32px; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; color: var(--fg); background: var(--bg); }
+  h1 { margin: 0 0 12px; font-size: 18px; font-weight: 600; }
+  pre { margin: 0 0 16px; padding: 12px 14px; border-radius: 8px; background: var(--panel); white-space: pre-wrap; word-break: break-word; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  p { margin: 0; color: var(--muted); }
+  code { font: 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; word-break: break-all; }
+</style>
+</head>
+<body>
+<h1>${name} could not start</h1>
+<pre>${escape(options.reason)}</pre>
+<p>${options.logFile ? `Closing this window quits the app. The details are also in <code>${escape(options.logFile)}</code>.` : 'Closing this window quits the app.'}</p>
+</body>
+</html>
+`
+}
+
+/**
+ * Show why the app could not start, in a small window of its own, and resolve
+ * once it is closed. The page is served from loopback for as long as the
+ * window is open. The window keeps its titlebar whatever the app's own
+ * window does, so it can always be moved and closed.
+ */
+export async function showFailureWindow(options: {
+  manifest: Pick<WebviewAppManifest, 'appName' | 'appId' | 'window' | 'runtimeFlags'>
+  runtime: string
+  reason: string
+  logFile?: string
+  spawn: (command: string[], env: Record<string, string>) => SpawnedWindow
+  launch?: { args?: string[], url?: string }
+}): Promise<void> {
+  const page = renderFailurePage({ appName: options.manifest.appName, reason: options.reason, ...(options.logFile ? { logFile: options.logFile } : {}) })
+  const server = Bun.serve({
+    hostname: '127.0.0.1',
+    port: 0,
+    fetch: () => new Response(page, {
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        'content-security-policy': 'default-src \'none\'; style-src \'unsafe-inline\'',
+        'cache-control': 'no-store',
+      },
+    }),
+  })
+  try {
+    const { window } = options.manifest
+    const manifest = {
+      ...options.manifest,
+      window: {
+        title: `${options.manifest.appName} could not start`,
+        width: 560,
+        height: 340,
+        ...(window.darkMode !== undefined ? { darkMode: window.darkMode } : {}),
+      },
+    }
+    // The launch's link is not passed on: there is no app to open it.
+    await options.spawn(craftWindowCommand(manifest, options.runtime, `http://127.0.0.1:${server.port}/`, { args: options.launch?.args ?? [] }), {}).exited
+  }
+  finally {
+    server.stop(true)
+  }
 }
 
 /**

@@ -13,6 +13,7 @@ import {
   parseLaunchArguments,
   publishInstancePort,
   releaseWebviewInstance,
+  renderFailurePage,
   renderWebviewEntry,
   resolveWebviewRuntime,
   runWebviewApp,
@@ -645,13 +646,60 @@ describe('runWebviewApp', () => {
     }
   })
 
-  test('does not start when the database cannot be brought up to date, and says why', async () => {
+  // stacksjs/stacks#3368: an app opened from Finder or a desktop entry has
+  // nobody reading its log, so the reason is shown in a window of its own.
+  test('does not start when the database cannot be brought up to date, and shows why in a window', async () => {
     const at = paths()
     let loaded = false
-    let opened = false
+    const windows: Array<{ command: string[], page: string, held: boolean }> = []
     const errors: string[] = []
     const error = console.error
     console.error = (...args: unknown[]) => { errors.push(args.join(' ')) }
+    try {
+      const code = await runWebviewApp({
+        manifest: { ...manifest, window: { ...manifest.window, titlebarHidden: true } },
+        views: { kind: 'none' },
+        paths: at,
+        argv: ['--open', 'draft'],
+        logWhenDetached: false,
+        database: { migrations: {}, migrate: () => { throw new Error('This data was last used by a newer version of the app <schema 9>') } },
+        module: async () => { loaded = true; return {} },
+        spawn: (command) => {
+          const url = command[command.indexOf('--url') + 1]!
+          return {
+            exited: fetch(url).then(async (response) => {
+              windows.push({ command, page: await response.text(), held: existsSync(at.lockFile) })
+              return 0
+            }),
+            kill: () => {},
+          }
+        },
+      })
+      expect(code).toBe(1)
+    }
+    finally { console.error = error }
+    expect(loaded).toBe(false)
+    expect(errors.join('\n')).toContain('newer version of the app')
+    expect(windows).toHaveLength(1)
+    const [shown] = windows
+    expect(shown!.page).toContain('Fixture could not start')
+    expect(shown!.page).toContain('This data was last used by a newer version of the app &#60;schema 9&#62;')
+    expect(shown!.command[shown!.command.indexOf('--url') + 1]).toStartWith('http://127.0.0.1:')
+    expect(shown!.command).toContain('Fixture could not start')
+    // Movable and closable whatever the app's own window does; a second launch still raises it.
+    expect(shown!.command).not.toContain('--titlebar-hidden')
+    expect(shown!.command).toContain('--single-instance')
+    // The lock is held while the window is open, and released after.
+    expect(shown!.held).toBe(true)
+    expect(existsSync(at.lockFile)).toBe(false)
+  })
+
+  test('a start that fails after the agent is serving stops the agent before showing why', async () => {
+    const at = paths()
+    let origin = ''
+    let answered: string | undefined
+    const error = console.error
+    console.error = () => {}
     try {
       const code = await runWebviewApp({
         manifest,
@@ -659,17 +707,39 @@ describe('runWebviewApp', () => {
         paths: at,
         argv: [],
         logWhenDetached: false,
-        database: { migrations: {}, migrate: () => { throw new Error('This data was last used by a newer version of the app') } },
-        module: async () => { loaded = true; return {} },
-        spawn: () => { opened = true; return { exited: Promise.resolve(0), kill: () => {} } },
+        module: async () => ({ start: async (context: { origin: string }) => { origin = context.origin; throw new Error('the account store is locked') } }),
+        spawn: () => ({
+          exited: fetch(`${origin}/`).then(response => `${response.status}`, () => 'refused').then((result) => { answered = result; return 0 }),
+          kill: () => {},
+        }),
       })
       expect(code).toBe(1)
     }
     finally { console.error = error }
-    expect(loaded).toBe(false)
-    expect(opened).toBe(false)
-    expect(errors.join('\n')).toContain('newer version of the app')
-    expect(existsSync(at.lockFile)).toBe(false)
+    expect(origin).toStartWith('http://127.0.0.1:')
+    expect(answered).toBe('refused')
+  })
+
+  test('an app module that throws while loading shows its reason the same way', async () => {
+    const at = paths()
+    const pages: string[] = []
+    const error = console.error
+    console.error = () => {}
+    try {
+      const code = await runWebviewApp({
+        manifest,
+        views: { kind: 'none' },
+        paths: at,
+        argv: [],
+        logWhenDetached: false,
+        module: async () => { throw new Error('Cannot find package "left-pad"') },
+        spawn: command => ({ exited: fetch(command[command.indexOf('--url') + 1]!).then(async (response) => { pages.push(await response.text()); return 0 }), kill: () => {} }),
+      })
+      expect(code).toBe(1)
+    }
+    finally { console.error = error }
+    expect(pages).toHaveLength(1)
+    expect(pages[0]).toContain('Cannot find package &#34;left-pad&#34;')
   })
 
   test('a second launch hands over its arguments and link, raises the window, and boots nothing', async () => {
@@ -742,5 +812,19 @@ describe('runWebviewApp', () => {
     const code = await runWebviewApp({ manifest, views: { kind: 'none' }, paths: at, argv: [], logWhenDetached: false, module: async () => { throw new Error('bad module') }, spawn: () => ({ exited: Promise.resolve(0), kill: () => {} }) })
     expect(code).toBe(1)
     expect(existsSync(at.lockFile)).toBe(false)
+  })
+})
+
+describe('the page a failed start shows', () => {
+  test('escapes every value and runs no script', () => {
+    const page = renderFailurePage({ appName: 'A<b>', reason: '<script>alert(1)</script> & "x"', logFile: '/Users/me/Library/Logs/A<b>.log' })
+    expect(page).not.toContain('<script>')
+    expect(page).toContain('&#60;script&#62;alert(1)&#60;/script&#62; &#38; &#34;x&#34;')
+    expect(page).toContain('<h1>A&#60;b&#62; could not start</h1>')
+    expect(page).toContain('The details are also in <code>/Users/me/Library/Logs/A&#60;b&#62;.log</code>')
+  })
+
+  test('names no log file when the log is going to a terminal', () => {
+    expect(renderFailurePage({ appName: 'A', reason: 'r' })).not.toContain('details are also in')
   })
 })
