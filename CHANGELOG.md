@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.683...v0.75.684)
+
+## 🐛 Bug Fixes
+
+- **video**: send the original when a clip's conversion stops moving ([56024d4](https://github.com/stacksjs/stacks/commit/56024d4)) _(by glennmichael123)_
+- **dashboard**: use STX Windows client bundling fix ([5b66aad](https://github.com/stacksjs/stacks/commit/5b66aad)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **native**: count the video package's stall test in the skill catalog ([e8ead40](https://github.com/stacksjs/stacks/commit/e8ead40)) _(by glennmichael123)_
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.682...v0.75.683)
 
 ## ✅ Tests
