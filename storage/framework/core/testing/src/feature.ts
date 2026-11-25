@@ -171,7 +171,7 @@ export interface FeatureTestResponse {
 }
 
 export interface FeatureTestClient {
-  actingAs: (user: { id: number | string, [k: string]: unknown }) => FeatureTestClient
+  actingAs: (user: ActingUser) => FeatureTestClient
   withHeaders: (headers: Record<string, string>) => FeatureTestClient
   /**
    * The full request, for anything the verb shorthands cannot express -
@@ -206,8 +206,15 @@ export interface RequestOptions {
   /** Multipart body. Mutually exclusive with `body`. */
   formData?: Record<string, string | Blob>
   /** Authenticate as this user for this request only. */
-  actingAs?: { id: number | string, [k: string]: unknown }
+  actingAs?: ActingUser
 }
+
+/**
+ * Whoever a request acts as: anything with an id. It required an index
+ * signature, which a model record (an interface-shaped type) does not have,
+ * so `actingAs(await User.first())` failed the type check in every app.
+ */
+export interface ActingUser { readonly id: number | string }
 
 const REQUEST_OPTION_KEYS: ReadonlySet<string> = new Set(['headers', 'query', 'body', 'formData', 'actingAs'])
 
@@ -320,7 +327,7 @@ function buildResponse(res: Response): FeatureTestResponse {
 }
 
 export function featureTest(baseUrl: string = 'http://localhost'): FeatureTestClient {
-  let actingUser: { id: number | string, [k: string]: unknown } | null = null
+  let actingUser: ActingUser | null = null
   let extraHeaders: Record<string, string> = {}
 
   /**
@@ -451,7 +458,7 @@ export function featureTest(baseUrl: string = 'http://localhost'): FeatureTestCl
  * acting as two users never share a token.
  */
 export function actingAs(
-  user: { id: number | string, [k: string]: unknown },
+  user: ActingUser,
   baseUrl?: string,
 ): FeatureTestClient {
   return featureTest(baseUrl).actingAs(user)
