@@ -1,5 +1,38 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.685...v0.75.686)
+
+## ✨ Features
+
+- **desktop**: desktop.webview.agent.config compiles config/*.ts in ([093e8e6](https://github.com/stacksjs/stacks/commit/093e8e6)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+- **desktop**: web view apps run on compiled-in config and log it ([2f324bd](https://github.com/stacksjs/stacks/commit/2f324bd)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+- **config**: load compiled-in config and record which config booted ([f32f03e](https://github.com/stacksjs/stacks/commit/f32f03e)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+- **server**: render.background.match may be async ([140b123](https://github.com/stacksjs/stacks/commit/140b123)) _(by glennmichael123)_
+- **server**: config/server.ts#render sizes page admission and names background traffic ([cf74299](https://github.com/stacksjs/stacks/commit/cf74299)) _(by glennmichael123)_
+- **audio**: accept MP3 speech uploads ([c265d15](https://github.com/stacksjs/stacks/commit/c265d15)) _(by glennmichael123)_
+
+## 🐛 Bug Fixes
+
+- **deps**: record audio's ts-videos ^0.3.2 in pantry.lock ([cbab24c](https://github.com/stacksjs/stacks/commit/cbab24c)) _(by glennmichael123)_
+
+## 📝 Documentation
+
+- **skills**: compiled-in config for web view apps ([5962484](https://github.com/stacksjs/stacks/commit/5962484)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+
+## ✅ Tests
+
+- **config**: bundled config wins over config/ on disk ([a40b18f](https://github.com/stacksjs/stacks/commit/a40b18f)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+- **audio**: MP3 voice fixtures from ts-videos ([458d6aa](https://github.com/stacksjs/stacks/commit/458d6aa)) _(by glennmichael123)_
+
+## 🔧 Chores
+
+- **skills**: refresh the native catalog's buddy test count ([4d98762](https://github.com/stacksjs/stacks/commit/4d98762)) _(by glennmichael123)_
+- **deps**: require ts-videos 0.3.2 in audio ([85c0267](https://github.com/stacksjs/stacks/commit/85c0267)) _(by glennmichael123)_
+
+## Contributors
+
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.684...v0.75.685)
 
 ## ✨ Features
