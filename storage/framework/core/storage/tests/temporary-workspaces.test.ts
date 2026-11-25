@@ -93,3 +93,29 @@ if (process.platform === 'linux' && process.getuid?.() !== 0) {
     expect(journal.complete(record)).toBe(true)
   })
 }
+
+test.if(process.platform === 'darwin')('a stalled process inspection preserves the terminal workspace and its journal', async () => {
+  const { journal, options, root } = fixture()
+  const record = journal.create('terminal')
+  writeFileSync(join(root, 'lsof'), '#!/bin/sh\nexec /bin/sleep 60\n', { mode: 0o700 })
+  const source = new URL('../src/temporary-workspaces.ts', import.meta.url).pathname
+  const script = `
+    import { TemporaryWorkspaceJournal } from ${JSON.stringify(source)}
+    const journal = new TemporaryWorkspaceJournal(${JSON.stringify(options)})
+    console.log(JSON.stringify(await journal.inspectRetirement(${JSON.stringify(record.id)}, () => true)))
+  `
+  const inspector = Bun.spawn([process.execPath, '--no-env-file', '-e', script], {
+    cwd: root,
+    env: { ...process.env, PATH: `${root}:${process.env.PATH ?? ''}` },
+    stdout: 'pipe',
+    stderr: 'inherit',
+  })
+  try {
+    const inspection = await new Response(inspector.stdout).json()
+    expect(await inspector.exited).toBe(0)
+    expect(inspection).toMatchObject({ ready: false, reason: 'inspection-unavailable', usage: { operation: 'process-files' } })
+    expect(existsSync(record.path)).toBe(true)
+    expect(journal.list()).toEqual([record])
+  }
+  finally { inspector.kill() }
+}, 15_000)

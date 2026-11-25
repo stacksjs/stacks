@@ -2,6 +2,12 @@ import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSyn
 import { basename, dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 
+const WORKSPACE_PROBE_TIMEOUT_MS = 5_000
+
+function workspaceProbe(command: string[]) {
+  return Bun.spawnSync(command, { stdout: 'pipe', stderr: 'pipe', timeout: WORKSPACE_PROBE_TIMEOUT_MS, killSignal: 'SIGKILL' })
+}
+
 export interface TemporaryWorkspaceRecord {
   readonly id: string
   readonly key: string
@@ -52,7 +58,7 @@ function inspectWorkspaceMounts(path: string): TemporaryWorkspaceInspection {
       return { unused: !mounted, reason: mounted ? 'mounted' : 'unused' }
     }
     if (process.platform === 'darwin') {
-      const mounts = Bun.spawnSync(['mount'], { stdout: 'pipe', stderr: 'pipe' })
+      const mounts = workspaceProbe(['mount'])
       if (mounts.exitCode !== 0 || mounts.stderr.length > 0 || mounts.stdout.length === 0)
         return { unused: false, reason: 'inspection-unavailable', operation: 'mounts' }
       const mounted = mounts.stdout.toString().split('\n').some((line) => {
@@ -135,7 +141,7 @@ export function inspectTemporaryWorkspace(path: string): TemporaryWorkspaceInspe
       const uid = process.getuid?.()
       if (uid === undefined) return { unused: false, reason: 'inspection-unavailable', operation: 'process-owner' }
       operation = 'process-files'
-      const files = Bun.spawnSync(['lsof', '-nP', '-F0n', ...(uid === 0 ? [] : ['-u', String(uid)])], { stdout: 'pipe', stderr: 'pipe' })
+      const files = workspaceProbe(['lsof', '-nP', '-F0n', ...(uid === 0 ? [] : ['-u', String(uid)])])
       if (files.exitCode !== 0 || files.stderr.length > 0) return { unused: false, reason: 'inspection-unavailable', operation }
       const used = files.stdout.toString().split('\0').some(field => field.startsWith('n') && beneath(field.slice(1), path))
       return { unused: !used, reason: used ? 'process-reference' : 'unused' }
