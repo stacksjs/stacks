@@ -137,6 +137,10 @@ test('only completed publication jobs from the exact source and attempt supply r
   expect(ids([job])).toEqual([3])
   expect(ids([{ ...job, name: 'publish' }])).toEqual([3])
   expect(ids([{ ...job, conclusion: 'skipped' }])).toEqual([])
+  // Cancelled before its first step: no uploads, and no log to read.
+  expect(ids([{ ...job, conclusion: 'cancelled', steps: [] }])).toEqual([])
+  // Cancelled mid-run: it may have uploaded, so its log is read.
+  expect(ids([{ ...job, conclusion: 'cancelled', steps: [{ name: 'Publish Framework to npm' }] }])).toEqual([3])
   expect(ids([{ ...job, name: 'release gate' }])).toEqual([])
   expect(() => ids([job, job])).toThrow('Ambiguous')
   for (const changed of [{ run_id: 4 }, { run_attempt: 2 }, { head_sha: 'b'.repeat(40) }, { status: 'in_progress' }])

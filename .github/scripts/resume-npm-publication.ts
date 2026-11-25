@@ -21,9 +21,16 @@ export interface PriorJob {
   head_sha: string
   status: string
   conclusion: string | null
+  /** The job's steps; empty for a job no runner ever started. */
+  steps?: readonly unknown[]
 }
 
-/** A skipped dependency job made no uploads and has no downloadable log. */
+/**
+ * A skipped dependency job made no uploads and has no downloadable log. Nor
+ * does a job cancelled before its first step: v0.75.680's third attempt was
+ * cancelled ten seconds in, and every later attempt then failed reading that
+ * job's log (GitHub answers 404 BlobNotFound), so npm could never be resumed.
+ */
 export function priorPublicationJobIds(jobs: readonly PriorJob[], runId: number, attempt: number, sha: string): number[] {
   // `publish` since releases default to Pantry; `npm` before that, which a
   // rerun of an earlier release still carries.
@@ -33,7 +40,8 @@ export function priorPublicationJobIds(jobs: readonly PriorJob[], runId: number,
     if (!Number.isSafeInteger(job.id) || job.id <= 0 || job.run_id !== runId
       || job.run_attempt !== attempt || job.head_sha !== sha || job.status !== 'completed')
       throw new Error('Original publication job does not match the immutable release')
-    return job.conclusion === 'skipped' ? [] : [job.id]
+    const neverStarted = job.conclusion === 'cancelled' && Array.isArray(job.steps) && job.steps.length === 0
+    return job.conclusion === 'skipped' || neverStarted ? [] : [job.id]
   })
 }
 
