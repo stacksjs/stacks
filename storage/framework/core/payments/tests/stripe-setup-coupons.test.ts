@@ -59,7 +59,11 @@ const stripe = {
   },
   billingPortal: {
     configurations: {
-      list: () => iterate(account.portals.filter(p => p.active)),
+      list: () => iterate(account.portals.filter(p => p.active).map(p => withoutPortalProducts(p))),
+      async retrieve(id: string, options?: { expand?: string[] }) {
+        const config = account.portals.find(p => p.id === id)
+        return options?.expand?.includes('features.subscription_update.products') ? config : withoutPortalProducts(config)
+      },
       async create(params: any) {
         writes.portalCreates.push(params)
         const config = { id: `bpc_${account.portals.length + 1}`, active: true, ...toLive(params) }
@@ -76,6 +80,15 @@ const stripe = {
   },
 }
 
+/** The Stripe API only returns the products when the caller expands them. */
+function withoutPortalProducts(config: any) {
+  if (!config.features.subscription_update)
+    return config
+  const subscription_update = { ...config.features.subscription_update }
+  delete subscription_update.products
+  return { ...config, features: { ...config.features, subscription_update } }
+}
+
 /** What Stripe hands back for a configuration created with `params`. */
 function toLive(params: any) {
   return {
@@ -84,6 +97,7 @@ function toLive(params: any) {
       payment_method_update: params.features.payment_method_update,
       customer_update: params.features.customer_update,
       subscription_cancel: { mode: 'at_period_end', ...params.features.subscription_cancel },
+      subscription_update: params.features.subscription_update,
     },
     default_return_url: params.default_return_url ?? null,
     business_profile: { headline: params.business_profile?.headline ?? null },
@@ -226,6 +240,30 @@ describe('stripe:setup customer portal', () => {
     }
     finally {
       saas.portal = { ...saas.portal, cancel: 'at_period_end' }
+    }
+  })
+
+  it('compares expanded products before updating an existing portal', async () => {
+    const original = saas.portal
+    const offer = { product: 'prod_mail', prices: ['price_monthly', 'price_annual'], adjustableQuantity: { minimum: 1, maximum: 5 } }
+    const subscriptionUpdate = { allowedUpdates: ['price', 'quantity'], prorationBehavior: 'always_invoice', products: [offer] }
+    saas.portal = { ...original, subscriptionUpdate }
+    try {
+      await run()
+      expect((await run()).find(action => action.kind === 'portal')?.verb).toBe('reuse')
+      expect(writes.portalUpdates).toHaveLength(0)
+
+      const largerOffer = { ...offer, adjustableQuantity: { minimum: 1, maximum: 7 } }
+      saas.portal = { ...original, subscriptionUpdate: { ...subscriptionUpdate, products: [largerOffer] } }
+      expect((await run(true)).find(action => action.kind === 'portal')?.verb).toBe('update')
+      expect(writes.portalUpdates).toHaveLength(0)
+      expect((await run()).find(action => action.kind === 'portal')?.verb).toBe('update')
+      expect(writes.portalUpdates).toHaveLength(1)
+      expect((await run()).find(action => action.kind === 'portal')?.verb).toBe('reuse')
+      expect(writes.portalUpdates).toHaveLength(1)
+    }
+    finally {
+      saas.portal = original
     }
   })
 })

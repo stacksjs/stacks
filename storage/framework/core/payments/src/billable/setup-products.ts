@@ -272,7 +272,12 @@ async function reconcileCoupon(coupon: SaasCoupon, productIds: Map<string, strin
 /** Keep this app's portal configuration matching `saas.portal`. Unlike a coupon, it can be edited. */
 async function reconcilePortal(dryRun: boolean, actions: SetupProductAction[]): Promise<void> {
   const params = portalConfigurationParams(saas.portal!)
-  const live = await findManagedPortalConfiguration(undefined, stripe)
+  let live = await findManagedPortalConfiguration(undefined, stripe)
+  if (params.features.subscription_update?.enabled && live?.features.subscription_update?.enabled && !live.features.subscription_update.products) {
+    live = await stripe.billingPortal.configurations.retrieve(live.id, {
+      expand: ['features.subscription_update.products'],
+    })
+  }
 
   if (live && portalConfigurationMatches(live, params)) {
     actions.push({ kind: 'portal', verb: 'reuse', target: 'customer portal', detail: live.id })
