@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.681...v0.75.682)
+
+## 🐛 Bug Fixes
+
+- **release**: resume npm past an attempt cancelled before it started ([279792c](https://github.com/stacksjs/stacks/commit/279792c)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.680...v0.75.681)
 
 ## 🐛 Bug Fixes
