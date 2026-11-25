@@ -298,6 +298,41 @@ export interface SocialDeletionDriver {
   ) => Promise<AuthoredPostPage>
 }
 
+/**
+ * Engagement on one post, as its network counts it (stacksjs/stacks#3379).
+ * A count the network does not report is absent rather than zero: Mastodon
+ * has no views, and an app that showed `0` would be saying something false.
+ */
+export interface PostMetrics {
+  /** The post, as `PublishedPost.uri` named it. */
+  uri: string
+  likes?: number
+  reposts?: number
+  replies?: number
+  quotes?: number
+  views?: number
+  shares?: number
+}
+
+/**
+ * Metrics capability, separate from publishing like deletion is: each
+ * network needs its own permission for it, and some offer none to an app.
+ */
+export interface SocialMetricsDriver {
+  provider: SocialPublishingProvider
+  /**
+   * Current counts for the given posts, any number of them: the driver
+   * batches as its network allows. A post that is gone, or that this
+   * account cannot see, is left out rather than failing the rest.
+   */
+  metrics: (identity: SocialIdentityCredentials, uris: string[]) => Promise<PostMetrics[]>
+}
+
+/** Whether a driver can read engagement counts for its posts. */
+export function supportsMetrics(driver: unknown): driver is SocialMetricsDriver {
+  return typeof (driver as SocialMetricsDriver)?.metrics === 'function'
+}
+
 /** Whether a driver can delete posts through its provider's API. */
 export function supportsDeletion(driver: unknown): driver is SocialDeletionDriver {
   return typeof (driver as SocialDeletionDriver)?.deletePost === 'function'

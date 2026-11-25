@@ -3,11 +3,13 @@ import type {
   AuthoredPostPage,
   BlueskySession,
   BlueskySessionCredentials,
+  PostMetrics,
   PublishedPost,
   PublishPostInput,
   RemotePostRef,
   SocialDeletionDriver,
   SocialIdentityCredentials,
+  SocialMetricsDriver,
   SocialPublishingDriver,
   TimelineQuery,
   TimelineResult,
@@ -241,7 +243,7 @@ export function blueskyRecordKey(now: number = Date.now(), clockId: number = Mat
   return key
 }
 
-export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver {
+export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver, SocialMetricsDriver {
   readonly provider: 'bluesky' = 'bluesky'
   characterLimit = 300
 
@@ -395,9 +397,37 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
   }
 
   /**
+   * Likes, reposts, replies and quotes for any number of posts, 25 to a
+   * request (app.bsky.feed.getPosts). A deleted post is left out. Bluesky
+   * reports no views (stacksjs/stacks#3379).
+   */
+  async metrics(identity: SocialIdentityCredentials, uris: string[]): Promise<PostMetrics[]> {
+    if (!identity.accessToken) throw new Error('Bluesky access token is missing for this identity.')
+    const metrics: PostMetrics[] = []
+    for (let start = 0; start < uris.length; start += 25) {
+      const url = new URL(`${this.service}/xrpc/app.bsky.feed.getPosts`)
+      for (const uri of uris.slice(start, start + 25)) url.searchParams.append('uris', uri)
+      const payload = await this.request<{ posts?: Array<{ uri: string, likeCount?: number, repostCount?: number, replyCount?: number, quoteCount?: number }> }>(url, {
+        headers: { authorization: `Bearer ${identity.accessToken}` },
+      })
+      for (const post of payload.posts || []) {
+        metrics.push({
+          uri: post.uri,
+          likes: post.likeCount ?? 0,
+          reposts: post.repostCount ?? 0,
+          replies: post.replyCount ?? 0,
+          quotes: post.quoteCount ?? 0,
+        })
+      }
+    }
+    return metrics
+  }
+
+  /**
    * Engagement counts for up to 25 of the account's posts per call
    * (app.bsky.feed.getPosts). Deleted posts are simply absent from the
-   * response.
+   * response. {@link metrics} takes any number and has the shape every
+   * driver shares.
    */
   async postMetrics(
     identity: SocialIdentityCredentials,
