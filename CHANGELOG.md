@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.680...v0.75.681)
+
+## 🐛 Bug Fixes
+
+- **features**: the public signup's list tables are no longer gated by marketing ([7f6ee07](https://github.com/stacksjs/stacks/commit/7f6ee07)) _(by Chris Breuer)_
+- **newsletter**: signup form no longer reveals who has signed up ([b9752c4](https://github.com/stacksjs/stacks/commit/b9752c4)) _(by Chris Breuer)_
+- **dashboard**: preserve page state across worker restarts ([6e9672c](https://github.com/stacksjs/stacks/commit/6e9672c)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **skills**: refresh the native skill catalogue for the newsletter signup changes ([58bd56c](https://github.com/stacksjs/stacks/commit/58bd56c)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.679...v0.75.680)
 
 ## 🐛 Bug Fixes
