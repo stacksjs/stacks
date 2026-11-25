@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.686...v0.75.687)
+
+## ✨ Features
+
+- **desktop**: a web view app that cannot start says why in a window ([cd739e8](https://github.com/stacksjs/stacks/commit/cd739e8)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+
+## 🐛 Bug Fixes
+
+- **email**: mount the signup's confirm and unsubscribe routes without the dashboard ([c243c25](https://github.com/stacksjs/stacks/commit/c243c25)) _(by Chris Breuer)_
+- **storage**: bound macOS workspace inspection subprocesses ([375f851](https://github.com/stacksjs/stacks/commit/375f851)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **skills**: a web view app that cannot start says why in a window ([f99e57a](https://github.com/stacksjs/stacks/commit/f99e57a)) _(by glennmichael123)_ ([stacksjs/stacks#3368](https://github.com/stacksjs/stacks/issues/3368))
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.685...v0.75.686)
 
 ## ✨ Features
