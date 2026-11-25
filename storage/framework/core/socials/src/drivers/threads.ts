@@ -1,3 +1,4 @@
+import type { SocialApiErrorOptions } from '../errors'
 import type {
   PublishedPost,
   PublishPostInput,
@@ -9,6 +10,7 @@ import type {
   TimelineResult,
 } from '../types'
 import { exceedsLimit } from '../text'
+import { apiFailure, SocialApiError } from '../errors'
 
 /** Items Threads takes in one carousel. */
 export const THREADS_MAX_IMAGES = 20
@@ -20,13 +22,9 @@ export interface ThreadsLongLivedToken {
   expiresIn?: number
 }
 
-export class ThreadsApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public body: string,
-  ) {
-    super(message)
+export class ThreadsApiError extends SocialApiError {
+  constructor(message: string, status: number, body: string, options: SocialApiErrorOptions = {}) {
+    super('threads', message, status, body, options)
     this.name = 'ThreadsApiError'
   }
 
@@ -132,8 +130,7 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver, SocialDe
     }
 
     if (!response.ok || json?.error || !json?.access_token) {
-      const message = json?.error_message || json?.error?.message || text || response.statusText
-      throw new ThreadsApiError(`Threads token exchange failed (${response.status}): ${message}`, response.status, text)
+      throw new ThreadsApiError(...apiFailure('Threads token exchange', response, text))
     }
 
     return {
@@ -328,8 +325,7 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver, SocialDe
     }
 
     if (!response.ok || json?.error || !json?.access_token) {
-      const message = json?.error?.message || json?.error_message || text || response.statusText
-      throw new ThreadsApiError(`Threads token request failed (${response.status}): ${message}`, response.status, text)
+      throw new ThreadsApiError(...apiFailure('Threads token request', response, text))
     }
 
     return { accessToken: json.access_token, expiresIn: json.expires_in }
@@ -361,8 +357,7 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver, SocialDe
     }
 
     if (!response.ok || json?.error) {
-      const message = json?.error?.message || text || response.statusText
-      throw new ThreadsApiError(`Threads API failed (${response.status}): ${message}`, response.status, text)
+      throw new ThreadsApiError(...apiFailure('Threads API', response, text))
     }
 
     return json as T

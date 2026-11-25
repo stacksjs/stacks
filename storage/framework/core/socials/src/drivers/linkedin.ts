@@ -1,3 +1,4 @@
+import type { SocialApiErrorOptions } from '../errors'
 import type {
   AuthoredPostPage,
   PublishedPost,
@@ -11,6 +12,7 @@ import type {
 } from '../types'
 import { fetchPostImage, resolvePostImage } from '../media'
 import { exceedsLimit } from '../text'
+import { apiFailure, SocialApiError } from '../errors'
 
 /**
  * The `LinkedIn-Version` sent unless a driver is given another.
@@ -75,13 +77,9 @@ export interface LinkedInOrganization {
  */
 const RESTLI_PROTOCOL_VERSION = '2.0.0'
 
-export class LinkedInApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public body: string,
-  ) {
-    super(message)
+export class LinkedInApiError extends SocialApiError {
+  constructor(message: string, status: number, body: string, options: SocialApiErrorOptions = {}) {
+    super('linkedin', message, status, body, options)
     this.name = 'LinkedInApiError'
   }
 
@@ -281,7 +279,7 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
 
     if (!upload.ok) {
       const text = await upload.text().catch(() => '')
-      throw new LinkedInApiError(`LinkedIn image upload failed (${upload.status}): ${text || upload.statusText}`, upload.status, text)
+      throw new LinkedInApiError(...apiFailure('LinkedIn image upload', upload, text))
     }
 
     return image
@@ -356,11 +354,7 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
 
     const text = await response.text()
     if (!response.ok) {
-      throw new LinkedInApiError(
-        `LinkedIn API failed (${response.status}): ${text || response.statusText}`,
-        response.status,
-        text,
-      )
+      throw new LinkedInApiError(...apiFailure('LinkedIn API', response, text))
     }
 
     // The created post URN comes back in a response header, not the body.
@@ -536,11 +530,7 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
     // 404 means it is already gone — the desired end state either way.
     if (!response.ok && response.status !== 404) {
       const text = await response.text().catch(() => '')
-      throw new LinkedInApiError(
-        `LinkedIn API failed (${response.status}): ${text || response.statusText}`,
-        response.status,
-        text,
-      )
+      throw new LinkedInApiError(...apiFailure('LinkedIn API', response, text))
     }
   }
 
@@ -549,11 +539,7 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
     const text = await response.text()
 
     if (!response.ok) {
-      throw new LinkedInApiError(
-        `LinkedIn API failed (${response.status}): ${text || response.statusText}`,
-        response.status,
-        text,
-      )
+      throw new LinkedInApiError(...apiFailure('LinkedIn API', response, text))
     }
 
     return text ? JSON.parse(text) as T : {} as T

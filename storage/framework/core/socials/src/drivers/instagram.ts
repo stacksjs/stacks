@@ -1,3 +1,4 @@
+import type { SocialApiErrorOptions } from '../errors'
 import type {
   PublishedPost,
   PublishPostInput,
@@ -8,6 +9,7 @@ import type {
 } from '../types'
 import { META_GRAPH_VERSION } from '../meta-graph'
 import { exceedsLimit } from '../text'
+import { apiFailure, SocialApiError } from '../errors'
 
 /** Items Instagram takes in one carousel. */
 export const INSTAGRAM_MAX_IMAGES = 10
@@ -23,13 +25,9 @@ export interface InstagramLongLivedToken {
   expiresIn?: number
 }
 
-export class InstagramApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public body: string,
-  ) {
-    super(message)
+export class InstagramApiError extends SocialApiError {
+  constructor(message: string, status: number, body: string, options: SocialApiErrorOptions = {}) {
+    super('instagram', message, status, body, options)
     this.name = 'InstagramApiError'
   }
 
@@ -394,8 +392,7 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
     }
 
     if (!response.ok || json?.error) {
-      const message = json?.error?.message || text || response.statusText
-      throw new InstagramApiError(`Instagram API failed (${response.status}): ${message}`, response.status, text)
+      throw new InstagramApiError(...apiFailure('Instagram API', response, text))
     }
 
     return json as T
