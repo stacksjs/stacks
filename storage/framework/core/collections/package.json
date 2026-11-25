@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/collections",
   "type": "module",
-  "version": "0.75.690",
+  "version": "0.75.691",
   "description": "The Stacks collections.",
   "author": "Chris Breuer",
   "contributors": [

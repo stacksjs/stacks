@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/enums",
   "type": "module",
-  "version": "0.75.690",
+  "version": "0.75.691",
   "description": "Stacks enums.",
   "author": "Chris Breuer",
   "contributors": [
