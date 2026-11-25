@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.691...v0.75.692)
+
+## ✨ Features
+
+- **email**: email.newsletter.signup turns the public signup off ([537d55e](https://github.com/stacksjs/stacks/commit/537d55e)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **deploy**: validate Mail configuration before activation ([87409f7](https://github.com/stacksjs/stacks/commit/87409f7)) _(by Chris Breuer)_
+
+## ✅ Tests
+
+- **deploy**: verify DKIM tenant order in the rendered script ([0688d38](https://github.com/stacksjs/stacks/commit/0688d38)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 ## v0.75.691
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.689...v0.75.690)
