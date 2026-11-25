@@ -362,8 +362,7 @@ export default new Action({
       return dashboardOperationalError(error, `${modelName} records could not be loaded.`, 'ModelShowAction.query')
     }
 
-    // Create, edit and delete take the model's own key (stacksjs/stacks#3350).
-    // Its actions and related panels still take a numeric id: gated below.
+    // Every dashboard route takes the model's own key (stacksjs/stacks#3350).
     response.writeCapabilities = modelWriteCapabilities(Model)
     response.writable = Object.values(response.writeCapabilities).some(Boolean)
     // A relation is only worth a picker when the dashboard can list the model
@@ -426,7 +425,7 @@ export default new Action({
     // The model's own actions, and the rows each is for. Decided here, where
     // the whole row is, so the page never has to be sent the rule. An erased
     // account is offered none: there is nobody left to act on.
-    const actions = response.primaryKey === 'id' ? await modelActions(Model, modelName) : []
+    const actions = await modelActions(Model, modelName)
     response.actions = actions.map(publicModelAction)
     const erased = new Set((response.anonymizedIds ?? []).map(String))
     for (const [index, row] of stored.entries()) {

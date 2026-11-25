@@ -6,7 +6,7 @@ import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
 import { modelActionApplies, modelActionOutcome, modelActions } from './model-actions'
-import { humanizeIdentifier, isErasureSubject, isValidModelSlug, modelSchemaColumns, parseRowId, slugToPascal } from './model-write'
+import { humanizeIdentifier, isErasureSubject, isValidModelSlug, modelSchemaColumns, parseRowKey, slugToPascal } from './model-write'
 
 /**
  * `POST /api/dashboard/models/{dashboardModel}/{id}/actions/{dashboardAction}`.
@@ -34,18 +34,19 @@ export default new Action({
     const slug = String(request.getParam('dashboardModel') ?? '')
     if (!isValidModelSlug(slug))
       return response.json({ message: 'Model slug must be lowercase kebab-case.' }, 400)
-    const id = parseRowId(request.getParam('id'))
-    if (id === null)
-      return response.json({ message: 'A numeric row id is required.' }, 400)
-
     const modelName = slugToPascal(slug)
     const name = String(request.getParam('dashboardAction') ?? '')
     let Model: any
     let row: unknown
+    let id: string | number | null = null
     try {
       Model = await resolveDashboardModel(modelName)
       if (!Model || typeof Model.find !== 'function')
         return response.json({ message: `No ORM model named ${modelName}.` }, 404)
+      // The model's own key: a number, or the value of one it declares (stacksjs/stacks#3350).
+      id = parseRowKey(Model, request.getParam('id'))
+      if (id === null)
+        return response.json({ message: Model.autoIncrement === false ? 'A row key is required.' : 'A numeric row id is required.' }, 400)
       row = await Model.find(id)
     }
     catch (error) {

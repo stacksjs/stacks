@@ -48,7 +48,9 @@ mock.module('@stacksjs/rpx', () => ({ isDaemonRunning: unexpected, startProxies:
     write('app/Models/RuntimeProbe.ts', `import { defineModel } from '@stacksjs/orm'
 export default defineModel({ name: 'RuntimeProbe', table: 'runtime_probes', dashboard: { writes: ['update'] }, attributes: { name: { fillable: true } } })`)
     write('app/Models/RuntimeSecond.ts', `import { defineModel } from '@stacksjs/orm'
-export default defineModel({ name: 'RuntimeSecond', table: 'runtime_seconds', primaryKey: 'worker_id', autoIncrement: false, dashboard: { writes: ['store', 'update', 'destroy'] }, traits: { useTimestamps: false }, attributes: { worker_id: { fillable: true }, name: { fillable: true } } })`)
+export default defineModel({ name: 'RuntimeSecond', table: 'runtime_seconds', primaryKey: 'worker_id', autoIncrement: false, dashboard: { writes: ['store', 'update', 'destroy'] }, hasMany: ['RuntimeTask'], traits: { useTimestamps: false }, attributes: { worker_id: { fillable: true }, name: { fillable: true } } })`)
+    write('app/Models/RuntimeTask.ts', `import { defineModel } from '@stacksjs/orm'
+export default defineModel({ name: 'RuntimeTask', table: 'runtime_tasks', primaryKey: 'task_code', autoIncrement: false, dashboard: { writes: ['store', 'update', 'destroy'] }, belongsTo: ['RuntimeSecond'], traits: { useTimestamps: false }, attributes: { task_code: { fillable: true }, title: { fillable: true } } })`)
     write('app/Models/FailedJob.ts', `import { defineModel } from '@stacksjs/orm'
 export default defineModel({ name: 'FailedJob', table: 'failed_jobs', dashboard: { highlight: true, label: 'Failed jobs' }, attributes: {} })`)
     write('resources/functions/runtime-label.ts', `export function runtimeLabel() { return 'dashboard fixture' }`)
@@ -70,6 +72,7 @@ export default new Action({
     const db = new Database(join(root, 'fixture.sqlite'))
     db.exec("CREATE TABLE runtime_probes (id INTEGER PRIMARY KEY, name TEXT); INSERT INTO runtime_probes VALUES (1, 'isolated row')")
     db.exec("CREATE TABLE runtime_seconds (worker_id TEXT PRIMARY KEY, name TEXT); INSERT INTO runtime_seconds VALUES ('worker:one', 'First worker'), ('worker:two', 'Second worker')")
+    db.exec("CREATE TABLE runtime_tasks (task_code TEXT PRIMARY KEY, runtime_second_id TEXT, title TEXT); INSERT INTO runtime_tasks VALUES ('task:a', 'worker:one', 'Alpha'), ('task:b', 'worker:one', 'Beta')")
     db.close()
 
     const reservation = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response() })
@@ -169,6 +172,24 @@ export default new Action({
     expect(missing.status).toBe(404)
     const afterWrites = (await (await fetch(`${origin}/api/dashboard/models/runtime-second`)).json()).rows
     expect(afterWrites).toEqual([{ worker_id: 'worker:three', name: 'Third worker' }, { worker_id: 'worker:one', name: 'Renamed worker' }])
+    // Related panels and the combined save take declared keys,
+    // on the record and on its related rows alike (stacksjs/stacks#3350).
+    const tasksPanel = async () => ((await (await fetch(`${origin}/api/dashboard/models/runtime-second/worker%3Aone/related`)).json()).panels as Array<{ slug: string, rows: Array<{ id: string }>, canCreate: boolean, canUpdate: boolean, canDestroy: boolean, values: Record<string, { title?: string }> }>).find(panel => panel.slug === 'runtime-task')!
+    const before = await tasksPanel()
+    expect(before.rows.map(row => row.id)).toEqual(['task:b', 'task:a'])
+    expect(before).toMatchObject({ canCreate: true, canUpdate: true, canDestroy: true })
+    const savedTogether = await fetch(`${origin}/api/dashboard/models/runtime-second/worker%3Aone/save`, {
+      method: 'PATCH',
+      headers: saveHeaders,
+      body: JSON.stringify({ fields: { name: 'Saved worker' }, related: [{ slug: 'runtime-task', create: [{ key: 'new-1', fields: { task_code: 'task:c', title: 'Gamma' } }], update: [{ id: 'task:a', fields: { title: 'Alpha, edited' } }], destroy: ['task:b'] }] }),
+    })
+    expect(savedTogether.status, await savedTogether.clone().text()).toBe(200)
+    expect((await savedTogether.json()).related).toEqual([{ slug: 'runtime-task', created: [{ key: 'new-1', id: 'task:c' }], updated: ['task:a'], destroyed: ['task:b'], anonymized: [] }])
+    const after = await tasksPanel()
+    expect(after.rows.map(row => row.id)).toEqual(['task:c', 'task:a'])
+    expect(after.values['task:a']?.title).toBe('Alpha, edited')
+    const stranger = await fetch(`${origin}/api/dashboard/models/runtime-second/worker%3Athree/save`, { method: 'PATCH', headers: saveHeaders, body: JSON.stringify({ related: [{ slug: 'runtime-task', destroy: ['task:a'] }] }) })
+    expect(stranger.status).toBe(404)
     // A numeric-id model still refuses a key that is not a number.
     const notANumber = await fetch(`${origin}/api/dashboard/models/runtime-probe/abc`, { method: 'PATCH', headers: saveHeaders, body: JSON.stringify({ fields: { name: 'x' } }) })
     expect(notANumber.status).toBe(400)
