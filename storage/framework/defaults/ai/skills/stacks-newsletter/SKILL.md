@@ -44,9 +44,12 @@ The form posts to `POST /api/email/subscribe` (`SubscriberEmailAction`), which
 goes through `subscribe(email, { list, source, publicOnly: true })`: the
 signup joins a list, so campaigns reach it. `publicOnly` refuses a list whose
 `is_public` is false (`NewsletterListUnavailableError`, answered as a 422), so a
-form field never joins an internal list. Outcomes: `subscribed` (new, or a
-returning opt-out signed back up), `already`, `invalid`, `busy` (rate limited)
-and `error`. Scripts get JSON; a browser form post gets a 303 back to `return`
+form field never joins an internal list. Outcomes: `subscribed`, `pending`
+(double opt-in), `invalid`, `busy` (rate limited) and `error`. An address
+already on the list gets the same answer a new one would (`pending` on a double
+opt-in list, `subscribed` elsewhere) and no email, so the form cannot be used to
+find out who signed up; `already` is no longer sent. A hidden `website` field is
+a honeypot: filled in, the request is answered as success and stores nothing. Scripts get JSON; a browser form post gets a 303 back to `return`
 or the Referer. The welcome email carries the membership's own token, so its
 unsubscribe link and RFC 8058 headers leave that list only.
 
@@ -72,7 +75,10 @@ twice is harmless; a token that has since unsubscribed is refused.
 
 `subscribe()` without `confirmation: 'list'` (imports, admin adds) subscribes
 at once and promotes a pending membership. The auto-created default list is
-single opt-in. A default list created by an older release has
+single opt-in unless `config/email.ts` sets `newsletter: { doubleOptIn: true }`
+(read when the first signup creates the list). `email_lists` and
+`email_list_subscribers` are not gated by the marketing feature, because the
+signup needs them in every app. A default list created by an older release has
 `double_opt_in` on; set it off if you do not want confirmation there. The
 confirm and unsubscribe routes stay reachable in maintenance and coming-soon
 mode, like the signup.

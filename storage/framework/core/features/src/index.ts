@@ -95,8 +95,7 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
     'app/Models/Campaign.ts',
     'app/Models/CampaignSend.ts',
     'app/Models/CampaignVariant.ts',
-    'app/Models/EmailList.ts',
-    'app/Models/EmailListSubscriber.ts',
+    // Not EmailList or EmailListSubscriber: see the tables below.
     'app/Models/MailPreference.ts',
     'app/Models/SocialPost.ts',
     'resources/components/Marketing/',
@@ -235,8 +234,15 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
   ],
   // Two of these reference `subscribers`, which is ungated so they always
   // have it (stacksjs/stacks#2995).
+  //
+  // `email_lists` and `email_list_subscribers` are ungated too. The public
+  // signup (`POST /api/email/subscribe`, SubscriberEmailAction) ships in every
+  // app and puts each address on a list, so an app with marketing off still
+  // needs both. Gated here, `./buddy migrate` left them out and the signup was
+  // withheld for want of its tables, in exactly the apps that only wanted a
+  // waitlist.
   marketing: [
-    'campaigns', 'campaign_sends', 'email_lists', 'email_list_subscribers',
+    'campaigns', 'campaign_sends',
     'social_posts', 'mail_preferences',
     // `campaign_variants` carries a foreign key to `campaigns`. Unclaimed, its
     // migration ran with marketing disabled against a database where the parent
