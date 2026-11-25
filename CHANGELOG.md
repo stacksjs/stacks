@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.684...v0.75.685)
+
+## ✨ Features
+
+- **mobile**: a videoExport capability for Craft's Android video export ([de243d5](https://github.com/stacksjs/stacks/commit/de243d5)) _(by glennmichael123)_
+
+## Contributors
+
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.683...v0.75.684)
 
 ## 🐛 Bug Fixes
