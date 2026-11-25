@@ -17,8 +17,8 @@ import { dashboardOperationalError } from '../dashboard-response'
 import { destroyModelRecord } from './model-destroy'
 import { missingRelationErrors } from './model-relations'
 import { planSwitches, requestedSwitches, storedSwitches } from './model-switches'
-import type { ResolvedModel } from './model-write'
-import { duplicateFieldErrors, humanizeIdentifier, isAccountModel, prepareModelFields } from './model-write'
+import type { ResolvedModel, RowKey } from './model-write'
+import { duplicateFieldErrors, humanizeIdentifier, isAccountModel, modelRowKey, prepareModelFields } from './model-write'
 
 /** Why a row was not written: what the visitor is told, and for a failure, what went wrong. */
 export interface RowRefusal {
@@ -87,7 +87,8 @@ export async function storeModelRow(resolved: ResolvedModel, body: Record<string
   const values = { ...toSnakeCaseKeys(data), ...fixed }
   try {
     const row = await resolved.Model.create(values)
-    return { ok: true, id: row?.id ?? row?.attributes?.id ?? null }
+    const key = modelRowKey(resolved.Model)
+    return { ok: true, id: row?.[key] ?? row?.attributes?.[key] ?? null }
   }
   catch (error) {
     return fieldRefusal(resolved, error, Object.keys(values))
@@ -96,7 +97,7 @@ export async function storeModelRow(resolved: ResolvedModel, body: Record<string
 }
 
 /** Edit one row with the fields that changed, and the switches a trait keeps for itself. */
-export async function updateModelRow(resolved: ResolvedModel, id: number, body: Record<string, unknown>): Promise<RowWrite<{ id: number, changed: string[] }>> {
+export async function updateModelRow(resolved: ResolvedModel, id: RowKey, body: Record<string, unknown>): Promise<RowWrite<{ id: RowKey, changed: string[] }>> {
   const prepared = prepareModelFields(resolved.Model, body, true)
   if (Object.keys(prepared.errors).length > 0)
     return refused(422, 'Validation failed.', prepared.errors)
@@ -108,6 +109,9 @@ export async function updateModelRow(resolved: ResolvedModel, id: number, body: 
     return refused(422, 'Validation failed.', unreadable)
   if (Object.keys(changes).length === 0 && asked.length === 0)
     return refused(422, 'No writable fields in the request body.')
+  // A switch belongs to a trait of the account models, which are keyed by number.
+  if (asked.length > 0 && typeof id !== 'number')
+    return refused(422, `${resolved.modelName} has no switches to turn.`)
 
   try {
     const row = await resolved.Model.find(id)
@@ -115,13 +119,13 @@ export async function updateModelRow(resolved: ResolvedModel, id: number, body: 
       return refused(404, `${resolved.modelName} ${id} not found.`)
     // Refused before anything is written: a switch that cannot be turned
     // that way refuses the whole save, like any other field's rule.
-    const { turning, errors } = planSwitches(resolved.Model, asked, asked.length > 0 ? await storedSwitches(resolved.Model, id) : {})
+    const { turning, errors } = planSwitches(resolved.Model, asked, asked.length > 0 && typeof id === 'number' ? await storedSwitches(resolved.Model, id) : {})
     if (Object.keys(errors).length > 0)
       return refused(422, 'Validation failed.', errors)
     if (Object.keys(changes).length > 0)
       await resolved.Model.update(id, changes)
     for (const request of turning)
-      await request.switch.set(id, request.on)
+      await request.switch.set(id as number, request.on)
     return { ok: true, id, changed: [...Object.keys(changes), ...turning.map(request => request.switch.column)] }
   }
   catch (error) {
@@ -149,7 +153,7 @@ export async function requestAccountId(request: RequestInstance): Promise<number
  * `./model-destroy`. `viewer` is the account making the request, which is
  * not deleted from here.
  */
-export async function destroyModelRow(resolved: ResolvedModel, id: number, viewer: number | null): Promise<RowWrite<{ id: number, anonymized: boolean }>> {
+export async function destroyModelRow(resolved: ResolvedModel, id: RowKey, viewer: number | null): Promise<RowWrite<{ id: RowKey, anonymized: boolean }>> {
   // Deleting the account you are signed in with ends your own access in the
   // middle of using it, and for the last admin there is no way back in.
   if (isAccountModel(resolved.Model) && viewer === id)

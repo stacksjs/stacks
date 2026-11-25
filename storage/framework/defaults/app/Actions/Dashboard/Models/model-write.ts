@@ -685,6 +685,29 @@ export async function resolveWritableModel(slug: string, operation?: ModelWriteO
   return { Model, modelName }
 }
 
+/** A row's key as a route names it: an auto-increment number, or a declared key's own value. */
+export type RowKey = number | string
+
+/** The column a model's rows are keyed by: its declared `primaryKey`, else `id`. */
+export function modelRowKey(Model: any): string {
+  return snakeCase(String(Model?.primaryKey || 'id'))
+}
+
+/**
+ * The row key a dashboard route names, for this model (stacksjs/stacks#3350).
+ *
+ * An auto-incrementing key, `id` or a declared one, is a positive integer:
+ * Postgres will not compare an integer column with a string. A key the model
+ * declares with `autoIncrement: false` (`worker_id`, a slug, a UUID) is its
+ * value as given, up to 512 characters.
+ */
+export function parseRowKey(Model: any, raw: unknown): RowKey | null {
+  if (Model?.autoIncrement !== false)
+    return parseRowId(raw)
+  const value = String(raw ?? '')
+  return value.length > 0 && value.length <= 512 ? value : null
+}
+
 export function parseRowId(raw: unknown): number | null {
   const id = Number.parseInt(String(raw ?? ''), 10)
   return Number.isFinite(id) && id > 0 ? id : null

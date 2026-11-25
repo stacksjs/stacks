@@ -17,6 +17,7 @@
  * sign-ins revoked, and keeps the records that still refer to it.
  */
 import { isForeignKeyViolation } from '@stacksjs/error-handling'
+import type { RowKey } from './model-write'
 import { isErasureSubject } from './model-write'
 
 export interface ErasureOutcome {
@@ -41,7 +42,7 @@ export type DestroyModelRecordResult
     | { ok: false, reason: 'failed', cause: unknown }
     | { ok: false, reason: 'erasure-failed', cause: unknown }
 
-export async function destroyModelRecord(id: number, dependencies: DestroyModelRecordDependencies): Promise<DestroyModelRecordResult> {
+export async function destroyModelRecord(id: RowKey, dependencies: DestroyModelRecordDependencies): Promise<DestroyModelRecordResult> {
   const { Model } = dependencies
   try {
     const row = await Model.find(id)
@@ -53,7 +54,8 @@ export async function destroyModelRecord(id: number, dependencies: DestroyModelR
   catch (error) {
     if (!isForeignKeyViolation(error))
       return { ok: false, reason: 'failed', cause: error }
-    if (!isErasureSubject(Model))
+    // Erasure is about the account model, which is keyed by number.
+    if (!isErasureSubject(Model) || typeof id !== 'number')
       return { ok: false, reason: 'referenced' }
   }
 
