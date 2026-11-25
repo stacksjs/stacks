@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.688...v0.75.689)
+
+## ✨ Features
+
+- **dashboard**: custom-key records get their panels and actions ([8f5b426](https://github.com/stacksjs/stacks/commit/8f5b426)) _(by glennmichael123)_ ([stacksjs/stacks#3350](https://github.com/stacksjs/stacks/issues/3350))
+- **dashboard**: related panels and the combined save take declared keys ([373d5f7](https://github.com/stacksjs/stacks/commit/373d5f7)) _(by glennmichael123)_ ([stacksjs/stacks#3350](https://github.com/stacksjs/stacks/issues/3350))
+- **dashboard**: links and pickers follow a related model's declared key ([3c03544](https://github.com/stacksjs/stacks/commit/3c03544)) _(by glennmichael123)_ ([stacksjs/stacks#3350](https://github.com/stacksjs/stacks/issues/3350))
+- **dashboard**: create, edit and delete records with a custom primary key ([28ebe4f](https://github.com/stacksjs/stacks/commit/28ebe4f)) _(by glennmichael123)_ ([stacksjs/stacks#3350](https://github.com/stacksjs/stacks/issues/3350))
+- **dashboard**: row writes take a model's declared key ([0cb23fd](https://github.com/stacksjs/stacks/commit/0cb23fd)) _(by glennmichael123)_ ([stacksjs/stacks#3350](https://github.com/stacksjs/stacks/issues/3350))
+
+## 🐛 Bug Fixes
+
+- **buddy**: prevent Linux connection resets during production restarts ([99bc679](https://github.com/stacksjs/stacks/commit/99bc679)) _(by Chris Breuer)_
+
+## 💚 Continuous Integration
+
+- **release**: publish with pantry 0.11.231 ([7798b55](https://github.com/stacksjs/stacks/commit/7798b55)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.687...v0.75.688)
 
 ## ✨ Features
