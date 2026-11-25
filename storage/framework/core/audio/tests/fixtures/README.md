@@ -16,3 +16,10 @@ copied from ts-videos (`packages/ts-videos/test/fixtures/voice/`), which made
 them with macOS's speech synthesiser and Apple's encoders, without FFmpeg; its
 `make-voice-fixtures.sh` and `make-opus-fixtures.ts` rebuild them. They contain
 no person's recording.
+
+`voice-mp3-mono.mp3` and `voice-mp3-vbr.mp3` are that sentence as MP3 at 44.1
+kHz, the form a voice note takes when it is exported or shared as a file: 64
+kbit/s constant bitrate starting on a frame, and variable bitrate behind ID3v2
+and ID3v1 tags. They are copied from the same ts-videos folder (as of 0.3.2),
+which encoded the synthesiser's output with LAME, without FFmpeg; its
+`make-mp3-fixtures.ts` rebuilds them. They contain no person's recording.
