@@ -35,7 +35,10 @@ describe('dashboard rendered route cache', () => {
     // page is served only while its inputs are unchanged, and the sidebar
     // reads `config/dashboard.ts` and the models manifest at render time, so
     // both must be watched or a kept page would show an old sidebar.
-    expect(dashboardDevSource).toContain('renderCachePersist: true')
+    // Kept on disk for a standalone dashboard. Behind the serve relay, a rolling
+    // restart's old worker could render with stale modules into the shared
+    // cache, so each worker keeps its pages in memory instead (e1a427bd2b).
+    expect(dashboardDevSource).toContain('renderCachePersist: !relay')
     expect(dashboardDevSource).toContain("projectPath('config')")
     expect(dashboardDevSource).toContain("storagePath('framework/runtime/dashboard')")
     // Rewriting an unchanged manifest would move its mtime on every boot,
