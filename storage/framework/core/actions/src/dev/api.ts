@@ -14,6 +14,7 @@ import { disableViewRouting, registerPeerSource, route } from '@stacksjs/router'
 import { autoImportsAreStale, generateAutoImportFiles, generateServerAutoImportTypes, injectGlobalAutoImports, warnShadowedSecurityDefaults } from '@stacksjs/server'
 import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import { reportApiReady, resolveApiHost, resolveApiPort } from '../helpers/api-host'
+import { beginDevWorkerReadiness } from './app-session-readiness'
 import { exitWithParent } from './exit-with-parent'
 import { devRelayWorker } from '../helpers/serve-relay-worker'
 
@@ -23,6 +24,7 @@ const _options = parseOptions()
 // API port, and the next dev run then dies on EADDRINUSE with no clue that
 // the culprit is a server from a session that ended hours ago.
 exitWithParent()
+await beginDevWorkerReadiness()
 
 // Keep TypeScript's global declarations aligned with the runtime primitives
 // and current models without registering a catch-all bundler plugin in this

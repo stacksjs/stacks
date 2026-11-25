@@ -4,10 +4,11 @@ import { clearShownFormFlash, config, enterRequestScope, feature, installRequest
 import { log } from '@stacksjs/logging'
 import { projectPath, siteConfigPath } from '@stacksjs/path'
 import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
+import { beginDevWorkerReadiness, devWorkerReadyResponse } from './app-session-readiness'
 import { seedCsrfPageResponse } from './csrf'
 import { resolveDefaultsResources } from './defaults-resources'
 import { exitWithParent } from './exit-with-parent'
-import { frontendHmrResponse } from './frontend-hmr'
+import { createWorkerHmrRetirement, frontendHmrResponse } from './frontend-hmr'
 import { retainFrontendPageState } from './frontend-hmr-state'
 import { devRelayWorker } from '../helpers/serve-relay-worker'
 import type { EnhancedRequest } from '@stacksjs/router'
@@ -48,6 +49,7 @@ exitWithParent()
 
 const projectServe = projectPath('serve.ts')
 const hmrWorker = devRelayWorker && crypto.randomUUID()
+const hmrRetirement = devRelayWorker && createWorkerHmrRetirement('stacks:dev-hmr-reconnect')
 
 try {
   const file = Bun.file(projectServe)
@@ -67,6 +69,7 @@ catch (error) {
 }
 
 async function startDefaultServer() {
+  const readyToken = await beginDevWorkerReadiness()
   await overridesReady
 
   const { applyResponseHeaders, applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, isApiBoundRequest, loadRouteRedirects, proxyToBackend, resolveApiProxyRules, resolveViewSecurityRules, resolveRedirect, resolveRedirectRules, resolveRewrite, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
@@ -244,7 +247,12 @@ async function startDefaultServer() {
     prepareMiddlewareRequest: (request: Request) => enhanceRequest(request as EnhancedRequest),
     // A page's ambient `ip`, resolved as `buddy serve` resolves it.
     clientAddress: (req, server) => viewClientAddress(req, devRelayWorker?.wrap(server) ?? server),
-    onRequest: async (req: Request, server?: Parameters<typeof registerPeerSource>[0]) => {
+    onRequest: async (req, server) => {
+      hmrRetirement?.trackServer(server)
+      const ready = devWorkerReadyResponse(req, readyToken)
+      if (ready)
+        return ready
+
       beginRequestCapture(req)
       // First, before any `await`: this request's scope for its server
       // scripts (see `installRequestScope()` above).
@@ -378,7 +386,7 @@ async function startDefaultServer() {
     //      to /login or /register can immediately submit to the API.
     // Production applies all three.
     onResponse: async (req: Request, response: Response) => {
-      const live = hmrWorker && (frontendHmrResponse(req, response, hmrWorker) ?? retainFrontendPageState(response))
+      const live = hmrWorker && (frontendHmrResponse(req, response, hmrWorker, hmrRetirement?.signal) ?? retainFrontendPageState(response))
       const securityResponse = applyViewSecurityHeaders(req, live || response, embeddableRules) ?? (live || undefined)
       const secured = applyResponseHeaders(req, securityResponse ?? response, config.server?.headers) ?? securityResponse
 

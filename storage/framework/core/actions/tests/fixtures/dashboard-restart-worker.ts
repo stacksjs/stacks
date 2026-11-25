@@ -7,6 +7,8 @@ if (process.env.STACKS_DASHBOARD_WORKER !== '1')
 
 const instance = process.env.STACKS_DASHBOARD_INSTANCE!
 installServeRelayWorker(() => process.exit(0))
+const source = Bun.file('app/dashboard-version.json')
+const version = await source.exists() ? await source.json() : null
 if (await Bun.file('fail-dashboard').exists())
   throw new Error('Replacement dashboard failed at startup')
 if (await Bun.file('dashboard-started').exists() && process.env.STACKS_DASHBOARD_TEST_HOLD_RESTART === '1') {
@@ -22,6 +24,8 @@ Bun.serve({
     const path = new URL(request.url).pathname
     if (path === '/__buddy/dashboard-ready')
       return new Response(null, { status: 204, headers: { 'x-stacks-dashboard': instance } })
+    if (path === '/source-version')
+      return Response.json(version)
     if (path === '/slow') {
       await Bun.write('slow-request-started', '')
       while (!await Bun.file('complete-slow-request').exists())

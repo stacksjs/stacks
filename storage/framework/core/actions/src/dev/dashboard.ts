@@ -11,7 +11,7 @@ import { dashboardHttpsAnswers, dashboardOriginUrl, dashboardPendingHeader, dash
 import { buildManifest, discoverProjectModels, findAvailablePort, modelsWithEnabledFeatures, waitForServer, writeFileIfChanged } from './dashboard-utils'
 import { dashboardSoftwareUpdateRoutes } from './dashboard-software-updates'
 import { runDashboardSupervisor } from './dashboard-supervisor'
-import { frontendHmrResponse } from './frontend-hmr'
+import { createWorkerHmrRetirement, frontendHmrResponse } from './frontend-hmr'
 import { retainFrontendPageState } from './frontend-hmr-state'
 import { dashboardAssetRoutes } from '../dashboard-assets'
 import { ensureDiscoveredPackages } from '../discover-packages'
@@ -95,8 +95,7 @@ const idleExit = createIdleExit(relay ? 0 : idleExitMs, () => {
 })
 
 const dashboardInstance = (relay && process.env.STACKS_DASHBOARD_INSTANCE) || crypto.randomUUID()
-const hmrRetirement = relay && new AbortController()
-let dashboardServer: Bun.Server<unknown> | undefined
+const hmrRetirement = relay && createWorkerHmrRetirement('stacks:dashboard-hmr-reconnect')
 let dashboardReady = false
 let dashboardPublished = false
 const { app, overridesReady } = await import('@stacksjs/config')
@@ -116,11 +115,6 @@ if (relay) {
       return
     if (message.type === 'stacks:dashboard-url' && 'url' in message && typeof message.url === 'string')
       dashboardBrowserUrl = message.url
-    else if (message.type === 'stacks:dashboard-hmr-reconnect') {
-      // An in-place refresh must not reuse an idle socket to this worker.
-      dashboardServer?.closeIdleConnections?.()
-      hmrRetirement?.abort()
-    }
   })
 }
 
@@ -542,7 +536,7 @@ async function startStxServer(): Promise<void> {
     //      collide with a page — e.g. `route.health()` registering a
     //      `/health` LB-probe at root — would intercept the page.
     onRequest: async (req: Request, server) => {
-      dashboardServer ??= server
+      hmrRetirement?.trackServer(server)
       const peer = (relay?.wrap(server) ?? server).requestIP(req)?.address
       if (!peer || (peer !== '::1' && !/^(?:::ffff:)?127\./.test(peer)))
         return new Response('Not found', { status: 404 })

@@ -1,6 +1,26 @@
 import { dirname } from 'node:path'
+import process from 'node:process'
 
 export const devRuntimeSource = /\.(?:[cm]?[jt]s|[jt]sx|json)$/i
+
+export function createWorkerHmrRetirement(messageType: 'stacks:dashboard-hmr-reconnect' | 'stacks:dev-hmr-reconnect') {
+  const retirement = new AbortController()
+  let server: Pick<Bun.Server<unknown>, 'closeIdleConnections'> | undefined
+  process.on('message', (message) => {
+    if (message && typeof message === 'object' && 'type' in message && message.type === messageType) {
+      // The browser must fetch its replacement fragment through the public
+      // listener, without reusing an idle socket to this worker.
+      server?.closeIdleConnections?.()
+      retirement.abort()
+    }
+  })
+  return {
+    signal: retirement.signal,
+    trackServer(listener: Pick<Bun.Server<unknown>, 'closeIdleConnections'> | undefined) {
+      server ??= listener
+    },
+  }
+}
 
 /**
  * Attach the serving worker's identity to STX's event stream. EventSource

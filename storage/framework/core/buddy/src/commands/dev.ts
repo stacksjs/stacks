@@ -1576,30 +1576,29 @@ async function printRegisteredRoutes(apiPort: number): Promise<void> {
 }
 
 /**
- * Resolve `true` once an HTTP request to localhost:port returns *any*
- * response (including 404, 500 — we just want to confirm the server is
- * actually fielding requests, not just bound to the socket). A TCP-only
- * probe was insufficient: stx serve and bun-router can hold the FD in
- * LISTEN state for seconds before their request handler is wired, and
- * the rpx proxy ALSO binds the upstream port (so a TCP probe was getting
- * fooled by the proxy itself, not the backend behind it).
- *
- * Returns `false` if no HTTP response arrives before `timeoutMs`.
+ * Compatibility probe for custom and older dev servers. An absent health
+ * route falls back to the root, where an API's normal 404 still counts.
  */
 async function probeDevServerHttp(port: number, signal?: AbortSignal): Promise<boolean> {
-  for (const path of ['/__health', '/']) {
-    const ok = await new Promise<boolean>((resolve) => {
-      const ac = new AbortController()
-      // First stx request can block on ts-css compile — allow several seconds.
-      const t = setTimeout(() => ac.abort(), path === '/' ? 8000 : 800)
-      fetch(`http://127.0.0.1:${port}${path}`, { signal: signal ? AbortSignal.any([signal, ac.signal]) : ac.signal, redirect: 'manual' })
-        .then(() => { clearTimeout(t); resolve(true) })
-        .catch(() => { clearTimeout(t); resolve(false) })
-    })
-    if (ok)
-      return true
+  async function probe(path: string, timeout: number): Promise<number | undefined> {
+    const timeoutSignal = AbortSignal.timeout(timeout)
+    const response = await fetch(`http://127.0.0.1:${port}${path}`, {
+      headers: { connection: 'close' },
+      signal: signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal,
+      redirect: 'manual',
+    }).catch(() => null)
+    void response?.body?.cancel().catch(() => {})
+    return response?.status
   }
-  return false
+
+  const health = await probe('/__health', 800)
+  if (health !== undefined && health !== 404 && health !== 405)
+    return health < 500
+  if (signal?.aborted)
+    return false
+  // The first STX page can block on CSS compilation.
+  const root = await probe('/', 8000)
+  return root !== undefined && root < 500
 }
 
 /**

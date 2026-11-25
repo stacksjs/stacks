@@ -170,6 +170,48 @@ test.each(restartModes)('dashboard restart keeps the old worker serving through 
   }
 }, 15_000)
 
+test('dashboard restart keeps source edits made while a replacement is starting', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'dashboard-pending-reload-'))
+  mkdirSync(join(root, 'config'))
+  mkdirSync(join(root, 'app'))
+  writeFileSync(join(root, 'config/app.ts'), 'export default {}')
+  writeFileSync(join(root, 'package.json'), '{"name":"dashboard-fixture"}')
+  const source = join(root, 'app/dashboard-version.json')
+  writeFileSync(source, '"before"')
+  const child = spawnDashboard(root, true)
+  try {
+    const before = await waitFor(() => readProjectService(root, 'dashboard'))
+    await waitFor(() => findRestartControl(root, 'dashboard', before.pid))
+    const readVersion = async () => {
+      const response = await fetch(before.url + '/source-version', {
+        headers: { connection: 'close' },
+        signal: AbortSignal.timeout(2000),
+      })
+      expect(response.ok).toBe(true)
+      return response.json()
+    }
+
+    const restart = restartProjectDashboard(root)
+    void restart.catch(() => {})
+    await waitFor(async () => await Bun.file(join(root, 'replacement-started')).exists() ? true : null)
+    await Bun.write(source, '"latest"')
+    // The replacement already captured its source. Allow the file event
+    // through while the worker is still blocked at the startup gate.
+    await Bun.sleep(350)
+    expect(await readVersion()).toBe('before')
+    await Bun.write(join(root, 'publish-dashboard'), '')
+    await restart
+
+    await waitFor(async () => await readVersion() === 'latest' ? true : null)
+    expect(readProjectService(root, 'dashboard')).toMatchObject({ pid: before.pid, port: before.port })
+  }
+  finally {
+    child.kill('SIGTERM')
+    await child.exited
+    rmSync(root, { recursive: true, force: true })
+  }
+}, 15_000)
+
 test('updates projects in order and restarts only successful updates on their existing ports', async () => {
   const workspace = mkdtempSync(join(tmpdir(), 'dashboard-upgrade-'))
   const previousHome = process.env.STACKS_HOME

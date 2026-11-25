@@ -9,6 +9,7 @@ import { Action } from '@stacksjs/enums'
 import { resolveApiHost, resolveApiPort } from '../helpers/api-host'
 import { actionNodePath, developmentConditionForProject, resolveActionFile } from '../helpers/utils'
 import { serveAppRestart } from './app-session-control'
+import { waitForDevFrontendReady } from './app-session-readiness'
 import { devRuntimeSource, frontendBuildId } from './frontend-hmr'
 
 interface AppDevSessionOptions {
@@ -111,9 +112,9 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
     const port = api && process.platform === 'win32' ? 0 : await reserveRelayWorkerPort()
     signal.throwIfAborted()
     const { promise: relayReady, resolve: markRelayReady } = Promise.withResolvers<void>()
-    const { promise: workerPort, resolve: reportWorkerPort } = Promise.withResolvers<number>()
-    if (port)
-      reportWorkerPort(port)
+    const { promise: apiReadyPort, resolve: reportApiReadyPort } = Promise.withResolvers<number>()
+    const readyToken = crypto.randomUUID()
+    const fallbackProbe = new AbortController()
     const child = spawnOwnedProcess([bun, developmentConditionForProject(root), '--preload', preload, entry].filter(Boolean), {
       ownerRuntime: bun,
       cwd: root,
@@ -129,6 +130,7 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
         STACKS_DEV_PUBLIC_PORT: String(service.port),
         STACKS_DEV_RELAY_WORKER: '1',
         STACKS_DEV_RELAY_REPLACEMENT: service.worker ? '1' : undefined,
+        STACKS_DEV_READY_TOKEN: readyToken,
         NODE_PATH: actionNodePath(root, process.env.NODE_PATH),
         STACKS_DEV_SERVER: '1',
       },
@@ -140,9 +142,13 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
         if (message && typeof message === 'object' && 'type' in message) {
           if (message.type === 'stacks:dev-relay-ready')
             markRelayReady()
-          if (message.type === 'stacks:api-ready' && 'port' in message && typeof message.port === 'number'
+          if (message.type === 'stacks:dev-readiness-required') {
+            fallbackProbe.abort()
+            child.send({ type: 'stacks:dev-readiness-ack' })
+          }
+          if (api && message.type === 'stacks:api-ready' && 'port' in message && typeof message.port === 'number'
             && Number.isInteger(message.port) && message.port > 0 && message.port <= 65535)
-            reportWorkerPort(message.port)
+            reportApiReadyPort(message.port)
         }
         worker.target?.onMessage(message)
       },
@@ -151,8 +157,17 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
     const deadline = AbortSignal.any([signal, AbortSignal.timeout(readyTimeoutMs)])
     const error = new Error(`${service.name} did not become ready on port ${service.port}.`)
     const ready = Promise.race([
-      Promise.all([relayReady, workerPort]).then(async ([, actualPort]) => {
-        const listening = await waitForPort(actualPort, readyTimeoutMs, AbortSignal.any([probe.signal, deadline]))
+      Promise.all([relayReady, port || apiReadyPort]).then(async ([, actualPort]) => {
+        const probeSignal = AbortSignal.any([probe.signal, deadline])
+        // Built-in workers wait for the acknowledgement before binding. A
+        // custom or older action can still use the generic HTTP probe.
+        let listening = !fallbackProbe.signal.aborted
+          && await waitForPort(actualPort, readyTimeoutMs, AbortSignal.any([probeSignal, fallbackProbe.signal]))
+        if (fallbackProbe.signal.aborted) {
+          listening = api
+            ? await apiReadyPort === actualPort
+            : await waitForDevFrontendReady(actualPort, readyToken, probeSignal)
+        }
         if (!listening || deadline.aborted || probe.signal.aborted)
           throw error
         worker.target = service.relay!.createTarget(actualPort, child.send)
@@ -252,8 +267,11 @@ export function startAppDevSession(options: AppDevSessionOptions): { finished: P
     const old = replacements.map((service, index) => {
       const previous = service.worker
       const candidate = candidates[index]!
-      if (candidate.status === 'fulfilled' && candidate.value)
+      if (candidate.status === 'fulfilled' && candidate.value) {
         promote(service, candidate.value)
+        if (service.action === Action.Dev)
+          previous?.child.send({ type: 'stacks:dev-hmr-reconnect' })
+      }
       return previous
     })
     await Promise.all(old.map(worker => worker?.target && retireRelayWorker(worker.child, worker.target, drainMs)))

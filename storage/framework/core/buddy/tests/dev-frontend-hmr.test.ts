@@ -60,25 +60,39 @@ function increment() { count.update(value => value + 1) }
   </main>
 </template>
 `),
+      writeFile(join(root, 'resources/views/slow.stx'), `
+<script server>
+const worker = process.pid
+await Bun.write('slow-started', '')
+while (!await Bun.file('finish-slow').exists())
+  await Bun.sleep(25)
+</script>
+<main>{{ worker }}</main>
+`),
     ])
-    session = startAppDevSession({
-      root,
-      target: 'frontend',
-      frontendPort: port,
-      async waitForPort(privatePort, _timeout, signal) {
-        while (!signal.aborted) {
-          const result = await fetch('http://127.0.0.1:' + privatePort + '/', {
-            headers: { connection: 'close' },
-            signal: AbortSignal.any([signal, AbortSignal.timeout(2_000)]),
-          }).catch(() => null)
-          if (result?.ok)
-            return true
-          await Bun.sleep(50)
-        }
-        return false
-      },
-      reportError: console.error,
-    })
+    // Leave a longer drain window than the browser assertion's deadline.
+    // The page must refresh while a request still needs the old worker.
+    const previousGrace = process.env.SHUTDOWN_GRACE_MS
+    process.env.SHUTDOWN_GRACE_MS = '30000'
+    try {
+      session = startAppDevSession({
+        root,
+        target: 'frontend',
+        frontendPort: port,
+        async waitForPort(_port, _timeout, signal) {
+          if (!signal.aborted)
+            await new Promise(resolve => signal.addEventListener('abort', resolve, { once: true }))
+          return false
+        },
+        reportError: console.error,
+      })
+    }
+    finally {
+      if (previousGrace === undefined)
+        delete process.env.SHUTDOWN_GRACE_MS
+      else
+        process.env.SHUTDOWN_GRACE_MS = previousGrace
+    }
     void session.finished.catch(() => {})
     await until(async () => {
       const response = await fetch(url, { signal: AbortSignal.timeout(2_000) })
@@ -112,6 +126,17 @@ function increment() { count.update(value => value + 1) }
       expect(await cdp.evaluate("document.querySelector('#count')?.textContent")).toBe('1')
     })
     let pid = await cdp.evaluate<string>("document.querySelector('#worker').textContent")
+    const slow = fetch(url + 'slow', {
+      headers: { connection: 'close' },
+      signal: AbortSignal.timeout(40_000),
+    }).then(async (response) => {
+      expect(response.ok).toBe(true)
+      return response.text()
+    })
+    void slow.catch(() => {})
+    await until(async () => {
+      expect(await Bun.file(join(root, 'slow-started')).exists()).toBe(true)
+    })
 
     for (const [file, version] of [[source, 'first edit'], [viewSource, 'second edit']] as const) {
       await writeFile(file, 'export default ' + JSON.stringify(version))
@@ -137,6 +162,10 @@ function increment() { count.update(value => value + 1) }
         selection: [2, 7],
         scroll: 55,
       })
+      if (file === source) {
+        await writeFile(join(root, 'finish-slow'), '')
+        expect(await slow).toContain(`<main>${pid}</main>`)
+      }
       pid = live.pid
     }
     await cdp.evaluate("document.querySelector('#count').click()")

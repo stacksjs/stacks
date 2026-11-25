@@ -77,6 +77,7 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
   let idle: ReturnType<typeof createIdleExit> | undefined
   let restarting: Promise<void> | undefined
   let restartTimer: ReturnType<typeof setTimeout> | undefined
+  let reloadPending = false
   const relay = createServeRelay('127.0.0.1', preferredPort ? await findAvailablePort(preferredPort) : 0, () => idle?.touch())
   let publicPort: number
 
@@ -187,9 +188,11 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
   }
 
   function restart(): Promise<void> {
-    if (restartTimer)
-      clearTimeout(restartTimer)
-    restarting ??= (async () => {
+    if (restarting)
+      return restarting
+    clearTimeout(restartTimer)
+    reloadPending = false
+    restarting = (async () => {
       shutdown.signal.throwIfAborted()
       const previous = active!
       idle?.stop()
@@ -209,15 +212,19 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
       restarting = undefined
       if (!shutdown.signal.aborted)
         idle = createIdleExit(idleMs, stop)
+      if (reloadPending)
+        scheduleRestart()
     })
     return restarting
   }
 
   function scheduleRestart(): void {
-    if (restarting || shutdown.signal.aborted)
+    if (shutdown.signal.aborted)
       return
-    if (restartTimer)
-      clearTimeout(restartTimer)
+    reloadPending = true
+    if (restarting)
+      return
+    clearTimeout(restartTimer)
     restartTimer = setTimeout(restartFromSignal, 100)
   }
 

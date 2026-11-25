@@ -43,6 +43,7 @@ async function waitForPort(port: number, timeoutMs: number, signal: AbortSignal)
 }
 
 const launchModes = ['combined', 'separate commands', 'separate aliases'] as const
+const workerReadiness = new URL('../../actions/src/dev/app-session-readiness.ts', import.meta.url).href
 
 test.each(launchModes)('dev serves traffic through manual restarts and source reloads (%s)', async (mode) => {
   const combined = mode === 'combined'
@@ -68,6 +69,7 @@ test.each(launchModes)('dev serves traffic through manual restarts and source re
       ...(['views', 'api'] as const).map(name => writeFile(join(actions, `${name}.ts`), `
 import sharedSource from '../../../../../../config/source'
 ${name === 'views' ? "import viewSource from '../../../../../../resources/views/source'" : 'const viewSource = undefined'}
+${combined && name === 'api' ? `import { beginDevWorkerReadiness } from ${JSON.stringify(workerReadiness)}` : ''}
 const source = viewSource ?? sharedSource
 const version = await Bun.file('version.txt').text()
 const port = Number(process.env.STACKS_DEV_PUBLIC_PORT)
@@ -83,11 +85,17 @@ if (source === 'new source') {
   while (!await Bun.file('source-release-${name}').exists())
     await Bun.sleep(25)
 }
+${combined && name === 'api' ? 'await beginDevWorkerReadiness()' : ''}
 const server = Bun.serve({
   hostname: '127.0.0.1',
   port: Number(process.env.${name === 'api' ? 'PORT_API' : 'PORT'}),
   async fetch(request) {
-    if (new URL(request.url).pathname === '/slow') {
+    const path = new URL(request.url).pathname
+    if (version === 'unhealthy' && '${name}' === 'views' && !await Bun.file('allow-frontend').exists()) {
+      await Bun.write('unhealthy-probed', '')
+      return new Response(null, { status: path === '/__health' ? 404 : 500 })
+    }
+    if (path === '/slow') {
       await Bun.write('slow-request', '')
       while (!await Bun.file('finish-slow').exists())
         await Bun.sleep(25)
@@ -99,6 +107,13 @@ const server = Bun.serve({
     return Response.json({ port, pid: process.pid, version, source })
   },
 })
+${combined && name === 'api' ? `
+if (version === 'after' && !await Bun.file('allow-api-ready').exists()) {
+  await Bun.write('bound-api-port', String(server.port))
+  while (!await Bun.file('allow-api-ready').exists())
+    await Bun.sleep(25)
+}
+` : ''}
 ${name === 'api' ? "process.send({ type: 'stacks:api-ready', port: server.port })" : ''}
 await Bun.write('${name}-ready.txt', JSON.stringify({ port, pid: process.pid, version, source }))
 if (version === 'unstable' && '${name}' === 'views') {
@@ -178,6 +193,17 @@ if (version === 'unstable' && '${name}' === 'views') {
         expect(await read(frontend.port)).toEqual(frontend)
       }
       await writeFile(join(root, 'allow-api'), '')
+      if (combined) {
+        const candidatePort = await waitFor(async () => {
+          const port = Number(await Bun.file(join(root, 'bound-api-port')).text())
+          expect(port).toBeGreaterThan(0)
+          return port
+        })
+        expect(await read(candidatePort)).toMatchObject({ version: 'after' })
+        expect(await read(api.port)).toEqual(api)
+        expect(await read(frontend.port)).toEqual(frontend)
+        await writeFile(join(root, 'allow-api-ready'), '')
+      }
       await waitFor(async () => {
         if ((await read(api.port)).version !== 'after')
           throw new Error('API replacement is not serving')
@@ -215,6 +241,18 @@ if (version === 'unstable' && '${name}' === 'views') {
         await writeFile(join(root, 'allow-api'), '')
         await expect(interrupted).rejects.toThrow(/Frontend (stopped|exited)/)
         expect(await Promise.all(after.map(current => read(current.port)))).toEqual(after)
+      }
+      else {
+        const previousFrontend = await read(frontend.port)
+        await writeFile(join(root, 'version.txt'), 'unhealthy')
+        const warming = restartAppSession(control)
+        void warming.catch(() => {})
+        await waitFor(() => Bun.file(join(root, 'unhealthy-probed')).text())
+        await Bun.sleep(250)
+        expect(await read(frontend.port)).toEqual(previousFrontend)
+        await writeFile(join(root, 'allow-frontend'), '')
+        await warming
+        expect(await read(frontend.port)).toMatchObject({ version: 'unhealthy' })
       }
     }
     finally {
