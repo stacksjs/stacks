@@ -63,20 +63,8 @@ function guarded(prefix: string, base?: Parameters<typeof dashboardGroupMiddlewa
 // Email
 // ============================================================================
 
-// CSRF is skipped for the same reason the storefront cart routes skip
-// it: the storefront's email-subscribe form is rendered in static HTML
-// without a CSRF token round-trip, and the abuse case (bots inflating
-// the subscriber list) is better handled with the rate limiter — at
-// the action layer — than with a token check the form can't satisfy.
-route.post('/api/email/subscribe', 'Actions/SubscriberEmailAction').name('email.subscribe').skipCsrf()
-// The button in the double opt-in email (lists with `double_opt_in` on).
-route.get('/api/email/confirm', 'Actions/ConfirmSubscriptionAction').name('email.confirm')
-route.get('/api/email/unsubscribe', 'Actions/UnsubscribeAction').name('email.unsubscribe')
-// RFC 8058 one-click endpoint. Mailbox providers (Gmail, Yahoo, Outlook)
-// POST here with body `List-Unsubscribe=One-Click` when the user clicks
-// the inbox-native unsubscribe affordance — the request never carries a
-// CSRF token because the mailbox provider isn't in our session, so skip.
-route.post('/api/email/unsubscribe', 'Actions/UnsubscribeAction').name('email.unsubscribe.oneclick').skipCsrf()
+// The newsletter signup, its double opt-in confirmation and its unsubscribe
+// links are in routes/email.ts: they ship in every app, dashboard or not.
 
 // Public contact form. CSRF skipped for the same reason as the
 // subscribe endpoint — the form renders without JS — and the outbound

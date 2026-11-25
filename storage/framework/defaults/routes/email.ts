@@ -7,6 +7,9 @@
  *   - POST /webhooks/email/postmark            — bounce/complaint events
  *   - POST /webhooks/email/ses                 — SES via SNS
  *   - POST /webhooks/email/sendgrid            — event webhook
+ *   - POST /api/email/subscribe                — the public newsletter signup
+ *   - GET  /api/email/confirm                  — the double opt-in link
+ *   - GET/POST /api/email/unsubscribe          — a list membership's opt-out
  *
  * All routes are CSRF-exempt (they're called by external providers
  * or anonymous users clicking unsubscribe links). User routes
@@ -136,3 +139,28 @@ route.post('/webhooks/email/sendgrid', async (req) => {
   const result = await handleSendgridWebhook(rawBody, sig, ts, { publicKeyPem })
   return Response.json(result.body, { status: result.status })
 }).skipCsrf()
+
+// ============================================================================
+// Newsletter signup
+// ============================================================================
+//
+// These lived in routes/dashboard.ts, so an app without the dashboard mounted
+// the signup action (directly, or under its own path) but not the link in the
+// double opt-in email or the unsubscribe link in the welcome email: the
+// confirmation failed to send ("Route 'email.confirm' is not defined") and
+// nobody could leave the list. They belong with the rest of the email routes.
+
+// CSRF is skipped for the same reason the storefront cart routes skip
+// it: the storefront's email-subscribe form is rendered in static HTML
+// without a CSRF token round-trip, and the abuse case (bots inflating
+// the subscriber list) is better handled with the rate limiter — at
+// the action layer — than with a token check the form can't satisfy.
+route.post('/api/email/subscribe', 'Actions/SubscriberEmailAction').name('email.subscribe').skipCsrf()
+// The button in the double opt-in email (lists with `double_opt_in` on).
+route.get('/api/email/confirm', 'Actions/ConfirmSubscriptionAction').name('email.confirm')
+route.get('/api/email/unsubscribe', 'Actions/UnsubscribeAction').name('email.unsubscribe')
+// RFC 8058 one-click endpoint. Mailbox providers (Gmail, Yahoo, Outlook)
+// POST here with body `List-Unsubscribe=One-Click` when the user clicks
+// the inbox-native unsubscribe affordance — the request never carries a
+// CSRF token because the mailbox provider isn't in our session, so skip.
+route.post('/api/email/unsubscribe', 'Actions/UnsubscribeAction').name('email.unsubscribe.oneclick').skipCsrf()
