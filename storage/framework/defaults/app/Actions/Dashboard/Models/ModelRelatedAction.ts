@@ -4,7 +4,7 @@ import { response } from '@stacksjs/router'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
 import { relatedPanels } from './model-related'
-import { isValidModelSlug, parseRowId, slugToPascal } from './model-write'
+import { isValidModelSlug, parseRowKey, slugToPascal } from './model-write'
 
 /**
  * `GET /api/dashboard/models/{slug}/{id}/related`.
@@ -22,15 +22,15 @@ export default new Action({
     const slug = String(request.getParam('slug') ?? '')
     if (!isValidModelSlug(slug))
       return response.json({ message: 'Model slug must be lowercase kebab-case.' }, 400)
-    const id = parseRowId(request.getParam('id'))
-    if (id === null)
-      return response.json({ message: 'A numeric row id is required.' }, 400)
-
     const modelName = slugToPascal(slug)
     try {
       const Model = await resolveDashboardModel(modelName)
       if (!Model || typeof Model.find !== 'function')
         return response.json({ message: `No ORM model named ${modelName}.` }, 404)
+      // The model's own key: a number, or the value of one it declares (stacksjs/stacks#3350).
+      const id = parseRowKey(Model, request.getParam('id'))
+      if (id === null)
+        return response.json({ message: Model.autoIncrement === false ? 'A row key is required.' : 'A numeric row id is required.' }, 400)
       if (!(await Model.find(id)))
         return response.json({ message: `${modelName} ${id} not found.` }, 404)
       return { panels: await relatedPanels(Model, modelName, id) }

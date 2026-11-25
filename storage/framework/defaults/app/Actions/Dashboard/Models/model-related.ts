@@ -22,7 +22,7 @@ import { recordNames } from './model-options'
 import { belongsToRelations, hasRelations, modelLabelColumn, pluralizeLabel, relatedForeignKey } from './model-relations'
 import type { ModelFieldDisplay } from './model-fields'
 import { modelFormFields } from './model-forms'
-import { humanizeIdentifier, type ModelCreateField, modelColumnDisplay, modelColumnLabel, modelListColumns, modelSchemaColumns, modelWriteCapabilities } from './model-write'
+import { humanizeIdentifier, type ModelCreateField, modelColumnDisplay, modelColumnLabel, modelListColumns, modelRowKey, modelSchemaColumns, modelWriteCapabilities, type RowKey } from './model-write'
 
 /** How many of a panel's records the page shows before "View all". */
 export const RELATED_PREVIEW = 5
@@ -150,7 +150,7 @@ export function relatedSummaryColumns(Related: any, foreignKey: string, reachabl
 }
 
 /** One panel's worth, or null when the related model cannot be listed for this record. */
-export async function relatedPanel(parentName: string, parentId: number, relation: ModelHasRelation): Promise<RelatedPanel | null> {
+export async function relatedPanel(parentName: string, parentId: RowKey, relation: ModelHasRelation): Promise<RelatedPanel | null> {
   const Related = await resolveDashboardModel(relation.model).catch(() => null)
   if (!Related || typeof Related.query !== 'function')
     return null
@@ -168,10 +168,13 @@ export async function relatedPanel(parentName: string, parentId: number, relatio
   const columns = relatedSummaryColumns(Related, foreignKey, reachable)
   const hidden = hiddenModelColumns(Related)
 
+  // A related model keyed by something other than `id` is keyed by that here
+  // too: a panel row's `id` is the key its edit and delete are sent with.
+  const rowKey = modelRowKey(Related)
   const total = Number(await Related.query().where(foreignKey, parentId).count()) || 0
   const found = total === 0
     ? []
-    : await Related.query().where(foreignKey, parentId).orderBy('id', 'desc').take(relation.kind === 'one' ? 1 : RELATED_PREVIEW).get() as unknown[]
+    : await Related.query().where(foreignKey, parentId).orderBy(rowKey, 'desc').take(relation.kind === 'one' ? 1 : RELATED_PREVIEW).get() as unknown[]
   const list = Array.isArray(found) ? found : []
 
   // The records these rows point at, named in one lookup per model.
@@ -182,7 +185,7 @@ export async function relatedPanel(parentName: string, parentId: number, relatio
   }
 
   const rows = list.map((row) => {
-    const shown: Record<string, unknown> = { id: safeGet(row, 'id', 0) }
+    const shown: Record<string, unknown> = { id: safeGet(row, rowKey, 0) }
     for (const column of columns) {
       const stored = safeGet(row, column.key, null)
       if (column.key === 'id')
@@ -211,7 +214,7 @@ export async function relatedPanel(parentName: string, parentId: number, relatio
   const values: Record<string, Record<string, unknown>> = {}
   if (capabilities.update) {
     for (const row of list)
-      values[String(safeGet(row, 'id', ''))] = Object.fromEntries(fields.map(entry => [snakeCase(entry.name), safeGet(row, snakeCase(entry.name), null)]))
+      values[String(safeGet(row, rowKey, ''))] = Object.fromEntries(fields.map(entry => [snakeCase(entry.name), safeGet(row, snakeCase(entry.name), null)]))
   }
   return {
     kind: relation.kind,
@@ -234,7 +237,7 @@ export async function relatedPanel(parentName: string, parentId: number, relatio
 }
 
 /** Every panel a record's page shows, in the order the model declares them. */
-export async function relatedPanels(Model: any, parentName: string, parentId: number): Promise<RelatedPanel[]> {
+export async function relatedPanels(Model: any, parentName: string, parentId: RowKey): Promise<RelatedPanel[]> {
   const panels: RelatedPanel[] = []
   for (const relation of hasRelations(Model)) {
     try {

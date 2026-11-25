@@ -10,7 +10,8 @@ import { hasRelations } from './model-relations'
 import type { RowRefusal } from './model-row-writes'
 import { destroyModelRow, formFields, requestAccountId, storeModelRow, updateModelRow } from './model-row-writes'
 import type { ResolvedModel } from './model-write'
-import { isValidModelSlug, parseRowId, resolveWritableModel } from './model-write'
+import type { RowKey } from './model-write'
+import { isValidModelSlug, parseRowKey, resolveWritableModel, rowKeyShape } from './model-write'
 
 /** What one related panel is asked to change. */
 interface PanelChanges {
@@ -18,8 +19,9 @@ interface PanelChanges {
   slug: string
   /** New rows. `key` is the form's own name for each, so a refusal can say which. */
   create: Array<{ key: string, fields: Record<string, unknown> }>
-  update: Array<{ id: number, fields: Record<string, unknown> }>
-  destroy: number[]
+  /** Rows by key: a number, or the value of a key the related model declares. */
+  update: Array<{ id: RowKey, fields: Record<string, unknown> }>
+  destroy: RowKey[]
 }
 
 /** Where a save was refused: the record's own fields, or one row of one panel. */
@@ -40,10 +42,10 @@ interface PanelPlan {
 interface SavedPanel {
   slug: string
   created: Array<{ key: string, id: unknown }>
-  updated: number[]
-  destroyed: number[]
+  updated: RowKey[]
+  destroyed: RowKey[]
   /** Of the destroyed: kept, with their personal details removed. */
-  anonymized: number[]
+  anonymized: RowKey[]
 }
 
 /** Thrown inside the transaction to roll it back at the first refusal, carrying where it was. */
@@ -80,23 +82,25 @@ function readRelatedChanges(raw: unknown): PanelChanges[] | string {
         return `Two new ${entry.slug} rows were sent as ${row.key}.`
       create.push({ key: row.key, fields: row.fields })
     }
+    // Checked for shape here; read against the related model's own key once
+    // its panel is planned (stacksjs/stacks#3350).
     const update: PanelChanges['update'] = []
     for (const row of Array.isArray(entry.update) ? entry.update : []) {
-      const id = isRecord(row) ? parseRowId(row.id) : null
+      const id = isRecord(row) ? rowKeyShape(row.id) : null
       if (id === null || !isRecord(row.fields))
         return `Each edited ${entry.slug} row needs its id and its fields.`
-      if (update.some(other => other.id === id))
+      if (update.some(other => String(other.id) === String(id)))
         return `${entry.slug} ${id} was edited twice.`
       update.push({ id, fields: row.fields })
     }
-    const destroy: number[] = []
+    const destroy: RowKey[] = []
     for (const raw of Array.isArray(entry.destroy) ? entry.destroy : []) {
-      const id = parseRowId(raw)
+      const id = rowKeyShape(raw)
       if (id === null)
         return `Each deleted ${entry.slug} row needs its id.`
-      if (update.some(row => row.id === id))
+      if (update.some(row => String(row.id) === String(id)))
         return `${entry.slug} ${id} cannot be both edited and deleted.`
-      if (!destroy.includes(id))
+      if (!destroy.some(other => String(other) === String(id)))
         destroy.push(id)
     }
     panels.push({ slug: entry.slug, create, update, destroy })
@@ -158,10 +162,6 @@ export default new Action({
   method: 'PATCH',
   apiResponse: true,
   async handle(request: RequestInstance) {
-    const id = parseRowId(request.getParam('id'))
-    if (id === null)
-      return response.json({ message: 'A numeric row id is required.' }, 400)
-
     const input = request.all()
     const fields = formFields(input.fields)
     const related = readRelatedChanges(input.related)
@@ -176,6 +176,10 @@ export default new Action({
     const resolved = await resolveWritableModel(request.getParam('slug'), editsRecord ? 'update' : undefined)
     if ('error' in resolved)
       return response.json({ message: resolved.error }, resolved.status)
+    // The record's own key: a number, or the value of one its model declares (stacksjs/stacks#3350).
+    const id = parseRowKey(resolved.Model, request.getParam('id'))
+    if (id === null)
+      return response.json({ message: resolved.Model?.autoIncrement === false ? 'A row key is required.' : 'A numeric row id is required.' }, 400)
 
     try {
       if (!(await resolved.Model.find(id)))
@@ -197,11 +201,26 @@ export default new Action({
         const target = await resolveWritableModel(changes.slug)
         if ('error' in target)
           return response.json({ message: target.error, at: { operation: 'update', panel: changes.slug } }, target.status)
-        plans.push({ changes, panel, target })
+        // Each row's key read the way its own model is keyed.
+        const update: PanelChanges['update'] = []
+        for (const row of changes.update) {
+          const key = parseRowKey(target.Model, row.id)
+          if (key === null)
+            return refusedBefore(422, `${panel.label} ${row.id} is not a ${panel.label.toLowerCase()} key.`, { operation: 'update', panel: changes.slug, row: String(row.id) })
+          update.push({ id: key, fields: row.fields })
+        }
+        const destroy: RowKey[] = []
+        for (const raw of changes.destroy) {
+          const key = parseRowKey(target.Model, raw)
+          if (key === null)
+            return refusedBefore(422, `${panel.label} ${raw} is not a ${panel.label.toLowerCase()} key.`, { operation: 'destroy', panel: changes.slug, row: String(raw) })
+          destroy.push(key)
+        }
+        plans.push({ changes: { ...changes, update, destroy }, panel, target })
       }
 
       const viewer = await requestAccountId(request)
-      const own = async (plan: PanelPlan, rowId: number, operation: SaveLocation['operation']): Promise<void> => {
+      const own = async (plan: PanelPlan, rowId: RowKey, operation: SaveLocation['operation']): Promise<void> => {
         const row = await plan.target.Model.find(rowId)
         if (!row || String(safeGet(row, plan.panel.foreignKey, '')) !== String(id))
           throw new SaveStopped(refusal(404, `${plan.panel.label} ${rowId} is not one of this ${resolved.modelName.toLowerCase()}'s.`), { operation, panel: plan.changes.slug, row: String(rowId) })
