@@ -45,6 +45,8 @@ export function networkReason(body: unknown): string {
     parsed.error?.message,
     parsed.message,
     parsed.error_description,
+    // Threads' token endpoints.
+    parsed.error_message,
     first?.detail,
     first?.message,
     typeof parsed.error === 'string' ? parsed.error : undefined,
@@ -60,7 +62,8 @@ export function networkReason(body: unknown): string {
 function kindOf(status: number, text: string): SocialErrorKind {
   const has = (pattern: RegExp): boolean => pattern.test(text)
 
-  if (status === 429 || has(/rate.?limit|too many requests|usage cap|throttl/i)) return 'rate-limited'
+  // Meta answers a rate limit with a 400 and "(#4) Application request limit reached" (also #17, #32, #613).
+  if (status === 429 || has(/rate.?limit|too many requests|usage cap|throttl|request limit reached/i)) return 'rate-limited'
   if (has(/duplicate|already (?:posted|published|exists)|DUPLICATE_POST/i)) return 'duplicate'
   if (status === 401 || has(/invalid.?token|expired.?token|token (?:has )?(?:expired|been revoked)|session has (?:expired|been invalidated)|OAuthException.*(?:expired|invalid)|REVOKED_ACCESS_TOKEN/i)) return 'expired'
   if (status === 413 || has(/media|image|video|attachment|aspect ratio|file size|unsupported (?:format|type)|blob/i)) return 'media'
