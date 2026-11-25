@@ -17,6 +17,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { resolveUserConfigName } from '../src/overrides'
+import { USER_CONFIG_FILES } from '../src/sources'
 
 function project(files: string[]): string {
   const root = mkdtempSync(join(tmpdir(), 'user-config-name-'))
@@ -78,10 +79,6 @@ describe('the ui config accepts both of stx own names', () => {
   it('is registered with stx as an alternative', () => {
     // Pinned because the alias is the fix: dropping it silently restores the
     // bug, and every other consumer would still look fine.
-    const source = require('node:fs').readFileSync(
-      new URL('../src/overrides.ts', import.meta.url),
-      'utf8',
-    )
-    expect(source).toContain(`['ui', 'ui', 'stx']`)
+    expect(USER_CONFIG_FILES.map(entry => [...entry])).toContainEqual(['ui', 'ui', 'stx'])
   })
 })

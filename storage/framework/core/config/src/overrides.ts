@@ -12,7 +12,9 @@ import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { projectPath } from '@stacksjs/path'
 import { defaults } from './defaults'
+import type { BundledConfig, ConfigSource } from './sources'
 import { plainEnv } from './plain-env'
+import { bundledConfig, OVERRIDES_READY_KEY, recordConfigSource, USER_CONFIG_FILES } from './sources'
 import { validateConfig } from './validators'
 
 // PRODUCTION BINARY MODE: Skip runtime config loading
@@ -35,7 +37,7 @@ const skipConfigValidation = process.env.SKIP_CONFIG_VALIDATION === 'true'
 // `readMerged()` keeps falling through to defaults forever — the bug that
 // made `config.ports.api` return 3008 even after `await overridesReady`.
 const OVERRIDES_KEY = Symbol.for('@stacksjs/config:overrides')
-const READY_KEY = Symbol.for('@stacksjs/config:overridesReady')
+const READY_KEY = OVERRIDES_READY_KEY
 
 // `overrides` is exported synchronously, populated from `defaultsForOverrides`
 // on creation and *mutated in place* by `loadUserConfigs()` once the user's
@@ -134,80 +136,6 @@ export const overrides: StacksConfig = sharedOverrides ?? (() => {
   return created
 })()
 
-// Files we attempt to load. The key on the left is the property name on
-// `overrides`; the path on the right is the project-local config file.
-/**
- * `[configKey, filename, ...alternativeFilenames]`.
- *
- * The alternatives exist because stx accepts either name for its own config:
- * `loadStxConfig` resolves `{ name: 'stx', alias: 'ui' }`, so an app can write
- * `config/stx.ts` and stx reads it happily - while this loader looked only for
- * `config/ui.ts` and left `config.ui` undefined. `resolveViewPatterns` treats
- * undefined exactly like `true`, so such an app kept mounting the framework's
- * demo views through a green build and a green deploy (stacksjs/stacks#2446).
- *
- * The first name that exists wins, and the primary stays first, so no app that
- * resolves today resolves differently.
- */
-const userConfigs: Array<[keyof StacksConfig, string, ...string[]]> = [
-  ['ai', 'ai'],
-  ['analytics', 'analytics'],
-  ['app', 'app'],
-  ['auth', 'auth'],
-  ['cache', 'cache'],
-  ['cli', 'cli'],
-  ['cloud', 'cloud'],
-  ['cms', 'cms'],
-  ['commerce', 'commerce'],
-  // `config/cors.ts` is the file app/Middleware/Cors.ts documents as the
-  // place to configure CORS, but it was missing from this list, so it was
-  // read by nothing. The middleware fell back to its defaults —
-  // `origin: '*'`, `credentials: false` — no matter what the app wrote.
-  // A browser refuses a credentialed cross-origin request answered with a
-  // wildcard origin, so an app whose frontend and API sit on different
-  // origins could not log in at all, while its config file sat there
-  // looking authoritative. `StacksConfig` already declared `cors?`.
-  ['cors', 'cors'],
-  ['dashboard', 'dashboard'],
-  ['database', 'database'],
-  ['dns', 'dns'],
-  ['docs', 'docs'],
-  ['email', 'email'],
-  ['errors', 'errors'],
-  ['featureFlags', 'feature-flags'],
-  ['git', 'git'],
-  ['hashing', 'hashing'],
-  ['images', 'images'],
-  ['library', 'library'],
-  ['logging', 'logging'],
-  ['marketing', 'marketing'],
-  ['monitoring', 'monitoring'],
-  ['notification', 'notification'],
-  ['payment', 'payment'],
-  ['ports', 'ports'],
-  ['queue', 'queue'],
-  ['realtime', 'realtime'],
-  ['saas', 'saas'],
-  ['searchEngine', 'search-engine'],
-  ['security', 'security'],
-  ['sites', 'sites'],
-  ['forms', 'forms'],
-  ['server', 'server'],
-  ['services', 'services'],
-  // `config/sms.ts` ships in every app and declares `provider`, the drivers
-  // and their credentials, and `StacksOptions` has always declared
-  // `sms: SmsConfig` — but the entry was missing here, so the file was read by
-  // nothing and `config.sms` was the framework default no matter what the app
-  // wrote. Verified by setting `provider: 'vonage'` in `config/sms.ts` and
-  // watching `config.sms.provider` still resolve to `'twilio'`. Same shape as
-  // the `cors` entry above (stacksjs/stacks#2876).
-  ['sms', 'sms'],
-  ['socials', 'socials'],
-  ['filesystems', 'filesystems'],
-  ['team', 'team'],
-  ['ui', 'ui', 'stx'],
-]
-
 /**
  * Which of a config's accepted filenames this project actually ships.
  *
@@ -266,15 +194,27 @@ export function userConfigUrl(name: string, root = projectPath()): string {
 // `overrides` instance the live config proxy reads from.
 const sharedReady = globalScope[READY_KEY] as Promise<StacksConfig> | undefined
 export const overridesReady: Promise<StacksConfig> = sharedReady ?? (() => {
+  // A compiled app registers its config before this module is evaluated
+  // (`registerBundledConfig`): it has no config/ to read (stacksjs/stacks#3368).
+  const bundled = bundledConfig()
+  const root = bundled ? undefined : projectPath()
+  const source: ConfigSource = skipConfigLoading
+    ? { from: 'skipped', loaded: [], failed: [] }
+    : bundled ? { from: 'bundled', loaded: [], failed: [] } : { from: 'files', root, loaded: [], failed: [] }
   const promise = skipConfigLoading
-    ? Promise.resolve(overrides)
-    : Promise.all(userConfigs.map(async ([key, ...names]) => {
-      const name = resolveUserConfigName(names as [string, ...string[]])
-      const modulePath = userConfigUrl(name)
+    ? Promise.resolve(overrides).then((loaded) => {
+      recordConfigSource(source)
+      return loaded
+    })
+    : Promise.all(USER_CONFIG_FILES.map(async ([key, ...names]) => {
+      const name = bundled ? bundledConfigName(bundled, names) : resolveUserConfigName(names as [string, ...string[]], root)
+      if (name === undefined) return
+      const modulePath = bundled ? `config/${name}.ts (compiled in)` : userConfigUrl(name, root)
       try {
-        const mod = await import(modulePath)
+        const mod = bundled ? await bundled[name]!() as { default?: unknown } : await import(modulePath)
         if (mod?.default !== undefined) {
-          (overrides)[key] = mod.default
+          (overrides as Record<string, unknown>)[key] = mod.default
+          source.loaded.push(name)
         }
       }
       catch (err: unknown) {
@@ -283,11 +223,12 @@ export const overridesReady: Promise<StacksConfig> = sharedReady ?? (() => {
         // every config category) and is fine to silence. The second is a
         // bug that used to silently fall through to defaults — surface it
         // on stderr so users can spot the typo / syntax error in their
-        // config file.
+        // config file. A compiled-in file exists by definition.
         const code = (err as { code?: string })?.code
         const msg = (err as { message?: string })?.message ?? String(err)
-        const isMissing = code === 'ERR_MODULE_NOT_FOUND' || code === 'MODULE_NOT_FOUND' || /Cannot find module/i.test(msg)
+        const isMissing = !bundled && (code === 'ERR_MODULE_NOT_FOUND' || code === 'MODULE_NOT_FOUND' || /Cannot find module/i.test(msg))
         if (!isMissing) {
+          source.failed.push({ name, error: msg })
           // eslint-disable-next-line no-console
           console.warn(`[config] Failed to load ${String(key)} config from ${modulePath}: ${msg}`)
         }
@@ -317,9 +258,18 @@ export const overridesReady: Promise<StacksConfig> = sharedReady ?? (() => {
         }
       }
       return overrides
+    }).finally(() => {
+      // Recorded whether or not validation passed, so a failed boot can say what it read.
+      source.loaded.sort()
+      recordConfigSource(source)
     })
   globalScope[READY_KEY] = promise
   return promise
 })()
+
+/** The first of a config's accepted names the app compiled in, if any. */
+function bundledConfigName(bundled: BundledConfig, names: readonly string[]): string | undefined {
+  return names.find(candidate => Object.hasOwn(bundled, candidate))
+}
 
 export default overrides
