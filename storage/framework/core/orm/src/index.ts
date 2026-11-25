@@ -431,6 +431,12 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['SocialAccount', [''], 'auth'],
   ['Subscriber', [''], 'auth'],
   ['SubscriberEmail', [''], 'auth'],
+  // The newsletter signup ships in every app and puts each address on a list,
+  // and its confirm and unsubscribe actions read these two. Gated with
+  // marketing, an app with marketing off could sign people up but every
+  // unsubscribe link failed ("Model EmailListSubscriber is not available").
+  ['EmailList', [''], 'auth'],
+  ['EmailListSubscriber', [''], 'auth'],
   ['Subscription', [''], 'auth'],
 
   // CMS (Content subdir on disk uses the capital C)
@@ -492,8 +498,6 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   // Marketing (email lists, campaigns, social posts)
   ['Campaign', [''], 'marketing'],
   ['CampaignSend', [''], 'marketing'],
-  ['EmailList', [''], 'marketing'],
-  ['EmailListSubscriber', [''], 'marketing'],
   ['EmailIdempotency', [''], 'marketing'],
   ['EmailSuppression', [''], 'marketing'],
   ['EmailWebhookEvent', [''], 'marketing'],
