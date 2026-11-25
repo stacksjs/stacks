@@ -193,8 +193,9 @@ describe('both servers go through the factory (#2232 ask 1)', () => {
       const code = source.replace(/^\s*\/\/.*$/gm, '')
       // Whatever else the hook takes: both grew a `server` parameter for the
       // socket peer (595d2ecd58), and a pin on the exact signature failed on
-      // code that still did the right thing.
-      const hook = /onRequest: async \(req: Request\b[^)]*\) => \{([\s\S]*?)\bawait\b/.exec(code)
+      // code that still did the right thing. The same goes for the `Request`
+      // annotation, which the dev server's hook no longer writes (1f676d1010).
+      const hook = /onRequest: async \(req\b(?::\s*Request\b)?[^)]*\) => \{([\s\S]*?)\bawait\b/.exec(code)
       expect(hook).not.toBeNull()
       expect(hook?.[1]).toContain('enterRequestScope(req)')
     }
