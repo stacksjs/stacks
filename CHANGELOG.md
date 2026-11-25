@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.682...v0.75.683)
+
+## ✅ Tests
+
+- **dashboard**: assert the render cache persists except behind the relay ([1bb659c](https://github.com/stacksjs/stacks/commit/1bb659c)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.681...v0.75.682)
 
 ## 🐛 Bug Fixes
