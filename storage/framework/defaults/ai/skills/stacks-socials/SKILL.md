@@ -149,6 +149,16 @@ A driver error's isAuthError is narrow; classifySocialError in
 publish-errors.ts sorts any failure by status and body, and only `expired`
 means the account must sign in again (a duplicate post on X is a 403).
 
+Every driver error (BlueskyApiError, TwitterApiError, ...) is a SocialApiError
+from errors.ts: `network`, `status`, the raw `body`, `kind` (the
+classification), `reason` (the network's own sentence) and `retryAfterMs`. Its
+message is the network's reason or the status text, never the raw body.
+`retryAfterMs` reads Retry-After on any answer and, on a rate limit, X's
+`x-rate-limit-reset`, Bluesky's `ratelimit-reset`, Mastodon's
+`x-ratelimit-reset` and Meta's `estimated_time_to_regain_access`. Meta answers
+a rate limit with a 400 ("(#4) Application request limit reached"), which still
+classifies as `rate-limited`.
+
 ## Authorization and operational limits
 
 The native terminal consent helper in authorize.ts currently supports X only.
