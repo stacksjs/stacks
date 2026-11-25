@@ -1,10 +1,12 @@
 import type { SocialApiErrorOptions } from '../errors'
 import type {
+  PostMetrics,
   PublishedPost,
   PublishPostInput,
   RemotePostRef,
   SocialDeletionDriver,
   SocialIdentityCredentials,
+  SocialMetricsDriver,
   SocialPublishingDriver,
   TimelineQuery,
   TimelineResult,
@@ -20,6 +22,32 @@ export const THREADS_MAX_ALT_TEXT = 1000
 export interface ThreadsLongLivedToken {
   accessToken: string
   expiresIn?: number
+}
+
+/** The media insights Threads reports, by the name it gives each. */
+const THREADS_METRIC_FIELDS: Record<string, 'views' | 'likes' | 'replies' | 'reposts' | 'quotes' | 'shares'> = {
+  views: 'views',
+  likes: 'likes',
+  replies: 'replies',
+  reposts: 'reposts',
+  quotes: 'quotes',
+  shares: 'shares',
+}
+const THREADS_METRICS = Object.keys(THREADS_METRIC_FIELDS)
+
+/**
+ * Graph's answer for an id that is gone: code 100, "Object with ID ... does
+ * not exist". A missing permission is code 10 and is not this.
+ */
+function isMissingMedia(error: unknown): boolean {
+  if (!(error instanceof ThreadsApiError)) return false
+  try {
+    const parsed = JSON.parse(error.body) as { error?: { code?: number, message?: string } }
+    return parsed.error?.code === 100 && /does not exist/i.test(String(parsed.error.message))
+  }
+  catch {
+    return false
+  }
 }
 
 export class ThreadsApiError extends SocialApiError {
@@ -74,7 +102,7 @@ export interface ThreadsAccount {
  * Unlike Instagram, Threads allows text-only posts — `post.media` is optional
  * and, when present, the container is created as an `IMAGE` instead of `TEXT`.
  */
-export class ThreadsPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver {
+export class ThreadsPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver, SocialMetricsDriver {
   readonly provider: 'threads' = 'threads'
   characterLimit = 500
   /** Images attached per post. Threads' own ceiling; an app may lower it. */
@@ -329,6 +357,41 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver, SocialDe
     }
 
     return { accessToken: json.access_token, expiresIn: json.expires_in }
+  }
+
+  /**
+   * Views, likes, replies, reposts, quotes and shares for each post, one
+   * insights request apiece: Threads has no batch form
+   * (`GET /{media-id}/insights`, the threads_manage_insights permission).
+   * Meta marks views and shares as still in development. A post that is gone
+   * is left out; a missing permission is an error (stacksjs/stacks#3379).
+   */
+  async metrics(identity: SocialIdentityCredentials, uris: string[]): Promise<PostMetrics[]> {
+    const token = identity.accessToken
+    if (!token) throw new Error('Threads access token is missing for this identity.')
+
+    const metrics: PostMetrics[] = []
+    for (const uri of uris) {
+      const id = String(uri || '').trim()
+      if (!id) continue
+      let payload: { data?: Array<{ name?: string, values?: Array<{ value?: unknown }> }> }
+      try {
+        payload = await this.graph(`/${encodeURIComponent(id)}/insights?metric=${THREADS_METRICS.join(',')}`, { method: 'GET' }, token)
+      }
+      catch (error) {
+        if (isMissingMedia(error)) continue
+        throw error
+      }
+
+      const counts: PostMetrics = { uri }
+      for (const entry of payload.data || []) {
+        const field = THREADS_METRIC_FIELDS[String(entry.name)]
+        const value = Number(entry.values?.[0]?.value)
+        if (field && Number.isFinite(value)) counts[field] = value
+      }
+      metrics.push(counts)
+    }
+    return metrics
   }
 
   /**

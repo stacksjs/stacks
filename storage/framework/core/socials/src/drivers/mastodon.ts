@@ -1,11 +1,13 @@
 import type { SocialApiErrorOptions } from '../errors'
 import type {
   AuthoredPostPage,
+  PostMetrics,
   PublishedPost,
   PublishPostInput,
   RemotePostRef,
   SocialDeletionDriver,
   SocialIdentityCredentials,
+  SocialMetricsDriver,
   SocialPublishingDriver,
   TimelineQuery,
   TimelineResult,
@@ -13,6 +15,19 @@ import type {
 import { fetchPostImage, resolvePostImage } from '../media'
 import { exceedsLimit } from '../text'
 import { apiFailure, SocialApiError } from '../errors'
+
+/** The counts on a Mastodon status entity. */
+interface MastodonStatusCounts {
+  id: string
+  favourites_count?: number
+  reblogs_count?: number
+  replies_count?: number
+  quotes_count?: number
+}
+
+function isNotFound(error: unknown): boolean {
+  return error instanceof MastodonApiError && error.status === 404
+}
 
 export class MastodonApiError extends SocialApiError {
   constructor(message: string, status: number, body: string, options: SocialApiErrorOptions = {}) {
@@ -93,7 +108,7 @@ export function normalizeInstance(value: string): string {
  * instance base URL — the same slot LinkedIn uses for the member URN and
  * Instagram for the account id.
  */
-export class MastodonPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver {
+export class MastodonPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver, SocialMetricsDriver {
   readonly provider: 'mastodon' = 'mastodon'
   /**
    * Mastodon's default. An instance can raise it, and many do, so `publish`
@@ -286,6 +301,55 @@ export class MastodonPublishingDriver implements SocialPublishingDriver, SocialD
       `${this.instanceOf(identity)}/api/v1/statuses/${encodeURIComponent(id)}`,
       { method: 'DELETE', headers: { authorization: `Bearer ${this.tokenOf(identity)}` } },
     )
+  }
+
+  /**
+   * Favourites, boosts, replies and (from Mastodon 4.5) quotes for any number
+   * of statuses, 40 to a request (`GET /api/v1/statuses?id[]=`, Mastodon
+   * 4.3). An instance older than that has no such route, so it is asked one
+   * status at a time. A status that is gone is left out. Mastodon counts no
+   * views (stacksjs/stacks#3379).
+   */
+  async metrics(identity: SocialIdentityCredentials, uris: string[]): Promise<PostMetrics[]> {
+    const instance = this.instanceOf(identity)
+    const headers = { authorization: `Bearer ${this.tokenOf(identity)}` }
+    const asked = new Map<string, string>()
+    for (const uri of uris) {
+      const id = String(lastPathSegment(uri) || '').trim()
+      if (id) asked.set(id, uri)
+    }
+
+    const ids = [...asked.keys()]
+    const statuses: MastodonStatusCounts[] = []
+    for (let start = 0; start < ids.length; start += 40) {
+      const chunk = ids.slice(start, start + 40)
+      try {
+        statuses.push(...await this.request<MastodonStatusCounts[]>(`${instance}/api/v1/statuses?${chunk.map(id => `id[]=${encodeURIComponent(id)}`).join('&')}`, { headers }))
+      }
+      catch (error) {
+        if (!isNotFound(error)) throw error
+        for (const id of chunk) {
+          try {
+            statuses.push(await this.request<MastodonStatusCounts>(`${instance}/api/v1/statuses/${encodeURIComponent(id)}`, { headers }))
+          }
+          catch (missing) {
+            if (!isNotFound(missing)) throw missing
+          }
+        }
+      }
+    }
+
+    return statuses.flatMap((status) => {
+      const uri = asked.get(String(status.id))
+      if (uri === undefined) return []
+      return [{
+        uri,
+        likes: status.favourites_count ?? 0,
+        reposts: status.reblogs_count ?? 0,
+        replies: status.replies_count ?? 0,
+        ...(typeof status.quotes_count === 'number' ? { quotes: status.quotes_count } : {}),
+      }]
+    })
   }
 
   protected async request<T>(url: string, init: RequestInit): Promise<T> {
