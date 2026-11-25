@@ -67,9 +67,9 @@ describe('stopping the production API server', () => {
     const source = new Bun.Transpiler({ loader: 'ts' }).transformSync(
       readFileSync(fileURLToPath(new URL('../src/serve/api.ts', import.meta.url)), 'utf8'),
     )
-    const handler = source.slice(source.indexOf('process.on("SIGTERM"'))
+    const drain = /^function drain\(\) \{([\s\S]*?)^\}/m.exec(source)?.[1]
 
-    expect(source).toContain('process.on("SIGTERM"')
-    expect(handler.slice(0, 400)).toContain('shutDownApiServer(server')
+    expect(source).toContain('process.on("SIGTERM", drain)')
+    expect(drain).toContain('shutDownApiServer(server')
   })
 })
