@@ -1,5 +1,35 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.687...v0.75.688)
+
+## ✨ Features
+
+- **socials**: LinkedIn metrics through Social Metadata ([e20df72](https://github.com/stacksjs/stacks/commit/e20df72)) _(by glennmichael123)_ ([stacksjs/stacks#3379](https://github.com/stacksjs/stacks/issues/3379), [#3372](https://github.com/stacksjs/stacks/issues/3372))
+- **socials**: Instagram metrics, with reach and saves ([2df32ee](https://github.com/stacksjs/stacks/commit/2df32ee)) _(by glennmichael123)_ ([stacksjs/stacks#3379](https://github.com/stacksjs/stacks/issues/3379))
+- **socials**: Mastodon and Threads metrics ([795ff69](https://github.com/stacksjs/stacks/commit/795ff69)) _(by glennmichael123)_ ([stacksjs/stacks#3379](https://github.com/stacksjs/stacks/issues/3379))
+- **socials**: one metrics shape across drivers, starting with Bluesky ([eff0950](https://github.com/stacksjs/stacks/commit/eff0950)) _(by glennmichael123)_ ([stacksjs/stacks#3379](https://github.com/stacksjs/stacks/issues/3379))
+- **socials**: Instagram, Threads and LinkedIn errors are SocialApiErrors ([1a8c522](https://github.com/stacksjs/stacks/commit/1a8c522)) _(by glennmichael123)_ ([stacksjs/stacks#3379](https://github.com/stacksjs/stacks/issues/3379))
+- **socials**: Bluesky, Mastodon and X errors are SocialApiErrors ([01f2409](https://github.com/stacksjs/stacks/commit/01f2409)) _(by glennmichael123)_ ([stacksjs/stacks#3379](https://github.com/stacksjs/stacks/issues/3379))
+- **socials**: SocialApiError, and how long a network asked to wait ([e57cc12](https://github.com/stacksjs/stacks/commit/e57cc12)) _(by glennmichael123)_ ([stacksjs/stacks#3379](https://github.com/stacksjs/stacks/issues/3379), [#4](https://github.com/stacksjs/stacks/issues/4))
+
+## 🐛 Bug Fixes
+
+- **orm**: load the newsletter list models without the marketing feature ([499ddfe](https://github.com/stacksjs/stacks/commit/499ddfe)) _(by Chris Breuer)_
+- **orm**: generate:db-types keeps the columns a migration adds to a model's table ([095304b](https://github.com/stacksjs/stacks/commit/095304b)) _(by glennmichael123)_ ([stacksjs/stacks#3393](https://github.com/stacksjs/stacks/issues/3393))
+- **serve**: keep the macOS listener open during worker swaps ([3b629b8](https://github.com/stacksjs/stacks/commit/3b629b8)) _(by Chris Breuer)_
+- **dashboard**: restore sidebar reorder control labels ([fe05fa0](https://github.com/stacksjs/stacks/commit/fe05fa0)) _(by Chris Breuer)_
+- **dev**: harden rolling worker restarts ([1f676d1](https://github.com/stacksjs/stacks/commit/1f676d1)) _(by Chris Breuer)_
+
+## ✅ Tests
+
+- **socials**: metrics from Bluesky, Mastodon and Threads ([6184d5e](https://github.com/stacksjs/stacks/commit/6184d5e)) _(by glennmichael123)_ ([stacksjs/stacks#3379](https://github.com/stacksjs/stacks/issues/3379))
+- **socials**: one error type across the publishing drivers ([f11f0cc](https://github.com/stacksjs/stacks/commit/f11f0cc)) _(by glennmichael123)_ ([stacksjs/stacks#3379](https://github.com/stacksjs/stacks/issues/3379))
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.686...v0.75.687)
 
 ## ✨ Features
