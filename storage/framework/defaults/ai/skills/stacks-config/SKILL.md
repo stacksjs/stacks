@@ -27,6 +27,16 @@ The readiness promise and override storage are shared across installed copies.
 Compiled server builds have a separate minimal env config and may deliberately
 set `SKIP_CONFIG_LOADING=true`; see `stacks-server`.
 
+A compiled app has no `config/` beside it, and the loader's `import()` of a
+computed path is one the bundler cannot follow. Its entry hands the loader
+static loaders instead, before anything imports config:
+`registerBundledConfig({ app: () => import('/abs/config/app.ts') })` from the
+dependency-free `@stacksjs/config/sources` (it throws once config has loaded).
+`USER_CONFIG_FILES` / `userConfigFileNames()` list the files the loader reads.
+`settledConfigSource()` says what was loaded: `bundled`, `files` under a root,
+or `skipped`, the files that loaded and those that threw.
+`describeConfigSource()` turns that into one log line.
+
 Individual exports (app, auth, database, queue, filesystems and others) are also
 available. Use the matching `satisfies ...Config` type or define helper.
 `defineModel` belongs to `@stacksjs/orm`. App registries are owned by their
