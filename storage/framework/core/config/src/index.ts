@@ -10,6 +10,7 @@
 // `overridesReady` are silently ignored.
 export * from './config'
 export { FRAMEWORK_DEFAULTS } from './defaults'
+export { configSource, describeConfigSource, registerBundledConfig, userConfigFileNames, type BundledConfig, type ConfigSource } from './sources'
 export { validateConfig, reportConfigIssues, type ConfigValidationIssue } from './validators'
 export { feature, enableFeature, disableFeature, resetFeature, listFeatures, type AppFeatureFlags, type FeatureFlag, type StacksFeature } from './features'
 export { packageComponentRoots, packageJobRoots, packageMigrationRoots, packageModelRoots, packageViewRoots, type PackageResourceOptions, type PackageResourceRoot } from './discovered-resources'
