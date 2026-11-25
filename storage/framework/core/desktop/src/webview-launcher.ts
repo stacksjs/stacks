@@ -1,3 +1,4 @@
+import type { BundledConfig } from '@stacksjs/config/sources'
 import type { AgentBundleFiles, StacksAgentHandlerOptions } from './agent-launcher'
 import type { BeforeDesktopUpdate, DesktopUpdater } from './update-install'
 import type { SecondInstanceLaunch, WebviewAgent, WebviewAgentContext, WebviewHandler, WebviewViews } from './webview-agent'
@@ -299,6 +300,14 @@ export interface RunWebviewAppOptions {
    * (stacksjs/stacks#3368).
    */
   database?: WebviewDatabase
+  /**
+   * The project's `config/*.ts`, compiled in by the build (`agent.config`),
+   * each as a static `import()`. They are registered with `@stacksjs/config`
+   * and loaded before the agent module, so the app runs on its own config
+   * rather than the framework defaults. A file that throws stops the start,
+   * with the reason in the log (stacksjs/stacks#3368).
+   */
+  config?: BundledConfig
 }
 
 /** What `runWebviewApp` needs to bring the app's database up to date. */
@@ -378,6 +387,8 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
       process.env.DB_CONNECTION = 'sqlite'
       process.env.DB_DATABASE_PATH = databasePath
     }
+    // After the database: config reads DB_DATABASE_PATH as it loads.
+    if (options.config) await loadBundledConfig(options.config)
     module = options.module ? agentModuleOf(await options.module()) : {}
     if (manifest.updates) {
       updater = createDesktopUpdater({
@@ -394,6 +405,11 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
     const answerApp = options.app
       ? appRouteHandler(await stacksAgentHandler({ appRoutes: false, ...options.app }), (await import('@stacksjs/router')).isUnmatchedRouteResponse)
       : undefined
+    // Whatever config the app ended up loading, say which: a compiled app
+    // without its config used to run on the framework defaults in silence.
+    const { describeConfigSource, settledConfigSource } = await import('@stacksjs/config/sources')
+    const source = await settledConfigSource()
+    if (source) console.log(`${tag} ${describeConfigSource(source)}`)
     agent = await startWebviewAgent({
       appName: manifest.appName,
       version: manifest.version,
@@ -457,6 +473,18 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
 }
 
 /**
+ * Register the compiled-in config and load it. Throws when a file threw, so
+ * the app does not start on the framework defaults for that section.
+ */
+export async function loadBundledConfig(config: BundledConfig): Promise<void> {
+  const { configSource, registerBundledConfig } = await import('@stacksjs/config/sources')
+  registerBundledConfig(config)
+  await (await import('@stacksjs/config')).overridesReady
+  const failed = configSource()?.failed ?? []
+  if (failed.length) throw new Error(`config failed to load: ${failed.map(file => `config/${file.name}.ts: ${file.error}`).join('; ')}`)
+}
+
+/**
  * The app's routes as a webview handler: their answer, or nothing when no
  * route matches, so the views answer the window's pages. A route's own 404
  * (a record that is not there) is still the app's answer.
@@ -490,6 +518,8 @@ export function renderWebviewEntry(options: {
   migrations?: Record<string, string>
   /** Where `migrateCompiledDatabase` comes from. Default `@stacksjs/database/compiled-migrations`. */
   migrationRunner?: string
+  /** The project's config files to compile in: name (`app`) to its file on the build machine (`agent.config`). */
+  configFiles?: Record<string, string>
 } & AgentBundleFiles): string {
   const launcher = options.launcherModule ?? fileURLToPath(import.meta.url)
   const bundled = options.routes?.length ? agentBundleSource(options) : undefined
@@ -502,6 +532,10 @@ export function renderWebviewEntry(options: {
   }
   const database = migrations
     ? `\n  database: {\n    migrations: {\n${migrations.map(([name], index) => `      ${JSON.stringify(name)}: migration${index},`).join('\n')}\n    },\n    migrate: migrateCompiledDatabase,\n  },`
+    : ''
+  const configFiles = Object.entries(options.configFiles ?? {})
+  const config = configFiles.length
+    ? `\n  config: {\n${configFiles.map(([name, file]) => `    ${JSON.stringify(name)}: () => import(${JSON.stringify(file)}),`).join('\n')}\n  },`
     : ''
   if (options.embeddedRuntime) imports.push(`import embeddedRuntime from ${JSON.stringify(options.embeddedRuntime)} with { type: 'file' }`)
   const views = options.stxViews
@@ -517,7 +551,7 @@ ${imports.join('\n')}
 process.exit(await runWebviewApp({
   manifest: ${JSON.stringify(options.manifest, null, 2).replace(/\n/g, '\n  ')},
   views: ${views},
-  module: ${options.agentEntry ? `() => import(${JSON.stringify(options.agentEntry)})` : 'undefined'},${options.embeddedRuntime ? '\n  embeddedRuntime,' : ''}${bundled ? `\n  app: {\n    routes: ${bundled.routes.replace(/\n/g, '\n  ')},\n    actions: ${bundled.actions.replace(/\n/g, '\n  ')},\n    middleware: ${bundled.middleware.replace(/\n/g, '\n  ')},\n  },` : ''}${database}
+  module: ${options.agentEntry ? `() => import(${JSON.stringify(options.agentEntry)})` : 'undefined'},${options.embeddedRuntime ? '\n  embeddedRuntime,' : ''}${bundled ? `\n  app: {\n    routes: ${bundled.routes.replace(/\n/g, '\n  ')},\n    actions: ${bundled.actions.replace(/\n/g, '\n  ')},\n    middleware: ${bundled.middleware.replace(/\n/g, '\n  ')},\n  },` : ''}${database}${config}
 }))
 `
 }

@@ -137,6 +137,17 @@ export function configSource(): ConfigSource | undefined {
   return scope[SOURCE_KEY] as ConfigSource | undefined
 }
 
+/**
+ * Which config this process booted with, once the loader has finished:
+ * waits for it when config has started loading, and is undefined when nothing
+ * has imported config at all. A failed load still says what it read.
+ */
+export async function settledConfigSource(): Promise<ConfigSource | undefined> {
+  const ready = scope[OVERRIDES_READY_KEY] as Promise<unknown> | undefined
+  if (ready) await ready.catch(() => {})
+  return configSource()
+}
+
 /** For the loader: record what it loaded. */
 export function recordConfigSource(source: ConfigSource): void {
   scope[SOURCE_KEY] = source
