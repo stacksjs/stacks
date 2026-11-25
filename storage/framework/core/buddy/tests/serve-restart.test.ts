@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test'
+import { once } from 'node:events'
 import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'
 import { createConnection } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -14,8 +15,8 @@ async function freePort(): Promise<number> {
   return port
 }
 
-async function waitForBody(url: string): Promise<string> {
-  const deadline = Date.now() + 15_000
+async function waitForBody(url: string, timeoutMs = 15_000): Promise<string> {
+  const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     const response = await fetch(url, { signal: AbortSignal.timeout(750) }).catch(() => null)
     if (response?.ok)
@@ -23,6 +24,24 @@ async function waitForBody(url: string): Promise<string> {
     await Bun.sleep(100)
   }
   throw new Error(`No successful response from ${url}`)
+}
+
+function queuedApiRequest(port: number) {
+  const socket = createConnection({ host: '127.0.0.1', port })
+  socket.setEncoding('utf8')
+  const response = new Promise<string>((resolve, reject) => {
+    let body = ''
+    socket.setTimeout(4000, () => socket.destroy(new Error('Queued request timed out')))
+    socket.on('data', chunk => { body += chunk })
+    socket.once('error', reject)
+    socket.once('close', () => resolve(body))
+  })
+  void response.catch(() => {})
+  const sent = once(socket, 'connect').then(() => new Promise<void>((resolve, reject) => {
+    socket.write('GET /api/fixture HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+      error => error ? reject(error) : resolve())
+  }))
+  return { socket, response, sent }
 }
 
 async function holdUntil(file: string): Promise<void> {
@@ -37,17 +56,21 @@ async function holdUntil(file: string): Promise<void> {
 async function sampleTraffic(urls: string[], signal: AbortSignal): Promise<{ failures: string[], responses: number }> {
   const failures: string[] = []
   let responses = 0
+  // Keep multiple independent connections arriving around the cutover.
+  const clients = [...urls, ...urls, ...urls, ...urls]
   while (!signal.aborted) {
-    await Promise.all(urls.map(async (url) => {
+    await Promise.all(clients.map(async (url) => {
+      let stage = 'response headers'
       try {
         const response = await fetch(url, { headers: { connection: 'close' }, signal: AbortSignal.timeout(1500) })
+        stage = 'response body'
         await response.text()
         if (!response.ok)
           failures.push(`${url} returned ${response.status}`)
         responses++
       }
       catch (error) {
-        failures.push(`${url}: ${error}`)
+        failures.push(`${url} (${stage}): ${error}`)
       }
     }))
     await Bun.sleep(10)
@@ -55,10 +78,10 @@ async function sampleTraffic(urls: string[], signal: AbortSignal): Promise<{ fai
   return { failures, responses }
 }
 
-const modes = process.platform === 'win32' ? ['TCP relay'] : ['native listeners', 'TCP relay']
+const modes = process.platform === 'darwin' || process.platform === 'win32' ? ['default'] : ['default', 'TCP relay']
 
 test.each(modes)('Software Update rolls web and API workers without interrupting traffic (%s)', async (mode) => {
-  const usingRelay = mode === 'TCP relay'
+  const usingRelay = process.platform === 'darwin' || process.platform === 'win32' || mode === 'TCP relay'
   const root = await mkdtemp(join(tmpdir(), 'stacks-serve-restart-'))
   const children: Array<ReturnType<typeof Bun.spawn>> = []
   const framework = resolve(import.meta.dir, '../../../../..')
@@ -92,12 +115,15 @@ const server = Bun.serve({
   },
 })
 async function drain() {
+  const stopped = server.stop()
   await Bun.write('api-draining', '')
-  await server.stop()
+  await stopped
   process.exit(0)
 }
 process.on('SIGTERM', drain)
 process.send({ type: 'stacks:api-ready', port: server.port })
+if ('${release}' === 'after')
+  await Bun.write('api-bound', '')
 `
   try {
     await Promise.all([views, actions, ...['config', 'components', 'layouts', 'partials'].map(dir => join(root, dir))]
@@ -144,7 +170,7 @@ export { serve } from 'bun-plugin-stx/serve'
           BUN_PLUGIN_STX_SRC: stx,
           PORT_API: String(api),
           SHUTDOWN_GRACE_MS: '2500',
-          STACKS_SERVE_TCP_RELAY: usingRelay ? '1' : undefined,
+          STACKS_SERVE_TCP_RELAY: mode === 'TCP relay' ? '1' : undefined,
         },
         stdout: 'ignore',
         stderr: 'inherit',
@@ -192,12 +218,37 @@ export { serve } from 'bun-plugin-stx/serve'
     const traffic = sampleTraffic([`${webUrl}/worker`, `${webUrl}/api/fixture`, `${apiUrl}/api/fixture`], monitor.signal)
     const restart = restartUpdatedProject(root)
     void restart.catch(() => {})
+    let queued: ReturnType<typeof queuedApiRequest> | undefined
     try {
       await holdUntil(join(root, 'api-starting'))
       const stillServing = await fetch(`${apiUrl}/api/fixture`)
       expect(await stillServing.text()).toBe(apiBefore)
       expect(await Bun.file(join(root, 'api-draining')).exists()).toBe(false)
-      await Bun.write(join(root, 'start-api'), '')
+      if (process.platform === 'darwin') {
+        // Leave a request in the old worker's kernel accept queue while the
+        // replacement takes traffic. Dropping the old public listener used
+        // to reset this connection before Bun could accept it.
+        const previousPid = Number(apiBefore.split(' ')[1])
+        let fresh: string | undefined
+        process.kill(previousPid, 'SIGSTOP')
+        try {
+          await Bun.sleep(20)
+          queued = queuedApiRequest(api)
+          await queued.sent
+          await Bun.write(join(root, 'start-api'), '')
+          await holdUntil(join(root, 'api-bound'))
+          fresh = await waitForBody(`${apiUrl}/api/fixture`, 1000).catch(() => undefined)
+        }
+        finally {
+          if (isProcessAlive(previousPid))
+            process.kill(previousPid, 'SIGCONT')
+        }
+        expect(await queued.response).toContain(apiBefore)
+        expect(fresh).toMatch(/^after \d+$/)
+      }
+      else {
+        await Bun.write(join(root, 'start-api'), '')
+      }
       if (!usingRelay)
         await holdUntil(join(root, 'api-draining'))
       await Bun.write(join(root, 'finish-slow-api'), '')
@@ -214,6 +265,7 @@ export { serve } from 'bun-plugin-stx/serve'
       await restart
     }
     finally {
+      queued?.socket.destroy()
       await Promise.all(['start-api', 'finish-slow-api', 'finish-slow-web'].map(file => Bun.write(join(root, file), '')))
       monitor.abort()
       await traffic

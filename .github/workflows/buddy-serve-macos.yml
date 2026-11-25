@@ -1,0 +1,49 @@
+name: Buddy Restart and Dashboard macOS
+
+on:
+  push:
+    branches: [main]
+    paths: &macos_paths
+      - '.github/workflows/buddy-serve-macos.yml'
+      - 'storage/framework/core/actions/src/dev/dashboard*.ts'
+      - 'storage/framework/core/actions/src/helpers/api-shutdown.ts'
+      - 'storage/framework/core/actions/src/helpers/serve-relay-worker.ts'
+      - 'storage/framework/core/actions/tests/dashboard-runtime.test.ts'
+      - 'storage/framework/core/actions/tests/fixtures/dashboard-sidebar-order-browser.ts'
+      - 'storage/framework/core/buddy/src/commands/serve.ts'
+      - 'storage/framework/core/buddy/src/production-server.ts'
+      - 'storage/framework/core/buddy/src/serve-*.ts'
+      - 'storage/framework/core/buddy/tests/serve-restart.test.ts'
+      - 'storage/framework/core/cli/src/owned-process.ts'
+      - 'storage/framework/core/cli/src/serve-relay.ts'
+      - 'storage/framework/defaults/functions/dashboard-sidebar-order.ts'
+      - 'storage/framework/defaults/styles/dashboard-theme.css'
+      - 'storage/framework/defaults/views/dashboard/layouts/default.stx'
+  pull_request:
+    branches: [main]
+    paths: *macos_paths
+
+permissions:
+  contents: read
+
+jobs:
+  restart-and-sidebar:
+    runs-on: macos-15
+    timeout-minutes: 10
+    env:
+      APP_ENV: test
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.4'
+      - run: bun install --frozen-lockfile
+      - run: bun .github/scripts/source-release-evidence.ts build
+      - name: Exercise production restarts with live and queued connections
+        run: bun test ./storage/framework/core/buddy/tests/serve-restart.test.ts --rerun-each=3
+      - name: Build the dashboard client's datetime dependency
+        run: bun run --filter '@stacksjs/datetime' build
+      - name: Verify sidebar pointer and keyboard reordering in Chrome
+        env:
+          STACKS_BROWSER_TESTS: '1'
+        run: bun test ./storage/framework/core/actions/tests/dashboard-runtime.test.ts --test-name-pattern 'lazy actions'

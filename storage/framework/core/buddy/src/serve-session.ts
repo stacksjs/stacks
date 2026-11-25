@@ -32,22 +32,7 @@ export function isServeWorker(): boolean {
   return process.env.STACKS_SERVE_WORKER === '1' && typeof process.send === 'function'
 }
 
-async function ownsMacListener(pid: number, port: number, signal: AbortSignal): Promise<boolean> {
-  try {
-    const probe = Bun.spawn(['/usr/sbin/lsof', '-nP', '-a', '-p', String(pid), `-iTCP:${port}`, '-sTCP:LISTEN', '-t'], {
-      stdout: 'pipe',
-      stderr: 'ignore',
-      signal,
-    })
-    const [code, output] = await Promise.all([probe.exited, new Response(probe.stdout).text()])
-    return code === 0 && output.trim() === String(pid)
-  }
-  catch {
-    return false
-  }
-}
-
-async function waitForWebServer(pid: number, host: string | undefined, port: number, token: string, signal: AbortSignal, sharedPort: boolean): Promise<number> {
+async function waitForWebServer(host: string, port: number, token: string, signal: AbortSignal): Promise<number> {
   const address = !host || host === '0.0.0.0' ? '127.0.0.1' : host === '::' ? '::1' : host
   const hostname = address.includes(':') && !address.startsWith('[') ? `[${address}]` : address
   const url = `http://${hostname}:${port}${serveReadyPath}`
@@ -61,11 +46,6 @@ async function waitForWebServer(pid: number, host: string | undefined, port: num
     if (response?.status === 204 && response.headers.get(serveReadyHeader) === token)
       return port
 
-    // macOS can send every request on a shared port to the old listener.
-    // STX binds after installing its request handler. Check the owned
-    // replacement PID for that listening socket when HTTP hits the old one.
-    if (sharedPort && process.platform === 'darwin' && await ownsMacListener(pid, port, signal))
-      return port
     await Bun.sleep(100)
   }
   throw new Error('The web server did not become ready.')
@@ -81,7 +61,10 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
   const web = command === 'serve'
   const configuredPort = options?.port || process.env.PORT
   const webPort = Number(configuredPort) || 3000
-  const relayEnabled = process.platform === 'win32' || process.env.STACKS_SERVE_TCP_RELAY === '1'
+  // On macOS closing a shared listener resets connections that are still in
+  // that listener's accept queue. A stable public listener owns those
+  // connections until their original worker finishes serving them.
+  const relayEnabled = process.platform === 'darwin' || process.platform === 'win32' || process.env.STACKS_SERVE_TCP_RELAY === '1'
   if (relayEnabled)
     process.env.APP_ENV ||= 'production'
   const publicHost = web ? (process.env.HOST?.trim() || '0.0.0.0') : resolveApiHost({
@@ -171,8 +154,8 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
     })
     try {
       return await Promise.race([
-        child.started.then(pid => web
-          ? waitForWebServer(pid, privatePort === undefined ? publicHost : '127.0.0.1', privatePort ?? webPort, token, signal, privatePort === undefined)
+        child.started.then(() => web
+          ? waitForWebServer(privatePort === undefined ? publicHost : '127.0.0.1', privatePort ?? webPort, token, signal)
           : apiReady),
         child.exited.then(({ code }) => { throw new Error(`Buddy ${command} exited before it was ready (status ${code}).`) }),
         timeout,
