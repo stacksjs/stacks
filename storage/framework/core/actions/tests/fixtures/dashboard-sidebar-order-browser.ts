@@ -4,19 +4,30 @@ import { click, launch, navigate, waitFor } from '../../../testing/src/browser'
 export async function verifySidebarOrdering(origin: string): Promise<void> {
   const browser = await launch({ viewport: { width: 1280, height: 900 } })
   const { cdp } = browser
+  const missingAssets = new Set<string>()
   const pane = '[data-stx-sidebar]'
   const item = (id: string) => `${pane} [data-item-id="${id}"] > [data-sidebar-order-handle="item"]`
   const section = (id: string) => `${pane} [data-section-id="${id}"] > [data-sidebar-order-handle="section"]`
   const order = () => cdp.evaluate<string[]>(`[...document.querySelectorAll('${pane} [data-section-id="app-nav-0"] [data-sidebar-row]')].map(row => row.dataset.itemId)`)
   const saved = () => fetch(`${origin}/api/dashboard/sidebar-order`).then(response => response.json())
+  const startReordering = async () => {
+    await click(cdp, { selector: '[data-sidebar-order-controls] button', text: 'Reorder sidebar' })
+    await waitFor(() => cdp.evaluate(`document.querySelector('[data-sidebar-order-editing="true"] .dashboard-sidebar-order-mode')?.textContent.trim() === 'Done reordering'`))
+  }
   let edgeDiagnostics: unknown
   try {
+    await cdp.send('Network.enable')
+    cdp.on('Network.responseReceived', ({ response }) => {
+      if (response.status === 404)
+        missingAssets.add(response.url)
+    })
     await navigate(cdp, `${origin}/order-test`)
     await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('${item('alpha')}:not(:disabled)'))`), 15_000, { label: 'hydrated drag grips' })
     expect(await cdp.evaluate(`getComputedStyle(document.querySelector('${item('alpha')} span')).maskImage`)).not.toBe('none')
     await click(cdp, { selector: '[data-sidebar-order-controls] button', text: 'Reset order' })
     await waitFor(() => cdp.evaluate(`document.querySelector('[data-sidebar-order-controls] [role="status"]')?.textContent.includes('saved')`))
     expect(await order()).toEqual(['alpha', 'beta', 'gamma'])
+    await startReordering()
     await click(cdp, item('alpha'))
     await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowDown', windowsVirtualKeyCode: 40 })
     await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowDown', windowsVirtualKeyCode: 40 })
@@ -67,6 +78,7 @@ export async function verifySidebarOrdering(origin: string): Promise<void> {
     }
     finally { await fresh.close() }
 
+    await startReordering()
     const moreId = await cdp.evaluate<string>(`[...document.querySelectorAll('${pane} [data-sidebar-row]')].find(row => row.textContent.includes('More models'))?.dataset.itemId`)
     const moreSelector = `${pane} [data-item-id="${moreId}"]`
     await click(cdp, `${moreSelector} [data-sidebar-disclosure]`)
@@ -119,10 +131,12 @@ export async function verifySidebarOrdering(origin: string): Promise<void> {
     await click(cdp, { selector: '[data-sidebar-order-controls] button', text: 'Reset order' })
     await waitFor(async () => Object.keys((await saved()).order.items).length === 0)
     expect(await order()).toEqual(['alpha', 'beta', 'gamma'])
+    await click(cdp, { selector: '[data-sidebar-order-controls] button', text: 'Done reordering' })
+    await waitFor(() => cdp.evaluate(`document.querySelector('[data-sidebar-order-editing="false"] .dashboard-sidebar-order-mode')?.textContent.trim() === 'Reorder sidebar'`))
     expect(cdp.errors.filter(error => !error.includes('503') && !error.includes('Disk unavailable'))).toEqual([])
   }
   catch (error) {
-    console.error('Sidebar browser diagnostics:', JSON.stringify({ errors: cdp.errors, edge: edgeDiagnostics, scroll: await cdp.evaluate(`(() => { const node = document.querySelector('${pane} [data-sidebar-scroll]'); const b = node.getBoundingClientRect(); return { top: node.scrollTop, height: node.clientHeight, rect: { left: b.left, right: b.right, top: b.top, bottom: b.bottom }, dragging: document.querySelector('[data-order-dragging]')?.getAttribute('data-section-id') }; })()`), page: await cdp.evaluate('document.body.innerText.slice(0,2000)'), handles: await cdp.evaluate('[...document.querySelectorAll("[data-sidebar-order-handle]")].slice(0,5).map(node => node.outerHTML)') }))
+    console.error('Sidebar browser diagnostics:', JSON.stringify({ errors: cdp.errors, missingAssets: [...missingAssets], controls: await cdp.evaluate('document.querySelector("[data-sidebar-order-controls]")?.innerHTML'), edge: edgeDiagnostics, scroll: await cdp.evaluate(`(() => { const node = document.querySelector('${pane} [data-sidebar-scroll]'); const b = node.getBoundingClientRect(); return { top: node.scrollTop, height: node.clientHeight, rect: { left: b.left, right: b.right, top: b.top, bottom: b.bottom }, dragging: document.querySelector('[data-order-dragging]')?.getAttribute('data-section-id') }; })()`), page: await cdp.evaluate('document.body.innerText.slice(0,2000)'), handles: await cdp.evaluate('[...document.querySelectorAll("[data-sidebar-order-handle]")].slice(0,5).map(node => node.outerHTML)') }))
     throw error
   }
   finally { await browser.close() }

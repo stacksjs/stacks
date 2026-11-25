@@ -23,6 +23,10 @@ test.each(['lazy', 'eager', 'stale', 'defaults'] as const)('dashboard boots glob
     symlinkSync(join(checkout, 'node_modules'), join(root, 'node_modules'), 'dir')
     write('package.json', '{"name":"dashboard-runtime-fixture","type":"module"}')
     write('bunfig.toml', '# No application preloads in this isolated worker.\n')
+    for (const icon of ['favicon.svg', 'favicon-dark.svg']) {
+      const path = `public/images/logos/${icon}`
+      write(path, readFileSync(join(checkout, path), 'utf8'))
+    }
     for (const file of ['routes.ts', 'route-types.d.ts', 'layout-types.d.ts'])
       write(`storage/framework/stx/${file}`, '// Application route artifact\nexport {}\n')
     // The proxy is a system boundary: a regression must never create real
