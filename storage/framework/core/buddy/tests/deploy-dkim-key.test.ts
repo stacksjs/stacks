@@ -355,6 +355,20 @@ describe('a domain when another domain holds the global signer', () => {
     expect(runs[0].keys.DKIMGLOBAL).toBeUndefined()
     expect(runs[1].envChanged).toBe(false)
   })
+
+  it('replaces a tenant registration in place and leaves the next deploy unchanged', () => {
+    const [first, second] = runDkim({
+      DKIM_DOMAIN: 'other.com',
+      DKIM_SELECTOR: 'mail',
+      DKIM_PRIVATE_KEY_PATH: '/opt/mail/dkim/mail.private',
+      DKIM_EXTRA_KEYS: 'a.com:mail:/opt/mail/dkim/a.private,example.com:old:/opt/mail/dkim/old.private,b.com:mail:/opt/mail/dkim/b.private',
+    }, { runs: 2 })
+
+    expect(first.extraKeys).toBe('a.com:mail:/opt/mail/dkim/a.private,example.com:mail:<dkim>/example.com.private,b.com:mail:/opt/mail/dkim/b.private')
+    expect(first.envChanged).toBe(true)
+    expect(second.extraKeys).toBe(first.extraKeys)
+    expect(second.envChanged).toBe(false)
+  })
 })
 
 describe('a box with several tenants registered', () => {
