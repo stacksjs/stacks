@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.689...v0.75.690)
+
+## ✅ Tests
+
+- **config**: accept the request scope hook without its Request annotation ([02e32a9](https://github.com/stacksjs/stacks/commit/02e32a9)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.688...v0.75.689)
 
 ## ✨ Features

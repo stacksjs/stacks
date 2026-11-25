@@ -2,7 +2,7 @@
   "name": "@stacksjs/actions",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.689",
+  "version": "0.75.690",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "contributors": [
