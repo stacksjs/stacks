@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.679...v0.75.680)
+
+## 🐛 Bug Fixes
+
+- **serve**: ship the relay entry point and verify shutdown wiring ([e1a427b](https://github.com/stacksjs/stacks/commit/e1a427b)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.678...v0.75.679)
 
 ## 🐛 Bug Fixes
