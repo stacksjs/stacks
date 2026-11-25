@@ -33,7 +33,7 @@
   "dependencies": {
     "@ts-audio/core": "^0.1.2",
     "ts-video-player": "^0.1.6",
-    "ts-videos": "^0.3.1"
+    "ts-videos": "^0.3.2"
   },
   "devDependencies": {
     "better-dx": "^0.2.39"
