@@ -18,11 +18,11 @@ describe('renderAdmissionOptions', () => {
     })
   })
 
-  it('lowers what match names, and gives no answer for the rest', () => {
-    const { renderPriority } = renderAdmissionOptions({ background: { match: request => request.url.includes('/tree/') } }) as { renderPriority: (request: Request) => string | undefined }
+  it('lowers what match names, and gives no answer for the rest', async () => {
+    const { renderPriority } = renderAdmissionOptions({ background: { match: request => request.url.includes('/tree/') } }) as { renderPriority: (request: Request) => Promise<string | undefined> }
 
-    expect(renderPriority(new Request('http://site.test/o/r/tree/main'))).toBe('background')
+    expect(await renderPriority(new Request('http://site.test/o/r/tree/main'))).toBe('background')
     // Not 'foreground': stx keeps a prefetch background unless told otherwise.
-    expect(renderPriority(new Request('http://site.test/o/r/issues'))).toBeUndefined()
+    expect(await renderPriority(new Request('http://site.test/o/r/issues'))).toBeUndefined()
   })
 })

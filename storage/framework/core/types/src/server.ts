@@ -236,9 +236,10 @@ export interface ServerRenderOptions {
      * True for a request to render in the background class. Asked for every
      * page request before it renders, so it must be cheap, and it can only
      * lower a request: a prefetch stays background whatever this says. One
-     * that throws leaves the request as it was.
+     * that throws or rejects leaves the request as it was. It may be async,
+     * for a session that has to be looked up to be believed.
      */
-    match: (request: Request) => boolean
+    match: (request: Request) => boolean | Promise<boolean>
     /** Background renders at once. stx default: half the slots, at least 1. */
     concurrency?: number
     /** Background requests waiting. stx default: the queue less the slots. */

@@ -736,7 +736,7 @@ export function renderAdmissionOptions(render: ServerRenderOptions | undefined):
     renderBackgroundConcurrency: background?.concurrency,
     renderBackgroundQueueLimit: background?.queueLimit,
     renderBackgroundRetryAfterSeconds: background?.retryAfterSeconds,
-    ...(background?.match && { renderPriority: (request: Request) => background.match(request) ? 'background' : undefined }),
+    ...(background?.match && { renderPriority: async (request: Request) => await background.match(request) ? 'background' : undefined }),
   }
   return Object.fromEntries(Object.entries(options).filter(([, value]) => value !== undefined))
 }
