@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { evaluateReleaseCi, requiredSourceJobs } from './await-release-ci'
+import { evaluateReleaseCi, isTransientApiFailure, requiredSourceJobs } from './await-release-ci'
 
 const sha = '7b4490c499c3a3aa85b21d8273289d457fbbc41c'
 const run = { id: 42, head_sha: sha, head_branch: 'main', event: 'push', path: '.github/workflows/ci.yml', status: 'completed', conclusion: 'success' }
@@ -86,3 +86,14 @@ test('manual recovery accepts only complete exact-main CI and an immutable relea
   expect(workflow.jobs['release-gate'].needs).toEqual(['serialize', 'source-ci'])
   expect(workflow.jobs.publish.needs).toBe('release-gate')
 })
+
+test('retries only failures on GitHub\'s side', () => {
+  expect(isTransientApiFailure('gh: Server Error (HTTP 500)', 1)).toBe(true)
+  expect(isTransientApiFailure('gh: Bad Gateway (HTTP 502)', 1)).toBe(true)
+  expect(isTransientApiFailure('gh: API rate limit exceeded for user ID 1 (HTTP 403)', 1)).toBe(true)
+  expect(isTransientApiFailure('Post "https://api.github.com/...": read: connection reset by peer', 1)).toBe(true)
+  expect(isTransientApiFailure('', null)).toBe(true)
+  expect(isTransientApiFailure('gh: Not Found (HTTP 404)', 1)).toBe(false)
+  expect(isTransientApiFailure('gh: Bad credentials (HTTP 401)', 1)).toBe(false)
+})
+

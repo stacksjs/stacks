@@ -30,15 +30,28 @@ export function evaluateReleaseCi(sha: string, runs: SourceRun[], jobs: SourceJo
   return evaluateLibrarySourceCi(sourcePolicy(sha), runs, jobs)
 }
 
+/** Whether a failed `gh api` call is worth retrying: GitHub's side, not ours. */
+export function isTransientApiFailure(stderr: string, exitCode: number | null): boolean {
+  if (exitCode === null) return true
+  return /HTTP (5\d\d|429)\b|rate limit|timed? ?out|timeout|connection (reset|refused)|EOF|TLS handshake/i.test(stderr)
+}
+
 if (import.meta.main) {
   const repository = process.env.GITHUB_REPOSITORY
   const sha = process.env.GITHUB_SHA ?? ''
   if (!repository || !/^[\w.-]+\/[\w.-]+$/.test(repository)) throw new Error('Expected the release repository')
   latestExactRun(sha, [])
   const gh = (args: string[]): string => {
-    const result = Bun.spawnSync(['gh', 'api', ...args], { stdout: 'pipe', stderr: 'pipe', timeout: 30_000 })
-    if (result.exitCode !== 0) throw new Error(`Source CI API failed: ${result.stderr.toString().trim()}`)
-    return result.stdout.toString()
+    // A transient GitHub error (a 5xx, 429 or rate limit, a timeout or a
+    // dropped connection) is retried with backoff instead of failing the gate
+    // while the CI it waits on is still running and may well pass.
+    for (let attempt = 1; ; attempt++) {
+      const result = Bun.spawnSync(['gh', 'api', ...args], { stdout: 'pipe', stderr: 'pipe', timeout: 30_000 })
+      if (result.exitCode === 0) return result.stdout.toString()
+      const error = result.stderr.toString().trim()
+      if (attempt >= 4 || !isTransientApiFailure(error, result.exitCode)) throw new Error(`Source CI API failed: ${error}`)
+      Bun.sleepSync(2_000 * 2 ** attempt)
+    }
   }
   const read = (endpoint: string): unknown[] => {
     const pages: unknown = JSON.parse(gh(['--paginate', '--slurp', endpoint]))
