@@ -593,6 +593,8 @@ export function prepareModelFields(
   Model: any,
   body: Record<string, unknown>,
   partial = false,
+  /** Relation fields whose model is keyed by a string it declares ({@link stringKeyedRelations}). */
+  stringKeyed: ReadonlySet<string> = new Set(),
 ): PreparedModelFields {
   const data: Record<string, unknown> = {}
   const errors: Record<string, string[]> = {}
@@ -609,7 +611,11 @@ export function prepareModelFields(
     }
 
     const rawValue = hasAttribute ? body[field.name] : body[column]
-    const value = normalizeModelValue(field.type, rawValue, attributes[field.name]?.validation?.rule)
+    // A link to a record keyed by a string it declares keeps that string.
+    const keyedByString = field.type === 'relation' && stringKeyed.has(field.name)
+    const value = keyedByString
+      ? (rawValue === '' || rawValue === null || rawValue === undefined ? null : String(rawValue))
+      : normalizeModelValue(field.type, rawValue, attributes[field.name]?.validation?.rule)
     if ((value === '' || value === null || value === undefined) && field.required) {
       errors[field.name] = [`${field.label} is required.`]
       continue
@@ -621,8 +627,12 @@ export function prepareModelFields(
     }
 
     // An id is a whole number above zero, whatever else the field's own rule
-    // allows. Whether that record exists is the database's to say.
-    if (field.type === 'relation' && !(typeof value === 'number' && Number.isSafeInteger(value) && value > 0)) {
+    // allows, unless the record it points at is keyed by a string (stacksjs/stacks#3350).
+    // Whether that record exists is the database's to say.
+    const validLink = keyedByString
+      ? rowKeyShape(value) !== null
+      : typeof value === 'number' && Number.isSafeInteger(value) && value > 0
+    if (field.type === 'relation' && !validLink) {
       errors[field.name] = [`${field.label} must be chosen from the list.`]
       continue
     }
@@ -706,6 +716,31 @@ export function parseRowKey(Model: any, raw: unknown): RowKey | null {
     return parseRowId(raw)
   const value = String(raw ?? '')
   return value.length > 0 && value.length <= 512 ? value : null
+}
+
+/**
+ * The relation fields of a model whose related model is keyed by a string it
+ * declares (`autoIncrement: false`): those links are that string, not a number.
+ */
+export async function stringKeyedRelations(Model: any): Promise<Set<string>> {
+  const keyed = new Set<string>()
+  for (const relation of belongsToRelations(Model)) {
+    const Related = await resolveDashboardModel(relation.model).catch(() => null)
+    if (Related?.autoIncrement === false)
+      keyed.add(relation.field)
+  }
+  return keyed
+}
+
+/**
+ * A row key's shape, before the model it belongs to is known: a positive
+ * integer, or a non-empty string of at most 512 characters. Read against the
+ * model with {@link parseRowKey} once it is.
+ */
+export function rowKeyShape(raw: unknown): RowKey | null {
+  if (typeof raw === 'number')
+    return Number.isInteger(raw) && raw > 0 ? raw : null
+  return typeof raw === 'string' && raw.length > 0 && raw.length <= 512 ? raw : null
 }
 
 export function parseRowId(raw: unknown): number | null {

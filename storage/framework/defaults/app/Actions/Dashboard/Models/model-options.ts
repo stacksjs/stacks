@@ -8,7 +8,7 @@ import { anonymizedRows } from '@stacksjs/orm'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { modelHintColumn, modelLabelColumn } from './model-relations'
-import { humanizeIdentifier, isErasureSubject } from './model-write'
+import { humanizeIdentifier, isErasureSubject, modelRowKey } from './model-write'
 
 /** A model's rows as the options a picker lists: an id, a name, and a line that tells two apart. */
 export async function optionsFromRows(Model: any, modelName: string, rows: unknown[]): Promise<ModelOption[]> {
@@ -21,8 +21,10 @@ export async function optionsFromRows(Model: any, modelName: string, rows: unkno
     ? await anonymizedRows(modelName, rows.map(row => ({ id: safeGet(row, 'id', 0), name: safeGet(row, 'name', null), email: safeGet(row, 'email', null), avatar: safeGet(row, 'avatar', null) }))).catch(() => [] as boolean[])
     : []
 
+  // A record is offered by its own key: `id`, or the one its model declares.
+  const key = modelRowKey(Model)
   return rows.map((row, index) => {
-    const id = safeGet(row, 'id', 0) as number | string
+    const id = safeGet(row, key, 0) as number | string
     if (erased[index] === true)
       return { id, label: `Anonymized ${modelLabel.toLowerCase()}`, hint: `#${id}` }
     const named = labelColumn ? String(safeGet(row, labelColumn, '') ?? '').trim() : ''
@@ -38,14 +40,17 @@ export async function optionsFromRows(Model: any, modelName: string, rows: unkno
  */
 export async function recordNames(modelName: string, ids: Array<number | string>): Promise<Map<string, string>> {
   const names = new Map<string, string>()
-  const wanted = [...new Set(ids.map(id => Number(id)).filter(id => Number.isSafeInteger(id) && id > 0))]
-  if (wanted.length === 0)
-    return names
   try {
     const Model = await resolveDashboardModel(modelName)
     if (!Model || typeof Model.query !== 'function')
       return names
-    const rows = await Model.query().whereIn('id', wanted).get() as unknown[]
+    // Keys as the model has them: numbers, or the strings it declares.
+    const wanted = Model.autoIncrement === false
+      ? [...new Set(ids.map(id => String(id)).filter(id => id.length > 0 && id.length <= 512))]
+      : [...new Set(ids.map(id => Number(id)).filter(id => Number.isSafeInteger(id) && id > 0))]
+    if (wanted.length === 0)
+      return names
+    const rows = await Model.query().whereIn(modelRowKey(Model), wanted).get() as unknown[]
     for (const option of await optionsFromRows(Model, modelName, Array.isArray(rows) ? rows : []))
       names.set(String(option.id), option.label)
   }

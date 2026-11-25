@@ -6,7 +6,7 @@ import { resolveDashboardModel } from '../../../../resources/functions/dashboard
 import { dashboardOperationalError } from '../dashboard-response'
 import { optionsFromRows } from './model-options'
 import { modelHintColumn, modelLabelColumn } from './model-relations'
-import { humanizeIdentifier, isValidModelSlug, slugToPascal } from './model-write'
+import { humanizeIdentifier, isValidModelSlug, modelRowKey, slugToPascal } from './model-write'
 
 /** How many records a search offers. A picker is for finding one, not browsing. */
 const OPTION_LIMIT = 20
@@ -18,10 +18,12 @@ interface OptionsInput {
   ids?: unknown
 }
 
-function parseIds(raw: unknown): number[] {
+/** The ids asked about: numbers, or for a model keyed by a string it declares, those strings. */
+function parseIds(raw: unknown, keyedByString = false): Array<number | string> {
   const parts = Array.isArray(raw) ? raw : String(raw ?? '').split(',')
-  const ids = parts.map(part => Number.parseInt(String(part).trim(), 10)).filter(id => Number.isSafeInteger(id) && id > 0)
-  return [...new Set(ids)].slice(0, ID_LIMIT)
+  if (keyedByString)
+    return [...new Set(parts.map(part => String(part).trim()).filter(id => id.length > 0 && id.length <= 512))].slice(0, ID_LIMIT)
+  return [...new Set(parts.map(part => Number.parseInt(String(part).trim(), 10)).filter(id => Number.isSafeInteger(id) && id > 0))].slice(0, ID_LIMIT)
 }
 
 /**
@@ -58,7 +60,9 @@ export default new Action({
 
     const input = request.all()
     const q = String(input.q ?? '').trim().slice(0, 100)
-    const ids = parseIds(input.ids)
+    const keyedByString = Model.autoIncrement === false
+    const key = modelRowKey(Model)
+    const ids = parseIds(input.ids, keyedByString)
     const labelColumn = modelLabelColumn(Model)
     const hintColumn = modelHintColumn(Model)
     const modelLabel = humanizeIdentifier(modelName)
@@ -68,7 +72,7 @@ export default new Action({
       // own query, with raw conditions inside the group.
       let query = Model.query() as any
       if (ids.length > 0) {
-        query = query.whereIn('id', ids)
+        query = query.whereIn(key, ids)
       }
       else if (q) {
         const numeric = /^\d+$/.test(q) ? Number(q) : null
@@ -77,8 +81,11 @@ export default new Action({
           // Lowercased on both sides: a model query's LIKE is case-sensitive
           // on PostgreSQL (stacksjs/stacks#3202).
           .map(column => [`LOWER(${column}) LIKE LOWER(?)`, `%${q}%`])
-        if (numeric !== null)
-          conditions.push(['id = ?', numeric])
+        // The record's own key, typed in: an id, or a declared key's value.
+        if (keyedByString)
+          conditions.push([`${key} = ?`, q])
+        else if (numeric !== null)
+          conditions.push([`${key} = ?`, numeric])
         // Nothing to search by name and the term is not an id: no match, not everything.
         if (conditions.length === 0)
           return { options: [], modelLabel, labelColumn }
@@ -89,7 +96,7 @@ export default new Action({
         })
       }
 
-      const rows = await query.orderBy(labelColumn ?? 'id', 'asc').take(ids.length > 0 ? ID_LIMIT : OPTION_LIMIT).get() as any[]
+      const rows = await query.orderBy(labelColumn ?? key, 'asc').take(ids.length > 0 ? ID_LIMIT : OPTION_LIMIT).get() as any[]
       const list = Array.isArray(rows) ? rows : []
 
       const options: ModelOption[] = await optionsFromRows(Model, modelName, list)

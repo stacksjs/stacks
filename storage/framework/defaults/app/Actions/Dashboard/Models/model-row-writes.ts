@@ -18,7 +18,7 @@ import { destroyModelRecord } from './model-destroy'
 import { missingRelationErrors } from './model-relations'
 import { planSwitches, requestedSwitches, storedSwitches } from './model-switches'
 import type { ResolvedModel, RowKey } from './model-write'
-import { duplicateFieldErrors, humanizeIdentifier, isAccountModel, modelRowKey, prepareModelFields } from './model-write'
+import { duplicateFieldErrors, humanizeIdentifier, isAccountModel, modelRowKey, prepareModelFields, stringKeyedRelations } from './model-write'
 
 /** Why a row was not written: what the visitor is told, and for a failure, what went wrong. */
 export interface RowRefusal {
@@ -78,7 +78,7 @@ export function formFields(raw: unknown): Record<string, unknown> {
 
 /** Create one row. `fixed` are columns set by where it is created, not by the form: a related row's link back. */
 export async function storeModelRow(resolved: ResolvedModel, body: Record<string, unknown>, fixed: Record<string, unknown> = {}): Promise<RowWrite<{ id: unknown }>> {
-  const { data, errors } = prepareModelFields(resolved.Model, body)
+  const { data, errors } = prepareModelFields(resolved.Model, body, false, await stringKeyedRelations(resolved.Model))
   if (Object.keys(errors).length > 0)
     return refused(422, 'Validation failed.', errors)
   if (Object.keys(data).length === 0)
@@ -98,7 +98,7 @@ export async function storeModelRow(resolved: ResolvedModel, body: Record<string
 
 /** Edit one row with the fields that changed, and the switches a trait keeps for itself. */
 export async function updateModelRow(resolved: ResolvedModel, id: RowKey, body: Record<string, unknown>): Promise<RowWrite<{ id: RowKey, changed: string[] }>> {
-  const prepared = prepareModelFields(resolved.Model, body, true)
+  const prepared = prepareModelFields(resolved.Model, body, true, await stringKeyedRelations(resolved.Model))
   if (Object.keys(prepared.errors).length > 0)
     return refused(422, 'Validation failed.', prepared.errors)
   const changes = toSnakeCaseKeys(prepared.data)
