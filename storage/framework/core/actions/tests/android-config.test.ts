@@ -20,6 +20,14 @@ describe('Android mobile build configuration', () => {
   })
 
   // stacksjs/stacks#3146: the Android host reads enableShakeGesture as well.
+  it('turns on video export, and floors it at the first craft-native that has it', () => {
+    const config = { appName: 'Club', packageName: 'org.example.club', capabilities: { videoExport: true } }
+    expect(toCraftAndroidConfig(config).enableVideoExport).toBe(true)
+    expect(androidCraftFeatures(config)).toContain('videoExport')
+    expect(() => assertCraftSupportsAndroid(config, '0.0.539', 'test')).toThrow('videoExport (needs >= 0.0.540)')
+    expect(() => assertCraftSupportsAndroid(config, '0.0.540', 'test')).not.toThrow()
+  })
+
   it('turns the shake gesture on, and floors it at the first craft-native that has it', () => {
     const config = { appName: 'Club', packageName: 'org.example.club', capabilities: { shakeGesture: true } }
     expect(toCraftAndroidConfig(config).enableShakeGesture).toBe(true)

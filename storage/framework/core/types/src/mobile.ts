@@ -72,6 +72,13 @@ export interface MobileCapabilities {
    */
   wallet?: boolean
   /**
+   * Convert a picked clip on the device (`craft.files.exportVideo`): an
+   * upright H.264 MP4 within a box, with a poster. Android only, where it
+   * adds Media3 Transformer (craft-native 0.0.540 and later); on iOS it is
+   * always there.
+   */
+  videoExport?: boolean
+  /**
    * iOS: show and steer what the Music app is playing (`music` from
    * @stacksjs/mobile). Apple Music only; iOS asks for media library access
    * the first time the page calls `music.requestAuthorization()`.

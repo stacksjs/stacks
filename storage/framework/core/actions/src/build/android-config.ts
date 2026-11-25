@@ -75,6 +75,7 @@ const CAPABILITY_KEYS = {
   shakeGesture: 'enableShakeGesture',
   healthServices: 'enableHealthServices',
   wallet: 'enableWallet',
+  videoExport: 'enableVideoExport',
 } as const satisfies Partial<Record<keyof MobileCapabilities, `enable${string}`>>
 
 export { CAPABILITY_KEYS as ANDROID_CAPABILITY_KEYS }
@@ -119,6 +120,8 @@ export const CRAFT_ANDROID_FLOORS = {
   notificationIcon: '0.0.241',
   /** The accelerometer's `shake` event. Tagged at 0.0.427, first published in 0.0.435. */
   shakeGesture: '0.0.435',
+  /** `files.exportVideo` through Media3 Transformer (craft-native#595). */
+  videoExport: '0.0.540',
 } as const
 
 export type AndroidCraftFeature = keyof typeof CRAFT_ANDROID_FLOORS
@@ -139,6 +142,7 @@ export function androidCraftFeatures(config: AndroidMobileConfig, options: { app
   if (config.capabilities?.heartRate) features.push('heartRate')
   if (config.capabilities?.audioRecording) features.push('audioRecording')
   if (config.capabilities?.shakeGesture) features.push('shakeGesture')
+  if (config.capabilities?.videoExport) features.push('videoExport')
   if (config.capabilities?.healthConnect && config.renderer === 'native') features.push('healthConnect')
   if (config.backgroundRefresh?.enabled) features.push('backgroundRefresh')
   if (options.appBundle) features.push('appBundle')
