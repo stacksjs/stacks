@@ -5,6 +5,7 @@ import { clearShownFormFlash, enterRequestScope, feature, installRequestScope } 
 import { log } from '@stacksjs/logging'
 import { siteConfigPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import type { ServerRenderOptions } from '@stacksjs/types'
 import { resolveStxSource } from '@stacksjs/actions'
 import { installServeRelayWorker, serveRelayPort } from '@stacksjs/actions/helpers/serve-relay-worker'
 import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
@@ -421,6 +422,8 @@ export async function startProductionServer(options?: { port?: string | number, 
           renderCacheSkip: carriesVisitorState,
           ...(cacheConfig.prewarm && { prewarmRenderCache: true }),
         }),
+        // `config/server.ts#render`. Unset keys leave stx's defaults.
+        ...renderAdmissionOptions(config.server?.render),
         ...(stxModule && { stxModule }),
         ...(i18nConfig && { i18n: i18nConfig }),
         ...(siteConfig?.url && { site: siteConfig }),
@@ -714,6 +717,30 @@ export function isAuthenticatedRequest(request: Request): boolean {
  * renders. Counting it would mean only a visitor's very first request could
  * ever be answered from the cache.
  */
+/**
+ * `config/server.ts#render` as stx's serve options, leaving out what is unset
+ * so stx's own defaults stand for it.
+ *
+ * `background.match` answers yes or no; stx asks for a class. A no is left as
+ * no answer rather than `'foreground'`, so a prefetch the application did not
+ * name stays where stx put it.
+ */
+export function renderAdmissionOptions(render: ServerRenderOptions | undefined): Record<string, unknown> {
+  if (!render)
+    return {}
+  const background = render.background
+  const options: Record<string, unknown> = {
+    renderConcurrency: render.concurrency,
+    renderQueueLimit: render.queueLimit,
+    renderQueueTimeoutMs: render.queueTimeoutMs,
+    renderBackgroundConcurrency: background?.concurrency,
+    renderBackgroundQueueLimit: background?.queueLimit,
+    renderBackgroundRetryAfterSeconds: background?.retryAfterSeconds,
+    ...(background?.match && { renderPriority: (request: Request) => background.match(request) ? 'background' : undefined }),
+  }
+  return Object.fromEntries(Object.entries(options).filter(([, value]) => value !== undefined))
+}
+
 export function carriesVisitorState(request: Request): boolean {
   if (request.headers.get('authorization'))
     return true

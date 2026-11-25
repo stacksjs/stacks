@@ -205,6 +205,47 @@ export interface ServerConfig {
 
   /** Security headers on rendered pages. See {@link ServerSecurityOptions}. */
   security?: ServerSecurityOptions
+
+  /** How many pages render at once, and who waits. See {@link ServerRenderOptions}. */
+  render?: ServerRenderOptions
+}
+
+/**
+ * Admission to the views server's page renderer.
+ *
+ * Every page render takes one of a fixed number of slots; past those a request
+ * waits in a bounded queue, and past the queue it is refused with a 503. Unset,
+ * stx's own defaults stand (4 slots, 32 waiting, 15 seconds).
+ *
+ * `background` is for traffic an application can name but should not refuse:
+ * signed-out visits to the pages its robots.txt tells crawlers not to walk,
+ * say. A crawler that ignores robots.txt otherwise fills every slot and every
+ * waiting place, and the whole site answers "busy" to everybody. Lowered
+ * requests share their own few slots, wait behind every person, and are told
+ * to come back later rather than at once.
+ */
+export interface ServerRenderOptions {
+  /** Page renders at once. stx default: 4. */
+  concurrency?: number
+  /** Requests waiting for a slot. stx default: 32. */
+  queueLimit?: number
+  /** Longest wait before a 503, in milliseconds. stx default: 15000. */
+  queueTimeoutMs?: number
+  background?: {
+    /**
+     * True for a request to render in the background class. Asked for every
+     * page request before it renders, so it must be cheap, and it can only
+     * lower a request: a prefetch stays background whatever this says. One
+     * that throws leaves the request as it was.
+     */
+    match: (request: Request) => boolean
+    /** Background renders at once. stx default: half the slots, at least 1. */
+    concurrency?: number
+    /** Background requests waiting. stx default: the queue less the slots. */
+    queueLimit?: number
+    /** `Retry-After` on a refused background request, in seconds. stx default: 1. */
+    retryAfterSeconds?: number
+  }
 }
 
 /**
