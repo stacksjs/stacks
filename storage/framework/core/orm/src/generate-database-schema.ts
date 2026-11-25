@@ -668,12 +668,16 @@ export async function buildDatabaseSchema(options: GenerateSchemaOptions = {}): 
   tables.push(...pivotByTable.values())
 
   /*
-   * Tables the migration corpus creates that no model owns (stacksjs/stacks#2409).
+   * What the migration corpus adds (stacksjs/stacks#2409, #3393).
    *
-   * Models win every collision, deliberately: a model knows what its columns
-   * *mean* - an enum column is a union of its allowed values, a boolean is cast
-   * - where the corpus only knows the storage type SQLite gave it. This fills
-   * gaps rather than competing.
+   * A table no model owns is typed from the corpus alone. For a table a model
+   * owns, the model wins every column both declare, deliberately: a model
+   * knows what its columns *mean* - an enum column is a union of its allowed
+   * values, a boolean is cast - where the corpus only knows the storage type
+   * SQLite gave it. A column only the corpus has is still a column the
+   * database has (a hand-written `ALTER TABLE ... ADD COLUMN`), so it is
+   * added rather than dropped. The corpus is replayed, so a column a later
+   * migration drops or renames comes out as the database has it.
    */
   if (options.migrationsDir !== false) {
     /*
@@ -684,14 +688,20 @@ export async function buildDatabaseSchema(options: GenerateSchemaOptions = {}): 
      * inheriting this one's 117 tables.
      */
     const migrationsDir = options.migrationsDir ?? path.resolve(path.dirname(outFile), 'migrations')
-    const owned = new Set(tables.map(entry => entry.table))
+    const owned = new Map(tables.map(entry => [entry.table, entry]))
     const derived = deriveMigrationTables(migrationsDir, dialect)
 
     for (const entry of derived.tables) {
-      if (owned.has(entry.table))
+      const owner = owned.get(entry.table)
+      if (owner) {
+        for (const [column, type] of Object.entries(entry.columns)) {
+          if (!(column in owner.columns)) owner.columns[column] = type
+        }
         continue
-      owned.add(entry.table)
-      tables.push({ table: entry.table, model: `(${entry.table} migration)`, columns: entry.columns })
+      }
+      const table = { table: entry.table, model: `(${entry.table} migration)`, columns: entry.columns }
+      owned.set(entry.table, table)
+      tables.push(table)
     }
 
     errors.push(...derived.errors)

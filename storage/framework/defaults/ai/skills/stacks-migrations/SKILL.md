@@ -38,6 +38,12 @@ buddy migrate:align --relax-constraints # also plan lossless removal of obsolete
 buddy migrate:align --apply         # rename legacy indexes, add missing indexes/FKs/columns, widen losslessly
 ```
 
+`generate:db-types` types each table from its model and replays the corpus for
+the rest: a table no model owns is typed from the migrations alone, and a
+column a hand-written migration adds to a model's table (`ALTER TABLE ... ADD
+COLUMN`) is typed as SQLite stores it. Where both declare a column, the model's
+type wins, so an enum stays a union.
+
 An app that develops on one dialect and deploys on another keeps a corpus per
 dialect (`database/migrations/<dialect>/`, each with its own snapshot). A plain
 `generate:migrations` moves only the connected dialect and then warns, naming

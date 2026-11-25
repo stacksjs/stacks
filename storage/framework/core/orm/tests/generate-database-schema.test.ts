@@ -424,19 +424,31 @@ describe('migration-corpus tables (stacksjs/stacks#2409)', () => {
     expect(result.tables.find(t => t.table === 'roles')?.columns.name).toBe('string')
   })
 
-  test('a model owns its table even when the corpus also creates it', async () => {
+  test('a model\'s types win for its columns, and the columns a migration adds are kept (stacksjs/stacks#3393)', async () => {
     // The model knows what its columns *mean*; the corpus only knows the
-    // storage type. Models win, so an enum stays a union rather than `string`.
+    // storage type. So the model's type wins where both have a column (an
+    // enum stays a union rather than `string`). A column only the corpus has
+    // is a column the database has too, so it is typed rather than dropped:
+    // a hand-written ALTER on a model-backed table used to vanish here.
     const root = mkScratch()
     const models = join(root, 'models')
     const migrations = join(root, 'database', 'migrations')
     mkdirSync(migrations, { recursive: true })
     writeFileSync(
       join(migrations, '001-create-widgets.sql'),
-      'CREATE TABLE widgets (id INTEGER PRIMARY KEY, corpus_only TEXT);',
+      'CREATE TABLE widgets (id INTEGER PRIMARY KEY, status TEXT NOT NULL, dropped TEXT);',
       'utf-8',
     )
-    writeModel(models, 'Widget.ts', `export default { name: 'Widget', table: 'widgets', attributes: {} }`)
+    writeFileSync(
+      join(migrations, '002-alter-widgets.sql'),
+      [
+        `ALTER TABLE "widgets" ADD COLUMN "report_frequency" TEXT default 'none';`,
+        'ALTER TABLE "widgets" ADD COLUMN "report_count" INTEGER NOT NULL DEFAULT 0;',
+        'ALTER TABLE "widgets" DROP COLUMN "dropped";',
+      ].join('\n'),
+      'utf-8',
+    )
+    writeModel(models, 'Widget.ts', `export default { name: 'Widget', table: 'widgets', attributes: { status: { validation: { rule: { type: 'enum', values: ['on', 'off'] } }, required: true } } }`)
 
     const result = await buildDatabaseSchema({
       modelsDir: models,
@@ -447,7 +459,27 @@ describe('migration-corpus tables (stacksjs/stacks#2409)', () => {
 
     const widgets = result.tables.filter(t => t.table === 'widgets')
     expect(widgets).toHaveLength(1)
-    expect(widgets[0]?.columns.corpus_only).toBeUndefined()
+    const columns = widgets[0]!.columns
+    expect(columns.report_frequency).toBe('string | null')
+    expect(columns.report_count).toBe('number')
+    // A column a later migration dropped is not in the database, so not here.
+    expect(columns.dropped).toBeUndefined()
+    expect(result.content).toContain('report_frequency: string | null')
+  })
+
+  test('the model\'s type wins over the corpus for a column both declare', async () => {
+    const root = mkScratch()
+    const models = join(root, 'models')
+    const migrations = join(root, 'database', 'migrations')
+    mkdirSync(migrations, { recursive: true })
+    writeFileSync(join(migrations, '001-create-widgets.sql'), 'CREATE TABLE widgets (id INTEGER PRIMARY KEY, kind TEXT);', 'utf-8')
+    writeModel(models, 'Widget.ts', `export default { name: 'Widget', table: 'widgets', attributes: { kind: { validation: { rule: { type: 'enum', values: ['a', 'b'] } }, required: true } } }`)
+
+    const without = await buildDatabaseSchema({ modelsDir: models, defaultsDir: join(root, 'defaults'), outFile: join(root, 'database', 'types.d.ts'), dryRun: true, migrationsDir: false })
+    const withCorpus = await buildDatabaseSchema({ modelsDir: models, defaultsDir: join(root, 'defaults'), outFile: join(root, 'database', 'types.d.ts'), dryRun: true })
+    const kind = (result: typeof without) => result.tables.find(t => t.table === 'widgets')!.columns.kind
+    expect(kind(withCorpus)).toBe(kind(without)!)
+    expect(kind(withCorpus)).not.toBe('string | null')
   })
 
   test('generating into a scratch project does not inherit this one\'s corpus', async () => {
