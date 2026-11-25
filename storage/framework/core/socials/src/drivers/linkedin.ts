@@ -1,11 +1,13 @@
 import type { SocialApiErrorOptions } from '../errors'
 import type {
   AuthoredPostPage,
+  PostMetrics,
   PublishedPost,
   PublishPostInput,
   RemotePostRef,
   SocialDeletionDriver,
   SocialIdentityCredentials,
+  SocialMetricsDriver,
   SocialPublishingDriver,
   TimelineQuery,
   TimelineResult,
@@ -77,6 +79,12 @@ export interface LinkedInOrganization {
  */
 const RESTLI_PROTOCOL_VERSION = '2.0.0'
 
+/** One post in a Social Metadata answer: reactions by type, and comments. */
+interface LinkedInSocialMetadata {
+  reactionSummaries?: Record<string, { reactionType?: string, count?: number } | undefined>
+  commentSummary?: { count?: number, topLevelCount?: number }
+}
+
 export class LinkedInApiError extends SocialApiError {
   constructor(message: string, status: number, body: string, options: SocialApiErrorOptions = {}) {
     super('linkedin', message, status, body, options)
@@ -142,7 +150,7 @@ export interface LinkedInProfile {
  * LinkedIn has no app-password, so a token is always obtained via OAuth (or
  * pasted in from a prior OAuth grant).
  */
-export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver {
+export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver, SocialMetricsDriver {
   readonly provider: 'linkedin' = 'linkedin'
   characterLimit = 3000
   /** Images attached per post. LinkedIn's own ceiling; an app may lower it. */
@@ -433,6 +441,65 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
       cursor: posts.length === count ? String(start + count) : undefined,
       posts,
     }
+  }
+
+  /**
+   * Reactions and comments for any number of posts, 20 to a request
+   * (Social Metadata, `GET /rest/socialMetadata?ids=List(...)`). `likes` is
+   * every reaction together (like, celebrate, support and the rest) and
+   * `replies` counts comments with their replies. LinkedIn gives an app no
+   * reposts or views for these.
+   *
+   * Reading them needs r_organization_social_feed for a company Page's posts,
+   * or r_member_social_feed for a member's, which LinkedIn grants only to
+   * select developers. Without it the call fails with that said. A post that
+   * is gone is left out (stacksjs/stacks#3379).
+   */
+  async metrics(identity: SocialIdentityCredentials, uris: string[]): Promise<PostMetrics[]> {
+    if (!identity.accessToken) throw new Error('LinkedIn access token is missing for this identity.')
+    const permission = String(identity.did || '').startsWith('urn:li:organization:') ? 'r_organization_social_feed' : 'r_member_social_feed'
+    const wanted = [...new Set(uris.map(uri => String(uri || '').trim()).filter(Boolean))]
+
+    const metrics: PostMetrics[] = []
+    for (let start = 0; start < wanted.length; start += 20) {
+      const chunk = wanted.slice(start, start + 20)
+      // Rest.li 2.0: each URN encoded inside List(...), the list itself not.
+      const url = `${this.apiBase}/rest/socialMetadata?ids=List(${chunk.map(urn => encodeURIComponent(urn)).join(',')})`
+      let payload: { results?: Record<string, LinkedInSocialMetadata> }
+      try {
+        payload = await this.request(url, {
+          headers: {
+            'authorization': `Bearer ${identity.accessToken}`,
+            'linkedin-version': this.apiVersion,
+            'x-restli-protocol-version': RESTLI_PROTOCOL_VERSION,
+          },
+        })
+      }
+      catch (error) {
+        if (error instanceof LinkedInApiError && error.status === 403) {
+          throw new LinkedInApiError(
+            `LinkedIn will not show this account's reactions and comments - that needs the ${permission} permission, which this app does not hold.`,
+            error.status,
+            error.body,
+            error.retryAfterMs === undefined ? {} : { retryAfterMs: error.retryAfterMs },
+          )
+        }
+        throw error
+      }
+
+      const results = payload.results || {}
+      for (const urn of chunk) {
+        const entry = results[urn] ?? results[encodeURIComponent(urn)]
+        if (!entry) continue
+        const likes = Object.values(entry.reactionSummaries || {}).reduce((total, reaction) => total + (Number(reaction?.count) || 0), 0)
+        metrics.push({
+          uri: urn,
+          likes,
+          ...(typeof entry.commentSummary?.count === 'number' ? { replies: entry.commentSummary.count } : {}),
+        })
+      }
+    }
+    return metrics
   }
 
   /**

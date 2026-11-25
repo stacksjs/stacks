@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import { BlueskyPublishingDriver } from '../src/drivers/bluesky'
-import { InstagramPublishingDriver } from '../src/drivers/instagram'
+import { InstagramApiError, InstagramPublishingDriver } from '../src/drivers/instagram'
+import { LinkedInApiError, LinkedInPublishingDriver } from '../src/drivers/linkedin'
 import { MastodonPublishingDriver } from '../src/drivers/mastodon'
 import { ThreadsApiError, ThreadsPublishingDriver } from '../src/drivers/threads'
+import { TwitterPublishingDriver } from '../src/drivers/twitter'
 import { supportsMetrics } from '../src/types'
 
 /**
@@ -29,11 +31,10 @@ function mockFetch(answer: (url: string) => unknown | Response): Sent[] {
 }
 
 describe('which drivers read metrics', () => {
-  it('Bluesky, Mastodon and Threads do; the rest are feature-detected as not', () => {
-    expect(supportsMetrics(new BlueskyPublishingDriver())).toBe(true)
-    expect(supportsMetrics(new MastodonPublishingDriver())).toBe(true)
-    expect(supportsMetrics(new ThreadsPublishingDriver())).toBe(true)
-    expect(supportsMetrics(new InstagramPublishingDriver())).toBe(false)
+  it('every API driver but X does; X is feature-detected as not', () => {
+    for (const driver of [new BlueskyPublishingDriver(), new MastodonPublishingDriver(), new ThreadsPublishingDriver(), new InstagramPublishingDriver(), new LinkedInPublishingDriver()])
+      expect(supportsMetrics(driver)).toBe(true)
+    expect(supportsMetrics(new TwitterPublishingDriver())).toBe(false)
   })
 })
 
@@ -129,5 +130,72 @@ describe('Threads', () => {
     const failure = new ThreadsPublishingDriver().metrics(identity, ['a'])
     await expect(failure).rejects.toBeInstanceOf(ThreadsApiError)
     await expect(failure).rejects.toThrow('Application does not have permission for this action')
+  })
+})
+
+describe('Instagram', () => {
+  const identity = { handle: 'glenn', did: '1784', accessToken: 'AT' }
+
+  it('reads each post\'s insights into the shared fields, and leaves out what has no data yet', async () => {
+    const sent = mockFetch(() => ({
+      data: [
+        { name: 'likes', period: 'lifetime', values: [{ value: 40 }] },
+        { name: 'comments', period: 'lifetime', values: [{ value: 6 }] },
+        { name: 'shares', period: 'lifetime', values: [{ value: 2 }] },
+        { name: 'saved', period: 'lifetime', values: [{ value: 9 }] },
+        { name: 'reach', period: 'lifetime', values: [{ value: 800 }] },
+      ],
+    }))
+    const metrics = await new InstagramPublishingDriver().metrics(identity, ['179'])
+    expect(new URL(sent[0]!.url).pathname).toMatch(/^\/v\d+\.0\/179\/insights$/)
+    expect(new URL(sent[0]!.url).searchParams.get('metric')).toBe('likes,comments,shares,saved,reach,views')
+    expect(sent[0]!.url).not.toContain('AT')
+    // No views came back: absent, not zero.
+    expect(metrics).toEqual([{ uri: '179', likes: 40, replies: 6, shares: 2, saves: 9, reach: 800 }])
+  })
+
+  it('skips a post that is gone and throws on a missing permission', async () => {
+    mockFetch(url => url.includes('/gone/')
+      ? new Response(JSON.stringify({ error: { message: 'Unsupported get request. Object with ID \'gone\' does not exist', code: 100 } }), { status: 400 })
+      : { data: [] })
+    expect(await new InstagramPublishingDriver().metrics(identity, ['gone', '180'])).toEqual([{ uri: '180' }])
+
+    mockFetch(() => new Response(JSON.stringify({ error: { message: '(#10) Application does not have permission for this action', code: 10 } }), { status: 403 }))
+    await expect(new InstagramPublishingDriver().metrics(identity, ['180'])).rejects.toBeInstanceOf(InstagramApiError)
+  })
+})
+
+describe('LinkedIn', () => {
+  const page = { handle: 'acme', did: 'urn:li:organization:5', accessToken: 'AT' }
+
+  it('asks Social Metadata for 20 posts at a time and adds up every kind of reaction', async () => {
+    const uris = Array.from({ length: 21 }, (_, i) => `urn:li:share:${i}`)
+    const sent = mockFetch((url) => {
+      const asked = decodeURIComponent(url.slice(url.indexOf('List(') + 5, url.lastIndexOf(')'))).split(',')
+      return {
+        results: Object.fromEntries(asked.filter(urn => urn !== 'urn:li:share:3').map(urn => [urn, {
+          reactionSummaries: { LIKE: { reactionType: 'LIKE', count: 4 }, PRAISE: { reactionType: 'PRAISE', count: 2 }, EMPATHY: { reactionType: 'EMPATHY', count: 1 } },
+          commentSummary: { count: 5, topLevelCount: 3 },
+        }])),
+        statuses: {},
+        errors: { 'urn:li:share:3': { status: 404 } },
+      }
+    })
+    const metrics = await new LinkedInPublishingDriver().metrics(page, uris)
+    expect(sent).toHaveLength(2)
+    expect(sent[0]!.url).toStartWith('https://api.linkedin.com/rest/socialMetadata?ids=List(urn%3Ali%3Ashare%3A0,urn%3Ali%3Ashare%3A1,')
+    expect(sent[0]!.headers.get('x-restli-protocol-version')).toBe('2.0.0')
+    expect(sent[0]!.headers.get('linkedin-version')).toBeTruthy()
+    expect(metrics).toHaveLength(20)
+    expect(metrics[0]).toEqual({ uri: 'urn:li:share:0', likes: 7, replies: 5 })
+    expect(metrics.some(entry => entry.uri === 'urn:li:share:3')).toBe(false)
+  })
+
+  it('names the permission a company Page or a member needs when LinkedIn refuses', async () => {
+    mockFetch(() => new Response(JSON.stringify({ message: 'Not enough permissions to access: socialMetadata.BATCH_GET', status: 403 }), { status: 403 }))
+    const refused = new LinkedInPublishingDriver().metrics(page, ['urn:li:share:1'])
+    await expect(refused).rejects.toBeInstanceOf(LinkedInApiError)
+    await expect(refused).rejects.toThrow('r_organization_social_feed')
+    await expect(new LinkedInPublishingDriver().metrics({ handle: 'glenn', did: 'urn:li:person:abc', accessToken: 'AT' }, ['urn:li:share:1'])).rejects.toThrow('r_member_social_feed')
   })
 })
