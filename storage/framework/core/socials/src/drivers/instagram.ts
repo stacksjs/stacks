@@ -1,13 +1,15 @@
 import type { SocialApiErrorOptions } from '../errors'
 import type {
+  PostMetrics,
   PublishedPost,
   PublishPostInput,
   SocialIdentityCredentials,
+  SocialMetricsDriver,
   SocialPublishingDriver,
   TimelineQuery,
   TimelineResult,
 } from '../types'
-import { META_GRAPH_VERSION } from '../meta-graph'
+import { isMissingGraphObject, META_GRAPH_VERSION } from '../meta-graph'
 import { exceedsLimit } from '../text'
 import { apiFailure, SocialApiError } from '../errors'
 
@@ -23,6 +25,16 @@ const MAX_ACCOUNT_PAGES = 20
 export interface InstagramLongLivedToken {
   accessToken: string
   expiresIn?: number
+}
+
+/** The feed-post insights Instagram reports, by the name it gives each, and the field each fills. */
+const INSTAGRAM_METRIC_FIELDS: Record<string, 'likes' | 'replies' | 'shares' | 'saves' | 'reach' | 'views'> = {
+  likes: 'likes',
+  comments: 'replies',
+  shares: 'shares',
+  saved: 'saves',
+  reach: 'reach',
+  views: 'views',
 }
 
 export class InstagramApiError extends SocialApiError {
@@ -74,7 +86,7 @@ export interface InstagramAccount {
  * Instagram does not allow text-only posts — every post requires an image (or
  * video) reachable at a public URL, supplied via `post.media`.
  */
-export class InstagramPublishingDriver implements SocialPublishingDriver {
+export class InstagramPublishingDriver implements SocialPublishingDriver, SocialMetricsDriver {
   readonly provider: 'instagram' = 'instagram'
   characterLimit = 2200
   /** Images attached per post. Instagram's own ceiling; an app may lower it. */
@@ -350,6 +362,43 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
   // The Content Publishing scope does not grant a readable home timeline.
   async timeline(_identity: SocialIdentityCredentials, _query: TimelineQuery = {}): Promise<TimelineResult> {
     return { items: [] }
+  }
+
+  /**
+   * Likes, comments, shares, saves, reach and views for each post, one
+   * insights request apiece: Instagram has no batch form
+   * (`GET /{media-id}/insights`, the instagram_manage_insights permission).
+   * `impressions` is gone for posts made since July 2024, and Meta marks
+   * views as still in development. A metric with no data yet comes back as
+   * nothing rather than zero, and is left absent. A post that is gone is
+   * left out; a missing permission is an error (stacksjs/stacks#3379).
+   */
+  async metrics(identity: SocialIdentityCredentials, uris: string[]): Promise<PostMetrics[]> {
+    const token = identity.accessToken
+    if (!token) throw new Error('Instagram access token is missing for this identity.')
+
+    const metrics: PostMetrics[] = []
+    for (const uri of uris) {
+      const id = String(uri || '').trim()
+      if (!id) continue
+      let payload: { data?: Array<{ name?: string, values?: Array<{ value?: unknown }> }> }
+      try {
+        payload = await this.graph(`/${encodeURIComponent(id)}/insights?metric=${Object.keys(INSTAGRAM_METRIC_FIELDS).join(',')}`, { method: 'GET' }, token)
+      }
+      catch (error) {
+        if (error instanceof InstagramApiError && isMissingGraphObject(error)) continue
+        throw error
+      }
+
+      const counts: PostMetrics = { uri }
+      for (const entry of payload.data || []) {
+        const field = INSTAGRAM_METRIC_FIELDS[String(entry.name)]
+        const value = Number(entry.values?.[0]?.value)
+        if (field && Number.isFinite(value)) counts[field] = value
+      }
+      metrics.push(counts)
+    }
+    return metrics
   }
 
   /**

@@ -312,6 +312,10 @@ export interface PostMetrics {
   quotes?: number
   views?: number
   shares?: number
+  /** Accounts that saw the post at least once (Instagram). */
+  reach?: number
+  /** Times the post was saved (Instagram). */
+  saves?: number
 }
 
 /**

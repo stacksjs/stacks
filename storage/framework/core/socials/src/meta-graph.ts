@@ -19,3 +19,19 @@
  * the driver's own `graphVersion` option; this is only the default.
  */
 export const META_GRAPH_VERSION = 'v24.0'
+
+/**
+ * Whether a Graph error says the object is gone: code 100, "Object with ID
+ * ... does not exist". Instagram and Threads answer a deleted post this way.
+ * A missing permission is code 10 and is not this. It reads only the error's
+ * `body`, which every driver error carries.
+ */
+export function isMissingGraphObject(error: unknown): boolean {
+  try {
+    const parsed = JSON.parse(String((error as { body?: unknown } | null)?.body ?? '')) as { error?: { code?: number, message?: string } }
+    return parsed.error?.code === 100 && /does not exist/i.test(String(parsed.error.message))
+  }
+  catch {
+    return false
+  }
+}

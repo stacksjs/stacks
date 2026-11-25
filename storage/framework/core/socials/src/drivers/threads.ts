@@ -13,6 +13,7 @@ import type {
 } from '../types'
 import { exceedsLimit } from '../text'
 import { apiFailure, SocialApiError } from '../errors'
+import { isMissingGraphObject } from '../meta-graph'
 
 /** Items Threads takes in one carousel. */
 export const THREADS_MAX_IMAGES = 20
@@ -34,21 +35,6 @@ const THREADS_METRIC_FIELDS: Record<string, 'views' | 'likes' | 'replies' | 'rep
   shares: 'shares',
 }
 const THREADS_METRICS = Object.keys(THREADS_METRIC_FIELDS)
-
-/**
- * Graph's answer for an id that is gone: code 100, "Object with ID ... does
- * not exist". A missing permission is code 10 and is not this.
- */
-function isMissingMedia(error: unknown): boolean {
-  if (!(error instanceof ThreadsApiError)) return false
-  try {
-    const parsed = JSON.parse(error.body) as { error?: { code?: number, message?: string } }
-    return parsed.error?.code === 100 && /does not exist/i.test(String(parsed.error.message))
-  }
-  catch {
-    return false
-  }
-}
 
 export class ThreadsApiError extends SocialApiError {
   constructor(message: string, status: number, body: string, options: SocialApiErrorOptions = {}) {
@@ -379,7 +365,7 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver, SocialDe
         payload = await this.graph(`/${encodeURIComponent(id)}/insights?metric=${THREADS_METRICS.join(',')}`, { method: 'GET' }, token)
       }
       catch (error) {
-        if (isMissingMedia(error)) continue
+        if (error instanceof ThreadsApiError && isMissingGraphObject(error)) continue
         throw error
       }
 
