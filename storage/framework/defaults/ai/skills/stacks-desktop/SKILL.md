@@ -565,6 +565,12 @@ applied with `migrateCompiledDatabase` and `DB_CONNECTION`/`DB_DATABASE_PATH` po
 newer version changed, or a migration that fails (the backup is put back), stops the launch with the reason in the
 app's log.
 
+A launch that fails once the instance lock is held (the database, config, the agent module or its `start`) says why in
+a small window of its own as well as the log, since nobody reads the log of an app opened from Finder or a desktop
+entry. The agent is stopped first. The page is static and escaped, served from loopback only while the window is open,
+and names the log file when the log goes to one. The window keeps its titlebar whatever `window.titlebarHidden` says.
+Closing it quits with exit code 1 and releases the lock (`showFailureWindow`, `renderFailurePage`).
+
 `buddy build:desktop` also bundles the project's own scripts that pages load as `src="/assets/....ts"` (every `.stx`
 under `resources/` is read for them): each is built for the browser with what it imports (`appClientScripts`) and
 embedded at the URL the page asks for, served as JavaScript. A page naming a script that is not in `resources/assets`
