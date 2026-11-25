@@ -1,3 +1,4 @@
+import type { SocialApiErrorOptions } from '../errors'
 import type {
   AuthoredPostPage,
   ProviderInterface,
@@ -20,6 +21,7 @@ import { AbstractProvider } from '../abstract'
 import { ConfigException } from '../exceptions'
 import { fetchPostImage, resolvePostImage } from '../media'
 import { exceedsLimit } from '../text'
+import { apiFailure, SocialApiError } from '../errors'
 
 export class TwitterProvider extends AbstractProvider implements ProviderInterface {
   protected baseUrl = 'https://twitter.com'
@@ -143,13 +145,9 @@ export class TwitterProvider extends AbstractProvider implements ProviderInterfa
  * Posting on X requires a paid API tier, so this is exercised against mocked
  * endpoints; the request shapes follow X's documented v2 API.
  */
-export class TwitterApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public body: string,
-  ) {
-    super(message)
+export class TwitterApiError extends SocialApiError {
+  constructor(message: string, status: number, body: string, options: SocialApiErrorOptions = {}) {
+    super('twitter', message, status, body, options)
     this.name = 'TwitterApiError'
   }
 
@@ -458,11 +456,7 @@ export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDe
     const text = await response.text()
 
     if (!response.ok) {
-      throw new TwitterApiError(
-        `Twitter API failed (${response.status}): ${text || response.statusText}`,
-        response.status,
-        text,
-      )
+      throw new TwitterApiError(...apiFailure('Twitter API', response, text))
     }
 
     return text ? JSON.parse(text) as T : {} as T

@@ -1,3 +1,4 @@
+import type { SocialApiErrorOptions } from '../errors'
 import type {
   AuthoredPostPage,
   BlueskySession,
@@ -13,6 +14,7 @@ import type {
 } from '../types'
 import { fetchPublicUrl } from '@stacksjs/security'
 import { exceedsLimit } from '../text'
+import { apiFailure, SocialApiError } from '../errors'
 
 /** The ATProto collection every Bluesky post record lives in. */
 const POST_COLLECTION = 'app.bsky.feed.post'
@@ -27,13 +29,9 @@ export function parseAtUri(uri: string): { repo: string, collection: string, rke
   return { repo: match[1] as string, collection: match[2] as string, rkey: match[3] as string }
 }
 
-export class BlueskyApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public body: string,
-  ) {
-    super(message)
+export class BlueskyApiError extends SocialApiError {
+  constructor(message: string, status: number, body: string, options: SocialApiErrorOptions = {}) {
+    super('bluesky', message, status, body, options)
     this.name = 'BlueskyApiError'
   }
 
@@ -648,11 +646,7 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
     const text = await response.text()
 
     if (!response.ok) {
-      throw new BlueskyApiError(
-        `Bluesky API failed (${response.status}): ${text || response.statusText}`,
-        response.status,
-        text,
-      )
+      throw new BlueskyApiError(...apiFailure('Bluesky API', response, text))
     }
 
     return text ? JSON.parse(text) as T : {} as T

@@ -1,3 +1,4 @@
+import type { SocialApiErrorOptions } from '../errors'
 import type {
   AuthoredPostPage,
   PublishedPost,
@@ -11,14 +12,11 @@ import type {
 } from '../types'
 import { fetchPostImage, resolvePostImage } from '../media'
 import { exceedsLimit } from '../text'
+import { apiFailure, SocialApiError } from '../errors'
 
-export class MastodonApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public body: string,
-  ) {
-    super(message)
+export class MastodonApiError extends SocialApiError {
+  constructor(message: string, status: number, body: string, options: SocialApiErrorOptions = {}) {
+    super('mastodon', message, status, body, options)
     this.name = 'MastodonApiError'
   }
 
@@ -295,11 +293,7 @@ export class MastodonPublishingDriver implements SocialPublishingDriver, SocialD
     const text = await response.text()
 
     if (!response.ok) {
-      throw new MastodonApiError(
-        `Mastodon API failed (${response.status}): ${text || response.statusText}`,
-        response.status,
-        text,
-      )
+      throw new MastodonApiError(...apiFailure('Mastodon API', response, text))
     }
 
     return text ? JSON.parse(text) as T : {} as T
