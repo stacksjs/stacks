@@ -49,7 +49,7 @@ form field never joins an internal list. Outcomes: `subscribed`, `pending`
 already on the list gets the same answer a new one would (`pending` on a double
 opt-in list, `subscribed` elsewhere) and no email, so the form cannot be used to
 find out who signed up; `already` is no longer sent. A hidden `website` field is
-a honeypot: filled in, the request is answered as success and stores nothing. Scripts get JSON; a browser form post gets a 303 back to `return`
+a honeypot: filled in, the request is answered as success and stores nothing. `email.newsletter.signup: false` leaves the signup and confirm routes unmounted (unsubscribe always stays), for a deployment that takes no signups. Scripts get JSON; a browser form post gets a 303 back to `return`
 or the Referer. The welcome email carries the membership's own token, so its
 unsubscribe link and RFC 8058 headers leave that list only.
 

@@ -416,8 +416,11 @@ export interface EmailOptions {
    * `doubleOptIn`: the default list, when the first signup creates it, asks
    * each address to confirm by email before it joins. Off by default. A list
    * that already exists keeps its own `double_opt_in`.
+   *
+   * `signup: false`: the signup and its confirmation link are not mounted, for
+   * a deployment that takes no signups. Unsubscribe stays mounted. On by default.
    */
-  newsletter?: { doubleOptIn?: boolean }
+  newsletter?: { doubleOptIn?: boolean, signup?: boolean }
 
   default: 'log' | 'capture' | 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp'
 

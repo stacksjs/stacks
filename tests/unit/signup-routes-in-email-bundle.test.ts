@@ -21,4 +21,14 @@ describe('the newsletter signup routes mount without the dashboard', () => {
   test('the email bundle follows the email feature, not the dashboard', () => {
     expect(DEFAULT_ROUTE_BUNDLE_FEATURES.email).toBe('email')
   })
+
+  test('a deployment can turn the signup off, but never the way out', () => {
+    const source = routes('email')
+    const gate = source.indexOf('newsletter?.signup !== false')
+    expect(gate).toBeGreaterThan(-1)
+    const block = source.slice(gate, source.indexOf('}\n', gate))
+    expect(block).toContain(".name('email.subscribe')")
+    expect(block).toContain(".name('email.confirm')")
+    expect(block).not.toContain('email.unsubscribe')
+  })
 })
