@@ -23,7 +23,7 @@ export interface PreparedSpeechAudio {
 
 const DURATION_ERROR = 'Audio duration exceeds the recording limit or is empty'
 const UNDECODABLE = 'The uploaded audio could not be decoded'
-const SUPPORTED = 'Record AAC (M4A), Opus (WebM or Ogg) or WAV.'
+const SUPPORTED = 'Record AAC (M4A), Opus (WebM or Ogg), MP3 or WAV.'
 const TIMED_OUT = 'Audio decoder timed out'
 
 /**

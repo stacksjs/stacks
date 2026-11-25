@@ -83,9 +83,9 @@ function text(bytes: Uint8Array, offset: number, length: number): string {
 function unsupportedFormat(bytes: Uint8Array): string | null {
   if (text(bytes, 0, 4) === 'fLaC') return 'FLAC'
   if (text(bytes, 0, 5) === '#!AMR') return 'AMR'
-  if (text(bytes, 0, 3) === 'ID3') return 'MP3'
-  // An MPEG audio frame sync: layer bits of zero are ADTS AAC, the rest MP3.
-  if (bytes[0] === 0xFF && ((bytes[1] ?? 0) & 0xE0) === 0xE0) return ((bytes[1] ?? 0) & 0x06) === 0 ? 'AAC in an ADTS stream' : 'MP3'
+  // An MPEG frame sync with layer bits of zero is ADTS AAC. The other layers
+  // are MPEG audio: ts-videos decodes layer III (MP3) and names I and II.
+  if (bytes[0] === 0xFF && ((bytes[1] ?? 0) & 0xE6) === 0xE0) return 'AAC in an ADTS stream'
   return null
 }
 

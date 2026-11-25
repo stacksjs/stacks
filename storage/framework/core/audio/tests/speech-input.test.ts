@@ -129,19 +129,29 @@ describe('recordings from phones and browsers decode to 16 kHz mono WAV', () => 
     ['Chrome', 'CELT Opus in WebM', () => fixture('voice-opus-celt.webm'), 0.83],
     ['a plain upload', '22.05 kHz stereo WAV', async () => wav(1, { rate: 22050, channels: 2, tone: true }), 1],
   ]
-  for (const [source, format, load, seconds] of cases) {
-    test(`${format}, as ${source} records`, async () => {
-      const prepared = await prepareSpeechAudio(await load())
-      const output = readWav(prepared.audio)
-      expect(prepared.mimeType).toBe('audio/wav')
-      expect({ format: output.format, channels: output.channels, rate: output.rate, bits: output.bits }).toEqual({ format: 1, channels: 1, rate: 16000, bits: 16 })
-      expect(prepared.durationSeconds).toBe(output.frames / 16000)
-      expect(prepared.durationSeconds).toBeCloseTo(seconds, 1)
-      // Speech, not the silence a decoder that only parsed the container would give.
-      expect(output.peak).toBeGreaterThan(0.1)
-    })
-  }
+  for (const [source, format, load, seconds] of cases)
+    test(`${format}, as ${source} records`, async () => expectSpeechWav(await load(), seconds))
 })
+
+describe('MP3 files decode to 16 kHz mono WAV', () => {
+  // LAME encodes of the same sentence. The decoder reads LAME's gapless tag,
+  // so the length is the sentence's (36,692 frames at 44.1 kHz, as Apple's
+  // decoder gives), not the encoder's padded frames.
+  test('constant bitrate, starting on a frame', async () => expectSpeechWav(await fixture('voice-mp3-mono.mp3'), 36692 / 44100, 2))
+  test('variable bitrate, behind ID3v2 and ID3v1 tags', async () => expectSpeechWav(await fixture('voice-mp3-vbr.mp3'), 36692 / 44100, 2))
+})
+
+/** Decodes an upload and checks the WAV the speech provider would receive. */
+async function expectSpeechWav(bytes: Uint8Array, seconds: number, digits = 1): Promise<void> {
+  const prepared = await prepareSpeechAudio(bytes)
+  const output = readWav(prepared.audio)
+  expect(prepared.mimeType).toBe('audio/wav')
+  expect({ format: output.format, channels: output.channels, rate: output.rate, bits: output.bits }).toEqual({ format: 1, channels: 1, rate: 16000, bits: 16 })
+  expect(prepared.durationSeconds).toBe(output.frames / 16000)
+  expect(prepared.durationSeconds).toBeCloseTo(seconds, digits)
+  // Speech, not the silence a decoder that only parsed the container would give.
+  expect(output.peak).toBeGreaterThan(0.1)
+}
 
 test('a recording that stops exactly at the limit is accepted', async () => {
   // The decoder sees the encoder's priming samples before trimming them, so
@@ -153,6 +163,15 @@ test('a recording that stops exactly at the limit is accepted', async () => {
 
 test('over-long audio is refused from its decoded samples', async () => {
   await expect(prepareSpeechAudio(await fixture('voice.m4a'), { maxDurationSeconds: 30 })).rejects.toThrow('duration')
+})
+
+test('an MP3 is measured by the frames it decodes', async () => {
+  // A bare frame stream, so copies of it join into one about 35 seconds long,
+  // though the first frame's gapless tag still describes a single copy.
+  const once = await fixture('voice-mp3-mono.mp3')
+  const file = concat(Array.from({ length: 40 }, () => once))
+  await expect(prepareSpeechAudio(file, { maxDurationSeconds: 30 })).rejects.toThrow('duration')
+  expect((await prepareSpeechAudio(file, { maxDurationSeconds: 60 })).durationSeconds).toBeGreaterThan(30)
 })
 
 describe('an Ogg upload is measured by its packets, not its granule positions', () => {
@@ -177,9 +196,10 @@ describe('an Ogg upload is measured by its packets, not its granule positions', 
 
 test('formats it cannot decode are refused by name, never as a length problem', async () => {
   const vorbis = oggPage(concat([new Uint8Array([1]), ascii('vorbis'), new Uint8Array(23)]))
+  // MPEG-1 layer II, 160 kbit/s at 44.1 kHz: 522-byte frames. MP3 is layer III.
+  const mp2 = concat(Array.from({ length: 8 }, () => new Uint8Array(522).map((_, index) => [0xFF, 0xFD, 0x90, 0xC0][index] ?? 0)))
   const cases: Array<[Uint8Array, string]> = [
-    [concat([ascii('ID3'), new Uint8Array([3, 0, 0, 0, 0, 0, 0]), new Uint8Array(64)]), 'MP3'],
-    [new Uint8Array(64).map((_, index) => [0xFF, 0xFB, 0x90][index] ?? 0), 'MP3'],
+    [mp2, 'mp2'],
     [new Uint8Array(64).map((_, index) => [0xFF, 0xF1][index] ?? 0), 'ADTS'],
     [concat([ascii('fLaC'), new Uint8Array(64)]), 'FLAC'],
     [concat([ascii('#!AMR\n'), new Uint8Array(64)]), 'AMR'],
@@ -193,6 +213,18 @@ test('formats it cannot decode are refused by name, never as a length problem', 
     expect(error.message).toContain(name)
     expect(error.message).toContain('not supported')
     // hq.training tells an athlete "record a shorter one" on any /duration/.
+    expect(error.message).not.toMatch(/duration/i)
+  }
+})
+
+test('an MP3 with no frames the decoder can read is undecodable, never a length problem', async () => {
+  const cases = [
+    concat([ascii('ID3'), new Uint8Array([3, 0, 0, 0, 0, 0, 0]), new Uint8Array(64)]),
+    new Uint8Array(64).map((_, index) => [0xFF, 0xFB, 0x90][index] ?? 0),
+  ]
+  for (const bytes of cases) {
+    const error: Error = await prepareSpeechAudio(bytes).then(() => { throw new Error('decoded') }, (cause: Error) => cause)
+    expect(error.message).toContain('could not be decoded')
     expect(error.message).not.toMatch(/duration/i)
   }
 })
