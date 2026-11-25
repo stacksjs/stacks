@@ -159,6 +159,13 @@ export interface WebviewAgentConfig {
    * point the app at it. Default `false` (stacksjs/stacks#3368).
    */
   database?: boolean
+  /**
+   * Compile the project's `config/*.ts` into the app, so it runs on its own
+   * config wherever it is installed rather than the framework defaults. The
+   * app logs which config it booted with, and a file that throws stops the
+   * start. Default `false` (stacksjs/stacks#3368).
+   */
+  config?: boolean
 }
 
 /**

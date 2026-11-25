@@ -7,6 +7,7 @@ import { dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import { log } from '@stacksjs/cli'
+import { userConfigFileNames } from '@stacksjs/config/sources'
 import { AGENT_MANIFEST, agentHostArguments, desktopLauncherCompileArgs, macosOutputDirectory, macosScreens, macosSelfUpdates, renderAgentEntry, validateMacosDesktop } from '@stacksjs/desktop-build'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderVersion } from './craft-entry'
@@ -341,6 +342,21 @@ export async function appClientScripts(root: string, outDir: string): Promise<Re
     scripts[url] = target
   }
   return scripts
+}
+
+/**
+ * The project's config files a compiled app carries, by name (`app`): every
+ * `config/<name>.ts` the config loader reads that the project has. The loader
+ * cannot follow its own `import()` into a compiled app, so the entry names
+ * these statically instead (stacksjs/stacks#3368).
+ */
+export function appConfigFiles(root: string): Record<string, string> {
+  const files: Record<string, string> = {}
+  for (const name of userConfigFileNames()) {
+    const file = join(root, 'config', `${name}.ts`)
+    if (existsSync(file)) files[name] = file
+  }
+  return files
 }
 
 /** Runs `buddy migrate` for {@link appMigrationFiles}; tests stand in for it. */

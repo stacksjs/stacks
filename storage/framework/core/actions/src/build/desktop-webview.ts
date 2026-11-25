@@ -38,7 +38,7 @@ import {
   windowsRuntimeCompanions,
 } from '@stacksjs/desktop-build'
 import { projectPath } from '@stacksjs/path'
-import { appBundleFiles, appClientScripts, appMigrationFiles } from './macos-native'
+import { appBundleFiles, appClientScripts, appConfigFiles, appMigrationFiles } from './macos-native'
 
 /**
  * `buddy build:desktop` for a project whose `config/desktop.ts` declares a
@@ -77,6 +77,9 @@ if (appFiles) await log.info(`Bundling ${appFiles.routes.length} route file(s), 
 // The migrations buddy migrate applies, compiled in and applied at launch (stacksjs/stacks#3368).
 const migrationFiles = config.agent.database ? await appMigrationFiles(root) : undefined
 if (migrationFiles) await log.info(`Bundling ${Object.keys(migrationFiles).length} migration(s) for the app's own database`)
+// The project's config/*.ts, named so the bundler carries them (stacksjs/stacks#3368).
+const configFiles = config.agent.config ? appConfigFiles(root) : undefined
+if (configFiles) await log.info(`Bundling ${Object.keys(configFiles).length} config file(s): ${Object.keys(configFiles).join(', ')}`)
 const viewsDir = resolve(root, config.agent.views)
 const hostRuntime = (): string => resolveCraftExecutable()
 
@@ -129,6 +132,7 @@ if (process.env.STACKS_DESKTOP_LAUNCH === '1') {
     agentEntry,
     ...appFiles,
     ...(migrationFiles ? { migrations: migrationFiles } : {}),
+    ...(configFiles ? { configFiles } : {}),
     ...(existsSync(viewsDir) ? { stxViews: { dir: viewsDir, root, ...(config.agent.components?.length ? { components: resolveWebviewComponents(root, config.agent.components) } : {}) } } : {}),
   }))
   await log.info(`Starting ${config.appName} (Ctrl-C quits)`)
@@ -259,6 +263,7 @@ for (const target of targets) {
     agentEntry,
     ...appFiles,
     ...(migrationFiles ? { migrations: migrationFiles } : {}),
+    ...(configFiles ? { configFiles } : {}),
     viewFiles,
     ...(embedded ? { embeddedRuntime: runtime } : {}),
   }))

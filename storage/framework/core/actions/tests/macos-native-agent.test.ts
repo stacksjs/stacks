@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { resolveMacosDesktop } from '@stacksjs/desktop-build'
-import { appBundleFiles, appClientScripts, appMigrationFiles, craftSupportsWebkit, macosAgentDevManifest, macosAgentEntry } from '../src/build/macos-native'
+import { appBundleFiles, appClientScripts, appConfigFiles, appMigrationFiles, craftSupportsWebkit, macosAgentDevManifest, macosAgentEntry } from '../src/build/macos-native'
 
 /**
  * The build side of `macos.agent` and `macos.webkit`: which routes the agent
@@ -121,6 +121,35 @@ describe('appBundleFiles', () => {
     finally {
       rmSync(root, { recursive: true, force: true })
     }
+  })
+})
+
+// stacksjs/stacks#3368: a compiled app has no config/ beside it, so the
+// entry names each config file the loader reads, and only those.
+describe('appConfigFiles', () => {
+  test('every config file the loader reads that the project has, including stx\'s other name', () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-app-config-'))
+    try {
+      mkdirSync(join(root, 'config'))
+      for (const name of ['app', 'database', 'feature-flags', 'stx', 'desktop'])
+        writeFileSync(join(root, 'config', `${name}.ts`), 'export default {}\n')
+
+      expect(appConfigFiles(root)).toEqual({
+        'app': join(root, 'config/app.ts'),
+        'database': join(root, 'config/database.ts'),
+        'feature-flags': join(root, 'config/feature-flags.ts'),
+        'stx': join(root, 'config/stx.ts'),
+      })
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  test('a project with no config/ carries none', () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-app-config-'))
+    try { expect(appConfigFiles(root)).toEqual({}) }
+    finally { rmSync(root, { recursive: true, force: true }) }
   })
 })
 
