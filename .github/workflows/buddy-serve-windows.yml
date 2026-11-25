@@ -10,6 +10,7 @@ on:
       - 'storage/framework/core/actions/src/dev/views.ts'
       - 'storage/framework/core/actions/src/dev/frontend-hmr*.ts'
       - 'storage/framework/core/actions/src/dev/dashboard*.ts'
+      - 'storage/framework/core/actions/tests/dashboard-hmr.test.ts'
       - 'storage/framework/core/actions/tests/dashboard-software-updates.test.ts'
       - 'storage/framework/core/actions/tests/fixtures/dashboard-restart-worker.ts'
       - 'storage/framework/core/actions/src/helpers/serve-relay-worker.ts'
@@ -59,3 +60,11 @@ jobs:
           STACKS_BROWSER_TESTS: '1'
           CHROME_PATH: 'C:\Program Files\Google\Chrome\Application\chrome.exe'
         run: bun test ./storage/framework/core/buddy/tests/dev-frontend-hmr.test.ts
+      - name: Build the dashboard client's datetime dependency
+        run: bun run --filter '@stacksjs/datetime' build
+      - name: Verify dashboard state survives source edits and Restart Now in Chrome
+        env:
+          APP_ENV: test
+          STACKS_BROWSER_TESTS: '1'
+          CHROME_PATH: 'C:\Program Files\Google\Chrome\Application\chrome.exe'
+        run: bun test ./storage/framework/core/actions/tests/dashboard-hmr.test.ts

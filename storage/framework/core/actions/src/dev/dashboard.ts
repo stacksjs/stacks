@@ -11,6 +11,8 @@ import { dashboardHttpsAnswers, dashboardOriginUrl, dashboardPendingHeader, dash
 import { buildManifest, discoverProjectModels, findAvailablePort, modelsWithEnabledFeatures, waitForServer, writeFileIfChanged } from './dashboard-utils'
 import { dashboardSoftwareUpdateRoutes } from './dashboard-software-updates'
 import { runDashboardSupervisor } from './dashboard-supervisor'
+import { frontendHmrResponse } from './frontend-hmr'
+import { retainFrontendPageState } from './frontend-hmr-state'
 import { dashboardAssetRoutes } from '../dashboard-assets'
 import { ensureDiscoveredPackages } from '../discover-packages'
 import { resolveStxSource } from '../stx-source'
@@ -93,6 +95,8 @@ const idleExit = createIdleExit(relay ? 0 : idleExitMs, () => {
 })
 
 const dashboardInstance = (relay && process.env.STACKS_DASHBOARD_INSTANCE) || crypto.randomUUID()
+const hmrRetirement = relay && new AbortController()
+let dashboardServer: Bun.Server<unknown> | undefined
 let dashboardReady = false
 let dashboardPublished = false
 const { app, overridesReady } = await import('@stacksjs/config')
@@ -108,9 +112,15 @@ const originDomain = dashboardDomain?.endsWith('.localhost') ? dashboardDomain :
 let dashboardBrowserUrl = (relay && process.env.STACKS_DASHBOARD_PUBLIC_URL) || dashboardOriginUrl(originDomain, dashboardPort)
 if (relay) {
   process.on('message', (message) => {
-    if (message && typeof message === 'object' && 'type' in message && message.type === 'stacks:dashboard-url'
-      && 'url' in message && typeof message.url === 'string')
+    if (!message || typeof message !== 'object' || !('type' in message))
+      return
+    if (message.type === 'stacks:dashboard-url' && 'url' in message && typeof message.url === 'string')
       dashboardBrowserUrl = message.url
+    else if (message.type === 'stacks:dashboard-hmr-reconnect') {
+      // An in-place refresh must not reuse an idle socket to this worker.
+      dashboardServer?.closeIdleConnections?.()
+      hmrRetirement?.abort()
+    }
   })
 }
 
@@ -499,21 +509,15 @@ async function startStxServer(): Promise<void> {
     // cache above in under 10ms. Concurrency 1 did not help: each render holds
     // the thread for about a second, so even cached pages still waited 1-3s.
     prewarmRenderCache: false,
-    // And keep those renders across restarts, so a restart does not cost
-    // every page its ~1s render again (stacksjs/stacks#3035). A kept page is
-    // used only while nothing it was rendered from has changed, which is why
-    // the sidebar's inputs are watched below.
-    renderCachePersist: true,
+    // During a rolling restart the old worker can render with its cached
+    // ESM modules after files change. Keep each worker's page cache in memory
+    // so those renders cannot populate the replacement's cache.
+    renderCachePersist: !relay,
     watchDirs: [
       projectPath('resources/functions'),
       defaultsPath('resources/functions'),
       defaultsPath('functions'),
-      // The layout's server script builds the sidebar from the models manifest
-      // written below (the models and `config/dashboard.ts`'s sections, as of
-      // boot) and reads `config/dashboard.ts` itself; no page template pulls
-      // either in. Watched, a change to either discards the kept pages, so the
-      // restart after a config edit renders the new sidebar. Unwatched, that
-      // restart served the old one.
+      // The sidebar reads these inputs without importing them.
       projectPath('config'),
       storagePath('framework/runtime/dashboard'),
     ],
@@ -538,6 +542,7 @@ async function startStxServer(): Promise<void> {
     //      collide with a page — e.g. `route.health()` registering a
     //      `/health` LB-probe at root — would intercept the page.
     onRequest: async (req: Request, server) => {
+      dashboardServer ??= server
       const peer = (relay?.wrap(server) ?? server).requestIP(req)?.address
       if (!peer || (peer !== '::1' && !/^(?:::ffff:)?127\./.test(peer)))
         return new Response('Not found', { status: 404 })
@@ -562,7 +567,10 @@ async function startStxServer(): Promise<void> {
     // The dashboard's login and registration views submit to CSRF-protected
     // framework routes. Seed the token on the HTML response, matching the
     // regular development and production page servers.
-    onResponse: seedCsrfPageResponse,
+    onResponse: async (req, response) => {
+      const live = hmrRetirement && (frontendHmrResponse(req, response, dashboardInstance, hmrRetirement.signal) ?? retainFrontendPageState(response))
+      return await seedCsrfPageResponse(req, live ?? response) ?? live
+    },
     auth: false,
     ...(stxModule && { stxModule }),
   })

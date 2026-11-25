@@ -12,6 +12,7 @@ import { createIdleExit } from './dashboard-projects'
 import { dashboardHttpsAnswers, startDashboardReverseProxy } from './dashboard-proxy'
 import { runningDashboardInstance } from './dashboard-restart'
 import { findAvailablePort } from './dashboard-utils'
+import { frontendBuildId } from './frontend-hmr'
 
 const BACKEND_SOURCE_RE = /\.(?:[cm]?[jt]sx?|json)$/i
 const DECLARATION_RE = /\.d\.[cm]?ts$/i
@@ -64,6 +65,7 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
   const verboseIndex = args.indexOf('--verbose')
   const verbose = verboseIndex !== -1 && args[verboseIndex + 1] !== 'false'
   const shutdown = new AbortController()
+  const hmrSession = crypto.randomUUID()
   const { promise: finished, resolve: finish } = Promise.withResolvers<number>()
   const workers = new Set<DashboardWorker>()
   const watchers: FSWatcher[] = []
@@ -95,6 +97,7 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
     shutdown.signal.throwIfAborted()
     const workerInstance = crypto.randomUUID()
     const { promise: announced, resolve: announce } = Promise.withResolvers<DashboardReadiness>()
+    let exited = false
     let target: DashboardWorker['target'] | undefined
     const child = spawnOwnedProcess([process.execPath, ...process.execArgv, entry, ...args], {
       cwd: root,
@@ -106,6 +109,10 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
         STACKS_DASHBOARD_PUBLIC_URL: browserUrl,
         STACKS_DASHBOARD_INSTANCE: workerInstance,
         STACKS_SERVE_RELAY_PORT: String(port),
+        STX_BUILD_ID: process.env.STX_BUILD_ID || frontendBuildId(entry, hmrSession, {
+          serve: process.env.BUN_PLUGIN_STX_SRC,
+          stx: process.env.STX_SRC,
+        }),
       },
       stdin: 'ignore',
       stdout: 'inherit',
@@ -121,19 +128,25 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
       },
     })
     const ready = announced.then(async (announcement) => {
-      if (await runningDashboardInstance(port) !== workerInstance)
-        throw new Error('The dashboard replacement did not answer its readiness check.')
-      return announcement
+      const deadline = Date.now() + 10_000
+      while (!exited && !shutdown.signal.aborted && Date.now() < deadline) {
+        if (await runningDashboardInstance(port) === workerInstance)
+          return announcement
+        await Bun.sleep(50)
+      }
+      throw new Error('The dashboard replacement did not answer its readiness check.')
     })
     void ready.catch(() => {})
     const worker = { child, target: target = relay.createTarget(port, child.send), ready }
     workers.add(worker)
     void child.exited.then(({ code }) => {
+      exited = true
       worker.target.close()
       workers.delete(worker)
       if (active === worker)
         stop(code)
     }, (error: unknown) => {
+      exited = true
       worker.target.close()
       if (active === worker) {
         console.error('Dashboard worker failed:', error)
@@ -188,7 +201,10 @@ export async function runDashboardSupervisor(entry: string, args: string[]): Pro
         await candidate.child.stop()
         throw error
       }
-      await retireRelayWorker(previous.child, previous.target, drainMs)
+      // Retire the previous worker in the background. New source edits and
+      // Restart Now can promote another worker while old requests finish.
+      previous.child.send({ type: 'stacks:dashboard-hmr-reconnect' })
+      void retireRelayWorker(previous.child, previous.target, drainMs).catch(error => console.error('Dashboard worker drain failed:', error))
     })().finally(() => {
       restarting = undefined
       if (!shutdown.signal.aborted)

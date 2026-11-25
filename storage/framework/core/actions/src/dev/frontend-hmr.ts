@@ -7,7 +7,7 @@ export const devRuntimeSource = /\.(?:[cm]?[jt]s|[jt]sx|json)$/i
  * sends the last ID when it reconnects. A new worker can then ask the loaded
  * STX client for the same fragment refresh it uses for a template edit.
  */
-export function frontendHmrResponse(request: Request, response: Response, worker: string): Response | undefined {
+export function frontendHmrResponse(request: Request, response: Response, worker: string, retirement?: AbortSignal): Response | undefined {
   if (!response.body || !response.headers.get('content-type')?.startsWith('text/event-stream')
     || new URL(request.url).pathname !== '/_stx/hmr')
     return
@@ -17,29 +17,45 @@ export function frontendHmrResponse(request: Request, response: Response, worker
   const handoff = previous?.startsWith('stacks-worker:') && previous !== id
   let pending = ''
   let opening = true
-  const body = response.body
-    .pipeThrough(new TextDecoderStream())
-    .pipeThrough(new TransformStream<string, string>({
-      transform(chunk, controller) {
-        pending += chunk
-        let boundary: number
-        while ((boundary = pending.indexOf('\n\n')) !== -1) {
-          const event = refreshEvent(pending.slice(0, boundary), opening && Boolean(handoff))
-          // Set the ID on the opening event only. Later STX events retain it.
-          controller.enqueue((opening ? `retry: 250\nid: ${id}\n` : '') + event + '\n\n')
-          opening = false
-          pending = pending.slice(boundary + 2)
-        }
-      },
-      flush(controller) {
-        if (pending)
-          controller.enqueue(pending)
-      },
-    }))
-    .pipeThrough(new TextEncoderStream())
+  const decoded = response.body.pipeThrough(new TextDecoderStream())
+  let closeEvents: (() => void) | undefined
+  const events = new TransformStream<string, string>({
+    start(controller) {
+      // Close the browser stream and cancel STX's upstream subscription.
+      closeEvents = () => controller.terminate()
+    },
+    transform(chunk, controller) {
+      pending += chunk
+      let boundary: number
+      while ((boundary = pending.indexOf('\n\n')) !== -1) {
+        const event = refreshEvent(pending.slice(0, boundary), opening && Boolean(handoff))
+        // Set the ID on the opening event only. Later STX events retain it.
+        controller.enqueue((opening ? `retry: 250\nid: ${id}\n` : '') + event + '\n\n')
+        opening = false
+        pending = pending.slice(boundary + 2)
+      }
+    },
+    flush(controller) {
+      if (pending)
+        controller.enqueue(pending)
+    },
+  })
   const headers = new Headers(response.headers)
+  if (retirement) {
+    // Reconnect through the public listener once the replacement is ready.
+    // The old worker's ordinary requests have their own drain deadline.
+    headers.set('connection', 'close')
+    const disconnect = () => closeEvents?.()
+    retirement.addEventListener('abort', disconnect, { once: true })
+    if (retirement.aborted)
+      disconnect()
+    void decoded.pipeTo(events.writable).catch(() => {}).finally(() => retirement.removeEventListener('abort', disconnect))
+  }
+  else {
+    decoded.pipeThrough(events)
+  }
   headers.delete('content-length')
-  return new Response(body, { headers, status: response.status, statusText: response.statusText })
+  return new Response(events.readable.pipeThrough(new TextEncoderStream()), { headers, status: response.status, statusText: response.statusText })
 }
 
 function refreshEvent(frame: string, handoff: boolean): string {
@@ -58,12 +74,16 @@ function refreshEvent(frame: string, handoff: boolean): string {
 }
 
 /** Keep the fragment ABI stable across process swaps with the same STX runtime. */
-export function frontendBuildId(entry: string, session: string): string {
+export function frontendBuildId(entry: string, session: string, overrides?: { serve?: string, stx?: string }): string {
   let from = dirname(entry)
   const runtime: string[] = []
-  for (const name of ['bun-plugin-stx/serve', '@stacksjs/stx', 'stx-router']) {
+  for (const [name, override] of [
+    ['bun-plugin-stx/serve', overrides?.serve],
+    ['@stacksjs/stx', overrides?.stx],
+    ['stx-router'],
+  ] as const) {
     try {
-      const path = Bun.resolveSync(name, from)
+      const path = override?.trim() || Bun.resolveSync(name, from)
       const file = Bun.file(path)
       runtime.push(`${path}:${file.size}:${file.lastModified}`)
       from = dirname(path)
