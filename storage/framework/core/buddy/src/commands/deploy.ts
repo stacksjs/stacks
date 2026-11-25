@@ -4190,6 +4190,8 @@ BOXES_B64='${boxesB64}'
 RELAY_ACCOUNT='${relay.account ?? ''}'
 RECOVERY_B64='${recoveriesB64}'
 ENVF=/etc/mail/mail.env
+LIVE_MAIL_ENV=$ENVF
+MAIL_ENV_LOCK=/run/mail-health-check.lock
 FJSON=/opt/mail/forwards.json
 DKIMDIR=/opt/mail/dkim
 MS=/opt/mail/mail-server
@@ -4232,6 +4234,41 @@ if [ -n "$DOMAIN" ] && [ -n "$PROJECT_SLUG" ]; then
   fi
 fi
 # 1) Register the local delivery domain (merge into SMTP_LOCAL_DOMAINS).
+MAIL_ENV_STAGE=
+MAIL_ENV_PENDING=0
+restartMail() {
+  local pid
+  systemctl reset-failed mail.service >/dev/null 2>&1 || true
+  systemctl restart mail.service || return 1
+  pid=$(systemctl show mail.service -p MainPID --value) || return 1
+  [ "$pid" -gt 0 ] || return 1
+  sleep 2
+  systemctl is-active --quiet mail.service &&
+    [ "$(systemctl show mail.service -p MainPID --value)" = "$pid" ]
+}
+finishMailEnvironment() {
+  if [ "$MAIL_ENV_PENDING" = 1 ] && ! cmp -s "$MAIL_ENV_STAGE/original" "$LIVE_MAIL_ENV"; then
+    if ! mv -f "$MAIL_ENV_STAGE/original" "$LIVE_MAIL_ENV" || ! restartMail; then
+      echo "Mail: automatic recovery failed after replacing the environment ($MAIL_ENV_STAGE)." >&2
+      return 1
+    fi
+    echo 'Mail: restored the original environment after a failed restart.' >&2
+  fi
+  rm -f "$MAIL_ENV_STAGE/original" "$MAIL_ENV_STAGE/candidate"
+  rmdir "$MAIL_ENV_STAGE"
+}
+if [ -f "$LIVE_MAIL_ENV" ]; then
+  # Stage the merge beside the live file for an atomic rename. Serialize
+  # Mail environment changes and restarts with the native health checker.
+  exec 9>"$MAIL_ENV_LOCK"
+  flock -w 45 9
+  MAIL_ENV_STAGE=$(mktemp -d "$(dirname "$LIVE_MAIL_ENV")/.mail-env.XXXXXXXX")
+  trap finishMailEnvironment EXIT
+  trap 'exit 1' HUP INT TERM
+  cp -a "$LIVE_MAIL_ENV" "$MAIL_ENV_STAGE/original"
+  ENVF="$MAIL_ENV_STAGE/candidate"
+  cp -a "$MAIL_ENV_STAGE/original" "$ENVF"
+fi
 if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
   cur=$(grep -E '^SMTP_LOCAL_DOMAINS=' "$ENVF" | head -1 | cut -d= -f2- || true)
   case ",$cur," in
@@ -4262,34 +4299,28 @@ if [ -n "$RELAY_ACCOUNT" ] && [ -f "$ENVF" ]; then
   esac
 fi
 # 2) DKIM: decide which key signs THIS domain, then register and publish that
-#    one key. Read the server's global signer first, because it wins.
-#
-#    mail's \`configureDkim\` registers the DKIM_DOMAIN signer before any
-#    DKIM_EXTRA_KEYS entry and *silently drops* an entry for a domain that
-#    already has one. So for the domain that IS DKIM_DOMAIN, the global key
-#    signs and nothing this script generates is ever used.
-#
-#    This used to generate a per-domain key anyway and register it anyway,
-#    leaving a dead 2048-bit key on disk, an inert env entry, and a warning on
-#    every deploy that no action could clear. Worse, the entry named a key
-#    whose public half was never published: the moment DKIM_DOMAIN moved to
-#    another domain, this entry would start signing with a key no record
-#    matched, and every message would fail DKIM with nothing in the logs.
-#    Registering the key that actually signs makes the handover a no-op.
+#    one key. The primary signer already has its own environment settings.
+#    Native Mail rejects any second registration for that domain.
 if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
   mkdir -p "$DKIMDIR"
   gdom=$(grep -E '^DKIM_DOMAIN=' "$ENVF" | head -1 | cut -d= -f2- || true)
   gkey=$(grep -E '^DKIM_PRIVATE_KEY_PATH=' "$ENVF" | head -1 | cut -d= -f2- || true)
   gsel=$(grep -E '^DKIM_SELECTOR=' "$ENVF" | head -1 | cut -d= -f2- || true)
   PERDOMAIN_KEY="$DKIMDIR/$DOMAIN.private"
+  PRIMARY=0
 
-  if [ -n "$gdom" ] && [ "$gdom" = "$DOMAIN" ] && [ -n "$gkey" ] && [ -f "$gkey" ]; then
+  if [ -n "$gdom" ] && [ "\${gdom,,}" = "\${DOMAIN,,}" ]; then
+    PRIMARY=1
+    if [ -z "$gsel" ] || [ -z "$gkey" ] || [ ! -f "$gkey" ]; then
+      echo 'Mail: the configured primary DKIM key or selector is unavailable.' >&2
+      exit 1
+    fi
     KEY="$gkey"
-    SEL="\${gsel:-mail}"
+    SEL="$gsel"
     echo "DKIMGLOBAL:$KEY"
     # An earlier deploy may have left the unused per-domain key behind. Say
     # where it is; removing a private key is the operator's call, not ours.
-    [ -f "$PERDOMAIN_KEY" ] && echo "DKIMSTALE:$PERDOMAIN_KEY"
+    if [ -f "$PERDOMAIN_KEY" ] && ! [ "$PERDOMAIN_KEY" -ef "$KEY" ]; then echo "DKIMSTALE:$PERDOMAIN_KEY"; fi
   else
     KEY="$PERDOMAIN_KEY"
     SEL=mail
@@ -4300,38 +4331,31 @@ if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
     fi
   fi
 
-  # Register the effective key, replacing any earlier entry for this domain
-  # (which may name the dead per-domain file). Rebuilt as a list rather than
-  # appended, so the domain can never hold two entries.
+  # Remove any legacy duplicate of the primary signer. For a separate domain,
+  # replace its registration in place or append it if it is new.
   ex=$(grep -E '^DKIM_EXTRA_KEYS=' "$ENVF" | head -1 | cut -d= -f2- || true)
   ENTRY="$DOMAIN:$SEL:$KEY"
-  # Split on commas with IFS and glob-match the domain. A tr/grep pipeline is
-  # the obvious way to write this and the wrong one here: the separator would
-  # have to be a newline written as \\n inside a JS template literal, and the
-  # domain would become a regex whose dots match anything.
-  #
-  # The entry is replaced where it stands, and appended only when absent. The
-  # list used to be rebuilt as "everyone else, then this domain", which moved
-  # the domain to the end. On a shared server only one tenant can be last, so
-  # every other tenant's deploy reordered the line, saw a change that was not
-  # one, and restarted mail for every domain on the box.
+  # Preserve the positions of other domains so repeat deploys converge
+  # without restarting Mail on the shared host.
   NEWEX=""
   PLACED=0
   OLDIFS="$IFS"
   IFS=','
   for entry in $ex; do
-    case "$entry" in
-      "") : ;;
-      "$DOMAIN:"*)
-        if [ "$PLACED" = 0 ]; then
-          NEWEX="\${NEWEX:+$NEWEX,}$ENTRY"
-          PLACED=1
-        fi ;;
-      *) NEWEX="\${NEWEX:+$NEWEX,}$entry" ;;
-    esac
+    [ -z "$entry" ] && continue
+    registered="\${entry%%:*}"
+    if [ -n "$gdom" ] && [ "\${registered,,}" = "\${gdom,,}" ]; then continue; fi
+    if [ "\${registered,,}" = "\${DOMAIN,,}" ]; then
+      if [ "$PLACED" = 0 ]; then
+        NEWEX="\${NEWEX:+$NEWEX,}$ENTRY"
+        PLACED=1
+      fi
+    else
+      NEWEX="\${NEWEX:+$NEWEX,}$entry"
+    fi
   done
   IFS="$OLDIFS"
-  if [ "$PLACED" = 0 ]; then
+  if [ "$PRIMARY" = 0 ] && [ "$PLACED" = 0 ]; then
     NEWEX="\${NEWEX:+$NEWEX,}$ENTRY"
   fi
   if [ "$NEWEX" != "$ex" ]; then
@@ -4346,6 +4370,33 @@ if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
   echo "DKIMSEL:$SEL"
   echo "DKIMPUB:$(openssl rsa -in "$KEY" -pubout -outform DER 2>/dev/null | base64 -w0)"
 fi
+# 2a) Validate the entire candidate before publishing it or restarting Mail.
+if [ "$ENV_CHANGED" = 1 ]; then
+  if ! systemd-run --quiet --wait --pipe --collect \\
+    -p User=mail-server -p Group=mail-server -p WorkingDirectory=/opt/mail \\
+    -p "EnvironmentFile=$ENVF" -p RuntimeMaxSec=30s \\
+    "$MS" serve --validate-only --log-file /dev/null >/dev/null 2>&1; then
+    echo 'Mail: native validation rejected the candidate environment; the live environment is unchanged.' >&2
+    exit 1
+  fi
+  if ! cmp -s "$MAIL_ENV_STAGE/original" "$LIVE_MAIL_ENV"; then
+    echo 'Mail: the live environment changed during reconciliation; retry the deploy.' >&2
+    exit 1
+  fi
+  MAIL_ENV_PENDING=1
+  mv -f "$ENVF" "$LIVE_MAIL_ENV"
+  if ! restartMail; then
+    echo 'Mail: the service did not stay active after installing the candidate environment.' >&2
+    exit 1
+  fi
+  MAIL_ENV_PENDING=0
+fi
+if [ -n "$MAIL_ENV_STAGE" ]; then
+  finishMailEnvironment
+  trap - EXIT HUP INT TERM
+  exec 9>&-
+fi
+ENVF=$LIVE_MAIL_ENV
 # 3) Create the configured mailboxes as per-domain isolated users, and
 # preserve existing user passwords unless management was explicitly requested.
 #
@@ -4656,8 +4707,8 @@ WantedBy=timers.target
 EOF
 systemctl daemon-reload
 systemctl enable --now mail-health.timer >/dev/null 2>&1
-# 6) Restart only when the startup-read env actually changed (domain or DKIM key).
-if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo "MAILTENANT:env-changed+restarted,forwards=$FWD_STATE"; else echo "MAILTENANT:current,forwards=$FWD_STATE"; fi`
+# 6) Report the outcome of the environment activation above.
+if [ "$ENV_CHANGED" = 1 ]; then echo "MAILTENANT:env-changed+restarted,forwards=$FWD_STATE"; else echo "MAILTENANT:current,forwards=$FWD_STATE"; fi`
 
   try {
     const out = execFileSync('ssh', [...sshArgs, 'bash', '-s'], {

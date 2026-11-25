@@ -7,15 +7,10 @@
  * a confirmation email.
  *
  * 1. THE SELECTOR AND KEY MUST BE THE ONES THE SERVER ACTUALLY SIGNS WITH.
- *    The mail daemon registers the global `DKIM_DOMAIN` signer first and then
- *    *silently drops* any `DKIM_EXTRA_KEYS` entry for a domain that already has
- *    a signer (`configureDkim` in delivery/outbound.zig returns early on a
- *    duplicate). So for the one domain that IS `DKIM_DOMAIN`, the per-domain
- *    key the deploy generates is dead on disk and the server keeps signing with
- *    `DKIM_PRIVATE_KEY_PATH` under `DKIM_SELECTOR`. Publishing the per-domain
- *    key there advertises a key nothing signs with, and every message fails
- *    DKIM. Verified on the live box: `mail.private` and `stacksjs.com.private`
- *    are different keys, and the published record matches the former.
+ *    The primary domain signs with `DKIM_PRIVATE_KEY_PATH` under
+ *    `DKIM_SELECTOR`. Native Mail rejects a second registration for this
+ *    domain in `DKIM_EXTRA_KEYS`. Publishing a discarded per-domain key would
+ *    also cause receivers to reject otherwise correctly signed messages.
  *
  *    The provisioning script therefore reports the EFFECTIVE key and selector,
  *    and this publisher must use the reported selector rather than assume
