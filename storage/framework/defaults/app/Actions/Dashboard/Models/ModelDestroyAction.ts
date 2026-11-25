@@ -2,7 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
 import { destroyModelRow, requestAccountId, rowRefusalResponse } from './model-row-writes'
-import { parseRowId, resolveWritableModel } from './model-write'
+import { parseRowKey, resolveWritableModel } from './model-write'
 
 /**
  * `DELETE /api/dashboard/models/{slug}/{id}`.
@@ -22,9 +22,10 @@ export default new Action({
     if ('error' in resolved)
       return response.json({ message: resolved.error }, resolved.status)
 
-    const id = parseRowId(request.getParam('id'))
+    // The model's own key: a number, or the value of one it declares (stacksjs/stacks#3350).
+    const id = parseRowKey(resolved.Model, request.getParam('id'))
     if (id === null)
-      return response.json({ message: 'A numeric row id is required.' }, 400)
+      return response.json({ message: resolved.Model?.autoIncrement === false ? 'A row key is required.' : 'A numeric row id is required.' }, 400)
 
     const result = await destroyModelRow(resolved, id, await requestAccountId(request))
     return result.ok ? { ok: true, id, anonymized: result.anonymized } : rowRefusalResponse(result)

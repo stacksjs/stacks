@@ -2,7 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
 import { formFields, rowRefusalResponse, updateModelRow } from './model-row-writes'
-import { parseRowId, resolveWritableModel } from './model-write'
+import { parseRowKey, resolveWritableModel } from './model-write'
 
 interface ModelWriteInput {
   fields?: unknown
@@ -26,9 +26,10 @@ export default new Action({
     if ('error' in resolved)
       return response.json({ message: resolved.error }, resolved.status)
 
-    const id = parseRowId(request.getParam('id'))
+    // The model's own key: a number, or the value of one it declares (stacksjs/stacks#3350).
+    const id = parseRowKey(resolved.Model, request.getParam('id'))
     if (id === null)
-      return response.json({ message: 'A numeric row id is required.' }, 400)
+      return response.json({ message: resolved.Model?.autoIncrement === false ? 'A row key is required.' : 'A numeric row id is required.' }, 400)
 
     // Nested under `fields`, apart from the URL's params (see `formFields`).
     const result = await updateModelRow(resolved, id, formFields(request.all().fields))

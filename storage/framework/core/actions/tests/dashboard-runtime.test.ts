@@ -46,9 +46,9 @@ mock.module('@stacksjs/rpx', () => ({ isDaemonRunning: unexpected, startProxies:
     for (const page of ['order-test', 'alpha', 'beta', 'gamma'])
       write(`resources/views/dashboard/${page}.stx`, `@extends('layouts/default')\n@section('content')\n<h1>Sidebar ordering fixture</h1>\n@endsection`)
     write('app/Models/RuntimeProbe.ts', `import { defineModel } from '@stacksjs/orm'
-export default defineModel({ name: 'RuntimeProbe', table: 'runtime_probes', attributes: { name: { fillable: true } } })`)
+export default defineModel({ name: 'RuntimeProbe', table: 'runtime_probes', dashboard: { writes: ['update'] }, attributes: { name: { fillable: true } } })`)
     write('app/Models/RuntimeSecond.ts', `import { defineModel } from '@stacksjs/orm'
-export default defineModel({ name: 'RuntimeSecond', table: 'runtime_seconds', primaryKey: 'worker_id', autoIncrement: false, traits: { useTimestamps: false }, attributes: { worker_id: { fillable: true }, name: { fillable: true } } })`)
+export default defineModel({ name: 'RuntimeSecond', table: 'runtime_seconds', primaryKey: 'worker_id', autoIncrement: false, dashboard: { writes: ['store', 'update', 'destroy'] }, traits: { useTimestamps: false }, attributes: { worker_id: { fillable: true }, name: { fillable: true } } })`)
     write('app/Models/FailedJob.ts', `import { defineModel } from '@stacksjs/orm'
 export default defineModel({ name: 'FailedJob', table: 'failed_jobs', dashboard: { highlight: true, label: 'Failed jobs' }, attributes: {} })`)
     write('resources/functions/runtime-label.ts', `export function runtimeLabel() { return 'dashboard fixture' }`)
@@ -154,6 +154,24 @@ export default new Action({
     expect((await (await fetch(`${origin}/api/dashboard/sidebar-order`)).json()).order).toEqual(personalOrder)
     const invalidSave = await fetch(`${origin}/api/dashboard/sidebar-order`, { method: 'PUT', headers: saveHeaders, body: JSON.stringify({ order: { version: 3 }, scope: initialSidebar.scope }) })
     expect(invalidSave.status).toBe(422)
+    // Create, edit and delete take a model's declared string key (stacksjs/stacks#3350).
+    const customKeyWrites = (await (await fetch(`${origin}/api/dashboard/models/runtime-second`)).json()).writeCapabilities
+    expect(customKeyWrites).toMatchObject({ create: true, update: true, destroy: true })
+    const created = await fetch(`${origin}/api/dashboard/models/runtime-second`, { method: 'POST', headers: saveHeaders, body: JSON.stringify({ fields: { worker_id: 'worker:three', name: 'Third worker' } }) })
+    expect(created.status, await created.clone().text()).toBe(200)
+    expect((await created.json()).id).toBe('worker:three')
+    const edited = await fetch(`${origin}/api/dashboard/models/runtime-second/worker%3Aone`, { method: 'PATCH', headers: saveHeaders, body: JSON.stringify({ fields: { name: 'Renamed worker' } }) })
+    expect(edited.status, await edited.clone().text()).toBe(200)
+    expect(await edited.json()).toMatchObject({ ok: true, id: 'worker:one' })
+    const deleted = await fetch(`${origin}/api/dashboard/models/runtime-second/worker%3Atwo`, { method: 'DELETE', headers: saveHeaders })
+    expect(deleted.status, await deleted.clone().text()).toBe(200)
+    const missing = await fetch(`${origin}/api/dashboard/models/runtime-second/worker%3Anone`, { method: 'DELETE', headers: saveHeaders })
+    expect(missing.status).toBe(404)
+    const afterWrites = (await (await fetch(`${origin}/api/dashboard/models/runtime-second`)).json()).rows
+    expect(afterWrites).toEqual([{ worker_id: 'worker:three', name: 'Third worker' }, { worker_id: 'worker:one', name: 'Renamed worker' }])
+    // A numeric-id model still refuses a key that is not a number.
+    const notANumber = await fetch(`${origin}/api/dashboard/models/runtime-probe/abc`, { method: 'PATCH', headers: saveHeaders, body: JSON.stringify({ fields: { name: 'x' } }) })
+    expect(notANumber.status).toBe(400)
     if (loading === 'defaults') {
       const home = await fetch(`${origin}/api/dashboard/home`)
       expect(home.status).toBe(200)

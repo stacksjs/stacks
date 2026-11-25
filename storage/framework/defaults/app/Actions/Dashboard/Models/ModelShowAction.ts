@@ -362,9 +362,9 @@ export default new Action({
       return dashboardOperationalError(error, `${modelName} records could not be loaded.`, 'ModelShowAction.query')
     }
 
-    // The mutating dashboard routes still require a numeric id.
-    if (response.primaryKey === 'id')
-      response.writeCapabilities = modelWriteCapabilities(Model)
+    // Create, edit and delete take the model's own key (stacksjs/stacks#3350).
+    // Its actions and related panels still take a numeric id: gated below.
+    response.writeCapabilities = modelWriteCapabilities(Model)
     response.writable = Object.values(response.writeCapabilities).some(Boolean)
     // A relation is only worth a picker when the dashboard can list the model
     // it points at. One whose feature is off, or that is kept out of the
