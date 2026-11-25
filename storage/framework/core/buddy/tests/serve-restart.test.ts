@@ -15,12 +15,15 @@ async function freePort(): Promise<number> {
   return port
 }
 
-async function waitForBody(url: string, timeoutMs = 15_000): Promise<string> {
+async function waitForBody(url: string, timeoutMs = 45_000, accepts: (body: string) => boolean = () => true): Promise<string> {
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     const response = await fetch(url, { signal: AbortSignal.timeout(750) }).catch(() => null)
-    if (response?.ok)
-      return response.text()
+    if (response?.ok) {
+      const body = await response.text()
+      if (accepts(body))
+        return body
+    }
     await Bun.sleep(100)
   }
   throw new Error(`No successful response from ${url}`)
@@ -45,7 +48,7 @@ function queuedApiRequest(port: number) {
 }
 
 async function holdUntil(file: string): Promise<void> {
-  const deadline = Date.now() + 10_000
+  const deadline = Date.now() + 40_000
   while (!await Bun.file(file).exists()) {
     if (Date.now() >= deadline)
       throw new Error(`Timed out waiting for ${file}`)
@@ -62,7 +65,7 @@ async function sampleTraffic(urls: string[], signal: AbortSignal): Promise<{ fai
     await Promise.all(clients.map(async (url) => {
       let stage = 'response headers'
       try {
-        const response = await fetch(url, { headers: { connection: 'close' }, signal: AbortSignal.timeout(1500) })
+        const response = await fetch(url, { headers: { connection: 'close' }, signal: AbortSignal.timeout(4000) })
         stage = 'response body'
         await response.text()
         if (!response.ok)
@@ -73,15 +76,12 @@ async function sampleTraffic(urls: string[], signal: AbortSignal): Promise<{ fai
         failures.push(`${url} (${stage}): ${error}`)
       }
     }))
-    await Bun.sleep(10)
+    await Bun.sleep(20)
   }
   return { failures, responses }
 }
 
-const modes = process.platform === 'darwin' || process.platform === 'win32' ? ['default'] : ['default', 'TCP relay']
-
-test.each(modes)('Software Update rolls web and API workers without interrupting traffic (%s)', async (mode) => {
-  const usingRelay = process.platform === 'darwin' || process.platform === 'win32' || mode === 'TCP relay'
+test('Software Update rolls web and API workers without interrupting traffic', async () => {
   const root = await mkdtemp(join(tmpdir(), 'stacks-serve-restart-'))
   const children: Array<ReturnType<typeof Bun.spawn>> = []
   const framework = resolve(import.meta.dir, '../../../../..')
@@ -146,9 +146,17 @@ while (!await Bun.file('finish-slow-web').exists())
 `),
       writeFile(apiFile, versionedApi('before')),
       writeFile(stx, `
+import { serve as start } from 'bun-plugin-stx/serve'
 if (await Bun.file('fail-web').exists())
   throw new Error('Replacement web worker failed at startup')
-export { serve } from 'bun-plugin-stx/serve'
+export async function serve(options) {
+  if (await Bun.file('hold-web').exists()) {
+    await Bun.write('web-starting', '')
+    while (!await Bun.file('start-web').exists())
+      await Bun.sleep(25)
+  }
+  return start(options)
+}
 `),
     ])
     const web = await freePort()
@@ -169,8 +177,7 @@ export { serve } from 'bun-plugin-stx/serve'
           API_HOST: '127.0.0.1',
           BUN_PLUGIN_STX_SRC: stx,
           PORT_API: String(api),
-          SHUTDOWN_GRACE_MS: '2500',
-          STACKS_SERVE_TCP_RELAY: mode === 'TCP relay' ? '1' : undefined,
+          SHUTDOWN_GRACE_MS: '5000',
         },
         stdout: 'ignore',
         stderr: 'inherit',
@@ -184,35 +191,29 @@ export { serve } from 'bun-plugin-stx/serve'
     expect(canRestartUpdatedProject(root)).toBe(true)
     expect(runningAppSessions(root).map(session => session.pid).sort()).toEqual(children.map(child => child.pid).sort())
     expect(pageBefore).toMatch(/<h1>worker \d+<\/h1>/)
+    const [oldHeading, oldWebPid] = pageBefore.match(/<h1>worker (\d+)<\/h1>/)!
     expect(apiBefore).toMatch(/^before \d+$/)
     const apiUrl = `http://127.0.0.1:${api}`
-    if (usingRelay) {
-      // A network client cannot supply trusted peer metadata through HTTP.
-      const peer = await new Promise<{ port: number, address: string, expectedPort?: number }>((resolve, reject) => {
-        let response = ''
-        const socket = createConnection({ host: '127.0.0.1', port: api })
-        socket.setTimeout(3000, () => socket.destroy(new Error('Peer request timed out')))
-        socket.once('error', reject)
-        let expectedPort: number | undefined
-        socket.once('connect', () => {
-          expectedPort = socket.localPort
-          socket.write('GET /api/peer HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nX-Forwarded-For: 192.0.2.1\r\n\r\n')
-        })
-        socket.on('data', chunk => { response += chunk })
-        socket.once('end', () => {
-          try { resolve({ ...JSON.parse(response.split('\r\n\r\n')[1]!), expectedPort }) }
-          catch (error) { reject(error) }
-        })
+    // A network client cannot supply trusted peer metadata through HTTP.
+    const peer = await new Promise<{ port: number, address: string, expectedPort?: number }>((resolve, reject) => {
+      let response = ''
+      const socket = createConnection({ host: '127.0.0.1', port: api })
+      socket.setTimeout(3000, () => socket.destroy(new Error('Peer request timed out')))
+      socket.once('error', reject)
+      let expectedPort: number | undefined
+      socket.once('connect', () => {
+        expectedPort = socket.localPort
+        socket.write('GET /api/peer HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nX-Forwarded-For: 192.0.2.1\r\n\r\n')
       })
-      expect(peer.address).toBe('127.0.0.1')
-      expect(peer.port).toBe(peer.expectedPort!)
-    }
-    const slow = fetch(`${apiUrl}/api/slow`, { signal: AbortSignal.timeout(12_000) }).then(response => response.text())
-    const originalRequest = slow.catch(error => String(error))
-    const originalWebRequest = fetch(`${webUrl}/slow`, { signal: AbortSignal.timeout(12_000) })
-      .then(response => response.text()).catch(error => String(error))
-    await Promise.all([holdUntil(join(root, 'slow-api-started')), holdUntil(join(root, 'slow-web-started'))])
-    await writeFile(apiFile, versionedApi('after'))
+      socket.on('data', chunk => { response += chunk })
+      socket.once('end', () => {
+        try { resolve({ ...JSON.parse(response.split('\r\n\r\n')[1]!), expectedPort }) }
+        catch (error) { reject(error) }
+      })
+    })
+    expect(peer.address).toBe('127.0.0.1')
+    expect(peer.port).toBe(peer.expectedPort!)
+    await Promise.all([writeFile(apiFile, versionedApi('after')), Bun.write(join(root, 'hold-web'), '')])
 
     const monitor = new AbortController()
     const traffic = sampleTraffic([`${webUrl}/worker`, `${webUrl}/api/fixture`, `${apiUrl}/api/fixture`], monitor.signal)
@@ -220,14 +221,23 @@ export { serve } from 'bun-plugin-stx/serve'
     void restart.catch(() => {})
     let queued: ReturnType<typeof queuedApiRequest> | undefined
     try {
-      await holdUntil(join(root, 'api-starting'))
+      // Wait for both standbys to reach their listeners before holding open
+      // requests, so framework boot time cannot consume the drain test window.
+      await Promise.all(['api-starting', 'web-starting'].map(file => holdUntil(join(root, file))))
       const stillServing = await fetch(`${apiUrl}/api/fixture`)
       expect(await stillServing.text()).toBe(apiBefore)
+      expect(await waitForBody(`${webUrl}/worker`)).toBe(pageBefore)
       expect(await Bun.file(join(root, 'api-draining')).exists()).toBe(false)
-      if (process.platform === 'darwin') {
-        // Leave a request in the old worker's kernel accept queue while the
-        // replacement takes traffic. Dropping the old public listener used
-        // to reset this connection before Bun could accept it.
+      const slowRequest = (url: string) => fetch(url, {
+        headers: { connection: 'close' }, signal: AbortSignal.timeout(20_000),
+      }).then(response => response.text()).catch(error => String(error))
+      const originalRequest = slowRequest(`${apiUrl}/api/slow`)
+      const originalWebRequest = slowRequest(`${webUrl}/slow`)
+      await Promise.all(['slow-api-started', 'slow-web-started'].map(file => holdUntil(join(root, file))))
+      if (process.platform === 'darwin' || process.platform === 'linux') {
+        // Connect while only the old worker can receive the request and pause
+        // it before it can read. A shared listener used to reset this request
+        // when closed with connections still queued in the kernel.
         const previousPid = Number(apiBefore.split(' ')[1])
         let fresh: string | undefined
         process.kill(previousPid, 'SIGSTOP')
@@ -249,24 +259,17 @@ export { serve } from 'bun-plugin-stx/serve'
       else {
         await Bun.write(join(root, 'start-api'), '')
       }
-      if (!usingRelay)
-        await holdUntil(join(root, 'api-draining'))
       await Bun.write(join(root, 'finish-slow-api'), '')
       expect(await originalRequest).toBe(apiBefore)
-      const deadline = Date.now() + 5000
-      let webResponse = pageBefore
-      while (webResponse === pageBefore && Date.now() < deadline) {
-        webResponse = await waitForBody(`${webUrl}/worker`)
-        await Bun.sleep(25)
-      }
-      expect(webResponse).not.toBe(pageBefore)
+      await Bun.write(join(root, 'start-web'), '')
+      await waitForBody(`${webUrl}/worker`, 10_000, body => !body.includes(oldHeading))
       await Bun.write(join(root, 'finish-slow-web'), '')
-      expect(await originalWebRequest).toContain(pageBefore.match(/<h1>worker \d+<\/h1>/)![0])
+      expect(await originalWebRequest).toContain(oldHeading)
       await restart
     }
     finally {
       queued?.socket.destroy()
-      await Promise.all(['start-api', 'finish-slow-api', 'finish-slow-web'].map(file => Bun.write(join(root, file), '')))
+      await Promise.all(['start-api', 'start-web', 'finish-slow-api', 'finish-slow-web'].map(file => Bun.write(join(root, file), '')))
       monitor.abort()
       await traffic
     }
@@ -279,6 +282,7 @@ export { serve } from 'bun-plugin-stx/serve'
     expect(pageAfter).toMatch(/<h1>worker \d+<\/h1>/)
     expect(pageAfter).not.toBe(pageBefore)
     expect(apiAfter).toMatch(/^after \d+$/)
+    expect(isProcessAlive(Number(oldWebPid))).toBe(false)
     expect(isProcessAlive(Number(apiBefore.split(' ')[1]))).toBe(false)
     const unauthenticated = await fetch(`${webUrl}/__buddy/serve-ready`, { method: 'HEAD' })
     expect(unauthenticated.status).not.toBe(204)
@@ -311,4 +315,4 @@ export { serve } from 'bun-plugin-stx/serve'
       await rm(root, { recursive: true, force: true })
     }
   }
-}, 35_000)
+}, 110_000)

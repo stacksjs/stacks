@@ -1,12 +1,12 @@
 import type { OwnedProcess } from '@stacksjs/cli/owned-process'
 import process from 'node:process'
-import { resolveApiHost } from '@stacksjs/actions/helpers/api-host'
 import { serveAppRestart } from '@stacksjs/actions/dev/app-session-control'
+import { resolveApiHost } from '@stacksjs/actions/helpers/api-host'
 import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
+import { createServeRelay, reserveRelayWorkerPort, retireRelayWorker } from '@stacksjs/cli/serve-relay'
 import { log } from '@stacksjs/logging'
 import { isCompiledBinary, projectCliEntry, projectPath } from '@stacksjs/path'
 import { serveReadyHeader, serveReadyPath } from './serve-readiness'
-import { createServeRelay, reserveRelayWorkerPort, retireRelayWorker } from '@stacksjs/cli/serve-relay'
 
 type ServeCommand = 'serve' | 'serve:api'
 interface ServeOptions { port?: string | number, verbose?: boolean }
@@ -15,8 +15,8 @@ interface ServeWorker {
   child: OwnedProcess
   token: string
   apiReady: Promise<number>
-  privatePort?: number
-  target?: ReturnType<Relay['createTarget']>
+  privatePort: number
+  target: ReturnType<Relay['createTarget']>
 }
 
 async function servingPort(configured: string | number | undefined, web: boolean): Promise<number> {
@@ -32,10 +32,8 @@ export function isServeWorker(): boolean {
   return process.env.STACKS_SERVE_WORKER === '1' && typeof process.send === 'function'
 }
 
-async function waitForWebServer(host: string, port: number, token: string, signal: AbortSignal): Promise<number> {
-  const address = !host || host === '0.0.0.0' ? '127.0.0.1' : host === '::' ? '::1' : host
-  const hostname = address.includes(':') && !address.startsWith('[') ? `[${address}]` : address
-  const url = `http://${hostname}:${port}${serveReadyPath}`
+async function waitForWebServer(port: number, token: string, signal: AbortSignal): Promise<number> {
+  const url = `http://127.0.0.1:${port}${serveReadyPath}`
   while (!signal.aborted) {
     const response = await fetch(url, {
       method: 'HEAD',
@@ -60,19 +58,12 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
   const bun: string = runtime
   const web = command === 'serve'
   const configuredPort = options?.port || process.env.PORT
-  const webPort = Number(configuredPort) || 3000
-  // On macOS closing a shared listener resets connections that are still in
-  // that listener's accept queue. A stable public listener owns those
-  // connections until their original worker finishes serving them.
-  const relayEnabled = process.platform === 'darwin' || process.platform === 'win32' || process.env.STACKS_SERVE_TCP_RELAY === '1'
-  if (relayEnabled)
-    process.env.APP_ENV ||= 'production'
-  const publicHost = web ? (process.env.HOST?.trim() || '0.0.0.0') : resolveApiHost({
-    ...process.env,
-    APP_ENV: process.env.APP_ENV || 'production',
-  })
-  const publicPort = relayEnabled ? await servingPort(configuredPort, web) : undefined
-  const relay = publicPort === undefined ? undefined : createServeRelay(publicHost, publicPort)
+  process.env.APP_ENV ||= 'production'
+  const publicHost = web ? (process.env.HOST?.trim() || '0.0.0.0') : resolveApiHost()
+  const publicPort = await servingPort(configuredPort, web)
+  // Linux and macOS can reset connections still queued on a closing shared
+  // listener. Keep the public listener alive across worker replacements.
+  const relay = createServeRelay(publicHost, publicPort)
   const requestedGrace = Number(process.env.SHUTDOWN_GRACE_MS)
   const grace = Number.isFinite(requestedGrace) && requestedGrace > 0 ? requestedGrace : 15_000
   const shutdown = new AbortController()
@@ -80,12 +71,11 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
   const children = new Set<OwnedProcess>()
   void finished.catch(() => {})
   let worker: ServeWorker | undefined
-  let apiPort: number | undefined
   let restarting: Promise<void> | undefined
   let closeControl: (() => void) | undefined
 
-  async function startWorker(pinnedPort?: number): Promise<ServeWorker> {
-    const privatePort = relay ? await reserveRelayWorkerPort() : undefined
+  async function startWorker(): Promise<ServeWorker> {
+    const privatePort = await reserveRelayWorkerPort()
     shutdown.signal.throwIfAborted()
     const entry = projectCliEntry(root)
     // Resolve the project's CLI again after each update. Keep the current
@@ -97,15 +87,14 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
         : [process.execPath, ...process.execArgv, Bun.main]
     const token = crypto.randomUUID()
     const apiReady = Promise.withResolvers<number>()
-    let target: ServeWorker['target']
+    let target: ServeWorker['target'] | undefined
     const child = spawnOwnedProcess([...executable, command, ...(options?.verbose ? ['--verbose'] : [])], {
       cwd: root,
       env: {
         ...process.env,
         PORT: configuredPort === undefined ? undefined : String(configuredPort),
-        ...(pinnedPort !== undefined && { PORT: String(pinnedPort) }),
         STACKS_SERVE_WORKER: '1',
-        STACKS_SERVE_RELAY_PORT: privatePort === undefined ? undefined : String(privatePort),
+        STACKS_SERVE_RELAY_PORT: String(privatePort),
         STACKS_SERVE_READY_TOKEN: web ? token : undefined,
       },
       ownerRuntime: bun,
@@ -122,11 +111,11 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
         }
       },
     })
-    if (privatePort !== undefined)
-      target = relay!.createTarget(privatePort, child.send)
+    const relayTarget = relay.createTarget(privatePort, child.send)
+    target = relayTarget
     children.add(child)
     void child.exited.then(({ code }) => {
-      target?.close()
+      relayTarget.close()
       children.delete(child)
       if (shutdown.signal.aborted || worker?.child !== child)
         return
@@ -135,14 +124,14 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
       else
         finish()
     }, (error: unknown) => {
-      target?.close()
+      relayTarget.close()
       if (!shutdown.signal.aborted && worker?.child === child)
         fail(error)
     })
-    return { child, token, apiReady: apiReady.promise, privatePort, target }
+    return { child, token, apiReady: apiReady.promise, privatePort, target: relayTarget }
   }
 
-  async function waitForWorker({ child, token, apiReady, privatePort }: ServeWorker): Promise<number> {
+  async function ready({ child, token, apiReady, privatePort }: ServeWorker): Promise<void> {
     const wait = new AbortController()
     const signal = AbortSignal.any([wait.signal, shutdown.signal, AbortSignal.timeout(90_000)])
     const timeout = new Promise<never>((_, reject) => {
@@ -153,70 +142,52 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
         signal.addEventListener('abort', abort, { once: true })
     })
     try {
-      return await Promise.race([
-        child.started.then(() => web
-          ? waitForWebServer(privatePort === undefined ? publicHost : '127.0.0.1', privatePort ?? webPort, token, signal)
-          : apiReady),
+      const port = await Promise.race([
+        child.started.then(() => web ? waitForWebServer(privatePort, token, signal) : apiReady),
         child.exited.then(({ code }) => { throw new Error(`Buddy ${command} exited before it was ready (status ${code}).`) }),
         timeout,
       ])
+      if (port !== privatePort)
+        throw new Error(`Buddy ${command} listened on port ${port} instead of ${privatePort}.`)
     }
     finally {
       wait.abort()
     }
   }
 
-  async function ready(instance: ServeWorker, expectedPort?: number): Promise<void> {
-    const port = await waitForWorker(instance)
-    if (expectedPort !== undefined && port !== expectedPort)
-      throw new Error(`Buddy ${command} listened on port ${port} instead of ${expectedPort}.`)
-  }
-
   async function restart(): Promise<void> {
     const previous = worker!
-    // A direct API listener may get its port from project configuration.
-    if (!web && !relay)
-      apiPort ??= await waitForWorker(previous)
     shutdown.signal.throwIfAborted()
-    const candidate = await startWorker(apiPort)
+    const candidate = await startWorker()
     try {
-      await ready(candidate, candidate.privatePort ?? apiPort)
+      await ready(candidate)
       shutdown.signal.throwIfAborted()
-      if (candidate.target)
-        relay!.promote(candidate.target)
+      relay.promote(candidate.target)
       worker = candidate
     }
     catch (error) {
       await candidate.child.stop()
       throw error
     }
-    if (previous.target)
-      await retireRelayWorker(previous.child, previous.target, grace)
-    else
-      await previous.child.stop()
+    await retireRelayWorker(previous.child, previous.target, grace)
   }
 
   const stopChildren = () => Promise.all([...children].map(child => child.stop()))
   const stop = () => {
     shutdown.abort()
     closeControl?.()
-    relay?.stop()
+    relay.stop()
     void stopChildren().then(() => finish(), fail)
   }
   const signals = ['SIGINT', 'SIGTERM'] as const
   for (const signal of signals)
     process.on(signal, stop)
   try {
-    await relay?.listening
+    await relay.listening
     worker = await startWorker()
-    if (worker.target) {
-      await ready(worker, worker.privatePort)
-      relay!.promote(worker.target)
-      log.info(`Buddy ${command} is listening on port ${publicPort}.`)
-    }
-    else if (!web) {
-      void worker.apiReady.then((port) => { apiPort ??= port })
-    }
+    await ready(worker)
+    relay.promote(worker.target)
+    log.info(`Buddy ${command} is listening on port ${publicPort}.`)
     try {
       closeControl = serveAppRestart(root, 'serve', () => {
         restarting ??= restart().finally(() => { restarting = undefined })
@@ -231,7 +202,7 @@ export async function runServeSession(command: ServeCommand, options?: ServeOpti
   finally {
     shutdown.abort()
     closeControl?.()
-    relay?.stop()
+    relay.stop()
     for (const signal of signals)
       process.off(signal, stop)
     await stopChildren()

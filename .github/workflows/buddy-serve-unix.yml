@@ -1,13 +1,15 @@
-name: Buddy Restart and Dashboard macOS
+name: Buddy Production Restarts on Linux and macOS
 
 on:
   push:
     branches: [main]
-    paths: &macos_paths
-      - '.github/workflows/buddy-serve-macos.yml'
+    paths: &restart_paths
+      - '.github/workflows/buddy-serve-unix.yml'
+      - 'storage/framework/core/actions/src/dev/app-session*.ts'
       - 'storage/framework/core/actions/src/dev/dashboard*.ts'
       - 'storage/framework/core/actions/src/helpers/api-shutdown.ts'
       - 'storage/framework/core/actions/src/helpers/serve-relay-worker.ts'
+      - 'storage/framework/core/actions/src/serve/api.ts'
       - 'storage/framework/core/actions/tests/dashboard-runtime.test.ts'
       - 'storage/framework/core/actions/tests/fixtures/dashboard-sidebar-order-browser.ts'
       - 'storage/framework/core/buddy/src/commands/serve.ts'
@@ -21,14 +23,18 @@ on:
       - 'storage/framework/defaults/views/dashboard/layouts/default.stx'
   pull_request:
     branches: [main]
-    paths: *macos_paths
+    paths: *restart_paths
 
 permissions:
   contents: read
 
 jobs:
   restart-and-sidebar:
-    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-15]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     env:
       APP_ENV: test
@@ -42,8 +48,10 @@ jobs:
       - name: Exercise production restarts with live and queued connections
         run: bun test ./storage/framework/core/buddy/tests/serve-restart.test.ts --rerun-each=3
       - name: Build the dashboard client's datetime dependency
+        if: runner.os == 'macOS'
         run: bun run --filter '@stacksjs/datetime' build
       - name: Verify sidebar pointer and keyboard reordering in Chrome
+        if: runner.os == 'macOS'
         env:
           STACKS_BROWSER_TESTS: '1'
         run: bun test ./storage/framework/core/actions/tests/dashboard-runtime.test.ts --test-name-pattern 'lazy actions'
