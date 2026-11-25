@@ -101,7 +101,7 @@
     "docs:native-skills:check": "./buddy docs:native-skills:check"
   },
   "dependencies": {
-    "@stacksjs/stx": "0.2.934",
+    "@stacksjs/stx": "0.2.938",
     "stacks": "workspace:*"
   },
   "workspaces": [
@@ -121,16 +121,16 @@
   },
   "devDependencies": {
     "@actions/expressions": "0.3.61",
-    "@stacksjs/components": "0.2.934",
+    "@stacksjs/components": "0.2.938",
     "better-dx": "^0.2.39",
-    "bun-plugin-stx": "0.2.934"
+    "bun-plugin-stx": "0.2.938"
   },
   "overrides": {
-    "@stacksjs/stx": "0.2.934",
-    "bun-plugin-stx": "0.2.934",
-    "@stacksjs/components": "0.2.934",
-    "@stacksjs/desktop": "0.2.934",
-    "@stacksjs/sanitizer": "0.2.934",
+    "@stacksjs/stx": "0.2.938",
+    "bun-plugin-stx": "0.2.938",
+    "@stacksjs/components": "0.2.938",
+    "@stacksjs/desktop": "0.2.938",
+    "@stacksjs/sanitizer": "0.2.938",
     "ts-images": "0.2.35",
     "@stacksjs/ts-svg": "0.1.8"
   }

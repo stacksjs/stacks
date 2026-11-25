@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths: &restart_paths
       - '.github/workflows/buddy-serve-windows.yml'
+      - 'package.json'
       - 'storage/framework/core/actions/src/dev/app-session*.ts'
       - 'storage/framework/core/actions/src/dev/api.ts'
       - 'storage/framework/core/actions/src/dev/views.ts'
