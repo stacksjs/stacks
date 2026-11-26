@@ -47,8 +47,10 @@ describe('the dev error page', () => {
   })
 
   it('emits none of the type-only declarations the templates carry', async () => {
-    const html = await render(new Error('a thrown message'))
+    // The neighboring source lines contain the assertion strings below.
+    const html = await new ErrorPageHandler({ snippetLines: 0 }).render(new Error('a thrown message'), 500)
 
+    expect(html).toContain('data-trace-frame')
     expect(html).not.toContain('declare const')
     expect(html).not.toContain('error-page-view-model')
   })
