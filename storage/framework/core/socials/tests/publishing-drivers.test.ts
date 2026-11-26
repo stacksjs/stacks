@@ -623,6 +623,25 @@ describe('Instagram', () => {
     expect(sent[1]!.headers.get('authorization')).toBe('Bearer USER')
   })
 
+  it('lists each linked Facebook Page across result pages for the owner to choose', async () => {
+    const first = { id: '123', name: 'Studio', access_token: 'STUDIO', instagram_business_account: { id: '1784', username: 'studio' } }
+    const second = { id: '456', name: 'Shop', access_token: 'SHOP', instagram_business_account: { id: '1785', username: 'shop' } }
+    const sent = mockFetch((url) => {
+      if (url.includes('after=PAGE2')) return { data: [first, second] }
+      return {
+        data: [{ id: 'unlinked', access_token: 'UNLINKED' }, first],
+        paging: { next: 'https://graph.facebook.com/v26.0/me/accounts?after=PAGE2&access_token=USER' },
+      }
+    })
+    expect(await new InstagramPublishingDriver().listAccounts('USER')).toEqual([
+      { pageId: '123', pageName: 'Studio', igUserId: '1784', username: 'studio', pageAccessToken: 'STUDIO' },
+      { pageId: '456', pageName: 'Shop', igUserId: '1785', username: 'shop', pageAccessToken: 'SHOP' },
+    ])
+    expect(new URL(sent[0]!.url).searchParams.get('fields')).toContain('id,name,')
+    expect(sent[1]!.url).not.toContain('access_token')
+    expect(sent[1]!.headers.get('authorization')).toBe('Bearer USER')
+  })
+
   it('does not follow a paging address on another host, which would carry the token there', async () => {
     const sent = mockFetch(() => ({ data: [], paging: { next: 'https://evil.example/me/accounts?after=2' } }))
     await expect(new InstagramPublishingDriver().resolveAccount('USER')).rejects.toThrow('another host')

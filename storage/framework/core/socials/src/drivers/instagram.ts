@@ -78,6 +78,11 @@ export interface InstagramAccount {
   pageAccessToken: string
 }
 
+export interface InstagramPageAccount extends InstagramAccount {
+  pageId: string
+  pageName?: string
+}
+
 /**
  * Publishing driver for Instagram Business/Creator accounts via the Facebook
  * Graph API. Auth is Facebook Login (OAuth 2.0). Publishing is the documented
@@ -153,43 +158,54 @@ export class InstagramPublishingDriver implements SocialPublishingDriver, Social
    * Returns the IG account id plus the Page access token used to publish.
    */
   async resolveAccount(accessToken: string): Promise<InstagramAccount> {
+    for await (const page of this.pageAccounts(accessToken)) {
+      return { igUserId: page.igUserId, username: page.username, pageAccessToken: page.pageAccessToken }
+    }
+    throw new InstagramApiError('No Instagram Business account is linked to your Facebook Pages.', 400, '')
+  }
+
+  /** List the linked professional accounts together with their Facebook Pages. */
+  async listAccounts(accessToken: string): Promise<InstagramPageAccount[]> {
+    const accounts = new Map<string, InstagramPageAccount>()
+    for await (const account of this.pageAccounts(accessToken)) {
+      if (account.pageId && !accounts.has(account.pageId))
+        accounts.set(account.pageId, { ...account, pageId: account.pageId })
+    }
+    return [...accounts.values()]
+  }
+
+  private async *pageAccounts(accessToken: string): AsyncGenerator<InstagramAccount & { pageId?: string, pageName?: string }> {
     const query = new URLSearchParams({
-      fields: 'name,access_token,instagram_business_account{id,username}',
+      fields: 'id,name,access_token,instagram_business_account{id,username}',
     })
 
     type AccountsPage = {
       data?: Array<{
+        id?: string
+        name?: string
         access_token?: string
         instagram_business_account?: { id: string, username?: string }
       }>
       paging?: { next?: string }
     }
 
-    // Every page of the user's Pages, not only the first: someone who manages
-    // many Pages could have the linked one on page two (stacksjs/stacks#3377).
-    let payload = await this.graph<AccountsPage>(`/me/accounts?${query.toString()}`, { method: 'GET' }, accessToken)
-    const seen: AccountsPage['data'] = []
-    for (let pages = 1; ; pages++) {
-      seen.push(...(payload.data || []))
-      const page = (payload.data || []).find(entry => entry.instagram_business_account?.id && entry.access_token)
-      if (page) {
-        return {
-          igUserId: page.instagram_business_account!.id,
-          username: page.instagram_business_account!.username,
-          pageAccessToken: page.access_token!,
+    let next: string | undefined = `/me/accounts?${query.toString()}`
+    for (let index = 0; next && index < MAX_ACCOUNT_PAGES; index++) {
+      const payload: AccountsPage = await this.graph<AccountsPage>(next, { method: 'GET' }, accessToken)
+      for (const page of payload.data ?? []) {
+        const instagram = page.instagram_business_account
+        if (instagram?.id && page.access_token) {
+          yield {
+            pageId: page.id,
+            pageName: page.name,
+            igUserId: instagram.id,
+            username: instagram.username,
+            pageAccessToken: page.access_token,
+          }
         }
       }
-      const next = payload.paging?.next
-      if (!next || pages >= MAX_ACCOUNT_PAGES)
-        break
-      payload = await this.graph<AccountsPage>(next, { method: 'GET' }, accessToken)
+      next = payload.paging?.next
     }
-
-    throw new InstagramApiError(
-      'No Instagram Business account is linked to your Facebook Pages.',
-      400,
-      JSON.stringify({ data: seen }),
-    )
   }
 
   /**
@@ -421,9 +437,11 @@ export class InstagramPublishingDriver implements SocialPublishingDriver, Social
   protected graphUrl(path: string): string {
     if (!/^https?:\/\//i.test(path))
       return `${this.graphBase}/${this.graphVersion}${path}`
-    if (new URL(path).origin !== new URL(this.graphBase).origin)
+    const url = new URL(path)
+    if (url.origin !== new URL(this.graphBase).origin || url.username || url.password)
       throw new InstagramApiError('Instagram returned a paging address on another host, so it was not followed.', 502, '')
-    return path
+    url.searchParams.delete('access_token')
+    return url.href
   }
 
   protected async graph<T>(path: string, init: RequestInit, token?: string): Promise<T> {
