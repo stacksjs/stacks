@@ -341,6 +341,7 @@ export const tsCloud: TsCloudConfig = {
       webServer: 'rpx',
       proxy: {
         engine: 'rpx',
+        http2: true,
         onDemandTls: true,
         onDemandTlsEmail: 'hello@stacksjs.com',
         // rpx normally stays below 100M. Contain abnormal growth in its own
