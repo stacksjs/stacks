@@ -25,4 +25,9 @@ describe('renderAdmissionOptions', () => {
     // Not 'foreground': stx keeps a prefetch background unless told otherwise.
     expect(await renderPriority(new Request('http://site.test/o/r/issues'))).toBeUndefined()
   })
+
+  it('passes the report through, and leaves it out when it asks for nothing', () => {
+    expect(renderAdmissionOptions({ report: { slowMs: 2000, intervalMs: 60_000 } })).toEqual({ renderReport: { slowMs: 2000, intervalMs: 60_000 } })
+    expect(renderAdmissionOptions({ report: {} })).toEqual({})
+  })
 })

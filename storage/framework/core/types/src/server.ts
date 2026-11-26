@@ -231,6 +231,16 @@ export interface ServerRenderOptions {
   queueLimit?: number
   /** Longest wait before a 503, in milliseconds. stx default: 15000. */
   queueTimeoutMs?: number
+  /**
+   * Say in the server's log what the renderer is doing: each render that ran
+   * longer than `slowMs`, named with its path and wait, and once every
+   * `intervalMs` that had traffic, one line of totals by class. Off unless
+   * set. Needs bun-plugin-stx 0.2.952 or newer.
+   */
+  report?: {
+    slowMs?: number
+    intervalMs?: number
+  }
   background?: {
     /**
      * True for a request to render in the background class. Asked for every
