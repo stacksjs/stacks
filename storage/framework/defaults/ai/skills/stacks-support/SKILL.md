@@ -61,7 +61,10 @@ in a plain host. Package tests alone do not prove the hosted product is ready.
 `APP_URL` origin, creates `resources/components/HqSupport.stx`, mounts it in the
 chosen app-local layout (`--layout` selects another), and writes
 `SUPPORTHQ_ENABLED=true` / `SUPPORTHQ_MESSENGER=true`. Existing customized components
-are preserved. Plain `support:install` connects server keys without enabling UI.
+are preserved. Plain `support:install` connects server keys and adds the SDK as
+a runtime dependency. Use `buddy support:install --sdk-only` to install the
+published package before connecting a project. Buddy preserves a declared SDK
+version and moves a development-only declaration to runtime.
 
 The native `/api/support/config` and authenticated `/api/support/session` routes
 exist only when the session integration is enabled. The session action reads

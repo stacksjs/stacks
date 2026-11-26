@@ -3,6 +3,54 @@ import { existsSync } from 'node:fs'
 import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises'
 import { dirname, relative, resolve } from 'node:path'
 
+const supportPackage = '@stacksjs/support'
+
+/** Keep the opt-in SDK available to apps with isolated dependency linking. */
+export async function installSupportSdk(directory: string, frameworkVersion: string, deps: {
+  install: (directory: string, args: string[]) => Promise<boolean>
+  print: (line: string) => void
+}): Promise<boolean> {
+  const path = resolve(directory, 'package.json')
+  try {
+    const original = await readFile(path, 'utf8')
+    const manifest = JSON.parse(original) as {
+      dependencies?: Record<string, string>
+      devDependencies?: Record<string, string>
+    }
+    if (manifest.dependencies?.[supportPackage]) return true
+    const development = manifest.devDependencies
+    const devVersion = development?.[supportPackage]
+    const spec = `${supportPackage}@${devVersion || frameworkVersion}`
+    if (development && devVersion) {
+      // Bun add keeps an existing development dependency in that section.
+      manifest.dependencies = { ...manifest.dependencies, [supportPackage]: devVersion }
+      delete development[supportPackage]
+      const indent = original.match(/\n([ \t]+)"/)?.[1] ?? '  '
+      const updated = `${JSON.stringify(manifest, null, indent)}\n`
+      await writeFile(path, updated)
+      let installed = false
+      try {
+        installed = await deps.install(directory, ['install'])
+      }
+      finally {
+        if (!installed && await readFile(path, 'utf8') === updated) await writeFile(path, original)
+      }
+      if (!installed) throw new Error('SDK install failed')
+    }
+    else {
+      if (!await deps.install(directory, ['add', '--exact', spec])) throw new Error('SDK install failed')
+      const updated = JSON.parse(await readFile(path, 'utf8')) as typeof manifest
+      if (!updated.dependencies?.[supportPackage]) throw new Error('SDK missing from runtime dependencies')
+    }
+    deps.print(`Installed ${spec} as an app dependency.`)
+    return true
+  }
+  catch {
+    deps.print('Buddy could not install the HQ Support SDK. Check the application package.json and retry `buddy support:install --sdk-only`.')
+    return false
+  }
+}
+
 export async function installSupportMessenger(config: HqServicesConfig, input: { directory: string, origin: string, frameworkVersion: string, componentSource: string, layout?: string }, deps: { fetch: (input: string, init?: RequestInit) => Promise<Response>, print: (line: string) => void, writeEnv: (entries: Record<string, string>) => Promise<void> }): Promise<boolean> {
   try {
     const service = config.supporthq
