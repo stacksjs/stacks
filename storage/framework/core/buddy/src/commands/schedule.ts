@@ -113,6 +113,67 @@ export function schedule(buddy: CLI): void {
     })
 
   buddy
+    .command('schedule:github:alerts <name>', 'Deploy token expiry reminders and AWS dispatch alarms for a GitHub workflow schedule')
+    .option('--expires-on <date>', 'GitHub token expiration date in YYYY-MM-DD format')
+    .option('--from <email>', 'Verified SES sender')
+    .option('--to <email>', 'Email address for expiry reminders and dispatch alarms')
+    .option('--heartbeat-minutes <minutes>', 'Alert after this many minutes without a successful dispatch', { default: '40' })
+    .option('--region <region>', 'AWS region (defaults to AWS_REGION or us-east-1)')
+    .option('--profile <profile>', 'AWS credential profile')
+    .option('--dry-run', 'Print the CloudFormation template without accessing AWS')
+    .action(async (name: string, options: {
+      expiresOn?: string
+      from?: string
+      to?: string
+      heartbeatMinutes: string
+      region?: string
+      profile?: string
+      dryRun?: boolean
+    }) => {
+      try {
+        const { workflowAlertsTemplate } = await import('../github-workflow-alerts')
+        const templateBody = workflowAlertsTemplate({
+          name,
+          expiresOn: options.expiresOn ?? '',
+          from: options.from ?? '',
+          to: options.to ?? '',
+          heartbeatMinutes: Number(options.heartbeatMinutes),
+        })
+        if (options.dryRun) {
+          console.log(templateBody)
+          return
+        }
+        const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
+        const region = options.region || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1'
+        const client = new AWSCloudFormationClient(region, options.profile)
+        const schedule = await client.describeStacks({ stackName: `stacks-${name}-schedule` })
+        if (!schedule.Stacks?.[0]?.Outputs?.some(output => output.OutputKey === 'RuleName' && output.OutputValue === name))
+          throw new Error(`Buddy's EventBridge rule ${name} was not found`)
+        const stackName = `stacks-${name}-schedule-alerts`
+        const current = await client.describeStacks({ stackName }).then(result => result.Stacks?.[0], (error) => {
+          if (error instanceof Error && error.message.includes('does not exist'))
+            return undefined
+          throw error
+        })
+        const settings = { stackName, templateBody, capabilities: ['CAPABILITY_IAM'] }
+        if (current)
+          await client.updateStack(settings)
+        else
+          await client.createStack({ ...settings, onFailure: 'ROLLBACK' })
+        console.log(`CloudFormation deployment started for ${stackName}.`)
+      }
+      catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        if (message.includes('No updates are to be performed')) {
+          console.log('The workflow alerts are already up to date.')
+          return
+        }
+        console.error(`[schedule:github:alerts] ${message}`)
+        process.exitCode = ExitCode.FatalError
+      }
+    })
+
+  buddy
     .command('schedule:run', descriptions.schedule)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })

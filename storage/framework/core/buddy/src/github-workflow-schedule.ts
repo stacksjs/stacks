@@ -7,9 +7,13 @@ export interface GitHubWorkflowSchedule {
   recordSchedule: boolean
 }
 
-export function workflowScheduleTemplate(schedule: GitHubWorkflowSchedule): string {
-  if (!/^[a-z][a-z0-9-]{0,43}$/.test(schedule.name))
+export function validateWorkflowScheduleName(name: string): void {
+  if (!/^[a-z][a-z0-9-]{0,43}$/.test(name))
     throw new Error('Use a lowercase schedule name of at most 44 characters starting with a letter')
+}
+
+export function workflowScheduleTemplate(schedule: GitHubWorkflowSchedule): string {
+  validateWorkflowScheduleName(schedule.name)
   if (!/^[\w.-]+\/[\w.-]+$/.test(schedule.repository))
     throw new Error('Use owner/repository for the GitHub repository')
   if (!/^(?:[1-9]\d*|[\w.-]+\.ya?ml)$/.test(schedule.workflow))
