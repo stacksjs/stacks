@@ -11,6 +11,7 @@ import { installServeRelayWorker, serveRelayPort } from '@stacksjs/actions/helpe
 import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import type { EnhancedRequest } from '@stacksjs/router'
 import { beginRequestCapture, finishRequestCapture } from '@stacksjs/router/request-capture'
+import { isPrewarmRequest, loopbackOrigin, prewarmFromSitemap, renderCacheHost } from './render-prewarm'
 import { serveReadyHeader, serveReadyPath } from './serve-readiness'
 
 /**
@@ -356,9 +357,18 @@ export async function startProductionServer(options?: { port?: string | number, 
         log.warn(note)
 
       const cacheConfig = config.server?.cache
+      const renderVary = cacheConfig?.renderVary ?? 'request'
+      // A cache shared between visitors is worth filling before they arrive,
+      // so it is warmed unless the app says not to. A per-request cache
+      // (`request`) never is: no visitor would ever get a warmed entry.
+      const prewarmRenders = !!cacheConfig?.renders && renderVary !== 'request' && cacheConfig.prewarm !== false
+      // More than one host means the host is part of what a page is.
+      const multiHost = !!(config as { sites?: { enabled?: boolean } }).sites?.enabled
+        || Object.keys(config.server?.domains ?? {}).length > 0
+      const sitesModule = multiHost ? await import('@stacksjs/sites') : undefined
       const documentCacheControl = buildDocumentCacheControl(cacheConfig?.documents)
       if (cacheConfig?.renders)
-        log.info(`Render cache: on, keyed by ${cacheConfig.renderVary ?? 'request'}${cacheConfig.prewarm ? ', prewarmed' : ''}`)
+        log.info(`Render cache: on, keyed by ${renderVary}${prewarmRenders ? ', warmed from the sitemap at boot' : ''}`)
       if (documentCacheControl)
         log.info(`Document cache: ${documentCacheControl}`)
 
@@ -368,6 +378,19 @@ export async function startProductionServer(options?: { port?: string | number, 
         log.info(`Frameable by other origins: ${[...embeddableRules.paths, ...embeddableRules.prefixes].join(' ')}`)
 
       log.info(`Starting production server on port ${port}...`)
+
+      // Started beside the server, not after it: `stxServe` does not return
+      // while it serves. It waits for the server to answer, then requests
+      // each page through the real pipeline, in the background, so it never
+      // holds up the readiness check or a visitor.
+      if (prewarmRenders) {
+        void prewarmFromSitemap({ origin: loopbackOrigin(port, hostname), multiHost, waitMs: 60_000 })
+          .then(({ warmed, failed, total, ms }) => {
+            if (total > 0)
+              log.info(`Render cache warmed: ${warmed} of ${total} sitemap pages in ${ms} ms${failed ? ` (${failed} left for their first visitor)` : ''}`)
+          })
+          .catch(() => {})
+      }
 
       await stxServe({
         ...serverRequestBodyOptions(config.server?.maxRequestBodySize),
@@ -420,7 +443,10 @@ export async function startProductionServer(options?: { port?: string | number, 
           // A cache shared between visitors (`source`, `url`) holds nothing
           // of theirs in its key, so the request says who is not anonymous.
           renderCacheSkip: carriesVisitorState,
-          ...(cacheConfig.prewarm && { prewarmRenderCache: true }),
+          // The host a per-address entry belongs to. Behind the gateway the
+          // Host header names the upstream, so a single-site app leaves the
+          // host out and a multi-site one uses the trusted visitor host.
+          renderCacheHost: renderCacheHost(multiHost, request => sitesModule!.requestHost(request.headers, sitesModule!.sitesOptions())),
         }),
         // `config/server.ts#render`. Unset keys leave stx's defaults.
         ...renderAdmissionOptions(config.server?.render),
@@ -545,7 +571,7 @@ export async function startProductionServer(options?: { port?: string | number, 
           // First-party pageviews: fire-and-forget, gated on config; a
           // failed insert loses one statistic and never a render. Mirrors
           // the dev views server.
-          if ((config as { analytics?: { capturePageviews?: boolean } }).analytics?.capturePageviews) {
+          if ((config as { analytics?: { capturePageviews?: boolean } }).analytics?.capturePageviews && !isPrewarmRequest(req)) {
             void import('@stacksjs/analytics').then(({ recordPageview }) => recordPageview(req)).catch(() => {})
           }
 
