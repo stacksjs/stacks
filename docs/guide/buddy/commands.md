@@ -6709,11 +6709,13 @@ Create a user account (optionally an admin)
 | `--password` | Password. Generated and printed once if omitted. | value, required | - |
 | `--role` | Role to assign, e.g. admin. Seeds the default roles if the table is empty. | value, required | - |
 | `--update` | If the account already exists, reset its password and ensure the role | boolean, optional | `false` |
+| `--without-two-factor` | Also turn off two-factor sign-in, for an owner who lost the authenticator and the recovery codes | boolean, optional | `false` |
 
 Examples:
 
 ```bash
 buddy user:add chris@example.com --role admin
+buddy user:add owner@example.com --update --without-two-factor
 buddy user:add support@example.com --name Support --password s3cret
 ```
 
