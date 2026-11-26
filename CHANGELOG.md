@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.693...v0.75.694)
+
+## ✨ Features
+
+- **desktop**: a build number for web view apps ([cd33dda](https://github.com/stacksjs/stacks/commit/cd33dda)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.692...v0.75.693)
 
 ## 🐛 Bug Fixes

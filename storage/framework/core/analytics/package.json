@@ -2,7 +2,7 @@
   "name": "@stacksjs/analytics",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.693",
+  "version": "0.75.694",
   "description": "Stacks Analytics. Privacy-friendly.",
   "author": "Chris Breuer",
   "contributors": [
