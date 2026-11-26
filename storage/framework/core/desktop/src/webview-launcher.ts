@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url'
 import { newAgentToken } from './agent'
 import { agentBundleSource, logToFileWhenDetached, stacksAgentHandler } from './agent-launcher'
 import { createDesktopUpdater, updateRequestHandler } from './update-install'
-import { applyWidenedPath, desktopAppPaths, INSTANCE_HEADER, INSTANCE_PATH, startWebviewAgent } from './webview-agent'
+import { applyWidenedPath, desktopAppPaths, INSTANCE_HEADER, INSTANCE_PATH, startWebviewAgent, validWebviewDatabaseFilename } from './webview-agent'
 
 /**
  * The executable of a web view desktop app (`desktop.webview`), on macOS,
@@ -273,6 +273,8 @@ export interface RunWebviewAppOptions {
   views: WebviewViews
   /** The app's agent module, loaded after the lock is held so a second launch never boots the app. */
   module?: () => Promise<unknown>
+  /** Prepare app-owned workspace credentials or settings before native database and config initialization. */
+  prepare?: WebviewAgentPreparation
   /** The Craft binary compiled into this executable (`runtime: 'embedded'`). */
   embeddedRuntime?: string
   /** This launch's arguments. Default: the process's, less the executable. */
@@ -294,7 +296,7 @@ export interface RunWebviewAppOptions {
    */
   app?: Pick<StacksAgentHandlerOptions, 'routes' | 'actions' | 'middleware'>
   /**
-   * The app's own SQLite database, at `<dataDir>/database.sqlite`, brought up
+   * The app's own SQLite database in its data directory, brought up
    * to date before the agent module loads (`agent.database`). `migrate` is
    * `migrateCompiledDatabase` from `@stacksjs/database/compiled-migrations`,
    * passed in by the generated entry so this launcher depends on no database
@@ -314,10 +316,14 @@ export interface RunWebviewAppOptions {
 
 /** What `runWebviewApp` needs to bring the app's database up to date. */
 export interface WebviewDatabase {
+  /** A filename within the app's data directory. Default `database.sqlite`. */
+  filename?: string
   /** Every migration the build applied, by file name, as SQL. */
   migrations: Record<string, string>
   migrate: (options: { databasePath: string, migrations: Record<string, string> }) => { applied: string[] }
 }
+
+export type WebviewAgentPreparation = (context: WebviewAgentContext & { databasePath?: string }) => void | Promise<void>
 
 function defaultArgv(): string[] {
   // A compiled executable's argv is [exe, virtual entry, ...]; from source it is [bun, script, ...].
@@ -381,40 +387,50 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
   // Set once the agent serves, for the failure path to stop it.
   let serving: WebviewAgent | undefined
   let updater: DesktopUpdater | undefined
+  let answerUpdate: ReturnType<typeof updateRequestHandler> | undefined
+  let answerApp: ReturnType<typeof appRouteHandler> | undefined
   try {
-    // Before the module loads: config reads DB_DATABASE_PATH when it is first
-    // evaluated, and the module's code may open the database at once.
-    if (options.database) {
-      const databasePath = join(paths.dataDir, 'database.sqlite')
-      const { applied } = options.database.migrate({ databasePath, migrations: options.database.migrations })
-      if (applied.length) console.log(`${tag} applied ${applied.length} migration(s) to ${databasePath}`)
-      process.env.DB_CONNECTION = 'sqlite'
-      process.env.DB_DATABASE_PATH = databasePath
+    const filename = options.database?.filename ?? 'database.sqlite'
+    if (!validWebviewDatabaseFilename(filename))
+      throw new Error('The desktop database must use a filename within the app data directory.')
+    const databasePath = options.database ? join(paths.dataDir, filename) : undefined
+
+    const initialize = async (context?: WebviewAgentContext): Promise<void> => {
+      if (context) await options.prepare?.({ ...context, databasePath })
+      // Before the module loads: config reads DB_DATABASE_PATH when it is first
+      // evaluated, and the module's code may open the database at once.
+      if (options.database && databasePath) {
+        const { applied } = options.database.migrate({ databasePath, migrations: options.database.migrations })
+        if (applied.length) console.log(`${tag} applied ${applied.length} migration(s) to ${databasePath}`)
+        process.env.DB_CONNECTION = 'sqlite'
+        process.env.DB_DATABASE_PATH = databasePath
+      }
+      // After the database: config reads DB_DATABASE_PATH as it loads.
+      if (options.config) await loadBundledConfig(options.config)
+      module = options.module ? agentModuleOf(await options.module()) : {}
+      if (manifest.updates) {
+        updater = createDesktopUpdater({
+          appName: manifest.appName,
+          currentVersion: manifest.version,
+          feedUrl: manifest.updates.feedUrl,
+          trustedKeys: manifest.updates.publicKeys,
+          channel: manifest.updates.channel,
+          updatesDir: paths.updatesDir,
+          beforeUpdate: module.beforeUpdate,
+          beforeInstall: module.beforeInstall,
+        })
+      }
+      answerUpdate = updater ? updateRequestHandler(updater) : undefined
+      answerApp = options.app
+        ? appRouteHandler(await stacksAgentHandler({ appRoutes: false, ...options.app }), (await import('@stacksjs/router')).isUnmatchedRouteResponse)
+        : undefined
+      // Whatever config the app ended up loading, say which: a compiled app
+      // without its config used to run on the framework defaults in silence.
+      const { describeConfigSource, settledConfigSource } = await import('@stacksjs/config/sources')
+      const source = await settledConfigSource()
+      if (source) console.log(`${tag} ${describeConfigSource(source)}`)
     }
-    // After the database: config reads DB_DATABASE_PATH as it loads.
-    if (options.config) await loadBundledConfig(options.config)
-    module = options.module ? agentModuleOf(await options.module()) : {}
-    if (manifest.updates) {
-      updater = createDesktopUpdater({
-        appName: manifest.appName,
-        currentVersion: manifest.version,
-        feedUrl: manifest.updates.feedUrl,
-        trustedKeys: manifest.updates.publicKeys,
-        channel: manifest.updates.channel,
-        updatesDir: paths.updatesDir,
-        beforeUpdate: module.beforeUpdate,
-        beforeInstall: module.beforeInstall,
-      })
-    }
-    const answerUpdate = updater ? updateRequestHandler(updater) : undefined
-    const answerApp = options.app
-      ? appRouteHandler(await stacksAgentHandler({ appRoutes: false, ...options.app }), (await import('@stacksjs/router')).isUnmatchedRouteResponse)
-      : undefined
-    // Whatever config the app ended up loading, say which: a compiled app
-    // without its config used to run on the framework defaults in silence.
-    const { describeConfigSource, settledConfigSource } = await import('@stacksjs/config/sources')
-    const source = await settledConfigSource()
-    if (source) console.log(`${tag} ${describeConfigSource(source)}`)
+    if (!options.prepare) await initialize()
     agent = await startWebviewAgent({
       appName: manifest.appName,
       version: manifest.version,
@@ -424,6 +440,7 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
       dataDir: paths.dataDir,
       publicPaths: manifest.publicPaths,
       instanceSecret: lock.record.secret,
+      initialize: options.prepare ? initialize : undefined,
       handler: async (request, context) => (await answerUpdate?.(request)) ?? (await module.fetch?.(request, context)) ?? answerApp?.(request),
       onSecondInstance: next => module.secondInstance?.(next),
     })
@@ -603,6 +620,7 @@ export function appRouteHandler(
 export function renderWebviewEntry(options: {
   manifest: WebviewAppManifest
   agentEntry?: string
+  prepareEntry?: string
   /** Built views: request path (`/index.html`) to file on the build machine. */
   viewFiles?: Record<string, string>
   /** Serve the project's stx views live instead (development). */
@@ -611,6 +629,7 @@ export function renderWebviewEntry(options: {
   launcherModule?: string
   /** Migrations to apply at launch: file name to its file on the build machine (`agent.database`). */
   migrations?: Record<string, string>
+  databaseFilename?: string
   /** Where `migrateCompiledDatabase` comes from. Default `@stacksjs/database/compiled-migrations`. */
   migrationRunner?: string
   /** The project's config files to compile in: name (`app`) to its file on the build machine (`agent.config`). */
@@ -626,7 +645,10 @@ export function renderWebviewEntry(options: {
     migrations.forEach(([, file], index) => imports.push(`import migration${index} from ${JSON.stringify(file)} with { type: 'text' }`))
   }
   const database = migrations
-    ? `\n  database: {\n    migrations: {\n${migrations.map(([name], index) => `      ${JSON.stringify(name)}: migration${index},`).join('\n')}\n    },\n    migrate: migrateCompiledDatabase,\n  },`
+    ? `\n  database: {${options.databaseFilename ? `\n    filename: ${JSON.stringify(options.databaseFilename)},` : ''}\n    migrations: {\n${migrations.map(([name], index) => `      ${JSON.stringify(name)}: migration${index},`).join('\n')}\n    },\n    migrate: migrateCompiledDatabase,\n  },`
+    : ''
+  const prepare = options.prepareEntry
+    ? `\n  prepare: async context => (await import(${JSON.stringify(options.prepareEntry)})).default(context),`
     : ''
   const configFiles = Object.entries(options.configFiles ?? {})
   const config = configFiles.length
@@ -646,7 +668,7 @@ ${imports.join('\n')}
 process.exit(await runWebviewApp({
   manifest: ${JSON.stringify(options.manifest, null, 2).replace(/\n/g, '\n  ')},
   views: ${views},
-  module: ${options.agentEntry ? `() => import(${JSON.stringify(options.agentEntry)})` : 'undefined'},${options.embeddedRuntime ? '\n  embeddedRuntime,' : ''}${bundled ? `\n  app: {\n    routes: ${bundled.routes.replace(/\n/g, '\n  ')},\n    actions: ${bundled.actions.replace(/\n/g, '\n  ')},\n    middleware: ${bundled.middleware.replace(/\n/g, '\n  ')},\n  },` : ''}${database}${config}
+  module: ${options.agentEntry ? `() => import(${JSON.stringify(options.agentEntry)})` : 'undefined'},${options.embeddedRuntime ? '\n  embeddedRuntime,' : ''}${bundled ? `\n  app: {\n    routes: ${bundled.routes.replace(/\n/g, '\n  ')},\n    actions: ${bundled.actions.replace(/\n/g, '\n  ')},\n    middleware: ${bundled.middleware.replace(/\n/g, '\n  ')},\n  },` : ''}${prepare}${database}${config}
 }))
 `
 }

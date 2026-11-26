@@ -491,6 +491,8 @@ describe('the entrypoint the build writes', () => {
   test('carries the migrations as text, with the runner that applies them', () => {
     const entry = renderWebviewEntry({
       manifest: { appName: 'F', appId: 'org.f.app', version: '0.1.0', runtime: 'embedded', window: { title: 'F', width: 1, height: 2 } },
+      prepareEntry: '/p/app/Desktop/prepare.ts',
+      databaseFilename: 'workspace.sqlite',
       migrations: { '0000000001-create-posts-table.sql': '/p/database/migrations/0000000001-create-posts-table.sql' },
       launcherModule: '@stacksjs/desktop-build',
     })
@@ -498,6 +500,8 @@ describe('the entrypoint the build writes', () => {
     expect(entry).toContain('import migration0 from "/p/database/migrations/0000000001-create-posts-table.sql" with { type: \'text\' }')
     expect(entry).toContain('"0000000001-create-posts-table.sql": migration0,')
     expect(entry).toContain('migrate: migrateCompiledDatabase,')
+    expect(entry).toContain('filename: "workspace.sqlite",')
+    expect(entry).toContain('prepare: async context => (await import("/p/app/Desktop/prepare.ts")).default(context),')
   })
 
   test('carries no app section when no route files are given', () => {
@@ -637,6 +641,54 @@ describe('runWebviewApp', () => {
       const databasePath = join(at.dataDir, 'database.sqlite')
       expect(order).toEqual([`migrate:${databasePath}`, 'module'])
       expect(seen).toEqual({ path: databasePath, connection: 'sqlite' })
+    }
+    finally {
+      if (saved.path === undefined) delete process.env.DB_DATABASE_PATH
+      else process.env.DB_DATABASE_PATH = saved.path
+      if (saved.connection === undefined) delete process.env.DB_CONNECTION
+      else process.env.DB_CONNECTION = saved.connection
+    }
+  })
+
+  test('prepares an existing workspace at the selected agent origin before loading its database and module', async () => {
+    const at = paths()
+    const databasePath = join(at.dataDir, 'workspace.sqlite')
+    const saved = { path: process.env.DB_DATABASE_PATH, connection: process.env.DB_CONNECTION }
+    const order: string[] = []
+    let origin = ''
+    try {
+      const code = await runWebviewApp({
+        manifest,
+        views: { kind: 'none' },
+        paths: at,
+        argv: [],
+        logWhenDetached: false,
+        prepare: async (context) => {
+          expect(existsSync(at.lockFile)).toBe(true)
+          expect(context.dataDir).toBe(at.dataDir)
+          expect(context.databasePath).toBe(databasePath)
+          origin = context.origin
+          expect((await fetch(origin)).status).toBe(503)
+          order.push('prepare')
+        },
+        database: {
+          filename: 'workspace.sqlite',
+          migrations: {},
+          migrate: (options) => {
+            expect(options.databasePath).toBe(databasePath)
+            order.push('migrate')
+            return { applied: [] }
+          },
+        },
+        module: async () => {
+          expect(process.env.DB_DATABASE_PATH).toBe(databasePath)
+          order.push('module')
+          return { start: (context: { origin: string }) => { expect(context.origin).toBe(origin) } }
+        },
+        spawn: () => ({ exited: Promise.resolve(0), kill: () => {} }),
+      })
+      expect(code).toBe(0)
+      expect(order).toEqual(['prepare', 'migrate', 'module'])
     }
     finally {
       if (saved.path === undefined) delete process.env.DB_DATABASE_PATH

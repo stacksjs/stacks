@@ -71,11 +71,14 @@ const output = resolve(root, config.output)
 const work = join(output, '.build')
 mkdirSync(work, { recursive: true })
 const agentEntry = webviewAgentEntry(root, config.agent.entry)
+const prepareEntry = config.agent.prepare ? resolve(root, config.agent.prepare) : undefined
+if (prepareEntry && !existsSync(prepareEntry)) throw new Error(`desktop.webview.agent.prepare does not exist: ${prepareEntry}`)
 // The project's routes, actions and middleware, named so the bundler carries them (stacksjs/stacks#3368).
 const appFiles = config.agent.appRoutes ? await appBundleFiles(root, agentEntry ? [agentEntry] : []) : undefined
 if (appFiles) await log.info(`Bundling ${appFiles.routes.length} route file(s), ${Object.keys(appFiles.actions).length} action(s) and ${Object.keys(appFiles.middleware).length} middleware into the agent`)
 // The migrations buddy migrate applies, compiled in and applied at launch (stacksjs/stacks#3368).
 const migrationFiles = config.agent.database ? await appMigrationFiles(root) : undefined
+const databaseFilename = config.agent.database && typeof config.agent.database === 'object' ? config.agent.database.filename : undefined
 if (migrationFiles) await log.info(`Bundling ${Object.keys(migrationFiles).length} migration(s) for the app's own database`)
 // The project's config/*.ts, named so the bundler carries them (stacksjs/stacks#3368).
 const configFiles = config.agent.config ? appConfigFiles(root) : undefined
@@ -130,6 +133,8 @@ if (process.env.STACKS_DESKTOP_LAUNCH === '1') {
   writeFileSync(entry, renderWebviewEntry({
     manifest: webviewManifest(config, { runtime: devRuntime, runtimeFlags: probeCraftFlags(devRuntime), development: true }),
     agentEntry,
+    prepareEntry,
+    databaseFilename,
     ...appFiles,
     ...(migrationFiles ? { migrations: migrationFiles } : {}),
     ...(configFiles ? { configFiles } : {}),
@@ -261,6 +266,8 @@ for (const target of targets) {
   writeFileSync(entry, renderWebviewEntry({
     manifest: webviewManifest(config, { runtime: embedded ? 'embedded' : 'beside', runtimeFlags: probeCraftFlags(runtime), sourceRevision }),
     agentEntry,
+    prepareEntry,
+    databaseFilename,
     ...appFiles,
     ...(migrationFiles ? { migrations: migrationFiles } : {}),
     ...(configFiles ? { configFiles } : {}),

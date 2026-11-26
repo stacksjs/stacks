@@ -129,6 +129,18 @@ allowlist and hidden-field serialization; index requests have bounded pagination
 
 ### Migrating a compiled app's own database
 
+When adopting the webview build for an existing workspace, set
+`desktop.webview.agent.database` to `{ filename: 'workspace.sqlite' }` to keep
+the database already in the app data directory. `database: true` uses
+`database.sqlite`.
+
+Set `desktop.webview.agent.prepare` to a module whose default export is a
+`WebviewAgentPreparation` function if app-owned credentials or environment
+settings must be ready before config and routes load. It receives the locked
+data directory, the database path when configured, and the agent's loopback
+origin. Throwing during preparation stops launch and opens the startup error
+window.
+
 A build that ships the framework's generated `.sql` migrations (rather than the
 native model planner above) applies them at launch with
 `migrateCompiledDatabase({ databasePath, migrations, backupDir?, keepBackups? })`

@@ -8,7 +8,7 @@ import { codesignArgs, desktopLauncherCompileArgs, plistValue, renderInfoPlist }
 import { loadDesktopConfig } from './macos-app'
 import { makeIcns, runBundleCommand } from './macos-bundle'
 import { desktopUpdatesProblems } from './update-signing'
-import { webviewComponentDirs } from './webview-agent'
+import { validWebviewDatabaseFilename, webviewComponentDirs } from './webview-agent'
 import { OPTIONAL_CRAFT_FLAGS, WEBVIEW_RUNTIME_NAME } from './webview-launcher'
 
 /**
@@ -78,6 +78,9 @@ export function validateWebviewDesktop(config: ResolvedWebviewDesktop): string[]
     if (!/^[a-z][a-z0-9+.-]*$/i.test(scheme)) errors.push(`webview.urlSchemes: ${JSON.stringify(scheme)} is not a URL scheme`)
   }
   if (config.updates) errors.push(...desktopUpdatesProblems(config.updates, 'webview.updates'))
+  const database = config.agent.database
+  if (database && typeof database === 'object' && database.filename !== undefined && !validWebviewDatabaseFilename(database.filename))
+    errors.push('webview.agent.database.filename must be a filename within the app data directory')
   return errors
 }
 

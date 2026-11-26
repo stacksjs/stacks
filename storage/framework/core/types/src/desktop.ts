@@ -152,13 +152,15 @@ export interface WebviewAgentConfig {
   appRoutes?: boolean
   /**
    * Give the app its own SQLite database, in its data directory
-   * (`database.sqlite`), and bring it up to date at every launch before the
+   * (`database.sqlite` by default), and bring it up to date at every launch before the
    * agent module loads: the migrations `buddy migrate` applies are compiled
    * in, a backup is taken first, a database a newer version changed is
    * refused, and a failure is undone. `DB_CONNECTION` and `DB_DATABASE_PATH`
    * point the app at it. Default `false` (stacksjs/stacks#3368).
    */
-  database?: boolean
+  database?: boolean | { filename?: string }
+  /** A module whose default function prepares the workspace before migrations and config load. */
+  prepare?: string
   /**
    * Compile the project's `config/*.ts` into the app, so it runs on its own
    * config wherever it is installed rather than the framework defaults. The

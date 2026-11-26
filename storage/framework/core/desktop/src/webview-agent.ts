@@ -69,6 +69,8 @@ export interface WebviewAgentOptions {
   version?: string
   views: WebviewViews
   handler?: WebviewHandler
+  /** Initialize the workspace after selecting the agent origin, before serving it. */
+  initialize?: (context: WebviewAgentContext) => Promise<void>
   /** The port to try first. Default: the one in `portFile`, else any free port. */
   port?: number
   /** Where the port is remembered, so the page's origin (and its local storage) is the same on the next launch. */
@@ -91,6 +93,15 @@ export interface WebviewAgent {
   /** Resolves when the window has made its first authorized request. */
   windowReady: Promise<void>
   stop: () => void
+}
+
+/** A portable filename contained in the workspace's data directory. */
+export function validWebviewDatabaseFilename(filename: string): boolean {
+  return typeof filename === 'string'
+    && filename.length > 0
+    && !/[<>:"/\\|?*]|[ .]$/.test(filename)
+    && !Array.from(filename).some(character => character.charCodeAt(0) < 32)
+    && !/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(filename)
 }
 
 export const INSTANCE_PATH = '/__desktop/instance'
@@ -352,6 +363,7 @@ async function readSecondInstance(request: Request): Promise<SecondInstanceLaunc
 
 export async function startWebviewAgent(options: WebviewAgentOptions): Promise<WebviewAgent> {
   let port = 0
+  let initialized = !options.initialize
   const gate = createWebviewGate({ port: () => port, cookieName: options.cookieName, publicPaths: options.publicPaths, instanceSecret: options.instanceSecret, appName: options.appName })
   let markReady!: () => void
   const windowReady = new Promise<void>((resolve) => { markReady = resolve })
@@ -364,8 +376,14 @@ export async function startWebviewAgent(options: WebviewAgentOptions): Promise<W
     dataDir: options.dataDir ?? '',
   })
 
+  async function initialize(): Promise<void> {
+    await options.initialize?.(context())
+    initialized = true
+  }
+
   /** Everything short of the views: a Response, or undefined for the views to answer. */
   async function before(request: Request): Promise<Response | undefined> {
+    if (!initialized) return new Response('The desktop workspace is starting.', { status: 503, headers: { 'cache-control': 'no-store' } })
     const decision = gate.check(request)
     if ('response' in decision) return decision.response
     if (decision.allow === 'instance') {
@@ -401,6 +419,7 @@ export async function startWebviewAgent(options: WebviewAgentOptions): Promise<W
   const views = options.views
   if (views.kind === 'stx') {
     port = pickAgentPort({ port: options.port, portFile: options.portFile })
+    await initialize()
     const serve = views.serve ?? ((await import(Bun.resolveSync('bun-plugin-stx/serve', views.root))) as { serve: StxServe }).serve
     let stxServer: { stop: (force?: boolean) => unknown } | undefined
     const { componentsDir, additionalComponentsDirs = [] } = webviewComponentDirs(views.components)
@@ -450,6 +469,13 @@ export async function startWebviewAgent(options: WebviewAgentOptions): Promise<W
     server = listen(0)
   }
   port = server.port ?? 0
+  try {
+    await initialize()
+  }
+  catch (error) {
+    server.stop(true)
+    throw error
+  }
   rememberPort(options.portFile, port)
   return { port, origin: `http://127.0.0.1:${port}`, launchUrl, windowReady, stop: () => { server.stop(true) } }
 }
