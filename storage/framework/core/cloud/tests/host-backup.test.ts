@@ -92,6 +92,29 @@ test.skipIf(!Bun.which('sqlite3'))('snapshots committed WAL data without modifyi
   })
 })
 
+test('records the MySQL backup workspace and byte counts when the dump cannot fit', async () => {
+  await withScratch(join(tmpdir(), 'host-mysql-capacity-'), async (root) => {
+    const state = join(root, 'state.json')
+    const staging = join(root, 'stage')
+    const mysql = join(root, 'mysql')
+    const mysqldump = join(root, 'mysqldump')
+    writeFileSync(mysql, '#!/bin/sh\nprintf "%s\\n" 1000000000000000\n', { mode: 0o700 })
+    writeFileSync(mysqldump, '#!/bin/sh\nexit 9\n', { mode: 0o700 })
+    const config = join(root, 'restic.env')
+    writeFileSync(config, `RESTIC_REPOSITORY=${join(root, 'restic')}\nRESTIC_PASSWORD=fixture-only\n`, { mode: 0o600 })
+    const inventory: BackupInventory = {
+      repositories: { fixture: config },
+      projects: { fixture: { mysql: [{ binary: mysqldump, database: 'fixture', socket: join(root, 'mysql.sock') }] } },
+      staging,
+    }
+
+    await expect(runHostBackup(inventory, state, { preserveBackups: true })).rejects.toThrow('Backup failures: fixture')
+    const status = readJson<{ projects: { fixture: { error: string } } }>(state)
+    expect(status.projects.fixture.error).toContain(`Insufficient MySQL snapshot/recovery space in ${join(staging, 'fixture')}`)
+    expect(status.projects.fixture.error).toMatch(/requires 4000002147483648 bytes with [0-9]+ bytes available/)
+  })
+})
+
 test('retry backs up missing, stale and failed groups and verifies each provider without pruning', async () => {
   await withScratch(join(tmpdir(), 'host-retry-'), async (root) => {
     const state = join(root, 'state.json')

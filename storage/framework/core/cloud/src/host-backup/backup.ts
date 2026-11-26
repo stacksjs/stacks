@@ -61,8 +61,13 @@ async function mysqlDump(root: string, target: string, source: MysqlSource): Pro
     const optionFile = `--defaults-extra-file=${client}`
     const bytes = await command([join(dirname(source.binary), 'mysql'), optionFile, '--batch', '--skip-column-names', '--execute',
       `SELECT COALESCE(SUM(data_length+index_length),0) FROM information_schema.tables WHERE table_schema='${database}'`])
-    if (!Number.isFinite(Number(bytes)) || freeBytes(root) < Number(bytes) * 4 + 2 * GiB)
-      throw new Error('Insufficient MySQL snapshot/recovery space')
+    const databaseBytes = Number(bytes)
+    const requiredBytes = databaseBytes * 4 + 2 * GiB
+    if (!bytes || databaseBytes < 0 || !Number.isSafeInteger(databaseBytes) || !Number.isSafeInteger(requiredBytes))
+      throw new Error(`Could not determine the MySQL snapshot/recovery space required in ${root}`)
+    const availableBytes = freeBytes(root)
+    if (availableBytes < requiredBytes)
+      throw new Error(`Insufficient MySQL snapshot/recovery space in ${root} (requires ${requiredBytes} bytes with ${availableBytes} bytes available)`)
     await atomicDump(target, [source.binary, optionFile, '--single-transaction', '--quick', '--skip-lock-tables', '--no-tablespaces',
       '--set-gtid-purged=OFF', '--hex-blob', '--column-statistics=0',
       ...(source.socket ? ['--routines', '--events', '--triggers'] : []), database])
