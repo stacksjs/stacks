@@ -259,6 +259,7 @@ describe('Bluesky', () => {
 describe('Bluesky hosting', () => {
   const plcDoc = (endpoint: string) => ({
     id: 'did:plc:self',
+    alsoKnownAs: ['at://me.example.org'],
     service: [{ id: '#atproto_pds', type: 'AtprotoPersonalDataServer', serviceEndpoint: endpoint }],
   })
   const session = { did: 'did:plc:self', handle: 'me.example.org', accessJwt: 'AJ', refreshJwt: 'RJ' }
@@ -298,6 +299,22 @@ describe('Bluesky hosting', () => {
     expect(sent).toHaveLength(1)
   })
 
+  it('passes same-server XRPC requests through the configured transport with redirects disabled', async () => {
+    const requests: Array<{ origin: string, redirect?: RequestRedirect }> = []
+    const driver = new BlueskyPublishingDriver({
+      service: 'https://pds.example.org',
+      fetcher: async (url, init) => {
+        requests.push({ origin: url.origin, redirect: init.redirect })
+        return Response.json(url.pathname.endsWith('createSession') ? session : {})
+      },
+    })
+    await driver.createSession({ identifier: 'me.example.org', password: 'test-password' })
+    expect(requests).toEqual([
+      { origin: 'https://pds.example.org', redirect: 'error' },
+      { origin: 'https://pds.example.org', redirect: 'error' },
+    ])
+  })
+
   it('reports the refusal when the account\'s own PDS refuses the password too', async () => {
     const sent = mockFetch((url) => {
       if (url.endsWith('createSession')) return new Response('{"error":"AuthenticationRequired","message":"Invalid identifier or password"}', { status: 401 })
@@ -310,11 +327,14 @@ describe('Bluesky hosting', () => {
 })
 
 describe('resolveBlueskyService', () => {
-  const doc = (endpoint: string, id = '#atproto_pds') => ({ service: [{ id, type: 'AtprotoPersonalDataServer', serviceEndpoint: endpoint }] })
+  const doc = (endpoint: string, id = '#atproto_pds', did = 'did:plc:x') => ({
+    id: did,
+    service: [{ id, type: 'AtprotoPersonalDataServer', serviceEndpoint: endpoint }],
+  })
 
   it('reads a did:web document from its own host', async () => {
     const asked: string[] = []
-    const found = await resolveBlueskyService('did:web:me.example.org', { fetchJson: async (url) => { asked.push(url); return doc('https://pds.example.org', 'did:web:me.example.org#atproto_pds') } })
+    const found = await resolveBlueskyService('did:web:me.example.org', { fetchJson: async (url) => { asked.push(url); return doc('https://pds.example.org', '#atproto_pds', 'did:web:me.example.org') } })
     expect(asked).toEqual(['https://me.example.org/.well-known/did.json'])
     expect(found).toBe('https://pds.example.org')
   })
@@ -323,6 +343,16 @@ describe('resolveBlueskyService', () => {
     expect(await resolveBlueskyService('did:plc:x', { fetchJson: async () => doc('http://pds.example.org') })).toBeUndefined()
     expect(await resolveBlueskyService('did:plc:x', { fetchJson: async () => ({ service: [] }) })).toBeUndefined()
     expect(await resolveBlueskyService('did:plc:x', { fetchJson: async () => { throw new Error('offline') } })).toBeUndefined()
+  })
+
+  it('requires the DID and handle to agree before returning a service', async () => {
+    const fetchJson = async (url: string, did: string, handle: string) => url.includes('resolveHandle')
+      ? { did: 'did:plc:x' }
+      : { ...doc('https://pds.example.org', '#atproto_pds', did), alsoKnownAs: [`at://${handle}`] }
+    const resolveWith = (did: string, handle: string) => resolveBlueskyService('me.example.org', { fetchJson: url => fetchJson(url, did, handle) })
+    expect(await resolveWith('did:plc:x', 'me.example.org')).toBe('https://pds.example.org')
+    expect(await resolveWith('did:plc:y', 'me.example.org')).toBeUndefined()
+    expect(await resolveWith('did:plc:x', 'other.example.org')).toBeUndefined()
   })
 })
 

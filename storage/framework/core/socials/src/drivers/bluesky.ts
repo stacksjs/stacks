@@ -74,6 +74,8 @@ export function isBlueskySessionError(error: unknown): boolean {
 
 export interface BlueskyDriverOptions {
   service?: string
+  /** An application can apply its outbound policy to all XRPC requests. */
+  fetcher?: (url: URL, init: RequestInit) => Promise<Response>
 }
 
 interface CreateSessionResponse {
@@ -180,15 +182,18 @@ export async function resolveBlueskyService(
     // A did:web host is whatever the DID says, so it goes through the guard;
     // the entryway and the PLC directory are fixed, known hosts.
     const known = url.startsWith(`${entryway}/`) || url.startsWith(`${directory}/`)
-    const response = known ? await fetch(url) : await fetchPublicUrl(url, {}, { timeoutMs: 10_000, maxBytes: 256 * 1024 })
+    const response = known
+      ? await fetch(url, { redirect: 'error' })
+      : await fetchPublicUrl(url, {}, { maxRedirects: 0, timeoutMs: 10_000, maxBytes: 256 * 1024 })
     if (!response.ok) throw new Error(`${response.status}`)
     return await response.json()
   })
 
   try {
     let did = identifier.trim()
-    if (!did.startsWith('did:')) {
-      const resolved = await fetchJson(`${entryway}/xrpc/com.atproto.identity.resolveHandle?handle=${encodeURIComponent(did)}`) as { did?: unknown }
+    const handle = did.startsWith('did:') ? undefined : did.replace(/^@/, '').toLowerCase()
+    if (handle !== undefined) {
+      const resolved = await fetchJson(`${entryway}/xrpc/com.atproto.identity.resolveHandle?handle=${encodeURIComponent(handle)}`) as { did?: unknown }
       if (typeof resolved?.did !== 'string') return undefined
       did = resolved.did
     }
@@ -202,12 +207,16 @@ export async function resolveBlueskyService(
     else
       return undefined
 
-    const document = await fetchJson(documentUrl) as { service?: Array<{ id?: unknown, type?: unknown, serviceEndpoint?: unknown }> }
-    const pds = (document?.service ?? []).find(entry =>
-      typeof entry?.id === 'string' && entry.id.endsWith('#atproto_pds') && entry.type === 'AtprotoPersonalDataServer')
-    const endpoint = typeof pds?.serviceEndpoint === 'string' ? pds.serviceEndpoint : ''
-    if (!/^https:\/\/[^/\s]+/i.test(endpoint)) return undefined
-    return endpoint.replace(/\/+$/, '')
+    const document = await fetchJson(documentUrl) as { id?: unknown, alsoKnownAs?: unknown[], service?: Array<{ id?: unknown, type?: unknown, serviceEndpoint?: unknown }> }
+    if (document?.id !== did) return undefined
+    const claimedHandle = document.alsoKnownAs?.find(alias => typeof alias === 'string' && alias.startsWith('at://'))
+    if (handle !== undefined && claimedHandle !== `at://${handle}`) return undefined
+    const pds = (document.service ?? []).find(entry =>
+      (entry?.id === '#atproto_pds' || entry?.id === `${did}#atproto_pds`) && entry.type === 'AtprotoPersonalDataServer')
+    if (typeof pds?.serviceEndpoint !== 'string') return undefined
+    const endpoint = new URL(pds.serviceEndpoint)
+    if (endpoint.protocol !== 'https:' || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) return undefined
+    return endpoint.href.replace(/\/+$/, '')
   }
   catch {
     return undefined
@@ -251,10 +260,12 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
 
   /** Whether the PDS was configured, in which case nothing else is tried. */
   protected configuredService: boolean
+  private readonly fetcher?: BlueskyDriverOptions['fetcher']
 
   constructor(options: BlueskyDriverOptions = {}) {
     this.service = options.service || 'https://bsky.social'
     this.configuredService = Boolean(options.service)
+    this.fetcher = options.fetcher
   }
 
   async createSession(credentials: BlueskySessionCredentials): Promise<BlueskySession> {
@@ -672,7 +683,7 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
   }
 
   protected async request<T>(url: URL, init: RequestInit): Promise<T> {
-    const response = await fetch(url, init)
+    const response = await (this.fetcher ?? fetch)(url, { ...init, redirect: 'error' })
     const text = await response.text()
 
     if (!response.ok) {
