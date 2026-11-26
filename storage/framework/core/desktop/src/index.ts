@@ -297,8 +297,10 @@ export interface InfoPlistOptions {
   appName: string
   /** `CFBundleIdentifier`, which may come straight from `DESKTOP_BUNDLE_ID`. */
   bundleId: string
-  /** `CFBundleVersion` and `CFBundleShortVersionString`. */
+  /** `CFBundleShortVersionString`, and `CFBundleVersion` when no build number is given. */
   version: string
+  /** `CFBundleVersion`, so two builds of one version are distinguishable. */
+  buildNumber?: string
   /** `CFBundleExecutable`: the launcher's filename inside `Contents/MacOS`. */
   executable: string
   /** `AppIcon`, or nothing when the project supplied no square PNG. */
@@ -371,7 +373,7 @@ export function renderInfoPlist(options: InfoPlistOptions): { xml: string, ignor
   <key>CFBundleName</key><string>${name}</string>
   <key>CFBundleDisplayName</key><string>${name}</string>
   <key>CFBundleIdentifier</key><string>${xmlEscape(options.bundleId)}</string>
-  <key>CFBundleVersion</key><string>${version}</string>
+  <key>CFBundleVersion</key><string>${options.buildNumber ? xmlEscape(options.buildNumber) : version}</string>
   <key>CFBundleShortVersionString</key><string>${version}</string>
   <key>CFBundleExecutable</key><string>${xmlEscape(options.executable)}</string>
   <key>CFBundlePackageType</key><string>APPL</string>

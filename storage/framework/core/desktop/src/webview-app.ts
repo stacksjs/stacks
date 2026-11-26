@@ -30,6 +30,8 @@ export const WEBVIEW_DEFAULTS = {
 
 export interface ResolvedWebviewDesktop extends WebviewDesktopConfig {
   version: string
+  /** `CFBundleVersion`: the configured build number, `DESKTOP_BUILD_NUMBER`, or the version without its pre-release tag. */
+  buildNumber: string
   window: Required<Pick<NonNullable<WebviewDesktopConfig['window']>, 'title' | 'width' | 'height'>> & NonNullable<WebviewDesktopConfig['window']>
   agent: NonNullable<WebviewDesktopConfig['agent']> & { views: string }
   output: string
@@ -49,10 +51,12 @@ export async function loadWebviewDesktop(root: string, packageVersion = '0.0.0')
   return config?.webview ? resolveWebviewDesktop(config.webview, packageVersion) : null
 }
 
-export function resolveWebviewDesktop(config: WebviewDesktopConfig, packageVersion = '0.0.0'): ResolvedWebviewDesktop {
+export function resolveWebviewDesktop(config: WebviewDesktopConfig, packageVersion = '0.0.0', env: Record<string, string | undefined> = process.env): ResolvedWebviewDesktop {
+  const version = config.version ?? packageVersion
   return {
     ...config,
-    version: config.version ?? packageVersion,
+    version,
+    buildNumber: String(config.buildNumber ?? env.DESKTOP_BUILD_NUMBER ?? '').trim() || version.replace(/-.*$/, ''),
     window: { ...config.window, title: config.window?.title ?? config.appName, width: config.window?.width ?? WEBVIEW_DEFAULTS.width, height: config.window?.height ?? WEBVIEW_DEFAULTS.height },
     agent: { ...config.agent, views: config.agent?.views ?? WEBVIEW_DEFAULTS.views },
     output: config.output ?? WEBVIEW_DEFAULTS.output,
@@ -66,7 +70,10 @@ export function validateWebviewDesktop(config: ResolvedWebviewDesktop): string[]
   const errors: string[] = []
   if (!config.appName?.trim()) errors.push('webview.appName is required')
   if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(config.appId ?? '')) errors.push(`webview.appId must be reverse-DNS, like org.example.app (got ${JSON.stringify(config.appId)})`)
-  if (!/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(config.version)) errors.push(`webview.version must be a semantic version (got ${JSON.stringify(config.version)})`)
+  const versionValid = /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(config.version)
+  if (!versionValid) errors.push(`webview.version must be a semantic version (got ${JSON.stringify(config.version)})`)
+  // A build number taken from an invalid version would only repeat that error.
+  if ((versionValid || config.buildNumber !== config.version) && !/^\d+(\.\d+){0,2}$/.test(config.buildNumber)) errors.push(`webview.buildNumber must be one to three dot-separated integers, as CFBundleVersion is (got ${JSON.stringify(config.buildNumber)})`)
   for (const scheme of config.urlSchemes ?? []) {
     if (!/^[a-z][a-z0-9+.-]*$/i.test(scheme)) errors.push(`webview.urlSchemes: ${JSON.stringify(scheme)} is not a URL scheme`)
   }
@@ -245,6 +252,7 @@ export function renderWebviewInfoPlist(config: ResolvedWebviewDesktop, options: 
     appName: config.appName,
     bundleId: config.macos?.bundleId ?? config.appId,
     version: config.version,
+    buildNumber: config.buildNumber,
     executable: config.executable,
     iconFile: options.iconFile,
     // The window only ever talks to the agent on loopback.

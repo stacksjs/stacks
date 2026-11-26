@@ -36,6 +36,20 @@ const base = { appName: 'Fettler', appId: 'org.fettler.app' }
 const keys = { main: 'ed25519-public:MCowBQYDK2VwAyEA' }
 
 describe('desktop.webview, resolved', () => {
+  test('a build number tells two builds of one version apart', () => {
+    const plain = resolveWebviewDesktop(base, '0.3.1-beta.2', {})
+    expect(plain.buildNumber).toBe('0.3.1')
+    const fromEnv = resolveWebviewDesktop(base, '0.3.1', { DESKTOP_BUILD_NUMBER: '412' })
+    expect(fromEnv.buildNumber).toBe('412')
+    const configured = resolveWebviewDesktop({ ...base, buildNumber: '0.3.1.7' as string }, '0.3.1', { DESKTOP_BUILD_NUMBER: '412' })
+    expect(validateWebviewDesktop(configured).some(error => error.includes('buildNumber'))).toBe(true)
+
+    const { xml } = renderWebviewInfoPlist(fromEnv)
+    expect(xml).toContain('<key>CFBundleVersion</key><string>412</string>')
+    expect(xml).toContain('<key>CFBundleShortVersionString</key><string>0.3.1</string>')
+    expect(validateWebviewDesktop(fromEnv)).toEqual([])
+  })
+
   test('defaults: the package version, a 1280 by 800 window titled with the app, views in resources/desktop', () => {
     const config = resolveWebviewDesktop(base, '0.3.1')
     expect(config.version).toBe('0.3.1')

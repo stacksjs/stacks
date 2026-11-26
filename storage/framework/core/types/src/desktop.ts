@@ -217,6 +217,12 @@ export interface WebviewDesktopConfig {
   appId: string
   /** Defaults to the project's package.json version. */
   version?: string
+  /**
+   * Build number: `CFBundleVersion` on macOS, one to three dot-separated
+   * integers. Defaults to `DESKTOP_BUILD_NUMBER`, then the version, so two
+   * builds of one version can be told apart when a release sets it.
+   */
+  buildNumber?: string
   /** One sentence, for installers and package metadata. */
   description?: string
   /** The person or company named as publisher (MSI manufacturer, package maintainer). */
