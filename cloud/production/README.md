@@ -33,7 +33,15 @@ The daily application backup and its hourly retry restore from both AWS and
 Hetzner before recording success. Both units use `--preserve-backups`. The
 units refresh the inventory through the Bun operator before starting. The
 hourly retry processes new, failed, missing and stale receipts, and skips
-groups verified by every provider within 36 hours. The integrity check reads
+groups verified by every provider within 36 hours.
+
+Both backup units require the mounts for `/var/lib/stacks-deployments/host-backup-staging`.
+If that directory needs a dedicated filesystem, declare the mount in
+`/etc/fstab` at the same path. Keep the mounted root owned by root with mode
+`0700`. Before resuming backups, verify the mount with `findmnt --mountpoint`
+and check the available bytes at that path against the operator's requirement.
+
+The integrity check reads
 one seventh of each repository per run. To retry a provider's current partition,
 run `stacks-host-ops host-backup --check-provider hetzner` or substitute `aws`.
 The database drill restores
