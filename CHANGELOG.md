@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.694...v0.75.695)
+
+## ✨ Features
+
+- **buddy**: user:add --without-two-factor, for an owner locked out by a lost authenticator ([a1efd32](https://github.com/stacksjs/stacks/commit/a1efd32)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **buddy**: document user:add --without-two-factor ([0e6eeba](https://github.com/stacksjs/stacks/commit/0e6eeba)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.693...v0.75.694)
 
 ## ✨ Features
