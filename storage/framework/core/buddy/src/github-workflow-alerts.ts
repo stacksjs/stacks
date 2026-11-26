@@ -19,7 +19,7 @@ exports.handler = async (event) => {
   let message
   if (event.kind === 'expiry') {
     subject = '[Buddy] GitHub token renewal for ' + SCHEDULE_NAME
-    message = 'The GitHub token for ' + SCHEDULE_NAME + ' expires on ' + event.expiresOn + '. Renew it before that date and update the EventBridge connection with buddy schedule:github:deploy --token-stdin. Then set the new expiry with buddy schedule:github:alerts.'
+    message = 'The GitHub token for ' + SCHEDULE_NAME + ' expires on ' + event.expiresOn + '. Renew it before that date. Run buddy schedule:github:deploy with --token-stdin and --expires-on YYYY-MM-DD to update the connection and rearm these reminders.'
   }
   else if (event.kind === 'test') {
     subject = '[Buddy test] Alert delivery for ' + SCHEDULE_NAME
@@ -42,28 +42,20 @@ exports.handler = async (event) => {
 }
 `
 
-export function workflowAlertsTemplate(options: GitHubWorkflowAlerts, now = new Date()): string {
-  const { name, expiresOn, from, to, heartbeatMinutes = 40 } = options
-  validateWorkflowScheduleName(name)
+export function validateWorkflowTokenExpiry(expiresOn: string, now = new Date()): Date {
   const date = new Date(`${expiresOn}T18:00:00.000Z`)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(expiresOn) || !Number.isFinite(+date) || date.toISOString().slice(0, 10) !== expiresOn)
     throw new Error('Specify the token expiry date as YYYY-MM-DD')
   if (expiresOn <= now.toISOString().slice(0, 10))
     throw new Error('The GitHub token expiry date must be in the future')
-  if (![from, to].every(address => /^[\w.!#$%&'*+/=?^_\x60{|}~-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(address)))
-    throw new Error('Specify individual email addresses for the SES sender and alert recipient')
-  if (!Number.isInteger(heartbeatMinutes) || heartbeatMinutes % 5 !== 0 || heartbeatMinutes < 15 || heartbeatMinutes > 1_440)
-    throw new Error('The heartbeat window must be a multiple of five minutes between 15 and 1440')
+  return date
+}
 
-  const group = `${name}-alerts`
-  const functionName = `${name}-schedule-alerts`
+const templateDescription = 'Buddy GitHub workflow expiry and delivery alerts'
+
+function workflowExpiryReminders(name: string, expiresOn: string, now: Date) {
+  const date = validateWorkflowTokenExpiry(expiresOn, now)
   const mailerArn = { 'Fn::GetAtt': ['Mailer', 'Arn'] }
-  const logGroup = `/aws/lambda/${functionName}`
-  const identity = from.split('@')[1]
-  const namespace = 'AWS/Events'
-  const dimensions = [{ Name: 'RuleName', Value: name }]
-  const failures = `${name}-dispatch-failed`
-  const missing = `${name}-dispatch-missing`
   const soon = new Date(Math.ceil((+now + 120_000) / 60_000) * 60_000)
   const reminderDates = [14, 3].map(days => new Date(+date - days * day)).filter(value => value > soon)
   if (reminderDates.length < 2)
@@ -84,6 +76,49 @@ export function workflowAlertsTemplate(options: GitHubWorkflowAlerts, now = new 
       },
     },
   }]))
+  return {
+    reminders,
+    outputs: {
+      ExpiresOn: { Value: expiresOn },
+      ReminderTimesUTC: { Value: reminderDates.map(value => value.toISOString()).join(', ') },
+    },
+  }
+}
+
+export function rearmWorkflowAlertsTemplate(templateBody: string, name: string, expiresOn: string, now = new Date()): string {
+  const template = JSON.parse(templateBody)
+  if (template.Description !== templateDescription || !template.Resources?.ScheduleGroup || !template.Resources?.ScheduleRole || !template.Resources?.Mailer || !template.Outputs?.ExpiresOn)
+    throw new Error('The existing CloudFormation template is not a Buddy GitHub workflow alert stack')
+
+  if (template.Outputs.ExpiresOn.Value === expiresOn)
+    return templateBody
+
+  const { reminders, outputs } = workflowExpiryReminders(name, expiresOn, now)
+  delete template.Resources.Reminder1
+  delete template.Resources.Reminder2
+  Object.assign(template.Resources, reminders)
+  Object.assign(template.Outputs, outputs)
+  return JSON.stringify(template)
+}
+
+export function workflowAlertsTemplate(options: GitHubWorkflowAlerts, now = new Date()): string {
+  const { name, expiresOn, from, to, heartbeatMinutes = 40 } = options
+  validateWorkflowScheduleName(name)
+  if (![from, to].every(address => /^[\w.!#$%&'*+/=?^_\x60{|}~-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(address)))
+    throw new Error('Specify individual email addresses for the SES sender and alert recipient')
+  if (!Number.isInteger(heartbeatMinutes) || heartbeatMinutes % 5 !== 0 || heartbeatMinutes < 15 || heartbeatMinutes > 1_440)
+    throw new Error('The heartbeat window must be a multiple of five minutes between 15 and 1440')
+
+  const group = `${name}-alerts`
+  const functionName = `${name}-schedule-alerts`
+  const mailerArn = { 'Fn::GetAtt': ['Mailer', 'Arn'] }
+  const logGroup = `/aws/lambda/${functionName}`
+  const identity = from.split('@')[1]
+  const namespace = 'AWS/Events'
+  const dimensions = [{ Name: 'RuleName', Value: name }]
+  const failures = `${name}-dispatch-failed`
+  const missing = `${name}-dispatch-missing`
+  const { reminders, outputs } = workflowExpiryReminders(name, expiresOn, now)
   const permission = (alarmName: string) => ({
     Type: 'AWS::Lambda::Permission',
     Properties: {
@@ -97,7 +132,7 @@ export function workflowAlertsTemplate(options: GitHubWorkflowAlerts, now = new 
 
   return JSON.stringify({
     AWSTemplateFormatVersion: '2010-09-09',
-    Description: 'Buddy GitHub workflow expiry and delivery alerts',
+    Description: templateDescription,
     Resources: {
       Logs: { Type: 'AWS::Logs::LogGroup', Properties: { LogGroupName: logGroup, RetentionInDays: 14 } },
       MailRole: {
@@ -197,8 +232,7 @@ export function workflowAlertsTemplate(options: GitHubWorkflowAlerts, now = new 
       ...reminders,
     },
     Outputs: {
-      ExpiresOn: { Value: expiresOn },
-      ReminderTimesUTC: { Value: reminderDates.map(value => value.toISOString()).join(', ') },
+      ...outputs,
       ScheduleGroup: { Value: { Ref: 'ScheduleGroup' } },
       ScheduleRoleArn: { Value: { 'Fn::GetAtt': ['ScheduleRole', 'Arn'] } },
       MailerArn: { Value: mailerArn },

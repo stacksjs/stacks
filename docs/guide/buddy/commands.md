@@ -5518,6 +5518,7 @@ Deploy an AWS EventBridge schedule for a GitHub Actions workflow
 | `--profile` | AWS credential profile | value, required | - |
 | `--record-schedule` | Pass the event timestamp to the workflow_dispatch scheduled_at input | boolean, optional | - |
 | `--token-stdin` | Read a repository-scoped GitHub Actions write token from stdin | boolean, optional | - |
+| `--expires-on` | New token expiry date (YYYY-MM-DD). Rearms existing expiry reminders | value, required | - |
 | `--dry-run` | Print the CloudFormation template without accessing AWS or stdin | boolean, optional | - |
 
 ### `schedule:github:status`

@@ -29,6 +29,7 @@ export function schedule(buddy: CLI): void {
     .option('--profile <profile>', 'AWS credential profile')
     .option('--record-schedule', 'Pass the event timestamp to the workflow_dispatch scheduled_at input')
     .option('--token-stdin', 'Read a repository-scoped GitHub Actions write token from stdin')
+    .option('--expires-on <date>', 'New token expiry date (YYYY-MM-DD). Rearms existing expiry reminders')
     .option('--dry-run', 'Print the CloudFormation template without accessing AWS or stdin')
     .action(async (name: string, options: {
       repo?: string
@@ -39,53 +40,39 @@ export function schedule(buddy: CLI): void {
       profile?: string
       recordSchedule?: boolean
       tokenStdin?: boolean
+      expiresOn?: string
       dryRun?: boolean
     }) => {
       try {
-        const { workflowScheduleTemplate } = await import('../github-workflow-schedule')
-        const templateBody = workflowScheduleTemplate({
+        const workflow = {
           name,
           repository: options.repo ?? '',
           workflow: options.workflow ?? '',
           ref: options.ref,
           expression: options.expression,
           recordSchedule: options.recordSchedule === true,
-        })
+          tokenExpiresOn: options.expiresOn,
+        }
         if (options.dryRun) {
-          console.log(templateBody)
+          const { workflowScheduleTemplate } = await import('../github-workflow-schedule')
+          const { validateWorkflowTokenExpiry } = await import('../github-workflow-alerts')
+          if (options.expiresOn !== undefined)
+            validateWorkflowTokenExpiry(options.expiresOn)
+          console.log(workflowScheduleTemplate(workflow))
           return
         }
 
         const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
         const region = options.region || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1'
         const client = new AWSCloudFormationClient(region, options.profile)
-        const stackName = `stacks-${name}-schedule`
-        const current = await client.describeStacks({ stackName }).then(result => result.Stacks?.[0], (error) => {
-          if (error instanceof Error && error.message.includes('does not exist'))
-            return undefined
-          throw error
-        })
         const token = options.tokenStdin ? (await Bun.stdin.text()).trim() : ''
-        if ((options.tokenStdin || !current) && !/^github_pat_[a-z0-9_]+$/i.test(token))
+        if (options.tokenStdin && !token)
           throw new Error('Pipe a GitHub fine-grained token into this command with --token-stdin')
-        const settings = {
-          stackName,
-          templateBody,
-          capabilities: ['CAPABILITY_IAM'],
-          parameters: [{ ParameterKey: 'GitHubToken', ParameterValue: token, UsePreviousValue: !token }],
-        }
-        if (current)
-          await client.updateStack(settings)
-        else
-          await client.createStack({ ...settings, onFailure: 'ROLLBACK' })
-        console.log(`CloudFormation deployment started for ${stackName}.`)
+        const { deployWorkflowSchedule } = await import('../github-workflow-deploy')
+        console.log(await deployWorkflowSchedule(client, workflow, token))
       }
       catch (error) {
         const message = error instanceof Error ? error.message : String(error)
-        if (message.includes('No updates are to be performed')) {
-          console.log('The workflow schedule is already up to date.')
-          return
-        }
         console.error(`[schedule:github:deploy] ${message.replace(/github_pat_[a-z0-9_]+/gi, '[redacted]')}`)
         process.exitCode = ExitCode.FatalError
       }

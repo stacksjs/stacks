@@ -5,6 +5,7 @@ export interface GitHubWorkflowSchedule {
   ref: string
   expression: string
   recordSchedule: boolean
+  tokenExpiresOn?: string
 }
 
 export function validateWorkflowScheduleName(name: string): void {
@@ -102,6 +103,10 @@ export function workflowScheduleTemplate(schedule: GitHubWorkflowSchedule): stri
         },
       },
     },
-    Outputs: { RuleName: { Value: { Ref: 'Rule' } }, ScheduleExpression: { Value: schedule.expression } },
+    Outputs: {
+      RuleName: { Value: { Ref: 'Rule' } },
+      ScheduleExpression: { Value: schedule.expression },
+      ...(schedule.tokenExpiresOn ? { TokenExpiresOn: { Value: schedule.tokenExpiresOn } } : {}),
+    },
   })
 }
