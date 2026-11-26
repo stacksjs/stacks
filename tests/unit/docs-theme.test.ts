@@ -58,6 +58,12 @@ describe('the docs theme', () => {
       expect(contrast(dark, token('html.dark', name))).toBeGreaterThanOrEqual(4.5)
   })
 
+  it('reserves the square home hero logo before its SVG loads', () => {
+    const rule = /\.hero-image img\s*\{([^}]*)\}/.exec(theme)?.[1] ?? ''
+    expect(rule).toMatch(/width:\s*400px/)
+    expect(rule).toMatch(/aspect-ratio:\s*1\s*;/)
+  })
+
   it('never hides the title text from screen readers, since the logo has no alt text', () => {
     const rule = /\.BPNavBarTitle-text\s*\{([^}]*)\}/.exec(theme)?.[1] ?? ''
     expect(rule).not.toContain('display: none')

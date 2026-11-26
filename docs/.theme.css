@@ -633,6 +633,10 @@ html .BPButton-alt:hover {
 }
 
 html .hero-image img {
+  /* Keep the SVG's intrinsic size before it loads. BunPress caps the width
+   * at 200px on phones and 280px on desktop. */
+  width: 400px;
+  aspect-ratio: 1;
   filter: drop-shadow(0 30px 60px rgba(10, 71, 176, 0.35));
 }
 
