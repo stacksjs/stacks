@@ -45,10 +45,10 @@
   "dependencies": {
     "@iconify-json/f7": "^1.2.2",
     "@iconify-json/hugeicons": "^1.2.35",
-    "@stacksjs/desktop": "^0.2.938",
+    "@stacksjs/desktop": "^0.2.948",
     "@stacksjs/mobile": "0.75.695",
-    "@stacksjs/sanitizer": "^0.2.938",
-    "@stacksjs/stx": "^0.2.938",
+    "@stacksjs/sanitizer": "^0.2.948",
+    "@stacksjs/stx": "^0.2.948",
     "@stacksjs/strings": "0.75.695",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/xterm": "^6.0.0",
