@@ -5,7 +5,7 @@
 // style framework bump. We deliberately use `console.*` + `process.exit` here
 // (same as framework.ts) because the calling script exits synchronously.
 /* eslint-disable no-console */
-import { existsSync, lstatSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, relative } from 'node:path'
 import process from 'node:process'
 import { buddyOptionArgs, runCommand } from '@stacksjs/cli'
@@ -262,6 +262,7 @@ async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version:
 }
 
 const RUNTIME_PACKAGES = ['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx', '@stacksjs/desktop', '@stacksjs/sanitizer', 'stx-router'] as const
+type RuntimeLock = { packages?: Record<string, unknown>, workspaces?: Record<string, unknown> }
 
 /**
  * The runtime packages a bun.lock resolves to more than one version, with the
@@ -276,7 +277,7 @@ const RUNTIME_PACKAGES = ['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-s
  * re-resolves a dependency the app does not declare; without its entries,
  * the next install resolves one version that satisfies every dependent.
  */
-export function splitRuntimeFromLock(lock: { packages?: Record<string, unknown> }): string[] {
+export function splitRuntimeFromLock(lock: RuntimeLock): string[] {
   const packages = lock.packages ?? {}
   const entriesOf = (name: string): string[] => Object.keys(packages).filter(key => key === name || key.endsWith(`/${name}`))
   const versionOf = (key: string): string | undefined => {
@@ -292,6 +293,43 @@ export function splitRuntimeFromLock(lock: { packages?: Record<string, unknown> 
   return split
 }
 
+/** Remove older workspace installs that would shadow the sole hoisted lock entry. */
+export function pruneStaleWorkspaceRuntime(projectRoot: string, lock: RuntimeLock): string[] {
+  const packages = lock.packages ?? {}
+  const root = realpathSync(projectRoot)
+  const removed: string[] = []
+  const installedVersion = (directory: string, name: string): string | undefined => {
+    try {
+      // Skip linked local overrides and linked install directories.
+      if (realpathSync(directory) !== directory) return
+      const manifestPath = join(directory, 'package.json')
+      if (!lstatSync(manifestPath).isFile()) return
+      const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { name?: string, version?: string }
+      if (manifest.name === name && manifest.version && Bun.semver.satisfies(manifest.version, '>=0.0.0-0')) return manifest.version
+    }
+    catch {
+      // Missing directories and incomplete manifests cannot identify a stale install.
+    }
+  }
+
+  for (const name of RUNTIME_PACKAGES) {
+    if (Object.keys(packages).some(key => key.endsWith(`/${name}`))) continue
+    const entry = packages[name]
+    const version = installedVersion(join(root, 'node_modules', name), name)
+    if (!version || !Array.isArray(entry) || entry[0] !== `${name}@${version}` || typeof entry[3] !== 'string' || !entry[3].startsWith('sha')) continue
+
+    for (const workspace of Object.keys(lock.workspaces ?? {})) {
+      const directory = join(workspace, 'node_modules', name)
+      if (!workspace || isAbsolute(workspace) || workspace.split(/[\\/]/).includes('..') || workspace.split(/[\\/]/).includes('node_modules')) continue
+      const nestedVersion = installedVersion(join(root, directory), name)
+      if (!nestedVersion || Bun.semver.order(nestedVersion, version) >= 0) continue
+      rmSync(join(root, directory), { recursive: true, force: true })
+      removed.push(directory)
+    }
+  }
+  return removed
+}
+
 /**
  * Leave the project on one STX runtime (see `splitRuntimeFromLock`): when the
  * lock holds two versions of a runtime package, drop them and install again.
@@ -301,19 +339,21 @@ async function installOneRuntime(projectRoot: string): Promise<string[]> {
   const lockPath = join(projectRoot, 'bun.lock')
   if (!existsSync(lockPath))
     return []
-  const lock = Bun.JSONC.parse(readFileSync(lockPath, 'utf8')) as { packages?: Record<string, unknown> }
+  const lock = Bun.JSONC.parse(readFileSync(lockPath, 'utf8')) as RuntimeLock
   const split = splitRuntimeFromLock(lock)
-  if (split.length === 0)
-    return []
-
-  writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`)
-  const installed = await runCommand('bun install', { cwd: projectRoot })
-  if (installed.isErr)
-    throw new Error(`Re-resolving ${split.join(', ')} to one version failed: run \`bun install\` and re-run buddy upgrade.`)
+  if (split.length > 0) {
+    writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`)
+    const installed = await runCommand('bun install', { cwd: projectRoot })
+    if (installed.isErr)
+      throw new Error(`Re-resolving ${split.join(', ')} to one version failed: run \`bun install\` and re-run buddy upgrade.`)
+  }
 
   // What a re-resolution cannot join is a dependency pinning a release the
   // framework does not accept; that belongs to the dependency, not this app.
-  const after = Bun.JSONC.parse(readFileSync(lockPath, 'utf8')) as { packages?: Record<string, unknown> }
+  const after = split.length ? Bun.JSONC.parse(readFileSync(lockPath, 'utf8')) as RuntimeLock : lock
+  const removed = pruneStaleWorkspaceRuntime(projectRoot, after)
+  if (removed.length > 0)
+    console.log(`  Removed stale workspace runtime installs: ${removed.join(', ')}.\n`)
   const still = splitRuntimeFromLock(structuredClone(after))
   if (still.length > 0)
     console.warn(`  ${still.join(', ')} still resolve to more than one version: a dependency pins an STX release outside the framework's range. \`bun why ${still[0]}\` names it.`)

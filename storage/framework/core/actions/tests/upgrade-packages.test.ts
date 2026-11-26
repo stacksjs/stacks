@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { applyBumps, applyCraftFloor, applyRuntimePins, craftFloor, declaredCraftPackages, keepsNewerRelease, lockfileOnlyAddCommands, lockfileVersion, resolveCraftPins, baseVersion, frameworkPackageUpdateCommand, hasStacksDependency, installedStacksVersion, lockstepPackages, needsFrameworkInstall, publishedRuntimePins, resolvePublishedRuntimePins, splitRuntimeFromLock, standalonePackageUpdateCommand } from '../src/upgrade/packages'
+import { applyBumps, applyCraftFloor, applyRuntimePins, craftFloor, declaredCraftPackages, keepsNewerRelease, lockfileOnlyAddCommands, lockfileVersion, resolveCraftPins, baseVersion, frameworkPackageUpdateCommand, hasStacksDependency, installedStacksVersion, lockstepPackages, needsFrameworkInstall, pruneStaleWorkspaceRuntime, publishedRuntimePins, resolvePublishedRuntimePins, splitRuntimeFromLock, standalonePackageUpdateCommand } from '../src/upgrade/packages'
 
 const temporaryProjects: string[] = []
 
@@ -522,5 +522,40 @@ describe('one STX runtime after an upgrade', () => {
     } }
     expect(splitRuntimeFromLock(lock)).toEqual([])
     expect(Object.keys(lock.packages)).toHaveLength(2)
+  })
+
+  it('removes only older physical workspace copies with no nested lock entry', () => {
+    const project = mkdtempSync(join(tmpdir(), 'stacks-upgrade-stale-runtime-'))
+    temporaryProjects.push(project)
+    const stx = '@stacksjs/stx'
+    const install = (workspace: string, name: string, version: string): string => {
+      const path = join(project, workspace, 'node_modules', name)
+      mkdirSync(path, { recursive: true })
+      writeFileSync(join(path, 'package.json'), JSON.stringify({ name, version }))
+      return path
+    }
+    const hoisted = install('', stx, '0.2.946')
+    const stale = install('packages/server', stx, '0.2.944')
+    const newer = install('packages/web', stx, '0.2.947')
+    const nonWorkspace = install('example', stx, '0.2.944')
+    const pinned = install('packages/server', 'bun-plugin-stx', '0.2.944')
+    const linkedSource = install('fixture', stx, '0.2.944')
+    const linkParent = join(project, 'packages/linked/node_modules/@stacksjs')
+    mkdirSync(linkParent, { recursive: true })
+    const link = join(linkParent, 'stx')
+    symlinkSync(linkedSource, link, 'junction')
+
+    const lock = { packages: {
+      [stx]: entry(stx, '0.2.946'),
+      'bun-plugin-stx': entry('bun-plugin-stx', '0.2.946'),
+      '@project/server/bun-plugin-stx': entry('bun-plugin-stx', '0.2.944'),
+    }, workspaces: { '': {}, 'packages/server': {}, 'packages/web': {}, 'packages/linked': {} } }
+
+    install('', 'bun-plugin-stx', '0.2.946')
+    expect(pruneStaleWorkspaceRuntime(project, lock)).toEqual([join('packages/server', 'node_modules', stx)])
+    expect(existsSync(stale)).toBe(false)
+    for (const path of [hoisted, newer, nonWorkspace, pinned, linkedSource, link])
+      expect(existsSync(path)).toBe(true)
+    expect(pruneStaleWorkspaceRuntime(project, lock)).toEqual([])
   })
 })
