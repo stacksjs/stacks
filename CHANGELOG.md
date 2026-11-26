@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.692...v0.75.693)
+
+## 🐛 Bug Fixes
+
+- **auth**: a wrong password when removing the last passkey says so ([1b2c115](https://github.com/stacksjs/stacks/commit/1b2c115)) _(by Chris Breuer)_
+- clear stale workspace stx installs during Buddy upgrades ([f17b753](https://github.com/stacksjs/stacks/commit/f17b753)) _(by Chris Breuer)_
+- **payments**: expand Stripe portal products before comparing configuration ([80eb865](https://github.com/stacksjs/stacks/commit/80eb865)) _(by Chris Breuer)_ ([#3394](https://github.com/stacksjs/stacks/issues/3394))
+- **testing**: actingAs accepts a model record ([b94c26d](https://github.com/stacksjs/stacks/commit/b94c26d)) _(by Chris Breuer)_
+- **release**: retry a transient GitHub error in the release CI gate ([964a3bb](https://github.com/stacksjs/stacks/commit/964a3bb)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **auto-imports**: record the source list with the passkey removal test ([cf96512](https://github.com/stacksjs/stacks/commit/cf96512)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.691...v0.75.692)
 
 ## ✨ Features
