@@ -98,6 +98,28 @@ is_stacks_app() {
     && grep -Eq '"stacks"[[:space:]]*:' package.json
 }
 
+ensure_buddy_available() {
+  for entry in \
+    storage/framework/core/buddy/src/cli.ts \
+    node_modules/@stacksjs/buddy/src/cli.ts \
+    node_modules/@stacksjs/buddy/dist/cli.js \
+    pantry/@stacksjs/buddy/src/cli.ts \
+    pantry/@stacksjs/buddy/dist/cli.js
+  do
+    if [ -f "$entry" ]; then
+      return
+    fi
+  done
+
+  pantry install --ignore-scripts
+  export PATH="$PROJECT_ROOT/pantry/.bin:$PATH"
+  if [ -f "bun.lock" ] || [ -f "bun.lockb" ]; then
+    bun install --frozen-lockfile
+  else
+    bun install
+  fi
+}
+
 # --- Main ---
 
 # If we are outside a project, create one from the latest stable release.
@@ -156,6 +178,7 @@ fi
 PROJECT_ROOT=$(pwd)
 
 ensure_pantry
+ensure_buddy_available
 
 echo "Bootstrapping Stacks project..."
 "${PROJECT_ROOT}/buddy" setup --skip-aws
