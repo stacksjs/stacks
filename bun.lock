@@ -138,7 +138,7 @@
         "@stacksjs/auth": "workspace:*",
         "@stacksjs/build": "workspace:*",
         "@stacksjs/bumpx": "^0.2.32",
-        "@stacksjs/bunpress": "^0.2.34",
+        "@stacksjs/bunpress": "^0.2.35",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/cloud": "workspace:*",
         "@stacksjs/cms": "workspace:*",
@@ -734,7 +734,7 @@
       "name": "@stacksjs/docs",
       "version": "0.75.695",
       "dependencies": {
-        "@stacksjs/bunpress": "^0.2.34",
+        "@stacksjs/bunpress": "^0.2.35",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/orm": "workspace:*",
@@ -1500,7 +1500,7 @@
       "name": "@stacksjs/types",
       "version": "0.75.695",
       "dependencies": {
-        "@stacksjs/bunpress": "^0.2.34",
+        "@stacksjs/bunpress": "^0.2.35",
         "@stacksjs/clapp": "^0.2.17",
         "@stacksjs/events": "workspace:*",
         "@stacksjs/strings": "workspace:*",

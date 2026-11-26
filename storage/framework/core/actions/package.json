@@ -75,7 +75,7 @@
     "@stacksjs/auth": "workspace:*",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/bumpx": "^0.2.32",
-    "@stacksjs/bunpress": "^0.2.34",
+    "@stacksjs/bunpress": "^0.2.35",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/cloud": "workspace:*",
     "@stacksjs/cms": "workspace:*",
