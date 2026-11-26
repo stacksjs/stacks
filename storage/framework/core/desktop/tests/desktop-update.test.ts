@@ -442,11 +442,47 @@ describe('the updater an agent holds', () => {
   })
 
   test('a download that does not match its manifest is not installed', async () => {
+    let prepared = false
     const { updater: made, installs } = updater({
       fetcher: async (input) => String(input).includes('/api/updates/') ? Response.json(release()) : new Response('something else entirely'),
+      beforeInstall: () => { prepared = true },
     })
     await made.check()
     expect(await made.install()).toMatchObject({ state: 'error' })
+    expect(prepared).toBe(false)
+    expect(installs).toEqual([])
+  })
+
+  test('an install waits for preparation after verification', async () => {
+    const seen: string[] = []
+    const prepared = Promise.withResolvers<void>()
+    const preparing = Promise.withResolvers<void>()
+    const { updater: made, installs } = updater({
+      fetcher: fetcher(release(), seen),
+      beforeInstall: async (manifest, current) => {
+        expect(manifest.version).toBe('0.4.0')
+        expect(current.version).toBe('0.3.0')
+        preparing.resolve()
+        await prepared.promise
+      },
+    })
+    await made.check()
+    expect(seen).toHaveLength(1)
+    const installing = made.install()
+    await preparing.promise
+    expect(seen).toHaveLength(2)
+    expect(installs).toEqual([])
+    prepared.resolve()
+    expect((await installing).state).toBe('installed')
+    expect(installs).toHaveLength(1)
+  })
+
+  test('preparation failure preserves the installed version', async () => {
+    const { updater: made, installs } = updater({
+      beforeInstall: () => { throw new Error('Workspace backup failed') },
+    })
+    expect((await made.check()).state).toBe('available')
+    expect(await made.install()).toMatchObject({ state: 'error', error: 'Workspace backup failed', currentVersion: '0.3.0' })
     expect(installs).toEqual([])
   })
 

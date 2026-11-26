@@ -228,12 +228,13 @@ export function installDesktopUpdate(options: InstallDesktopUpdateOptions): Inst
 }
 
 /**
- * An app's say before an update is installed, called with the manifest that
- * was verified. Return nothing to allow it; `{ refuse }` to stop it; `{ warn }`
- * to make the person confirm first (a license whose updates ended before this
- * version: it would run, but as the free tier).
+ * Decide whether a verified update is eligible during a feed check.
+ * Return `{ refuse }` to disable installation or `{ warn }` to require confirmation.
  */
 export type BeforeDesktopUpdate = (manifest: DesktopUpdateManifest, current: { version: string }) => void | undefined | { refuse: string } | { warn: string } | Promise<void | undefined | { refuse: string } | { warn: string }>
+
+/** Prepare the live app after the artifact is verified and before replacing the installed version. Throw to stop the install. */
+export type BeforeDesktopInstall = (manifest: DesktopUpdateManifest, current: { version: string }) => void | Promise<void>
 
 export interface DesktopUpdateStatus {
   currentVersion: string
@@ -259,6 +260,7 @@ export interface DesktopUpdaterOptions {
   appName?: string
   channel?: string
   beforeUpdate?: BeforeDesktopUpdate
+  beforeInstall?: BeforeDesktopInstall
   target?: DesktopUpdateTarget
   fetcher?: DesktopFetcher
   installation?: DesktopInstallation
@@ -351,6 +353,7 @@ export function createDesktopUpdater(options: DesktopUpdaterOptions): DesktopUpd
       const directory = join(options.updatesDir, manifest.version)
       mkdirSync(directory, { recursive: true })
       const staged = await stageDesktopUpdate(manifest, join(directory, ARTIFACT_NAMES[target.platform] ?? 'update.bin'), options.fetcher, options.trustedKeys, target)
+      await options.beforeInstall?.(manifest, { version: options.currentVersion })
       const outcome = (options.install ?? installDesktopUpdate)({ staged: staged.path, manifest, appName: options.appName, installation, allowUnsigned: options.allowUnsigned })
       if (outcome.status === 'notice') {
         message = outcome.message

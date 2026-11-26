@@ -1,6 +1,6 @@
 import type { BundledConfig } from '@stacksjs/config/sources'
 import type { AgentBundleFiles, StacksAgentHandlerOptions } from './agent-launcher'
-import type { BeforeDesktopUpdate, DesktopUpdater } from './update-install'
+import type { BeforeDesktopInstall, BeforeDesktopUpdate, DesktopUpdater } from './update-install'
 import type { SecondInstanceLaunch, WebviewAgent, WebviewAgentContext, WebviewHandler, WebviewViews } from './webview-agent'
 import { createHash } from 'node:crypto'
 import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
@@ -77,8 +77,10 @@ export interface WebviewAgentModule {
   start?: (context: WebviewAgentContext & { launch: SecondInstanceLaunch, updater?: DesktopUpdater }) => void | Promise<void>
   /** Another launch of the app: its arguments and, when a link started it, the URL. */
   secondInstance?: (launch: SecondInstanceLaunch) => void | Promise<void>
-  /** Before an update is installed: refuse it, or warn first (a license that does not cover the new version). */
+  /** When an update check finds a verified manifest: refuse it or require confirmation. */
   beforeUpdate?: BeforeDesktopUpdate
+  /** Immediately before an app-managed install, for preparation such as a workspace backup. */
+  beforeInstall?: BeforeDesktopInstall
   /** When the window has closed. */
   stop?: () => void | Promise<void>
 }
@@ -401,6 +403,7 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
         channel: manifest.updates.channel,
         updatesDir: paths.updatesDir,
         beforeUpdate: module.beforeUpdate,
+        beforeInstall: module.beforeInstall,
       })
     }
     const answerUpdate = updater ? updateRequestHandler(updater) : undefined

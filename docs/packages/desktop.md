@@ -42,9 +42,14 @@ export default {
 
 `app/Desktop/Agent.ts` default-exports the app's request handling: a `fetch(request, context)`
 that returns a `Response`, or nothing to let the views answer, plus optional `start`,
-`secondInstance`, `beforeUpdate` and `stop` hooks. Anything process-shaped (child processes,
+`secondInstance`, `beforeUpdate`, `beforeInstall` and `stop` hooks. Anything process-shaped (child processes,
 files, secrets) belongs there, not in the page: the page talks to the agent over `fetch` and
 WebSocket.
+
+`beforeUpdate` checks eligibility when a signed manifest is found. Use
+`beforeInstall` to prepare local state, such as taking a workspace snapshot.
+The updater waits for this hook after verifying the downloaded artifact and
+before replacing the installed app. Throwing stops the installation.
 
 Only the app's own window can call the agent. The window opens on a URL with a one-time token,
 which is traded for an HttpOnly cookie; every request must carry the cookie and name
