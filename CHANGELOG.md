@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.695...v0.75.696)
+
+## ✨ Features
+
+- **server**: render.report asks the page renderer to log what it is doing ([826e12b](https://github.com/stacksjs/stacks/commit/826e12b)) _(by glennmichael123)_
+- **server**: warm the render cache from the sitemap as soon as it starts ([8d9580b](https://github.com/stacksjs/stacks/commit/8d9580b)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **cloud**: require the application backup workspace mount ([9b38363](https://github.com/stacksjs/stacks/commit/9b38363)) _(by Chris)_
+- **cloud**: report MySQL backup workspace capacity ([775dfec](https://github.com/stacksjs/stacks/commit/775dfec)) _(by Chris)_ ([#3395](https://github.com/stacksjs/stacks/issues/3395))
+
+## ✅ Tests
+
+- isolate the dev error page template assertion ([bef8364](https://github.com/stacksjs/stacks/commit/bef8364)) _(by Chris)_
+
+## 🔧 Chores
+
+- integrate the Stacks CI assertion fix ([d338d3d](https://github.com/stacksjs/stacks/commit/d338d3d)) _(by Chris)_
+- **deps**: stx 0.2.948 ([de80184](https://github.com/stacksjs/stacks/commit/de80184)) _(by Chris Breuer)_
+- **deps**: require @stacksjs/bunpress ^0.2.35 ([12e60a4](https://github.com/stacksjs/stacks/commit/12e60a4)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.694...v0.75.695)
 
 ## ✨ Features
