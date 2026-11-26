@@ -299,9 +299,9 @@ export interface ServerCacheOptions {
   renderVary?: 'request' | 'source' | 'url'
 
   /**
-   * Fill the render cache as soon as the server listens, by requesting every
-   * page in the app's sitemap (`/sitemap.xml`, dynamic `seo.sitemap.entries`
-   * included) through the normal pipeline.
+   * Fill the render cache as soon as the server listens, by requesting up to
+   * 512 pages in the app's sitemap (`/sitemap.xml`, dynamic `seo.sitemap.entries`
+   * included) through the new worker's request pipeline.
    *
    * On by default when `renderVary` is `url` or `source`: every deploy starts
    * a new process with an empty cache, and without this each page's first

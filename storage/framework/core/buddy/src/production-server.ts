@@ -10,8 +10,9 @@ import { resolveStxSource } from '@stacksjs/actions'
 import { installServeRelayWorker, serveRelayPort } from '@stacksjs/actions/helpers/serve-relay-worker'
 import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import type { EnhancedRequest } from '@stacksjs/router'
+import type { ServeServer } from 'bun-plugin-stx/serve'
 import { beginRequestCapture, finishRequestCapture } from '@stacksjs/router/request-capture'
-import { isPrewarmRequest, loopbackOrigin, prewarmFromSitemap, renderCacheHost } from './render-prewarm'
+import { loopbackOrigin, prewarmOnListen, RENDER_CACHE_LIMIT, renderCacheHost } from './render-prewarm'
 import { serveReadyHeader, serveReadyPath } from './serve-readiness'
 
 /**
@@ -379,18 +380,17 @@ export async function startProductionServer(options?: { port?: string | number, 
 
       log.info(`Starting production server on port ${port}...`)
 
-      // Started beside the server, not after it: `stxServe` does not return
-      // while it serves. It waits for the server to answer, then requests
-      // each page through the real pipeline, in the background, so it never
-      // holds up the readiness check or a visitor.
-      if (prewarmRenders) {
-        void prewarmFromSitemap({ origin: loopbackOrigin(port, hostname), multiHost, waitMs: 60_000 })
-          .then(({ warmed, failed, total, ms }) => {
-            if (total > 0)
-              log.info(`Render cache warmed: ${warmed} of ${total} sitemap pages in ${ms} ms${failed ? ` (${failed} left for their first visitor)` : ''}`)
-          })
-          .catch(() => {})
-      }
+      // stxServe stays pending while listening. Start the probe beside it.
+      const prewarm = prewarmRenders ? prewarmOnListen({ origin: loopbackOrigin(port, hostname), multiHost }) : undefined
+      void prewarm?.result.then((result) => {
+        if (!result) {
+          log.warn('Render cache prewarm could not reach this worker.')
+          return
+        }
+        const { warmed, failed, total, ms } = result
+        if (total > 0)
+          log.info(`Render cache warmed: ${warmed} of ${total} sitemap pages in ${ms} ms${failed ? ` (${failed} left for their first visitor)` : ''}`)
+      }).catch(error => log.warn(`Render cache prewarm failed: ${error instanceof Error ? error.message : error}`))
 
       await stxServe({
         ...serverRequestBodyOptions(config.server?.maxRequestBodySize),
@@ -439,6 +439,7 @@ export async function startProductionServer(options?: { port?: string | number, 
         // stand when nothing is declared.
         ...(cacheConfig?.renders && {
           renderCache: true,
+          renderCacheLimit: RENDER_CACHE_LIMIT,
           renderCacheVary: cacheConfig.renderVary ?? 'request',
           // A cache shared between visitors (`source`, `url`) holds nothing
           // of theirs in its key, so the request says who is not anonymous.
@@ -469,17 +470,19 @@ export async function startProductionServer(options?: { port?: string | number, 
         prepareMiddlewareRequest: (request: Request) => enhanceRequest(request as EnhancedRequest),
         // A page's ambient `ip`: the address trusted proxies vouch for, not
         // the proxy's own (stx >= 0.2.373).
-        clientAddress: relay
-          ? (req: Request, server: Parameters<typeof viewClientAddress>[1]) => viewClientAddress(req, relay.wrap(server))
-          : viewClientAddress,
+        clientAddress: (req: Request, server?: ServeServer) => server ? viewClientAddress(req, relay ? relay.wrap(server) : server) : null,
         // Maintenance / coming-soon gate runs first so it intercepts every
         // request. The gate allowlists `/coming-soon`, the secret bypass URL,
         // and static assets, so the holding page renders and visitors with a
         // valid bypass cookie pass through.
-        onRequest: async (req: Request, server?: Parameters<typeof registerPeerSource>[0]) => {
+        onRequest: async (req: Request, server?: ServeServer) => {
           if (readinessToken && req.method === 'HEAD' && req.headers.get(serveReadyHeader) === readinessToken
             && new URL(req.url).pathname === serveReadyPath)
             return new Response(null, { status: 204, headers: { [serveReadyHeader]: readinessToken } })
+
+          const warmupProbe = prewarm?.acceptProbe(req, server)
+          if (warmupProbe)
+            return warmupProbe
 
           beginRequestCapture(req)
           // First, before any `await`: this request's scope for its
@@ -490,7 +493,8 @@ export async function startProductionServer(options?: { port?: string | number, 
           // when proxying to the API - starts from. Without it every
           // forwarding header is believed, and a client that reaches this port
           // directly writes its own.
-          registerPeerSource(relay ? relay.wrap(server) : server)
+          if (server)
+            registerPeerSource(relay ? relay.wrap(server) : server)
 
           const { maintenanceGate, isApiBoundRequest: isApiBound, proxyToBackend, resolveRedirect, resolveRewrite } = await import('@stacksjs/server')
           const gated = await maintenanceGate(req)
@@ -571,7 +575,7 @@ export async function startProductionServer(options?: { port?: string | number, 
           // First-party pageviews: fire-and-forget, gated on config; a
           // failed insert loses one statistic and never a render. Mirrors
           // the dev views server.
-          if ((config as { analytics?: { capturePageviews?: boolean } }).analytics?.capturePageviews && !isPrewarmRequest(req)) {
+          if ((config as { analytics?: { capturePageviews?: boolean } }).analytics?.capturePageviews && !prewarm?.isRequest(req)) {
             void import('@stacksjs/analytics').then(({ recordPageview }) => recordPageview(req)).catch(() => {})
           }
 

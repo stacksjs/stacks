@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { isPrewarmRequest, loopbackOrigin, PREWARM_HEADER, prewarmFromSitemap, renderCacheHost, sitemapTargets } from '../src/render-prewarm'
+import { loopbackOrigin, PREWARM_HEADER, prewarmFromSitemap, prewarmOnListen, renderCacheHost, sitemapTargets } from '../src/render-prewarm'
 
 const sitemap = (...locs: string[]) => `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -85,7 +85,7 @@ describe('prewarmFromSitemap', () => {
       'http://127.0.0.1:3000/sitemap.xml',
     ])
     for (const request of requests) {
-      expect(request.headers[PREWARM_HEADER]).toBe('1')
+      expect(request.headers[PREWARM_HEADER]).toBeTruthy()
       // A single-site app's key has no host, so nothing pretends to be the gateway.
       expect(request.headers['x-forwarded-host']).toBeUndefined()
     }
@@ -109,19 +109,6 @@ describe('prewarmFromSitemap', () => {
     expect(await prewarmFromSitemap({ origin: 'http://127.0.0.1:3000', multiHost: false, fetch: down })).toMatchObject({ warmed: 0, total: 0 })
   })
 
-  it('waits for a server that is still starting, then warms it', async () => {
-    let attempts = 0
-    const { fetcher: answer } = server({ '/': 200 })
-    const starting = async (url: string, init?: RequestInit) => {
-      if (++attempts < 4)
-        throw new Error('ECONNREFUSED')
-      return answer(url, init)
-    }
-    const result = await prewarmFromSitemap({ origin: 'http://127.0.0.1:3000', multiHost: false, waitMs: 10_000, fetch: starting, sleep: async () => {} })
-    expect(result).toMatchObject({ warmed: 1, total: 1 })
-    expect(attempts).toBeGreaterThanOrEqual(4)
-  })
-
   it('keeps no more pages rendering at once than it was given', async () => {
     let active = 0
     let peak = 0
@@ -139,9 +126,43 @@ describe('prewarmFromSitemap', () => {
   })
 })
 
-describe('isPrewarmRequest', () => {
-  it('tells a warm-up from a visit', () => {
-    expect(isPrewarmRequest(new Request('http://x/', { headers: { [PREWARM_HEADER]: '1' } }))).toBe(true)
-    expect(isPrewarmRequest(new Request('http://x/'))).toBe(false)
+describe('prewarmOnListen', () => {
+  it('warms the replacement listener when the old release still answers on the public port', async () => {
+    const origin = 'http://127.0.0.1:3000'
+    const pages: Request[] = []
+    const listener = {
+      fetch(request: Request) {
+        pages.push(request)
+        const path = new URL(request.url).pathname
+        return new Response(path === '/sitemap.xml' ? sitemap('https://example.com/', 'https://example.com/old-link') : null, {
+          status: path === '/old-link' ? 302 : 200,
+          headers: path === '/old-link' ? { location: 'https://other.example/' } : {},
+        })
+      },
+    }
+    let probes = 0
+    const warmup = prewarmOnListen({
+      origin,
+      multiHost: false,
+      waitMs: 2_000,
+      fetch: async (url, init) => {
+        const request = new Request(url, init)
+        expect(request.method).toBe('HEAD')
+        if (++probes === 1)
+          throw new Error('ECONNREFUSED')
+        if (probes === 2)
+          return new Response(null, { status: 204 })
+        return warmup.acceptProbe(request, listener)!
+      },
+    })
+
+    expect(warmup.acceptProbe(new Request(`${origin}/sitemap.xml`, { method: 'HEAD', headers: { [PREWARM_HEADER]: '1' } }), listener)).toBeUndefined()
+    expect(await warmup.result).toMatchObject({ warmed: 1, failed: 1, total: 2 })
+    expect(probes).toBe(3)
+    expect(pages.map(request => new URL(request.url).pathname)).toEqual(['/sitemap.xml', '/', '/old-link'])
+    expect(pages[0]?.headers.get('accept-encoding')).toBe('identity')
+    expect(pages[1]?.headers.get('accept-encoding')).toBe('br')
+    expect(pages.every(warmup.isRequest)).toBe(true)
+    expect(warmup.isRequest(new Request(origin, { headers: { [PREWARM_HEADER]: '1' } }))).toBe(false)
   })
 })

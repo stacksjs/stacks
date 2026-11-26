@@ -10,9 +10,8 @@
  * The sitemap is the list to warm because it is the app's own statement of
  * which pages are public, and it already includes the dynamic ones
  * (`seo.sitemap.entries`): stx's own prewarm walks the view files and has no
- * way to know which slugs a `[slug].stx` answers. Each page is requested over
- * loopback, through the same pipeline a visitor's request takes, so the entry
- * it leaves is the one that visitor is served.
+ * way to know which slugs a `[slug].stx` answers. Each page goes through the
+ * new listener's request handler, populating the cache it serves to visitors.
  *
  * For that to hold, a warmed entry and a visitor's entry must have the same
  * key. The key's host comes from {@link renderCacheHost}, which a loopback
@@ -27,8 +26,10 @@
 /** Marks a warming request, so first-party analytics does not count it as a visit. */
 export const PREWARM_HEADER = 'x-stacks-prewarm'
 
-/** The most pages one boot will warm; a sitemap past this is warmed in part. */
-export const PREWARM_LIMIT = 1000
+/** The render cache capacity, which also bounds the number of pages to warm. */
+export const RENDER_CACHE_LIMIT = 512
+
+const sitemapPath = '/sitemap.xml'
 
 export interface PrewarmTarget {
   /** Path and query, as the server receives them. */
@@ -42,7 +43,7 @@ export interface PrewarmTarget {
  * documents are kept as their path: a sitemap names the public address and
  * this server is what answers it behind the gateway.
  */
-export function sitemapTargets(xml: string, limit = PREWARM_LIMIT): PrewarmTarget[] {
+export function sitemapTargets(xml: string, limit = RENDER_CACHE_LIMIT): PrewarmTarget[] {
   const seen = new Set<string>()
   const targets: PrewarmTarget[] = []
   for (const match of xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)) {
@@ -96,16 +97,10 @@ export interface PrewarmOptions {
   multiHost: boolean
   /** How many pages render at once. Low on purpose: real visitors come first. */
   concurrency?: number
-  /**
-   * How long to keep asking for the sitemap while the server is still coming
-   * up. The warm-up starts beside the server rather than after it: the call
-   * that starts the server does not return while it serves.
-   */
-  waitMs?: number
-  /** Injected for tests. */
-  fetch?: (input: string, init?: RequestInit) => Promise<Response>
-  /** Injected for tests. */
-  sleep?: (ms: number) => Promise<void>
+  /** Identifies this worker's own requests. */
+  token?: string
+  /** Dispatch directly through the listener that owns the render cache. */
+  fetch: (input: string, init?: RequestInit) => Promise<Response>
 }
 
 export interface PrewarmResult {
@@ -118,33 +113,28 @@ export interface PrewarmResult {
 /** Fetch the sitemap from this server and request each page it lists. */
 export async function prewarmFromSitemap(options: PrewarmOptions): Promise<PrewarmResult> {
   const started = performance.now()
-  const fetcher = options.fetch ?? ((input: string, init?: RequestInit) => fetch(input, init))
+  const token = options.token ?? crypto.randomUUID()
+  const originHost = new URL(options.origin).host
   const headers = (host?: string): Record<string, string> => ({
-    [PREWARM_HEADER]: '1',
-    // A multi-site app keys by the visitor host, which reaches it here the
-    // way it reaches it from the gateway.
+    [PREWARM_HEADER]: token,
+    'accept': 'text/html, application/xml',
+    'accept-encoding': 'br',
+    'host': options.multiHost && host ? host : originHost,
     ...(options.multiHost && host ? { 'x-forwarded-host': host, 'x-forwarded-proto': 'https' } : {}),
   })
-
-  const sleep = options.sleep ?? ((ms: number) => Bun.sleep(ms))
-  const deadline = started + (options.waitMs ?? 0)
   let targets: PrewarmTarget[] = []
-  for (;;) {
-    try {
-      const response = await fetcher(`${options.origin}/sitemap.xml`, { headers: headers() })
-      if (response.ok)
-        targets = sitemapTargets(await response.text())
-      else
-        await response.arrayBuffer().catch(() => {})
-      break
-    }
-    catch {
-      // Not listening yet: ask again until the deadline. After it, there is
-      // nothing to warm and pages render for their first visitor.
-      if (performance.now() >= deadline)
-        break
-      await sleep(200)
-    }
+  try {
+    const response = await options.fetch(`${options.origin}${sitemapPath}`, {
+      headers: { ...headers(), 'accept-encoding': 'identity' },
+      redirect: 'manual',
+    })
+    if (response.ok)
+      targets = sitemapTargets(await response.text())
+    else
+      await response.body?.cancel()
+  }
+  catch {
+    // A missing sitemap leaves the cache to fill on demand.
   }
 
   let warmed = 0
@@ -154,7 +144,7 @@ export async function prewarmFromSitemap(options: PrewarmOptions): Promise<Prewa
     while (next < targets.length) {
       const target = targets[next++]!
       try {
-        const response = await fetcher(`${options.origin}${target.path}`, { headers: headers(target.host) })
+        const response = await options.fetch(`${options.origin}${target.path}`, { headers: headers(target.host), redirect: 'manual' })
         await response.arrayBuffer()
         if (response.ok)
           warmed++
@@ -171,7 +161,54 @@ export async function prewarmFromSitemap(options: PrewarmOptions): Promise<Prewa
   return { warmed, failed, total: targets.length, ms: Math.round(performance.now() - started) }
 }
 
-/** Whether this request is one of ours, and not a visit. */
-export function isPrewarmRequest(request: Request): boolean {
-  return request.headers.get(PREWARM_HEADER) === '1'
+interface RenderListener {
+  fetch: (request: Request) => Response | Promise<Response>
+}
+
+interface PrewarmOnListenOptions extends Omit<PrewarmOptions, 'fetch' | 'token'> {
+  waitMs?: number
+  fetch?: PrewarmOptions['fetch']
+}
+
+/**
+ * Find this worker's listener before warming. A deploy can bind two releases
+ * to the same port with SO_REUSEPORT. Only our worker can claim the private
+ * probe, and dispatch through its listener stays in that process.
+ */
+export function prewarmOnListen(options: PrewarmOnListenOptions) {
+  const token = crypto.randomUUID()
+  const isRequest = (request: Request) => request.headers.get(PREWARM_HEADER) === token
+  let listener: RenderListener | undefined
+  const acceptProbe = (request: Request, server?: RenderListener): Response | undefined => {
+    if (!server || request.method !== 'HEAD' || !isRequest(request) || new URL(request.url).pathname !== sitemapPath)
+      return undefined
+    listener ??= server
+    return new Response(null, { status: 204 })
+  }
+
+  const result = (async () => {
+    const fetcher = options.fetch ?? fetch
+    const deadline = performance.now() + (options.waitMs ?? 60_000)
+    while (!listener) {
+      const remaining = Math.ceil(deadline - performance.now())
+      if (remaining <= 0)
+        return undefined
+      await fetcher(`${options.origin}${sitemapPath}`, {
+        method: 'HEAD',
+        headers: { [PREWARM_HEADER]: token, connection: 'close' },
+        redirect: 'manual',
+        signal: AbortSignal.timeout(Math.min(remaining, 750)),
+      }).catch(() => {})
+      if (!listener)
+        await Bun.sleep(100)
+    }
+
+    const server = listener
+    return prewarmFromSitemap({
+      ...options,
+      token,
+      fetch: async (input, init) => server.fetch(new Request(input, init)),
+    })
+  })()
+  return { acceptProbe, isRequest, result }
 }
