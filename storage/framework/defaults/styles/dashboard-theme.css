@@ -100,6 +100,29 @@ html[data-dashboard-layout] [data-dashboard-button="secondary"]:hover {
   background: var(--dashboard-surface-muted);
 }
 
+html[data-dashboard-layout] [data-dashboard-field]:not(:disabled, .dashboard-settings *) {
+  color: var(--dashboard-text);
+  background-color: var(--dashboard-surface);
+}
+
+html[data-dashboard-layout] [data-dashboard-field]:not(:disabled, [aria-invalid="true"], .dashboard-settings *) {
+  border-color: color-mix(in srgb, var(--dashboard-muted) 62%, var(--dashboard-border));
+}
+
+html[data-dashboard-layout] [data-dashboard-field]:not(.dashboard-settings *)::placeholder {
+  color: var(--dashboard-muted);
+  opacity: 1;
+}
+
+html[data-dashboard-layout] [data-dashboard-field]:not(.dashboard-settings *):focus-visible {
+  outline: 2px solid var(--dashboard-accent);
+  outline-offset: 2px;
+}
+
+html[data-dashboard-layout] [data-dashboard-field][aria-invalid="true"]:not(.dashboard-settings *):focus-visible {
+  outline-color: light-dark(#a9263a, #ff9ca9);
+}
+
 html[data-dashboard-layout] [data-dashboard-hero] {
   align-items: center;
   padding: clamp(1rem, 4vw, 2rem);
@@ -148,23 +171,30 @@ html[data-dashboard-layout] [data-sidebar-section-header] {
 }
 
 @media (min-width: 1024px) {
-  html[data-dashboard-layout="inset"]:has([data-dashboard-content]),
-  html[data-dashboard-layout="inset"]:has([data-dashboard-content]) body {
+  html[data-dashboard-layout="inset"]:has([data-dashboard-content]:not([data-dashboard-settings-content])),
+  html[data-dashboard-layout="inset"]:has([data-dashboard-content]:not([data-dashboard-settings-content])) body {
     height: 100%;
     overflow: hidden;
-    background: var(--dashboard-window);
+    background-color: var(--dashboard-window);
   }
 
-  html[data-dashboard-layout="inset"] [data-stx-content][data-dashboard-content] {
+  html[data-dashboard-layout="inset"] [data-stx-content][data-dashboard-content]:not([data-dashboard-settings-content]) {
     margin-block: 8px;
     margin-right: 8px;
     min-height: 0;
     height: calc(100dvh - 16px);
-    overflow-y: auto;
+    overflow: hidden;
     border-radius: var(--dashboard-radius);
     box-shadow: 0 0 0 .5px var(--dashboard-border), 0 10px 40px rgb(0 0 0 / .14);
+  }
+
+  /* Put the scroll position inside the routed outlet so STX can associate it
+     with its history entry. Flush layouts still use the browser viewport. */
+  :is(html[data-dashboard-layout="inset"], html[data-appearance="arc"]:not([data-dashboard-layout])) [data-stx-scroll="dashboard"] {
+    height: 100%;
+    overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: var(--dashboard-border) transparent;
+    scrollbar-color: var(--dashboard-scrollbar, var(--dashboard-border)) transparent;
   }
 }
 
@@ -232,7 +262,7 @@ html[data-dashboard-overview="immersive"]:has([data-dashboard-overview-page], [d
   color: var(--dashboard-text);
 }
 
-html[data-dashboard-overview="immersive"] [data-dashboard-content]:has([data-dashboard-overview-page], [data-dashboard-section-page]),
+html[data-dashboard-overview="immersive"] [data-dashboard-content][data-stx-content]:has([data-dashboard-overview-page], [data-dashboard-section-page]),
 html[data-dashboard-overview="immersive"] [data-dashboard-hero] {
   box-shadow: none;
 }
@@ -248,6 +278,26 @@ html[data-dashboard-overview="immersive"]:has([data-dashboard-overview-page], [d
 
 html[data-dashboard-overview="immersive"] [data-dashboard-overview-page] [data-dashboard-button="secondary"] {
   border-radius: 999px;
+}
+
+html[data-dashboard-overview="immersive"] [data-dashboard-metrics] [data-dashboard-stat-icon] {
+  color: var(--dashboard-text);
+  background-color: var(--dashboard-surface-muted);
+}
+
+html[data-dashboard-overview="immersive"] [data-dashboard-overview-page] :is([data-dashboard-badge="success"], [data-dashboard-health-status="healthy"]) {
+  background-color: #153e36;
+  color: #b9f5d2;
+}
+
+html[data-dashboard-overview="immersive"] [data-dashboard-overview-page] :is([data-dashboard-badge="warning"], [data-dashboard-health-status="degraded"]) {
+  background-color: #4a341a;
+  color: #ffe2ac;
+}
+
+html[data-dashboard-overview="immersive"] [data-dashboard-overview-page] [data-dashboard-health-status="critical"] {
+  background-color: #502838;
+  color: #ffd1db;
 }
 
 /* The Original follows the dashboard's explicit appearance choice, including
@@ -403,16 +453,16 @@ html[data-dashboard-theme="system-cleaner"] [data-section-id="settings"] { --das
 }
 
 html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] [data-dashboard-navigation-card] {
-  min-height: 116px;
-  padding-right: 72px;
+  min-height: 104px;
+  padding-inline-end: 84px;
 }
 
 html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] .dashboard-section-icon {
   position: absolute;
-  top: -11px;
-  right: -11px;
-  width: 75px;
-  height: 75px;
+  inset-block-start: 12px;
+  inset-inline-end: 14px;
+  width: 57px;
+  height: 57px;
   border-radius: 50%;
   background: radial-gradient(circle at 34% 28%, rgb(255 255 255 / .72), transparent 32%),
               linear-gradient(160deg, color-mix(in srgb, var(--dashboard-tile, var(--dashboard-accent-fill)) 67%, white), var(--dashboard-tile, var(--dashboard-accent-fill)));
@@ -425,16 +475,46 @@ html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] .da
 
 html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] [data-dashboard-navigation-card] > [data-dashboard-muted] {
   position: absolute;
-  right: 14px;
-  bottom: 14px;
+  inset-inline-end: 14px;
+  inset-block-end: 10px;
+}
+
+@media (max-width: 639px) {
+  html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] [data-dashboard-navigation-cards] {
+    gap: .5rem;
+  }
+
+  html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] [data-dashboard-navigation-card] {
+    min-height: 68px;
+    padding: .65rem .75rem;
+  }
+
+  html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] .dashboard-section-icon {
+    position: static;
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] .dashboard-section-icon > span {
+    width: 19px;
+    height: 19px;
+  }
+
+  html[data-dashboard-navigation="sections"] [data-dashboard-section-overview] [data-dashboard-navigation-card] > [data-dashboard-muted] {
+    position: static;
+  }
 }
 
 /* The colored window follows the section on landing pages. The dashboard
    home and the detail pages continue to use their own surfaces. */
 html[data-dashboard-theme="system-cleaner"]:has([data-dashboard-section-page]) {
+  --dashboard-section-base: light-dark(#101721, #0b1019);
+  --dashboard-section-wash: light-dark(var(--dashboard-section-color, #6a2fb8), color-mix(in srgb, var(--dashboard-section-color, #6a2fb8) 72%, #121522));
   --dashboard-overview-gradient:
-    radial-gradient(84% 74% at 16% -12%, color-mix(in srgb, var(--dashboard-section-color, #6a2fb8) 92%, white), transparent 84%),
-    linear-gradient(145deg, var(--dashboard-section-color, #6a2fb8), color-mix(in srgb, var(--dashboard-section-color, #6a2fb8) 56%, #101721) 53%, #101721);
+    radial-gradient(84% 74% at 16% -12%, color-mix(in srgb, var(--dashboard-section-wash) 94%, white), transparent 84%),
+    linear-gradient(145deg, var(--dashboard-section-wash), color-mix(in srgb, var(--dashboard-section-wash) 56%, var(--dashboard-section-base)) 53%, var(--dashboard-section-base));
 }
 
 html[data-dashboard-theme="system-cleaner"]:has([data-dashboard-section-page][data-section-id="library"]) { --dashboard-section-color: #235597; }

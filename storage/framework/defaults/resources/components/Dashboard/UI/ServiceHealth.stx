@@ -22,7 +22,7 @@ function statusClass(status: string): string {
 </script>
 
 <section data-dashboard-card="default" class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
-  <header class="flex items-center justify-between p-5 border-b border-neutral-200/60 dark:border-white/5">
+  <header class="flex flex-wrap gap-2 items-center justify-between p-5 border-b border-neutral-200/60 dark:border-white/5">
     <div>
       <h2 data-dashboard-ink class="font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">System health</h2>
       <p data-dashboard-muted class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Native application health probes.</p>
@@ -45,7 +45,7 @@ function statusClass(status: string): string {
           <p data-dashboard-ink class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ service.name }}</p>
           <p data-dashboard-muted class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">{{ service.latency }}</p>
         </div>
-        <span :class="'px-2 py-0.5 font-medium text-[11px] rounded-full capitalize ' + statusClass(service.status)">
+        <span :data-dashboard-health-status="service.status" :class="'px-2 py-0.5 font-medium text-[11px] rounded-full capitalize ' + statusClass(service.status)">
           {{ service.status }}
         </span>
       </div>

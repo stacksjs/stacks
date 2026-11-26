@@ -142,6 +142,106 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     expect(await cdp.evaluate(`[...document.querySelectorAll('[data-sidebar-section-header')].some(element => element.getClientRects().length > 0)`)).toBe(true)
   }, 120_000)
 
+  test('both themes fit a narrow dashboard and System Cleaner keeps its overview readable', async () => {
+    const { cdp } = e2e!.browser
+    const { origin } = e2e!
+    try {
+      for (const id of ['original', 'system-cleaner']) {
+        await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })
+        await openAppearance(cdp, origin)
+        await click(cdp, `button[data-theme-id="${id}"]`)
+        await click(cdp, { selector: '[aria-label="Color mode"] button', text: 'Light' })
+        await cdp.send('Emulation.setDeviceMetricsOverride', { width: 320, height: 760, deviceScaleFactor: 1, mobile: true })
+        await navigate(cdp, origin)
+        await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('[data-dashboard-stat-icon]'))`), 10_000)
+        const layout = await cdp.evaluate<{ fits: boolean, columns: number }>(`({
+          fits: document.documentElement.scrollWidth === innerWidth,
+          columns: getComputedStyle(document.querySelector('.overview-metrics')).gridTemplateColumns.split(' ').length,
+        })`)
+        expect(layout).toEqual({ fits: true, columns: 2 })
+
+        if (id === 'system-cleaner') {
+          const sectionSize = await cdp.evaluate<number>(`document.querySelector('[data-dashboard-section-overview] [data-dashboard-navigation-card]').getBoundingClientRect().height`)
+          expect(sectionSize).toBeLessThan(85)
+          expect(await cdp.evaluate(`getComputedStyle(document.querySelector('[data-dashboard-stat-icon]')).color`)).toBe('rgb(255, 255, 255)')
+
+          const healthy = '[data-dashboard-badge="success"]'
+          await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('${healthy}'))`), 10_000)
+          expect(await cdp.evaluate(`getComputedStyle(document.querySelector('${healthy}')).color`)).toBe('rgb(185, 245, 210)')
+
+          const menu = 'button[aria-label="Open dashboard navigation"]'
+          await click(cdp, menu)
+          await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('[role="dialog"][aria-label="Dashboard navigation"] [href="/sections/data"]'))`), 5_000)
+          await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
+          await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
+          await waitFor(() => cdp.evaluate(`document.activeElement === document.querySelector('${menu}') && !document.querySelector('[role="dialog"][aria-label="Dashboard navigation"]')`), 5_000)
+        }
+      }
+    }
+    finally {
+      await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })
+      await openAppearance(cdp, origin)
+      await click(cdp, { selector: 'button', text: 'Reset to defaults' })
+    }
+  }, 120_000)
+
+  test('System Cleaner section pages update when the system appearance changes', async () => {
+    const { cdp } = e2e!.browser
+    const { origin } = e2e!
+    try {
+      await openAppearance(cdp, origin)
+      await click(cdp, 'button[data-theme-id="system-cleaner"]')
+      await click(cdp, { selector: '[aria-label="Color mode"] button', text: 'System' })
+      const setSystemAppearance = (value: 'light' | 'dark') => cdp.send('Emulation.setEmulatedMedia', {
+        features: [{ name: 'prefers-color-scheme', value }],
+      })
+      await setSystemAppearance('light')
+      await navigate(cdp, `${origin}/sections/data`)
+      const before = await cdp.evaluate<string>('getComputedStyle(document.body).backgroundImage')
+      await setSystemAppearance('dark')
+      await waitFor(async () => (await root(cdp)).dark, 5_000)
+      expect(await cdp.evaluate('getComputedStyle(document.body).backgroundImage')).not.toBe(before)
+    }
+    finally {
+      await openAppearance(cdp, origin)
+      await click(cdp, { selector: 'button', text: 'Reset to defaults' })
+    }
+  }, 120_000)
+
+  test('inset dashboard themes start new pages at the top and restore scroll on Back', async () => {
+    const { cdp } = e2e!.browser
+    const { origin } = e2e!
+    const scroll = `(document.querySelector('[data-stx-scroll="dashboard"]') ?? document.querySelector('[data-dashboard-content]'))`
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 740, deviceScaleFactor: 1, mobile: false })
+    try {
+      for (const { theme, link, path } of [
+        { theme: 'system-cleaner', link: '[data-dashboard-section-sidebar] [href="/sections/app"]', path: '/sections/app' },
+        { theme: 'original', link: '[data-dashboard-sidebar-tree] [href="/jobs/history"]', path: '/jobs/history' },
+      ]) {
+        await openAppearance(cdp, origin)
+        await click(cdp, `button[data-theme-id="${theme}"]`)
+        if (theme === 'original')
+          await click(cdp, 'button[aria-pressed]:has([data-style="arc"])')
+        await navigate(cdp, origin)
+        await waitFor(() => cdp.evaluate(`${scroll}.scrollHeight - ${scroll}.clientHeight > 200`), 10_000)
+        const top = await cdp.evaluate<number>(`(${scroll}.scrollTop = 200, ${scroll}.scrollTop)`)
+        expect(top).toBe(200)
+
+        await click(cdp, link)
+        await waitFor(() => cdp.evaluate(`location.pathname === '${path}'`), 10_000)
+        expect(await cdp.evaluate(`${scroll}.scrollTop`)).toBe(0)
+
+        await cdp.evaluate('history.back()')
+        await waitFor(() => cdp.evaluate(`location.pathname === '/' && ${scroll}.scrollTop === ${top}`), 10_000, { label: 'the previous dashboard scroll position' })
+      }
+    }
+    finally {
+      await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })
+      await openAppearance(cdp, origin)
+      await click(cdp, { selector: 'button', text: 'Reset to defaults' })
+    }
+  }, 120_000)
+
   test('selects, imports, updates and removes themes across real dashboard pages', async () => {
     const { cdp } = e2e!.browser
     const origin = e2e!.origin
@@ -182,7 +282,7 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
       layout: 'flush',
       overview: 'panel',
       light: { ...starter.light, canvas: '#e0dff0' },
-      dark: { ...starter.dark, canvas: '#13152b' },
+      dark: { ...starter.dark, canvas: '#13152b', surface: '#292841', text: '#f2efff' },
     }
     const manifest = join(e2e!.database.directory, 'dashboard-theme.json')
 
@@ -206,6 +306,14 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     expect(await themeApplied(cdp, imported.id, 18)).toBe(true)
     expect(await cdp.evaluate(`getComputedStyle(document.querySelector('[data-dashboard-content]')).backgroundColor`)).toBe('rgb(19, 21, 43)')
     expect(await cdp.evaluate(`getComputedStyle(document.querySelector('[data-dashboard-hero]')).backgroundImage.includes('gradient')`)).toBe(true)
+
+    await navigate(cdp, `${origin}/jobs/history`)
+    const filter = 'select[data-dashboard-field]'
+    await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('${filter}'))`), 10_000)
+    expect(await cdp.evaluate(`(() => {
+      const style = getComputedStyle(document.querySelector('${filter}'))
+      return [style.backgroundColor, style.color]
+    })()`)).toEqual(['rgb(41, 40, 65)', 'rgb(242, 239, 255)'])
 
     await openAppearance(cdp, origin)
     await click(cdp, { selector: 'button', text: 'Remove theme' })

@@ -282,12 +282,9 @@ html[data-appearance="arc"]:where(:not([data-dashboard-layout])) [data-stx-conte
      page. This is also what Arc does: the sidebar is stationary and the card
      scrolls inside its frame. */
   height: calc(100vh - (2 * var(--dash-arc-gap)));
-  overflow-y: auto;
+  overflow: hidden;
   border-radius: var(--dash-arc-radius);
   background: #fff;
-  /* Clip page content to the rounded corners - full-bleed headers and tables
-     otherwise square them off at the top. */
-  overflow-x: hidden;
   box-shadow:
     0 0 0 0.5px rgba(0, 0, 0, 0.07),
     0 1px 2px rgba(0, 0, 0, 0.05),
@@ -301,29 +298,10 @@ html[data-appearance="arc"]:where(:not([data-dashboard-layout])).dark [data-stx-
     0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
-/* An overlay scrollbar inside the card, so the rounded corner is not cut by a
-   full-width native gutter. */
-html[data-appearance="arc"]:where(:not([data-dashboard-layout])) [data-stx-content] {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-}
-html[data-appearance="arc"]:where(:not([data-dashboard-layout])) [data-stx-content]::-webkit-scrollbar {
-  width: 8px;
-}
-html[data-appearance="arc"]:where(:not([data-dashboard-layout])) [data-stx-content]::-webkit-scrollbar-thumb {
-  border: 2px solid transparent;
-  border-radius: 8px;
-  background-clip: content-box;
-  background-color: rgba(0, 0, 0, 0.2);
-}
-html[data-appearance="arc"]:where(:not([data-dashboard-layout])) [data-stx-content]::-webkit-scrollbar-track {
-  background: transparent;
-}
-html[data-appearance="arc"]:where(:not([data-dashboard-layout])).dark [data-stx-content] {
-  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
-}
-html[data-appearance="arc"]:where(:not([data-dashboard-layout])).dark [data-stx-content]::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.25);
+@media (min-width: 1024px) {
+  html[data-appearance="arc"]:where(:not([data-dashboard-layout])) [data-stx-scroll="dashboard"] {
+    --dashboard-scrollbar: light-dark(rgb(0 0 0 / .2), rgb(255 255 255 / .25));
+  }
 }
 
 /* On narrow viewports the sidebar is hidden entirely, so the card would float
@@ -814,7 +792,9 @@ onDestroy(() => {
 </MobileSidebar>
 
 <main data-stx-content data-dashboard-content>
-  @slot('content')
+  <div data-stx-scroll="dashboard">
+    @slot('content')
+  </div>
 </main>
 
 <GlobalSearch />

@@ -155,6 +155,35 @@ onMount(() => {
     border: 1px solid var(--overview-border);
     border-radius: var(--dashboard-radius, 1rem);
   }
+  @media (max-width: 639px) {
+    .overview-metrics {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .overview-metrics [data-dashboard-card] {
+      position: relative;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .overview-metrics [data-dashboard-stat-title] {
+      min-height: 2.75em;
+      padding-inline-end: 1.65rem;
+      font-size: .75rem;
+    }
+    .overview-metrics [data-dashboard-stat-icon] {
+      position: absolute;
+      inset-block-start: .625rem;
+      inset-inline-end: .625rem;
+      display: grid;
+      width: 1.5rem;
+      height: 1.5rem;
+      place-items: center;
+      padding: 0;
+    }
+    .overview-metrics [data-dashboard-stat-icon] > div {
+      width: .875rem;
+      height: .875rem;
+    }
+  }
 </style>
 
 <div class="mx-auto px-4 py-6 sm:px-8 sm:py-8 max-w-6xl dashboard-overview" data-dashboard-overview-page>

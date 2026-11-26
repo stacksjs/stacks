@@ -35,7 +35,7 @@ const liveBadgeClass = derived(() => badgeClassToggles(liveVariant(), liveSize()
 const liveDotClass = derived(() => badgeDotClassToggles(liveVariant()))
 const showDot = derived(() => badgeShowsDot(liveDot()))
 </script>
-<span class="{{ badgeClass }}" :class="liveBadgeClass()">
+<span data-dashboard-badge="{{ variant }}" :data-dashboard-badge="liveVariant()" class="{{ badgeClass }}" :class="liveBadgeClass()">
     @if(dot)
       <span class="{{ dotClass }}" :class="liveDotClass()" :if="showDot()"></span>
     @endif

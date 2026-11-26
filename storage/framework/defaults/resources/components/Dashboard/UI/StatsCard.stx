@@ -42,14 +42,14 @@ const trendClass = derived(() => trendClasses[trendDirection()])
 <div data-dashboard-card="default" class="p-3 sm:p-5 bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5 hover:shadow-black/5 hover:shadow-md dark:hover:shadow-black/20 duration-150 transition-all">
     <div class="flex gap-2 items-start justify-between">
       <div class="flex-1 min-w-0">
-        <p data-dashboard-muted class="font-medium leading-snug text-[13px] text-neutral-500 tracking-tight dark:text-neutral-400">
+        <p data-dashboard-stat-title data-dashboard-muted class="font-medium leading-snug text-[13px] text-neutral-500 tracking-tight dark:text-neutral-400">
           {{ liveTitle() }}
         </p>
 
         <div class="flex gap-2 items-baseline mt-1.5">
           <div :if="liveLoading()" class="h-7 w-20 bg-black/5 dark:bg-white/10 rounded-md animate-pulse"></div>
           <div :else class="flex gap-2 items-baseline">
-            <p data-dashboard-ink class="font-semibold text-[22px] text-neutral-900 tracking-tight dark:text-white">
+            <p data-dashboard-ink class="font-semibold tabular-nums text-[22px] text-neutral-900 tracking-tight dark:text-white">
               @if($slots.value)
                 <slot name="value" />
               @else
@@ -80,7 +80,7 @@ const trendClass = derived(() => trendClasses[trendDirection()])
         @endif
       </div>
 
-      <div :if="liveIcon()" :class="'p-1.5 sm:p-2.5 rounded-lg flex-shrink-0 ' + iconBackgroundClass()">
+      <div :if="liveIcon()" data-dashboard-stat-icon aria-hidden="true" :class="'p-1.5 sm:p-2.5 rounded-lg flex-shrink-0 ' + iconBackgroundClass()">
         <div :class="liveIcon() + ' h-5 w-5'"></div>
       </div>
     </div>
