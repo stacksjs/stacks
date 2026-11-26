@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **417 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **419 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -64,7 +64,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `release` | 10 |
 | `route` | 1 |
 | `scaffold` | 1 |
-| `schedule` | 6 |
+| `schedule` | 8 |
 | `search` | 2 |
 | `search-engine` | 2 |
 | `security` | 1 |
@@ -5479,6 +5479,41 @@ Resume a paused scheduled task
 - Namespace: `schedule`
 - Aliases: none
 - Arguments: `<name>`
+
+### `schedule:github:deploy`
+
+Deploy an AWS EventBridge schedule for a GitHub Actions workflow
+
+- Usage: `$ buddy schedule:github:deploy <name>`
+- Namespace: `schedule`
+- Aliases: none
+- Arguments: `<name>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--repo` | GitHub repository in owner/name form | value, required | - |
+| `--workflow` | GitHub workflow filename or ID | value, required | - |
+| `--ref` | GitHub branch or tag | value, required | `"main"` |
+| `--expression` | AWS schedule expression | value, required | `"rate(15 minutes)"` |
+| `--region` | AWS region (defaults to AWS_REGION or us-east-1) | value, required | - |
+| `--profile` | AWS credential profile | value, required | - |
+| `--record-schedule` | Pass the event timestamp to the workflow_dispatch scheduled_at input | boolean, optional | - |
+| `--token-stdin` | Read a repository-scoped GitHub Actions write token from stdin | boolean, optional | - |
+| `--dry-run` | Print the CloudFormation template without accessing AWS or stdin | boolean, optional | - |
+
+### `schedule:github:status`
+
+Show the CloudFormation status of a GitHub workflow schedule
+
+- Usage: `$ buddy schedule:github:status <name>`
+- Namespace: `schedule`
+- Aliases: none
+- Arguments: `<name>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--region` | AWS region (defaults to AWS_REGION or us-east-1) | value, required | - |
+| `--profile` | AWS credential profile | value, required | - |
 
 ### `schedule:list`
 

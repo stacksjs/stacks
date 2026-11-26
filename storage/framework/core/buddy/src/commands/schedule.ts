@@ -20,6 +20,99 @@ export function schedule(buddy: CLI): void {
   }
 
   buddy
+    .command('schedule:github:deploy <name>', 'Deploy an AWS EventBridge schedule for a GitHub Actions workflow')
+    .option('--repo <repo>', 'GitHub repository in owner/name form')
+    .option('--workflow <workflow>', 'GitHub workflow filename or ID')
+    .option('--ref <ref>', 'GitHub branch or tag', { default: 'main' })
+    .option('--expression <expression>', 'AWS schedule expression', { default: 'rate(15 minutes)' })
+    .option('--region <region>', 'AWS region (defaults to AWS_REGION or us-east-1)')
+    .option('--profile <profile>', 'AWS credential profile')
+    .option('--record-schedule', 'Pass the event timestamp to the workflow_dispatch scheduled_at input')
+    .option('--token-stdin', 'Read a repository-scoped GitHub Actions write token from stdin')
+    .option('--dry-run', 'Print the CloudFormation template without accessing AWS or stdin')
+    .action(async (name: string, options: {
+      repo?: string
+      workflow?: string
+      ref: string
+      expression: string
+      region?: string
+      profile?: string
+      recordSchedule?: boolean
+      tokenStdin?: boolean
+      dryRun?: boolean
+    }) => {
+      try {
+        const { workflowScheduleTemplate } = await import('../github-workflow-schedule')
+        const templateBody = workflowScheduleTemplate({
+          name,
+          repository: options.repo ?? '',
+          workflow: options.workflow ?? '',
+          ref: options.ref,
+          expression: options.expression,
+          recordSchedule: options.recordSchedule === true,
+        })
+        if (options.dryRun) {
+          console.log(templateBody)
+          return
+        }
+
+        const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
+        const region = options.region || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1'
+        const client = new AWSCloudFormationClient(region, options.profile)
+        const stackName = `stacks-${name}-schedule`
+        const current = await client.describeStacks({ stackName }).then(result => result.Stacks?.[0], (error) => {
+          if (error instanceof Error && error.message.includes('does not exist'))
+            return undefined
+          throw error
+        })
+        const token = options.tokenStdin ? (await Bun.stdin.text()).trim() : ''
+        if ((options.tokenStdin || !current) && !/^github_pat_[a-z0-9_]+$/i.test(token))
+          throw new Error('Pipe a GitHub fine-grained token into this command with --token-stdin')
+        const settings = {
+          stackName,
+          templateBody,
+          capabilities: ['CAPABILITY_IAM'],
+          parameters: [{ ParameterKey: 'GitHubToken', ParameterValue: token, UsePreviousValue: !token }],
+        }
+        if (current)
+          await client.updateStack(settings)
+        else
+          await client.createStack({ ...settings, onFailure: 'ROLLBACK' })
+        console.log(`CloudFormation deployment started for ${stackName}.`)
+      }
+      catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        if (message.includes('No updates are to be performed')) {
+          console.log('The workflow schedule is already up to date.')
+          return
+        }
+        console.error(`[schedule:github:deploy] ${message.replace(/github_pat_[a-z0-9_]+/gi, '[redacted]')}`)
+        process.exitCode = ExitCode.FatalError
+      }
+    })
+
+  buddy
+    .command('schedule:github:status <name>', 'Show the CloudFormation status of a GitHub workflow schedule')
+    .option('--region <region>', 'AWS region (defaults to AWS_REGION or us-east-1)')
+    .option('--profile <profile>', 'AWS credential profile')
+    .action(async (name: string, options: { region?: string, profile?: string }) => {
+      try {
+        const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
+        const region = options.region || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1'
+        const client = new AWSCloudFormationClient(region, options.profile)
+        const result = await client.describeStacks({ stackName: `stacks-${name}-schedule` })
+        const stack = result.Stacks?.[0]
+        if (!stack)
+          throw new Error(`Schedule ${name} was not found`)
+        console.log(JSON.stringify({ name, status: stack.StackStatus, outputs: stack.Outputs }, null, 2))
+      }
+      catch (error) {
+        console.error(`[schedule:github:status] ${error instanceof Error ? error.message : String(error)}`)
+        process.exitCode = ExitCode.FatalError
+      }
+    })
+
+  buddy
     .command('schedule:run', descriptions.schedule)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
