@@ -22,11 +22,6 @@ async function run(cmd: string[], cwd: string, env: Record<string, string | unde
 beforeAll(async () => {
   const entry = join(root, 'entry.ts')
   writeFileSync(entry, `
-const transport = globalThis.fetch
-globalThis.fetch = (input, init) => {
-  if (typeof input !== 'string' || !input.startsWith('https://registry.npmjs.org/')) throw new Error('Unexpected metadata transport')
-  return transport(input.replace('https://registry.npmjs.org', process.env.UPGRADE_FIXTURE_REGISTRY), init)
-}
 const { cli } = await import(${JSON.stringify(join(import.meta.dir, '../../cli/src/index.ts'))})
 const { upgrade } = await import(${JSON.stringify(join(import.meta.dir, '../src/commands/upgrade.ts'))})
 const buddy = cli('buddy')
@@ -39,7 +34,7 @@ buddy.parse()
 
 afterAll(() => rmSync(root, { recursive: true, force: true }))
 
-async function campaign(options: { flags?: string[], exitCode?: number, actionVersion?: string, missingEntry?: boolean, vendoredOverride?: boolean, all?: boolean, failStage?: string } = {}) {
+async function campaign(options: { flags?: string[], exitCode?: number, actionVersion?: string, missingEntry?: boolean, vendoredOverride?: boolean, latest?: boolean, all?: boolean, failStage?: string } = {}) {
   const app = mkdtempSync(join(root, 'app-'))
   const archives = new Map<string, Uint8Array>()
   for (const version of [previous, target]) {
@@ -82,6 +77,14 @@ process.exit(${version === previous ? 74 : options.failStage === stage ? 17 : 0}
       const url = new URL(request.url)
       const path = decodeURIComponent(url.pathname)
       requests.push(path)
+      if (path === '/framework/stacks') {
+        const unavailable = '999.0.2'
+        return Response.json({
+          'name': 'stacks',
+          'dist-tags': { latest: unavailable },
+          'versions': { [unavailable]: { name: 'stacks', version: unavailable } },
+        })
+      }
       for (const name of ['stacks', '@stacksjs/actions']) {
         const versions = Object.fromEntries([previous, target].map(version => {
           const bytes = archives.get(`${name}@${version}`)!
@@ -104,7 +107,7 @@ process.exit(${version === previous ? 74 : options.failStage === stage ? 17 : 0}
     PATH: `${dirname(process.execPath)}${delimiter}${process.env.PATH ?? ''}`,
     BUN_INSTALL_CACHE_DIR: join(app, 'cache'),
     NPM_CONFIG_REGISTRY: registry.url.origin,
-    UPGRADE_FIXTURE_REGISTRY: registry.url.origin,
+    STACKS_FRAMEWORK_REGISTRY: `${registry.url.origin}/framework`,
   }
   writeFileSync(join(app, 'bunfig.toml'), `[install]\nregistry = ${JSON.stringify(registry.url.origin)}\n`)
   writeFileSync(join(app, '.npmrc'), `@stacksjs:registry=${registry.url.origin}\n`)
@@ -119,7 +122,7 @@ process.exit(${version === previous ? 74 : options.failStage === stage ? 17 : 0}
     const installed = await run([process.execPath, 'install', '--ignore-scripts'], app, env)
     expect(installed.code, `${installed.stderr}\nRequests: ${JSON.stringify(requests)}`).toBe(0)
     const before = Object.fromEntries(['package.json', 'bun.lock', 'future-scaffold.txt'].map(path => [path, readFileSync(join(app, path), 'utf8')]))
-    const result = await run([binary, ...options.all ? ['upgrade:all'] : ['upgrade', '--version', target], ...options.flags ?? []], app, env)
+    const result = await run([binary, ...options.all ? ['upgrade:all'] : options.latest ? ['upgrade'] : ['upgrade', '--version', target], ...options.flags ?? []], app, env)
     const after = Object.fromEntries(Object.keys(before).map(path => [path, existsSync(join(app, path)) ? readFileSync(join(app, path), 'utf8') : null]))
     return {
       ...result, before, after, requests,
@@ -147,6 +150,14 @@ test('a compiled upgrade bypasses the old project action and runs a newer target
   expect(result.migrations[0]!.argv).toContain(target)
   expect(result.migrations[0]!.argv).toContain('--force')
   expect(result.migrations[0]!.argv).toContain('--allowDowngrade')
+}, 30_000)
+
+test('default package upgrade uses the same registry as Bun install', async () => {
+  const result = await campaign({ latest: true })
+  expect(result.code, result.stdout + result.stderr).toBe(0)
+  expect(result.installed).toBe(target)
+  expect(result.finished).toBe(true)
+  expect(result.requests.filter(path => path.startsWith('/framework/'))).toEqual([])
 }, 30_000)
 
 test('the target migration failure remains a failed upgrade with the same exit code', async () => {

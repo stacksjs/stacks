@@ -5,12 +5,12 @@
 // style framework bump. We deliberately use `console.*` + `process.exit` here
 // (same as framework.ts) because the calling script exits synchronously.
 /* eslint-disable no-console */
+import type { PackageMetadata } from './package-metadata'
 import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, relative } from 'node:path'
 import process from 'node:process'
 import { buddyOptionArgs, runCommand } from '@stacksjs/cli'
 import { installedDefaultsVersion } from '@stacksjs/path'
-import { frameworkRegistryFetch } from '../framework-registry'
 import { runPostSyncAiRefresh, runPostSyncDatabaseTypesRefresh } from './framework-hooks'
 import {
   measureDefaultsDrift,
@@ -21,6 +21,7 @@ import {
   summarizeStructureChanges,
   syncPackageProjectFiles,
 } from './package-project'
+import { bunPackageMetadata, frameworkPackageMetadata } from './package-metadata'
 import { describeDanglingRouteActions, findDanglingRouteActions, pruneRetiredScaffoldRoutes } from './route-actions'
 
 export interface PackageUpgradeOptions {
@@ -213,52 +214,19 @@ export function declaredPins(pkg: PkgJson, names: string[]): Record<string, stri
 }
 
 /** Resolve the target version + the `stacks` meta's declared dependency ranges. */
-async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version: string, metaDeps: Record<string, string>, runtimePins: Record<string, string>, craftFloor?: string }> {
-  // Pantry first (where releases publish by default), npm when it cannot answer.
-  const read = frameworkRegistryFetch()
-  const res = await read('https://registry.npmjs.org/stacks').catch(() => null)
-  if (!res || !res.ok)
-    throw new Error('Could not reach the Pantry or npm registry to resolve the target `stacks` version.')
+async function resolveTarget(options: PackageUpgradeOptions, metadata: PackageMetadata): Promise<{ version: string, metaDeps: Record<string, string>, runtimePins: Record<string, string>, craftFloor?: string }> {
+  const selector = options.version || (options.canary ? 'canary' : 'latest')
+  const meta = await metadata.manifest('stacks', selector)
+  const version = meta?.version
+  if (meta?.name !== 'stacks' || !version || (options.version && version !== options.version))
+    throw new Error(`Could not resolve stacks@${selector} from the application's Bun registry.`)
 
-  const meta = (await res.json()) as {
-    'dist-tags'?: Record<string, string>
-    'versions'?: Record<string, { dependencies?: Record<string, string> }>
-  }
-  const distTags = meta['dist-tags'] ?? {}
-  const versions = meta.versions ?? {}
-
-  let version: string
-  if (options.version) {
-    if (!versions[options.version])
-      throw new Error(`stacks@${options.version} was not found on the Pantry or npm registry.`)
-    version = options.version
-  }
-  else {
-    const tag = options.canary ? 'canary' : 'latest'
-    const resolved = distTags[tag]
-    if (!resolved)
-      throw new Error(`The \`${tag}\` dist-tag is not published for \`stacks\`.`)
-    version = resolved
-  }
-
-  // The `stacks` meta declares every framework dependency at the version that
-  // release actually ships: lockstep core packages at the meta's own version
-  // (e.g. `@stacksjs/server: ^0.70.161`) and independently-versioned ones on
-  // their own line (e.g. `@stacksjs/tlsx: ^0.13.0`, `@stacksjs/ts-cloud: ^0.7.49`).
-  // Return the full map so the caller only force-bumps the lockstep set and never
-  // drags an independent package to a framework version it doesn't publish
-  // (stacksjs/stacks#2078).
-  const metaDeps = versions[version]?.dependencies ?? {}
-  // STX has its own release line, but its compiler, components and runtime
-  // must agree with the framework being installed. Resolve that release's
-  // published actions manifest, never the independently moving latest tag.
-  const actions = await read(`https://registry.npmjs.org/@stacksjs%2factions/${version}`)
-  if (!actions.ok)
+  // The actions manifest for this release names the frontend runtimes it
+  // uses, which publish on separate version lines.
+  const manifest = await metadata.manifest('@stacksjs/actions', version)
+  if (manifest?.name !== '@stacksjs/actions' || manifest.version !== version)
     throw new Error(`Could not resolve the frontend dependencies shipped by @stacksjs/actions@${version}.`)
-  const manifest = await actions.json() as { version?: string, dependencies?: Record<string, string>, peerDependencies?: Record<string, string> }
-  if (manifest.version !== version)
-    throw new Error('The published actions manifest does not match the requested framework release.')
-  return { version, metaDeps, runtimePins: await resolvePublishedRuntimePins(manifest.dependencies ?? {}, read), craftFloor: craftFloor(manifest) }
+  return { version, metaDeps: meta.dependencies ?? {}, runtimePins: await resolveRuntimePins(manifest.dependencies ?? {}, metadata), craftFloor: craftFloor(manifest) }
 }
 
 const RUNTIME_PACKAGES = ['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx', '@stacksjs/desktop', '@stacksjs/sanitizer', 'stx-router'] as const
@@ -409,14 +377,8 @@ export function publishedRuntimePins(dependencies: Record<string, string>): Reco
  * not share what they register. Pinned to what the framework's ranges resolve
  * to, the app and the framework install one copy.
  */
-export async function newestRuntimeRelease(floor: string, names: string[], read: typeof fetch = frameworkRegistryFetch()): Promise<string> {
-  const published = await Promise.all(names.map(async (name) => {
-    const response = await read(`https://registry.npmjs.org/${name.replace('/', '%2f')}`, { headers: { accept: 'application/vnd.npm.install-v1+json' } })
-    if (!response.ok)
-      throw new Error(`Could not list the published releases of ${name}.`)
-    const packument = await response.json() as { 'versions'?: Record<string, unknown>, 'dist-tags'?: Record<string, string> }
-    return { versions: new Set(Object.keys(packument.versions ?? {})), latest: packument['dist-tags']?.latest }
-  }))
+async function newestRuntimeRelease(floor: string, names: string[], metadata: PackageMetadata): Promise<string> {
+  const published = await Promise.all(names.map(name => metadata.releases(name)))
 
   const prerelease = floor.includes('-')
   const candidates = [...published[0]?.versions ?? []]
@@ -429,7 +391,11 @@ export async function newestRuntimeRelease(floor: string, names: string[], read:
 }
 
 /** Read the STX release's nested runtime pins before changing an app. */
-export async function resolvePublishedRuntimePins(dependencies: Record<string, string>, read: typeof fetch = frameworkRegistryFetch()): Promise<Record<string, string>> {
+export async function resolvePublishedRuntimePins(dependencies: Record<string, string>, read?: typeof fetch): Promise<Record<string, string>> {
+  return resolveRuntimePins(dependencies, frameworkPackageMetadata(read))
+}
+
+async function resolveRuntimePins(dependencies: Record<string, string>, metadata: PackageMetadata): Promise<Record<string, string>> {
   const pins = publishedRuntimePins(dependencies)
   const floor = pins['@stacksjs/stx']
   if (!floor)
@@ -438,16 +404,13 @@ export async function resolvePublishedRuntimePins(dependencies: Record<string, s
   // The cohort released with the runtime moves with it to the newest release
   // they all published (see `newestRuntimeRelease`).
   const cohort = Object.keys(pins).filter(name => pins[name] === floor)
-  const version = await newestRuntimeRelease(floor, cohort, read)
+  const version = await newestRuntimeRelease(floor, cohort, metadata)
   for (const name of cohort)
     pins[name] = version
 
-  const response = await read(`https://registry.npmjs.org/@stacksjs%2fstx/${version}`)
-  if (!response.ok)
+  const manifest = await metadata.manifest('@stacksjs/stx', version)
+  if (manifest?.name !== '@stacksjs/stx' || manifest.version !== version)
     throw new Error(`Could not resolve the runtime dependencies shipped by @stacksjs/stx@${version}.`)
-  const manifest = await response.json() as { name?: string, version?: string, dependencies?: Record<string, string> }
-  if (manifest.name !== '@stacksjs/stx' || manifest.version !== version)
-    throw new Error('The published STX manifest does not match the requested runtime release.')
   for (const [name, target] of Object.entries(publishedRuntimePins(manifest.dependencies ?? {}))) {
     if (pins[name] && pins[name] !== target)
       throw new Error(`The published framework and STX manifests disagree on ${name}.`)
@@ -527,12 +490,15 @@ export function declaredCraftPackages(pkg: PkgJson): string[] {
  * The platform builders share Craft's version, but one that never published
  * it is left alone rather than pinned to a version that cannot install.
  */
-export async function resolveCraftPins(pkg: PkgJson, floor: string | undefined, read: typeof fetch = frameworkRegistryFetch()): Promise<Record<string, string>> {
+export async function resolveCraftPins(pkg: PkgJson, floor: string | undefined, read?: typeof fetch): Promise<Record<string, string>> {
+  return resolveCraftVersions(pkg, floor, frameworkPackageMetadata(read))
+}
+
+async function resolveCraftVersions(pkg: PkgJson, floor: string | undefined, metadata: PackageMetadata): Promise<Record<string, string>> {
   const pins: Record<string, string> = {}
   if (!floor) return pins
   for (const name of declaredCraftPackages(pkg)) {
-    const response: Response | null = await read(`https://registry.npmjs.org/${name.replace('/', '%2f')}/${floor}`).catch(() => null)
-    const manifest: { name?: string, version?: string } | null = response?.ok ? await response.json().catch(() => null) : null
+    const manifest = await metadata.manifest(name, floor)
     if (manifest?.name === name && manifest.version === floor) pins[name] = floor
     else console.warn(`  ${name}@${floor} is not published; leaving ${name} as declared.`)
   }
@@ -699,11 +665,12 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   if (!hasStacksDependency(pkg))
     return updateStandalonePackage(projectRoot, options)
 
-  const { version: target, metaDeps, runtimePins, craftFloor: floor } = await resolveTarget(options).catch((err: Error) => {
+  const metadata = bunPackageMetadata(projectRoot)
+  const { version: target, metaDeps, runtimePins, craftFloor: floor } = await resolveTarget(options, metadata).catch((err: Error) => {
     console.error(`✗ ${err.message}`)
     process.exit(1)
   })
-  const craftPins = await resolveCraftPins(pkg, floor)
+  const craftPins = await resolveCraftVersions(pkg, floor, metadata)
 
   console.log(`\n  Upgrading the Stacks framework${options.canary ? ' (canary)' : ''} → ${target}`)
   if (current)
