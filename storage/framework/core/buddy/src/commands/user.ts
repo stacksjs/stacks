@@ -150,6 +150,22 @@ export async function suspectAccounts(rows: Array<Record<string, unknown>>): Pro
   return found.sort((a, b) => a.rank - b.rank).map(({ rank: _rank, ...account }) => account)
 }
 
+/**
+ * Turn off an account's two-factor sign-in, from the machine (account recovery).
+ *
+ * A password reset alone does not get back in when the authenticator phone
+ * and the recovery codes are both gone: the sign-in still asks for a code.
+ * Whoever can run `buddy` on the machine already holds the database, so this
+ * is no new power; it is the owner's way back. Recovery codes and pending
+ * sign-in challenges go with the secret. Passkeys are left alone.
+ */
+export async function clearSecondFactor(
+  userId: number,
+  disable: (id: number) => Promise<void> = async id => await (await import('@stacksjs/auth')).disableTwoFactor(id),
+): Promise<void> {
+  await disable(userId)
+}
+
 export function user(buddy: CLI): void {
   buddy
     .command('user:add <email>', 'Create a user account (optionally an admin)')
@@ -157,9 +173,11 @@ export function user(buddy: CLI): void {
     .option('--password <password>', 'Password. Generated and printed once if omitted.')
     .option('--role <role>', 'Role to assign, e.g. admin. Seeds the default roles if the table is empty.')
     .option('--update', 'If the account already exists, reset its password and ensure the role', { default: false })
+    .option('--without-two-factor', 'Also turn off two-factor sign-in, for an owner who lost the authenticator and the recovery codes', { default: false })
     .example('buddy user:add chris@example.com --role admin')
+    .example('buddy user:add owner@example.com --update --without-two-factor')
     .example('buddy user:add support@example.com --name Support --password s3cret')
-    .action(async (email: string, options: { name?: string, password?: string, role?: string, update?: boolean }) => {
+    .action(async (email: string, options: { name?: string, password?: string, role?: string, update?: boolean, withoutTwoFactor?: boolean }) => {
       const address = String(email || '').trim().toLowerCase()
 
       if (!address.includes('@')) {
@@ -202,6 +220,18 @@ export function user(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
       log.success(`${existed ? 'Updated' : 'Created'} ${address}`)
+
+      if (options.withoutTwoFactor && account?.id) {
+        try {
+          await clearSecondFactor(Number(account.id))
+          log.success('Turned off two-factor sign-in; its recovery codes no longer work')
+        }
+        catch (error) {
+          await log.error(`Could not turn off two-factor sign-in: ${error instanceof Error ? error.message : String(error)}`)
+          await log.flush()
+          process.exit(ExitCode.FatalError)
+        }
+      }
 
       if (options.role) {
         const { createBqbRbacStore, Rbac, seedDefaultRoles } = await import('@stacksjs/auth')

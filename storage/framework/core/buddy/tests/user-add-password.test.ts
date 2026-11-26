@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { ensureHashed } from '../src/commands/user'
+import { clearSecondFactor, ensureHashed } from '../src/commands/user'
 
 /** One account's password column, in memory. */
 function column(initial: string) {
@@ -39,5 +39,13 @@ describe('user:add password storage', () => {
   test('fails rather than report success when the stored hash is of something else', async () => {
     const stored = column(await Bun.password.hash('another-password', { algorithm: 'bcrypt', cost: 4 }))
     await expect(ensureHashed('fixture@example.invalid', 'synthetic-Passw0rd', stored)).rejects.toThrow('does not verify')
+  })
+})
+
+describe('user:add --without-two-factor', () => {
+  test('turns off the account\'s two-factor sign-in', async () => {
+    const disabled: number[] = []
+    await clearSecondFactor(42, async (id) => { disabled.push(id) })
+    expect(disabled).toEqual([42])
   })
 })
