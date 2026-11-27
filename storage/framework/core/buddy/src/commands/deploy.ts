@@ -6209,8 +6209,7 @@ export function deploy(buddy: CLI): void {
       // Read from argv as well, for the reason given for --dry-run below: a
       // flag that is asked for and not seen would publish the very records it
       // exists to hold.
-      if (process.argv.includes('--hold-dns') || options.holdDns === true)
-        process.env.STACKS_DEPLOY_HOLD_DNS = '1'
+      const holdDnsFlag = process.argv.includes('--hold-dns') || options.holdDns === true
 
       const askedForDryRun = deploymentDryRunRequested(options)
 
@@ -6230,6 +6229,8 @@ export function deploy(buddy: CLI): void {
         const values = await resolveDeployEnvValues(deployEnvName as 'production', undefined, selectedEnvFile)
         for (const [key, value] of Object.entries(values)) process.env[key] = value
       }
+      if (holdDnsFlag)
+        process.env.STACKS_DEPLOY_HOLD_DNS = '1'
 
       try {
         applyDeploymentDomainOverride({}, options.domain)
@@ -6255,6 +6256,8 @@ export function deploy(buddy: CLI): void {
           }
         }
 
+        if (holdDnsFlag)
+          process.env.STACKS_DEPLOY_HOLD_DNS = '1'
         const tsCloudConfig = deploymentRetirements(await loadTsCloudConfig(deployEnvName) ?? {}, options.retireDomains)
         const provider = resolveProvider(tsCloudConfig)
         validateDeploymentProviderInputs(provider, { envFile: selectedEnvFile, retireDomains: options.retireDomains })
@@ -6337,6 +6340,8 @@ export function deploy(buddy: CLI): void {
       // provision + deploy through ts-cloud and have nothing to do with the AWS
       // CloudFormation path below. Route them off before any AWS credential or
       // domain check runs.
+      if (holdDnsFlag)
+        process.env.STACKS_DEPLOY_HOLD_DNS = '1'
       const tsCloudConfig = deploymentRetirements(await loadTsCloudConfig(deployEnvName) ?? {}, options.retireDomains)
       validateDeploymentProviderInputs(resolveProvider(tsCloudConfig), { envFile: selectedEnvFile, retireDomains: options.retireDomains })
       // Fly.io runs an image on Machines: no box, no SSH, no CloudFormation.
