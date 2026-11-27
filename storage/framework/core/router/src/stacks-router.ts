@@ -2779,15 +2779,17 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
             applySecurityHeaders(h)
         }
 
-        const isErrorJson = response.status >= 400
-          && (response.headers.get('content-type') || '').includes('json')
+        const errorMediaType = response.status >= 400
+          ? response.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase()
+          : undefined
 
         // Inject request_id into JSON error bodies for SPA-side correlation.
         // Always overwrite — if upstream code (or a wrapped service) added
         // its own request_id field, the inner-most router is the
         // authoritative source for THIS request's id, so a stale upstream
         // value would just confuse correlation in logs.
-        if (isErrorJson && reqId) {
+        // SCIM clients validate the error envelope; use the header for correlation.
+        if (reqId && errorMediaType?.includes('json') && errorMediaType !== 'application/scim+json') {
           try {
             const text = await response.clone().text()
             const parsed = JSON.parse(text)
