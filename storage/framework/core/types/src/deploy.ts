@@ -38,7 +38,7 @@ export interface DeploymentPreviewSite {
 }
 
 export interface DeploymentPreviewOperation {
-  phase: 'validate' | 'infrastructure' | 'build' | 'package' | 'release' | 'runtime' | 'gateway' | 'dns' | 'tls' | 'container'
+  phase: 'validate' | 'infrastructure' | 'build' | 'package' | 'release' | 'runtime' | 'gateway' | 'dns' | 'tls' | 'mail' | 'container'
   label: string
   detail: string
   sites: string[]
