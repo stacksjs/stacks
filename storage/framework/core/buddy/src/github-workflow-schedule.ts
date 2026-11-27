@@ -1,3 +1,5 @@
+import { GITHUB_API_VERSION } from '@stacksjs/github'
+
 export interface GitHubWorkflowSchedule {
   name: string
   repository: string
@@ -96,7 +98,7 @@ export function workflowScheduleTemplate(schedule: GitHubWorkflowSchedule): stri
             Id: 'GitHubWorkflow',
             Arn: destinationArn,
             RoleArn: { 'Fn::GetAtt': ['InvokeRole', 'Arn'] },
-            HttpParameters: { HeaderParameters: { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } },
+            HttpParameters: { HeaderParameters: { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': GITHUB_API_VERSION } },
             RetryPolicy: { MaximumEventAgeInSeconds: 120, MaximumRetryAttempts: 1 },
             ...input,
           }],

@@ -386,6 +386,7 @@
         "@stacksjs/events": "0.75.696",
         "@stacksjs/features": "0.75.696",
         "@stacksjs/git": "0.75.696",
+        "@stacksjs/github": "0.75.696",
         "@stacksjs/gitit": "^0.2.5",
         "@stacksjs/health": "0.75.696",
         "@stacksjs/hq": "0.75.696",
