@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.697...v0.75.698)
+
+## ✨ Features
+
+- **buddy**: provision mailboxes with first-login password setup ([462d113](https://github.com/stacksjs/stacks/commit/462d113)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.696...v0.75.697)
 
 ## ✨ Features
