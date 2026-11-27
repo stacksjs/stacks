@@ -314,8 +314,7 @@ jobs:
 
       # Publish the framework to npm through pantry. Scoped core/* packages use a
       # holding tag and are promoted as one set. The unscoped `stacks`
-      # meta-package is then published directly to latest through OIDC because
-      # the legacy token cannot mutate that package's dist-tags. pantry resolves
+      # meta-package is then published directly to latest through OIDC with its own publisher. pantry resolves
       # workspace:* → concrete versions, topo-orders, skips already-published
       # versions, and falls back to NPM_TOKEN outside OIDC.
       #
@@ -331,9 +330,10 @@ jobs:
       # is limited to the tag writes. A failed promotion may leave a partial
       # set: fail honestly and resume it before declaring the release complete.
       #
-      # Without NPM_TOKEN there is no way to run `npm dist-tag`, and a release
-      # stuck on the holding tag would be worse than the tearing. So that case
-      # publishes straight to `latest`, exactly as before.
+      # Check credentials before choosing the initial tag. An absent or
+      # rejected promotion token uses trusted publishing directly to latest.
+      # In both modes, the umbrella is held until the scoped versions can
+      # all be read from the registry.
       # A failed sibling does not undo npm's accepted uploads. A job rerun must
       # verify their original bytes before pantry can repack and try any upload.
       - name: Verify original npm publications before resuming
@@ -350,29 +350,22 @@ jobs:
           set -euo pipefail
           bun .github/scripts/check-pantry-version.ts
 
-          if [ -z "${NPM_TOKEN:-}" ]; then
-            echo "No NPM_TOKEN: publishing straight to latest (promotion needs npm auth)."
-            pantry publish --npm --access public --ignore-scripts 'storage/framework/core/*' 'storage/framework/core'
-            exit 0
+          publication_tag="$(bun .github/scripts/promote-latest.ts --publication-tag)"
+          # Publish a dependency layer at a time. Registry readback is
+          # performed across the full scoped set before publishing stacks.
+          if [ "$publication_tag" = staging ]; then
+            bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag staging --no-readback
+            bun .github/scripts/promote-latest.ts
+          else
+            echo "No active npm promotion credential. Using trusted publishing for latest."
+            unset NPM_TOKEN
+            bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag latest --no-readback
+            bun .github/scripts/promote-latest.ts --verify-only
           fi
-
-          # A dependency layer at a time, each layer in parallel: a package only
-          # waits for the ones it depends on to be readable on npm, not for every
-          # package before it (two hours and more one by one). Each package still
-          # goes through publish-npm.sh, which waits out an accepted upload npm
-          # has not shown yet and resumes it. --no-readback: pantry stops at
-          # npm's acceptance instead of polling each package until it is
-          # readable (most of a minute each, often the full timeout); the
-          # staging tag keeps them off latest, and promote-latest.ts confirms
-          # every package is readable before it moves latest.
-          bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag staging --no-readback
-
-          # Promotion uses the same scoped token and honors registry cooldowns.
-          bun .github/scripts/promote-latest.ts
 
           # The unscoped meta-package has trusted publishing configured, but
           # the legacy token cannot mutate its dist-tags. Publish it through
-          # OIDC only after every scoped package is on latest; this final write
+          # OIDC only after the scoped set is readable; this final write
           # is the release commit point for `buddy upgrade` consumers.
           # --no-readback: the next step asks the registry for this exact
           # version before it installs, so pantry's own minute-long poll for it
