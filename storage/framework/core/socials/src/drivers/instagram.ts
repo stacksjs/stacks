@@ -331,6 +331,26 @@ export class InstagramPublishingDriver implements SocialPublishingDriver, Social
   }
 
   /**
+   * Add a comment to published media, using a token with comment permission.
+   * Returns the comment ID, or null if Meta accepted the comment without one.
+   */
+  async createComment(identity: SocialIdentityCredentials, mediaId: string, text: string): Promise<string | null> {
+    const token = identity.accessToken
+    if (!token) throw new Error('Instagram access token is missing for this identity.')
+    const id = mediaId.trim()
+    if (!/^[0-9]{1,32}$/.test(id)) throw new Error('An Instagram published media ID is required to comment.')
+    const message = text.trim()
+    if (!message) throw new Error('Instagram comment text is required.')
+
+    const result = await this.graph<{ id?: string }>(`/${id}/comments?${new URLSearchParams({ message })}`, {
+      method: 'POST',
+      redirect: 'error',
+      signal: AbortSignal.timeout(15_000),
+    }, token)
+    return typeof result?.id === 'string' && /^[0-9]{1,32}$/.test(result.id) ? result.id : null
+  }
+
+  /**
    * Wait for a media container to be `FINISHED`. Checked at once, then after
    * a growing pause (1, 2, 4 ... seconds, at most a minute apart) until
    * {@link containerTimeoutMs}. `ERROR` and `EXPIRED` fail at once, with

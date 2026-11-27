@@ -241,8 +241,10 @@ export function getDeployErrorMessage(error: unknown): string {
  */
 export function withDeployNotification<A extends unknown[]>(
   action: (...args: A) => Promise<void>,
+  shouldNotify: (...args: A) => boolean = () => true,
 ): (...args: A) => Promise<void> {
   return async (...args: A): Promise<void> => {
+    const notify = shouldNotify(...args)
     const startedAt = Date.now()
     // The command's first positional is the target environment.
     const environment = typeof args[0] === 'string' && args[0] ? args[0] : 'production'
@@ -276,12 +278,15 @@ export function withDeployNotification<A extends unknown[]>(
       // can discard the only actionable CI diagnostic.
       await log.flush()
 
-      await notifyDeployOutcome({ ...context, status: 'failed', durationMs: Date.now() - startedAt, error })
-      await log.flush()
+      if (notify) {
+        await notifyDeployOutcome({ ...context, status: 'failed', durationMs: Date.now() - startedAt, error })
+        await log.flush()
+      }
       // Preserve the previous behaviour of the inline exits this replaced.
       process.exit(ExitCode.FatalError)
     }
 
-    await notifyDeployOutcome({ ...context, status: 'succeeded', durationMs: Date.now() - startedAt })
+    if (notify)
+      await notifyDeployOutcome({ ...context, status: 'succeeded', durationMs: Date.now() - startedAt })
   }
 }

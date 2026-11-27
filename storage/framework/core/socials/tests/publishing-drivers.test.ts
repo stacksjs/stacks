@@ -32,6 +32,7 @@ interface Sent {
   method: string
   headers: Headers
   body: unknown
+  redirect?: RequestRedirect
 }
 
 /** Record every request; answer each with whatever `answer` returns for it. */
@@ -39,7 +40,7 @@ function mockFetch(answer: (url: string, sent: Sent) => unknown | Response): Sen
   const sent: Sent[] = []
   globalThis.fetch = (async (input: string | URL | Request, init: RequestInit = {}) => {
     const url = String(input)
-    const record: Sent = { url, method: init.method || 'GET', headers: new Headers(init.headers), body: init.body }
+    const record: Sent = { url, method: init.method || 'GET', headers: new Headers(init.headers), body: init.body, ...(init.redirect && { redirect: init.redirect }) }
     sent.push(record)
     const reply = answer(url, record)
     if (reply instanceof Response) return reply
@@ -639,6 +640,48 @@ describe('Threads', () => {
 describe('Instagram', () => {
   const identity = { handle: 'glenn', did: '1784', accessToken: 'AT' }
 
+  it('comments on published media with the authorized User token in a header', async () => {
+    const sent = mockFetch(() => ({ id: '17870913679156914' }))
+    const text = 'Link & details: https://example.org/?n=1+x #release'
+    const comment = await new InstagramPublishingDriver({ graphVersion: 'v27.0' }).createComment(
+      { ...identity, accessToken: 'USER_AT' }, '17895695668004550', text,
+    )
+    expect(comment).toBe('17870913679156914')
+    expect(sent).toHaveLength(1)
+    const request = sent[0]!
+    const url = new URL(request.url)
+    expect(url.origin).toBe('https://graph.facebook.com')
+    expect(url.pathname).toBe('/v27.0/17895695668004550/comments')
+    expect([...url.searchParams]).toEqual([['message', text]])
+    expect(request.method).toBe('POST')
+    expect(request.redirect).toBe('error')
+    expect(request.headers.get('authorization')).toBe('Bearer USER_AT')
+  })
+
+  it('refuses invalid media IDs and empty comments before a request', async () => {
+    const sent = mockFetch(() => undefined)
+    const driver = new InstagramPublishingDriver()
+    await expect(driver.createComment(identity, '42/media_publish', 'Hello')).rejects.toThrow('published media ID')
+    await expect(driver.createComment(identity, '42', ' ')).rejects.toThrow('comment text')
+    await expect(driver.createComment({ ...identity, accessToken: '' }, '42', 'Hello')).rejects.toThrow('access token')
+    expect(sent).toHaveLength(0)
+  })
+
+  it('reports the Graph comment response and keeps failed writes separate from publish', async () => {
+    const sent = mockFetch(() => new Response(JSON.stringify({ error: { code: 200, message: 'Comment permission is missing' } }), { status: 403 }))
+    await expect(new InstagramPublishingDriver().createComment(identity, '17895695668004550', 'Hello')).rejects.toMatchObject({
+      network: 'instagram', status: 403,
+    })
+    expect(sent).toHaveLength(1)
+    expect(new URL(sent[0]!.url).pathname).toEndWith('/comments')
+  })
+
+  it('reports acceptance even when Meta supplies no usable comment ID', async () => {
+    const sent = mockFetch(() => new Response(null, { status: 204 }))
+    expect(await new InstagramPublishingDriver().createComment(identity, '42', 'Hello')).toBeNull()
+    expect(sent).toHaveLength(1)
+  })
+
   function api(statuses: string[] = ['FINISHED']): Sent[] {
     let container = 0
     let polled = 0
@@ -793,6 +836,54 @@ describe('Threads deletion (stacksjs/stacks#3377)', () => {
 
 describe('LinkedIn', () => {
   const identity = { handle: 'glenn', did: 'urn:li:person:abc', accessToken: 'AT' }
+
+  it('creates a first comment as the published post’s author or organization', async () => {
+    const sent = mockFetch(() => new Response(null, { status: 201, headers: { 'x-restli-id': '6915442672119734272' } }))
+    const driver = new LinkedInPublishingDriver()
+    const text = 'Release notes (and links) #release.'
+    for (const [actor, urn] of [[identity.did, 'urn:li:share:9'], ['urn:li:organization:42', 'urn:li:ugcPost:8']] as const)
+      expect(await driver.createComment({ ...identity, did: actor }, urn, text)).toBe('6915442672119734272')
+
+    for (const [index, actor, object] of [
+      [0, identity.did, 'urn:li:share:9'], [1, 'urn:li:organization:42', 'urn:li:ugcPost:8'],
+    ] as const) {
+      const request = sent[index]!
+      expect(request.url).toBe(`https://api.linkedin.com/rest/socialActions/${encodeURIComponent(object)}/comments`)
+      expect(request.method).toBe('POST')
+      expect(request.redirect).toBe('error')
+      expect(request.headers.get('authorization')).toBe('Bearer AT')
+      expect(request.headers.get('linkedin-version')).toBe(LINKEDIN_API_VERSION)
+      expect(request.headers.get('x-restli-protocol-version')).toBe('2.0.0')
+      expect(json(request)).toEqual({ actor, object, message: { text } })
+    }
+  })
+
+  it('refuses the wrong URN, missing actor and empty text before a request', async () => {
+    const sent = mockFetch(() => undefined)
+    const driver = new LinkedInPublishingDriver()
+    await expect(driver.createComment(identity, 'https://www.linkedin.com/feed/update/urn:li:share:9', 'Test')).rejects.toThrow('post URN')
+    await expect(driver.createComment({ ...identity, did: undefined }, 'urn:li:share:9', 'Test')).rejects.toThrow('author URN')
+    await expect(driver.createComment(identity, 'urn:li:share:9', ' ')).rejects.toThrow('comment text')
+    expect(sent).toHaveLength(0)
+  })
+
+  it('accepts a body ID and preserves an acknowledged write with a missing ID', async () => {
+    const driver = new LinkedInPublishingDriver()
+    mockFetch(() => new Response(JSON.stringify({ id: '90071992547409931' }), { status: 201 }))
+    expect(await driver.createComment(identity, 'urn:li:share:9', 'First')).toBe('90071992547409931')
+    const sent = mockFetch(() => new Response('not a comment record', { status: 201 }))
+    expect(await driver.createComment(identity, 'urn:li:share:9', 'Second')).toBeNull()
+    expect(sent).toHaveLength(1)
+  })
+
+  it('reports comment permission failure without issuing another write', async () => {
+    const sent = mockFetch(() => new Response(JSON.stringify({ message: 'Comment permission required' }), { status: 403 }))
+    await expect(new LinkedInPublishingDriver().createComment(identity, 'urn:li:share:9', 'Hello')).rejects.toMatchObject({
+      network: 'linkedin', status: 403,
+    })
+    expect(sent).toHaveLength(1)
+    expect(sent[0]!.url).toEndWith('/comments')
+  })
 
   function api(): Sent[] {
     let image = 0
