@@ -5,45 +5,93 @@ import { dirname, relative, resolve } from 'node:path'
 
 const supportPackage = '@stacksjs/support'
 
+async function readPackageLocks(directory: string): Promise<(Buffer | null)[]> {
+  return Promise.all(['bun.lock', 'bun.lockb', 'pantry.lock'].map(async (name) => {
+    try {
+      return await readFile(resolve(directory, name))
+    }
+    catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null
+      throw error
+    }
+  }))
+}
+
 /** Keep the opt-in SDK available to apps with isolated dependency linking. */
 export async function installSupportSdk(directory: string, frameworkVersion: string, deps: {
   install: (directory: string, args: string[]) => Promise<boolean>
+  installPantry?: (directory: string) => Promise<boolean>
   print: (line: string) => void
-}): Promise<boolean> {
+}, requestedVersion?: string): Promise<boolean> {
   const path = resolve(directory, 'package.json')
   try {
     const original = await readFile(path, 'utf8')
     const manifest = JSON.parse(original) as {
       dependencies?: Record<string, string>
       devDependencies?: Record<string, string>
+      overrides?: Record<string, unknown>
+      resolutions?: Record<string, unknown>
+    }
+    if (requestedVersion && [manifest.overrides, manifest.resolutions].some((entries) => {
+      const override = entries?.[supportPackage]
+      return override !== undefined && override !== requestedVersion
+    })) {
+      deps.print('The app has a conflicting HQ Support SDK override. Update the override to match --sdk-version before installing.')
+      return false
     }
     const runtimeVersion = manifest.dependencies?.[supportPackage]
     const development = manifest.devDependencies
     const devVersion = development?.[supportPackage]
-    const spec = `${supportPackage}@${runtimeVersion || devVersion || frameworkVersion}`
-    if (runtimeVersion) {
-      if (!await deps.install(directory, ['install'])) throw new Error('SDK install failed')
+    const version = requestedVersion ?? (runtimeVersion || devVersion || frameworkVersion)
+    const spec = `${supportPackage}@${version}`
+    const usesPantry = existsSync(resolve(directory, 'pantry.lock'))
+    if (usesPantry && !deps.installPantry) {
+      deps.print('This app has a pantry.lock. Make Pantry available and retry `buddy support:install --sdk-only`.')
+      return false
     }
-    else if (development && devVersion) {
-      // Bun add keeps an existing development dependency in that section.
-      manifest.dependencies = { ...manifest.dependencies, [supportPackage]: devVersion }
-      delete development[supportPackage]
+    const pantryInstall = usesPantry ? deps.installPantry : undefined
+    const install = async () => {
+      if (!pantryInstall) {
+        if (!await deps.install(directory, ['install'])) throw new Error('SDK install failed')
+        return true
+      }
+      const ok = await pantryInstall(directory).catch(() => false)
+      if (!ok) deps.print('Pantry could not finish the SDK install. Resolve the Pantry install error and retry `buddy support:install --sdk-only`.')
+      return ok
+    }
+    if (runtimeVersion === version) {
+      if (!await install()) return false
+    }
+    else if (pantryInstall || (!runtimeVersion && development && devVersion)) {
+      // Pantry generates both locks from the edited manifest. Bun add keeps an
+      // existing development dependency in that section, so promote it here.
+      const previousLocks = pantryInstall ? await readPackageLocks(directory) : null
+      manifest.dependencies = { ...manifest.dependencies, [supportPackage]: version }
+      if (development) delete development[supportPackage]
       const indent = original.match(/\n([ \t]+)"/)?.[1] ?? '  '
       const updated = `${JSON.stringify(manifest, null, indent)}\n`
       await writeFile(path, updated)
       let installed = false
       try {
-        installed = await deps.install(directory, ['install'])
+        installed = await install()
       }
       finally {
-        if (!installed && await readFile(path, 'utf8') === updated) await writeFile(path, original)
+        if (!installed) {
+          // Keep a partially committed pin aligned with the lock the installer
+          // wrote. A later run can finish refreshing the remaining lock.
+          const unchanged = !previousLocks || (await readPackageLocks(directory)).every((value, index) => {
+            const previous = previousLocks[index]
+            return value === previous || (value !== null && previous != null && value.equals(previous))
+          })
+          if (unchanged && await readFile(path, 'utf8') === updated) await writeFile(path, original)
+        }
       }
-      if (!installed) throw new Error('SDK install failed')
+      if (!installed) return false
     }
     else {
       if (!await deps.install(directory, ['add', '--exact', spec])) throw new Error('SDK install failed')
       const updated = JSON.parse(await readFile(path, 'utf8')) as typeof manifest
-      if (!updated.dependencies?.[supportPackage]) throw new Error('SDK missing from runtime dependencies')
+      if (updated.dependencies?.[supportPackage] !== version) throw new Error('Requested SDK missing from runtime dependencies')
     }
     deps.print(`Installed ${spec} as an app dependency.`)
     return true

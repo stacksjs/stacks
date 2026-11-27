@@ -103,7 +103,13 @@ export interface DashboardOptions {
       roles?: string[]
     }>
   }>
-  /** Per-section visibility toggles. Omit a section to leave it enabled. */
+  /**
+   * Built-in dashboard sections and their pages. Set `enabled: false` to hide
+   * the section and stop serving its bundled views. Content, Commerce, and
+   * Marketing also require their corresponding installed features.
+   *
+   * App-owned dashboard views and the dashboard's Settings remain available.
+   */
   sections?: {
     library?: { enabled?: boolean }
     content?: { enabled?: boolean }
@@ -113,9 +119,8 @@ export interface DashboardOptions {
     management?: { enabled?: boolean }
     utilities?: { enabled?: boolean }
     /**
-     * Data section is always rendered (it hosts userland models). These
-     * sub-flags hide individual built-in rows. Userland model rows are
-     * always shown — they're the whole point of this section.
+     * Toggle individual built-in data pages. The All Models flag controls the
+     * index. Model lists and record pages remain reachable from model rows.
      */
     data?: {
       dashboard?: { enabled?: boolean }

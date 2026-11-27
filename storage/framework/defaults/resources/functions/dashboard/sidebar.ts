@@ -5,10 +5,13 @@
  * native STX Sidebar component. Markup, icons, disclosure state, and
  * persistence stay inside the component instead of being serialized as HTML.
  */
+import type { DashboardProviderOptions } from '@stacksjs/types'
+import type { ResolvedDashboardToggles } from './toggles'
 import { capitalCase, plural } from '@stacksjs/strings'
 import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
+import { dashboardPageAvailable, readDashboardPageAvailability, unavailableDashboardPages } from './page-availability'
 
 type ModelCategory = 'userland' | 'data' | 'commerce' | 'content' | 'marketing' | 'system'
 
@@ -202,22 +205,21 @@ function normalizeSchemaModels(value: unknown): string[] {
   return value as string[]
 }
 
-/** Hide built-in modules whose backing models are outside this app's schema. */
-export function filterSchemaNavSections(sections: Array<[string, string, NavItem[]]>, schemaModels?: readonly string[], capabilities: { inbox?: boolean } = {}): Array<[string, string, NavItem[]]> {
-  if (!schemaModels && capabilities.inbox !== false) return sections
-  const available = schemaModels ? new Set(schemaModels) : undefined
-  const required: Record<string, string[]> = {
-    '/activity': ['Activity'], '/teams': ['Team'], '/subscribers': ['Subscriber'],
-    '/releases': ['Release'], '/deployments': ['Deployment'], '/requests': ['Request'],
-    '/queries': ['QueryLog'], '/queries/slow': ['QueryLog'], '/queries/history': ['QueryLog'],
-    '/errors': ['Error'], '/notifications/dashboard': ['Notification'], '/logs': ['Log'],
-    '/management/permissions': ['Role', 'Permission'], '/kanban': ['Board', 'Card', 'Column'],
-    '/data/activity': ['Activity'], '/data/teams': ['Team'], '/data/subscribers': ['Subscriber'],
-    '/inbox/settings': ['MailPreference'],
-  }
-  return sections.map(([id, label, items]): [string, string, NavItem[]] => [id, label, id.startsWith('app-nav-') ? items : items.filter(item =>
-    (!(capabilities.inbox === false && ['/inbox', '/inbox/activity'].includes(item.to))
-      && (required[item.to] ?? []).every(model => !available || available.has(model))))])
+/** Hide built-in navigation to pages the dashboard server does not serve. */
+export function filterSchemaNavSections(
+  sections: Array<[string, string, NavItem[]]>,
+  schemaModels?: readonly string[],
+  capabilities: { inbox?: boolean, remote?: boolean, providers?: DashboardProviderOptions } = {},
+  toggles?: ResolvedDashboardToggles,
+): Array<[string, string, NavItem[]]> {
+  const unavailable = unavailableDashboardPages({ sections: toggles, schemaModels, ...capabilities })
+  if (!unavailable.length)
+    return sections
+
+  return sections
+    .map(([id, label, items]): [string, string, NavItem[]] => [
+      id, label, id.startsWith('app-nav-') ? items : items.filter(item => dashboardPageAvailable(item.to, unavailable)),
+    ])
     .filter(([, , items]) => items.length > 0)
 }
 
@@ -752,12 +754,8 @@ function loadAppNavFromConfig(configPath = resolve(process.cwd(), 'config/dashbo
 export function buildWebSidebarSections(): WebSidebarSection[] {
   const manifest = loadDiscoveredManifest()
   const appNav = manifest.nav.length > 0 ? manifest.nav : loadAppNavFromConfig()
-  const { config } = createRequire(import.meta.url)('@stacksjs/config')
-  // The current inbox SDK reads S3 objects. The native IMAP/SMTP server does
-  // not write that bucket; linking its mailboxes to this UI only produces 503s.
-  const mailServer = config.email?.server
-  const inbox = !(mailServer?.enabled && (mailServer.mode ?? 'server') === 'server')
-  const sections = filterSchemaNavSections(buildNavSections(manifest.models, manifest.sections, appNav), manifest.schemaModels, { inbox })
+  const { sections: toggles, schemaModels, ...capabilities } = readDashboardPageAvailability()
+  const sections = filterSchemaNavSections(buildNavSections(manifest.models, toggles, appNav), schemaModels, capabilities, toggles)
 
   const webItem = (item: NavItem): WebSidebarItem => ({
     id: item.id ?? navItemId(item.to),

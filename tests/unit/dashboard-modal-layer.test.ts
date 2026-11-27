@@ -13,6 +13,11 @@ import { join, resolve } from 'node:path'
  *
  * Two things had to be true for that, and each is pinned here. Measured in a
  * browser both ways in; these keep the cause from coming back.
+ *
+ * The intended place for a dialog then changed. A modal <dialog> dims the
+ * whole window through its ::backdrop, sidebar included, so a dialog centred
+ * over the content alone looked off centre. Dialogs now centre on the window;
+ * a drawer, pinned to the right edge, still starts beside the sidebar.
  */
 const layout = readFileSync(resolve('storage/framework/defaults/views/dashboard/layouts/default.stx'), 'utf8')
 const components = resolve('storage/framework/defaults/resources/components/Dashboard')
@@ -40,16 +45,28 @@ describe('the dashboard\'s dialog layer', () => {
     // `.dashboard-modal-layer` weighs the same, and the two stylesheets load
     // in a different order on a fresh load and after navigating.
     const rules = [...layout.matchAll(/^\s*([^\n{}]*\.dashboard-modal-layer[^\n{]*)\{/gm)].map(match => match[1]!.trim())
-    expect(rules).toEqual(['html .dashboard-modal-layer', 'html .dashboard-modal-layer'])
+    expect(rules).toEqual(['html .dashboard-modal-layer', 'html .dashboard-modal-layer.dashboard-modal-dialog', 'html .dashboard-modal-layer'])
   })
 
-  test('it spans the content pane: from the sidebar to the window\'s edge', () => {
+  test('a drawer\'s layer spans the content pane: from the sidebar to the window\'s edge', () => {
     const rule = layout.slice(layout.indexOf('html .dashboard-modal-layer {'))
     const body = rule.slice(0, rule.indexOf('}'))
     expect(body).toContain('left: var(--stx-sidebar-width, 250px);')
     expect(body).toContain('right: 0;')
     // A dialog is as wide as its content unless told otherwise.
     expect(body).toContain('width: auto;')
+  })
+
+  test('a dialog\'s layer is the whole window, the area its backdrop dims, so the dialog is centred on the window', () => {
+    // A modal <dialog>'s ::backdrop always covers the whole window, sidebar
+    // included. A dialog centred on the content beside it read as 125px off
+    // centre on a 1024px window.
+    const rule = layout.slice(layout.indexOf('html .dashboard-modal-layer.dashboard-modal-dialog {'))
+    expect(rule.slice(0, rule.indexOf('}'))).toMatch(/\{\s*left: 0;\s*$/)
+    const modal = layers().find(layer => layer.file.endsWith('UI/Modal.stx'))!
+    expect(modal.classes).toEqual(expect.arrayContaining(['dashboard-modal-layer', 'dashboard-modal-dialog']))
+    const drawer = layers().find(layer => layer.file.endsWith('UI/Drawer.stx'))!
+    expect(drawer.classes).not.toContain('dashboard-modal-dialog')
   })
 
   test('on a narrow window, where the sidebar is a drawer of its own, it takes the whole width', () => {

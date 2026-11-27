@@ -1,31 +1,21 @@
 <script server>
+import { dashboardPageVisibility } from '@stacksjs/defaults/resources/functions/dashboard/page-availability'
 import { buildDashboardSectionHubs } from '@stacksjs/defaults/resources/functions/dashboard/section-navigation'
 import { buildWebSidebarSections } from '@stacksjs/defaults/resources/functions/dashboard/sidebar'
 
 export const homeSectionCards = buildDashboardSectionHubs(buildWebSidebarSections())
   .map(({ id, href, label, icon, description, section, roleOptions }) => ({ id, href, label, icon, description, section, roleOptions }))
-</script>
+const isDashboardPageAvailable = dashboardPageVisibility()
+export const showRequestHistory = isDashboardPageAvailable('/requests')
+export const showActivityLink = isDashboardPageAvailable('/data/activity')
 
-<script client>
-import { useDashboard } from '../../../../functions/dashboard'
-
-const dashboard = useDashboard()
-const loadingCards = [1, 2, 3, 4]
-
-/**
- * `section` names the feature-backed dashboard section a card belongs to.
- * A card with one is only offered when the server says that section exists -
- * otherwise the home page links to pages the sidebar has hidden and that
- * cannot load. See stacksjs/stacks#2928.
- */
-const allQuickLinks = [
+export const homeQuickLinks = [
   {
     title: 'Blog',
     description: 'Manage posts and pages',
     href: '/content/dashboard',
     icon: 'i-hugeicons-book-open-01',
     tone: 'blue',
-    section: 'content',
   },
   {
     title: 'Commerce',
@@ -33,7 +23,6 @@ const allQuickLinks = [
     href: '/commerce/dashboard',
     icon: 'i-hugeicons-store-01',
     tone: 'green',
-    section: 'commerce',
   },
   {
     title: 'Cloud',
@@ -49,22 +38,14 @@ const allQuickLinks = [
     icon: 'i-hugeicons-settings-02',
     tone: 'neutral',
   },
-]
+].filter(link => isDashboardPageAvailable(link.href))
+</script>
 
-/**
- * Cards without a `section` are always offered. A card with one waits for the
- * server to say that section exists, so the home page never links to a
- * section the sidebar has hidden and whose pages cannot load.
- *
- * Waits, as in `=== true`: until the answer arrives nothing is known, and
- * "not false" showed the Blog and Commerce cards for a moment on every load -
- * long enough for their links to be prefetched and answer 404 in an app with
- * both features off.
- */
-function quickLinks() {
-  const available = dashboard.sections.value
-  return allQuickLinks.filter(link => !link.section || available[link.section] === true)
-}
+<script client>
+import { useDashboard } from '../../../../functions/dashboard'
+
+const dashboard = useDashboard()
+const loadingCards = [1, 2, 3, 4]
 
 /** Orders are part of the feed only with commerce on, so they are named only then. */
 function activityDescription(): string {
@@ -194,10 +175,12 @@ onMount(() => {
     </Button>
   </div>
 
+  @if(homeSectionCards.length > 0)
   <section data-dashboard-section-overview aria-labelledby="dashboard-sections" class="mb-6">
     <h2 id="dashboard-sections" data-dashboard-ink class="mb-3 font-semibold text-base text-neutral-900 dark:text-white">Sections</h2>
     <DashboardNavigationCards :navigationCards="homeSectionCards" />
   </section>
+  @endif
 
   <details :if="issues().length > 0" class="mb-4 px-4 py-3 text-amber-800 text-sm dark:text-amber-200 overview-panel">
     <summary class="font-medium cursor-pointer">Some dashboard data is unavailable</summary>
@@ -209,7 +192,9 @@ onMount(() => {
   <section data-dashboard-metrics aria-labelledby="application-overview" class="mb-5 p-3 sm:p-4 overview-panel">
     <div class="flex flex-wrap gap-2 items-center justify-between mb-3">
       <h2 data-dashboard-ink id="application-overview" class="font-semibold text-base text-neutral-900 dark:text-white">Overview</h2>
+      @if(showRequestHistory)
       <StxLink data-dashboard-muted to="/requests" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">Request history</StxLink>
+      @endif
     </div>
     <div class="overview-metrics">
       <StatsCard :for="item in loadingCards" :if="dashboard.isLoading.value && stats().length === 0" loading />
@@ -237,11 +222,15 @@ onMount(() => {
     <ServiceHealth :services="services()" :loading="dashboard.isLoading.value" />
     <ActivityTable :activities="activities()" :description="activityDescription()" :loading="dashboard.isLoading.value">
       <template #actions>
+        @if(showActivityLink)
         <StxLink data-dashboard-muted to="/data/activity" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">View all</StxLink>
+        @endif
       </template>
     </ActivityTable>
   </div>
 
-  <div class="mt-5"><QuickLinks :links="quickLinks()" /></div>
+  @if(homeQuickLinks.length > 0)
+  <div class="mt-5"><QuickLinks :links="homeQuickLinks" /></div>
+  @endif
   <div class="mt-5"><QuickLinks title="Resources" :links="resourceLinks" /></div>
 </div>

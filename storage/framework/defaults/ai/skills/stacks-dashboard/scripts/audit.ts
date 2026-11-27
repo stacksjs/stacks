@@ -1,7 +1,9 @@
 #!/usr/bin/env bun
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
-import { join, relative, resolve } from 'node:path'
+import { dirname, join, relative, resolve, sep } from 'node:path'
+import { overridesReady } from '@stacksjs/config'
+import { dashboardViewExclusions, readDashboardPageAvailability } from '../../../../resources/functions/dashboard/page-availability'
 
 interface ModelSummary {
   href: string
@@ -28,7 +30,7 @@ const baseUrlFlag = baseUrlFlagIndex >= 0
   ? args[baseUrlFlagIndex + 1]
   : args.find(arg => arg.startsWith('--base-url='))?.slice('--base-url='.length)
 const positionalBaseUrl = args.find((arg, index) =>
-  !arg.startsWith('-') && index !== baseUrlFlagIndex + 1)
+  !arg.startsWith('-') && (baseUrlFlagIndex < 0 || index !== baseUrlFlagIndex + 1))
 const baseUrl = (baseUrlFlag || positionalBaseUrl || process.env.DASHBOARD_URL || 'http://127.0.0.1:3002')
   .replace(/\/+$/, '')
 const timeoutMs = 15_000
@@ -44,36 +46,42 @@ function files(directory: string): string[] {
   })
 }
 
-function dashboardViewRoots(): string[] {
-  return [
-    resolve(projectRoot, 'storage/framework/defaults/views/dashboard'),
-    resolve(projectRoot, 'resources/views/dashboard'),
-  ].filter(existsSync)
+function dashboardDefaultsRoot(): string {
+  const vendored = resolve(projectRoot, 'storage/framework/defaults')
+  if (existsSync(join(vendored, 'views/dashboard')))
+    return vendored
+
+  return dirname(Bun.resolveSync('@stacksjs/defaults/package.json', projectRoot))
 }
 
 function viewRoute(root: string, path: string): string {
-  const relativePath = relative(root, path).replace(/\.stx$/, '')
+  const relativePath = relative(root, path).split(sep).join('/').replace(/\.stx$/, '')
   return relativePath === 'index'
     ? '/'
     : `/${relativePath.replace(/\/index$/, '')}`
 }
 
-function discoveredViewRoutes(): { dynamic: string[], static: string[] } {
-  const routeMap = new Map<string, string>()
+function discoveredViewRoutes(): { dynamic: string[], static: string[], excluded: string[] } {
+  const framework = join(dashboardDefaultsRoot(), 'views/dashboard')
+  const app = resolve(projectRoot, 'resources/views/dashboard')
+  const exclusions = dashboardViewExclusions(framework, readDashboardPageAvailability())
+  const routes = new Map<string, boolean>()
 
-  for (const root of dashboardViewRoots()) {
+  for (const root of [framework, app]) {
     for (const path of files(root)) {
-      if (!path.endsWith('.stx') || path.includes('/layouts/'))
+      if (!path.endsWith('.stx') || relative(root, path).startsWith(`layouts${sep}`))
         continue
-
-      routeMap.set(viewRoute(root, path), path)
+      const route = viewRoute(root, path)
+      if (route !== '/[...all]')
+        routes.set(route, !exclusions.some(excluded => path === excluded || path.startsWith(`${excluded}${sep}`)))
     }
   }
 
-  const routes = [...routeMap.keys()].filter(route => route !== '/[...all]')
+  const enabled = [...routes].filter(([, available]) => available).map(([route]) => route)
   return {
-    dynamic: routes.filter(route => route.includes('[')).sort(),
-    static: routes.filter(route => !route.includes('[')).sort(),
+    dynamic: enabled.filter(route => route.includes('[')).sort(),
+    static: enabled.filter(route => !route.includes('[')).sort(),
+    excluded: [...routes].filter(([route, available]) => !available && !route.includes('[')).map(([route]) => route).sort(),
   }
 }
 
@@ -213,10 +221,7 @@ async function discoverDynamicPages(
 }
 
 function dashboardApiRoutes(): string[] {
-  const path = resolve(
-    projectRoot,
-    'storage/framework/defaults/routes/dashboard-api.ts',
-  )
+  const path = join(dashboardDefaultsRoot(), 'routes/dashboard-api.ts')
   const source = readFileSync(path, 'utf8')
   return [...source.matchAll(/route\.get\(\s*['"]([^'"]+)['"]/g)]
     .map(match => `/api/dashboard${match[1]}`)
@@ -318,6 +323,7 @@ async function auditApi(
   return statuses
 }
 
+await overridesReady
 const views = discoveredViewRoutes()
 if (views.static.length === 0) {
   failures.push({
@@ -331,11 +337,11 @@ const modelRoutes = (modelIndex.categoryGroups || [])
   .flatMap(group => group.models || [])
   .map(model => model.href)
   .filter(Boolean)
-if (modelRoutes.length === 0) {
+if (!Array.isArray(modelIndex.categoryGroups)) {
   failures.push({
     path: '/api/dashboard/models',
     kind: 'model-route-discovery',
-    error: 'No model destinations were discovered',
+    error: 'The model index did not return category groups',
   })
 }
 const dynamicPages = await discoverDynamicPages(views.dynamic, modelRoutes)
@@ -344,6 +350,17 @@ for (const path of views.static)
   await auditPage(path)
 for (const path of dynamicPages)
   await auditPage(path)
+for (const path of views.excluded) {
+  try {
+    const response = await request(path, { redirect: 'manual' })
+    await response.body?.cancel()
+    if (response.status !== 404)
+      failures.push({ path, kind: 'excluded-page', status: response.status })
+  }
+  catch (error) {
+    failures.push({ path, kind: 'excluded-page', error: String(error) })
+  }
+}
 
 const apiRoutes = dashboardApiRoutes()
 if (apiRoutes.length === 0) {
@@ -359,6 +376,7 @@ const remainingDynamicCount = dynamicPages.length - modelRoutes.length
 console.log(JSON.stringify({
   baseUrl,
   pages: {
+    excluded: views.excluded.length,
     static: { routes: views.static.length, requests: views.static.length * 2 },
     models: { routes: modelRoutes.length, requests: modelRoutes.length * 2 },
     dynamic: {

@@ -98,10 +98,8 @@ describe('a section whose feature is off defaults to hidden', () => {
     expect(asked).toContain('marketing')
   })
 
-  it('an explicit flag in config/dashboard.ts still wins, both ways', () => {
-    // An app may want a section whose feature is off, or may want to hide one
-    // whose feature is on. The gate is a default, not an override.
-    expect(resolveDashboardToggles({ sections: { commerce: { enabled: true } } }, allOff).commerce).toBe(true)
+  it('section flags can disable a feature but cannot enable uninstalled pages', () => {
+    expect(resolveDashboardToggles({ sections: { commerce: { enabled: true } } }, allOff).commerce).toBe(false)
     expect(resolveDashboardToggles({ sections: { commerce: { enabled: false } } }, allOn).commerce).toBe(false)
   })
 

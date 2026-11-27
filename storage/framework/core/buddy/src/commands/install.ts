@@ -1,6 +1,6 @@
 import type { CLI, InstallOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { log, onUnknownSubcommand, runCommand } from "@stacksjs/cli"
+import { log, onUnknownSubcommand, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { resultFailed } from '../result'
@@ -16,10 +16,15 @@ export function install(buddy: CLI): void {
     .command('install', descriptions.install)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-v, --verbose', descriptions.verbose, { default: false })
+    .option('--frozen-lockfile', 'Install the exact versions in bun.lock without updating it')
+    .option('--ignore-scripts', 'Skip lifecycle scripts during installation')
     .action(async (options: InstallOptions) => {
       log.debug('Running `buddy install` ...', options)
 
-      const result = await runCommand('bun install', {
+      const command = ['bun', 'install']
+      if (options.frozenLockfile) command.push('--frozen-lockfile')
+      if (options.ignoreScripts) command.push('--ignore-scripts')
+      const result = await runCommand(command, {
         ...options,
         cwd: p.projectPath(),
       })
@@ -35,5 +40,5 @@ export function install(buddy: CLI): void {
       }
     })
 
-  onUnknownSubcommand(buddy, "install")
+  onUnknownSubcommand(buddy, 'install')
 }

@@ -13,12 +13,21 @@ import { ENRICHED_NOT_FOUND_RESPONSE } from '@stacksjs/bun-router/runtime'
 
 let server: any = null
 let port = 0
+const scimError = {
+  schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
+  status: '404',
+  detail: 'Provisioned user not found.',
+}
 
 beforeAll(async () => {
   const { route } = await import('../src')
 
   route.get('/_rid', (request: any) => Response.json({ seen: request._requestId }))
   route.get('/_rid_boom', () => Response.json({ error: 'nope' }, { status: 500 }))
+  route.get('/_rid_scim_missing', () => Response.json(scimError, {
+    status: 404,
+    headers: { 'Content-Type': 'application/scim+json; charset=utf-8' },
+  }))
   route.get('/_rid_generic_404', () => Response.json({ message: 'Not Found' }, { status: 404 }))
 
   server = await route.serve({ port: 0, hostname: '127.0.0.1' })
@@ -120,6 +129,17 @@ describe('an error body', () => {
     const body: any = await answer.json()
 
     expect(body.request_id).toBe(answer.headers.get('X-Request-ID'))
+  })
+
+  it('uses only the response header to correlate a SCIM error', async () => {
+    const answer = await fetch(`http://127.0.0.1:${port}/_rid_scim_missing`, {
+      headers: { 'X-Request-ID': 'scim-directory-request' },
+    })
+
+    expect(answer.status).toBe(404)
+    expect(answer.headers.get('Content-Type')).toBe('application/scim+json; charset=utf-8')
+    expect(answer.headers.get('X-Request-ID')).toBe('scim-directory-request')
+    expect(await answer.json()).toEqual(scimError)
   })
 
   it('keeps an already enriched router 404 unchanged', async () => {

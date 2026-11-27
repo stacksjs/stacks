@@ -1,5 +1,172 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.706...v0.75.707)
+
+## ✨ Features
+
+- **dashboard**: dialogs fade and lift in when they open ([36d835f](https://github.com/stacksjs/stacks/commit/36d835f)) _(by glennmichael123)_
+- **socials**: support native polls, quotes and self-labels ([e3f46d8](https://github.com/stacksjs/stacks/commit/e3f46d8)) _(by Chris Breuer)_ ([stacksjs/postline#254](https://github.com/stacksjs/postline/issues/254))
+
+## 🐛 Bug Fixes
+
+- **buddy**: preview native mail reconciliation ([7c12388](https://github.com/stacksjs/stacks/commit/7c12388)) _(by Chris)_ ([#3444](https://github.com/stacksjs/stacks/issues/3444))
+- **dashboard**: dialogs are centred on the window they dim ([98e416d](https://github.com/stacksjs/stacks/commit/98e416d)) _(by glennmichael123)_ ([stacksjs/stacks#3255](https://github.com/stacksjs/stacks/issues/3255))
+- **desktop**: bundle deferred webview client modules ([d7cf363](https://github.com/stacksjs/stacks/commit/d7cf363)) _(by Chris Breuer)_ ([#3445](https://github.com/stacksjs/stacks/issues/3445))
+- **buddy**: refresh Pantry locks during Support SDK install ([091ac21](https://github.com/stacksjs/stacks/commit/091ac21)) _(by Chris)_
+- **buddy**: install the Support SDK before app boot ([992cd03](https://github.com/stacksjs/stacks/commit/992cd03)) _(by Chris)_
+
+## 🔧 Chores
+
+- **buddy**: integrate Stacks v0.75.706 ([eb14ef6](https://github.com/stacksjs/stacks/commit/eb14ef6)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+- _glennmichael123_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.705...v0.75.706)
+
+## ✨ Features
+
+- **buddy**: select a published Support SDK version ([435214f](https://github.com/stacksjs/stacks/commit/435214f)) _(by Chris)_
+
+## 🐛 Bug Fixes
+
+- **dashboard**: keep native startup independent of HTTPS setup ([2ba8fc7](https://github.com/stacksjs/stacks/commit/2ba8fc7)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **buddy**: integrate the current Mail settings fix ([7f52de5](https://github.com/stacksjs/stacks/commit/7f52de5)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.704...v0.75.705)
+
+## 🐛 Bug Fixes
+
+- **dashboard**: keep local mail settings available without a live inbox ([3bd917e](https://github.com/stacksjs/stacks/commit/3bd917e)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.703...v0.75.704)
+
+## ✅ Tests
+
+- **dashboard**: cover inbox settings availability ([7794933](https://github.com/stacksjs/stacks/commit/7794933)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.702...v0.75.703)
+
+## ✨ Features
+
+- **chat**: send Discord file attachments (#3433) ([3cccc0b](https://github.com/stacksjs/stacks/commit/3cccc0b)) _(by Chris)_ ([#3433](https://github.com/stacksjs/stacks/issues/3433))
+
+## 🐛 Bug Fixes
+
+- **router**: integrate SCIM error protocol handling (#3432) ([5f4c77b](https://github.com/stacksjs/stacks/commit/5f4c77b)) _(by Chris)_ ([#3432](https://github.com/stacksjs/stacks/issues/3432))
+- **router**: preserve SCIM error envelopes ([0604fb7](https://github.com/stacksjs/stacks/commit/0604fb7)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.701...v0.75.702)
+
+## ✨ Features
+
+- **buddy**: integrate reproducible installs (#3427) ([a57f15e](https://github.com/stacksjs/stacks/commit/a57f15e)) _(by Chris)_ ([#3427](https://github.com/stacksjs/stacks/issues/3427))
+- **buddy**: support frozen installs without lifecycle scripts ([a764e31](https://github.com/stacksjs/stacks/commit/a764e31)) _(by Chris)_
+
+## 🐛 Bug Fixes
+
+- **release**: keep npm publication mode output machine-readable ([b3969a2](https://github.com/stacksjs/stacks/commit/b3969a2)) _(by Chris Breuer)_
+- **release**: detect rejected npm promotion credentials ([9248c55](https://github.com/stacksjs/stacks/commit/9248c55)) _(by Chris Breuer)_
+- **dashboard**: serve available pages and packaged assets ([a89895e](https://github.com/stacksjs/stacks/commit/a89895e)) _(by Chris Breuer)_
+- **scheduler**: track every active run for overlap guards ([7e1120a](https://github.com/stacksjs/stacks/commit/7e1120a)) _(by Chris)_
+- **ci**: integrate complete framework preview graphs (#3425) ([0190718](https://github.com/stacksjs/stacks/commit/0190718)) _(by Chris)_ ([#3425](https://github.com/stacksjs/stacks/issues/3425))
+- **ci**: link required workspace peers in commit previews ([479c623](https://github.com/stacksjs/stacks/commit/479c623)) _(by Chris)_
+- **ci**: build the runtime graph for commit previews ([fc7729e](https://github.com/stacksjs/stacks/commit/fc7729e)) _(by Chris)_
+
+## 📝 Documentation
+
+- **buddy**: refresh the native skills test inventory ([d3faeab](https://github.com/stacksjs/stacks/commit/d3faeab)) _(by Chris)_
+
+## ✅ Tests
+
+- **ci**: assert the published preview peer links ([ae03ed2](https://github.com/stacksjs/stacks/commit/ae03ed2)) _(by Chris)_
+
+## 🔧 Chores
+
+- **deps**: adopt the published STX dashboard router ([a8e7d64](https://github.com/stacksjs/stacks/commit/a8e7d64)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.700...v0.75.701)
+
+## ✨ Features
+
+- **auth**: approve explicit enterprise OIDC endpoints (#3421) ([60c09f8](https://github.com/stacksjs/stacks/commit/60c09f8)) _(by Chris)_ ([#3417](https://github.com/stacksjs/stacks/issues/3417), [#3421](https://github.com/stacksjs/stacks/issues/3421), [stacksjs/hq.support#8](https://github.com/stacksjs/hq.support/issues/8))
+
+## 🐛 Bug Fixes
+
+- **server**: integrate CMS page security headers (#3423) ([abe001e](https://github.com/stacksjs/stacks/commit/abe001e)) _(by Chris)_ ([#3423](https://github.com/stacksjs/stacks/issues/3423))
+- **server**: secure the final CMS page response ([73c7190](https://github.com/stacksjs/stacks/commit/73c7190)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.699...v0.75.700)
+
+## ✨ Features
+
+- **socials**: read public engagement for X posts ([43d7061](https://github.com/stacksjs/stacks/commit/43d7061)) _(by Chris Breuer)_ ([#3420](https://github.com/stacksjs/stacks/issues/3420), [stacksjs/postline#123](https://github.com/stacksjs/postline/issues/123), [stacksjs/postline#135](https://github.com/stacksjs/postline/issues/135))
+
+## 🐛 Bug Fixes
+
+- **database**: audit recorded framework renames in the migration ledger ([ec8db92](https://github.com/stacksjs/stacks/commit/ec8db92)) _(by Chris Breuer)_ ([#3418](https://github.com/stacksjs/stacks/issues/3418))
+- **ci**: package the HQ Support SDK before preview publication ([51fc5b0](https://github.com/stacksjs/stacks/commit/51fc5b0)) _(by Chris)_
+- **buddy**: update the generated Pantry workspace lock ([bcbfba6](https://github.com/stacksjs/stacks/commit/bcbfba6)) _(by Chris)_
+- **buddy**: show held DNS in SSH deployment previews ([bc0621f](https://github.com/stacksjs/stacks/commit/bc0621f)) _(by Chris)_
+- **buddy**: install the pinned support SDK without an app key ([f6ad20c](https://github.com/stacksjs/stacks/commit/f6ad20c)) _(by Chris)_
+- **buddy**: repair the GitHub workflow release checks ([93d0635](https://github.com/stacksjs/stacks/commit/93d0635)) _(by Chris)_
+- **support**: use native CSRF tokens for customer sessions ([9ff03c4](https://github.com/stacksjs/stacks/commit/9ff03c4)) _(by Chris)_
+- **buddy**: install the HQ Support runtime SDK ([920032b](https://github.com/stacksjs/stacks/commit/920032b)) _(by Chris)_
+
+## 📝 Documentation
+
+- refresh Buddy test coverage in the native skill catalog ([e35a975](https://github.com/stacksjs/stacks/commit/e35a975)) _(by Chris)_
+
+## 🔧 Chores
+
+- integrate Stacks v0.75.699 into the Support SDK candidate ([a8e0d1b](https://github.com/stacksjs/stacks/commit/a8e0d1b)) _(by Chris)_
+- integrate current main with the HQ Support SDK fixes ([e110a24](https://github.com/stacksjs/stacks/commit/e110a24)) _(by Chris)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/buddy-held-preview-refresh ([9c84c65](https://github.com/stacksjs/stacks/commit/9c84c65)) _(by Chris)_
+- Merge remote-tracking branch 'origin/main' into codex/buddy-held-preview-refresh ([533c627](https://github.com/stacksjs/stacks/commit/533c627)) _(by Chris)_
+- Merge remote-tracking branch 'origin/main' into codex/native-hq-support-release ([b6f1c06](https://github.com/stacksjs/stacks/commit/b6f1c06)) _(by Chris)_
+- Merge commit '9ff03c4801333d6ff2dbf2370c2dc1cacd5ba497' into codex/native-hq-support-release ([45278af](https://github.com/stacksjs/stacks/commit/45278af)) _(by Chris)_
+- Merge commit 'e35a9758dd8b4afd07945924fdc3250695606e26' into codex/native-hq-support-release ([341c89e](https://github.com/stacksjs/stacks/commit/341c89e)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.698...v0.75.699)
 
 ## 🐛 Bug Fixes

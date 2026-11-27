@@ -1,9 +1,28 @@
+import type { ServeOptions } from 'bun-plugin-stx/serve'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
+
+// The dashboard's layouts share <main>. The app's UI router may target a
+// different container or disable client navigation entirely.
+export const dashboardRenderOptions = { router: { container: 'main' } } satisfies Pick<ServeOptions, 'router'>
 
 export function dashboardAssetRoutes(defaultsRoot: string, projectRoot: string): Record<string, (request: Request) => Response | Promise<Response>> {
   let script: Promise<string> | undefined
   let iconCss: Promise<string> | undefined
+  let charts: Promise<string> | undefined
+
+  async function bundleCharts(): Promise<string> {
+    const result = await Bun.build({
+      entrypoints: [Bun.resolveSync('@stacksjs/charts', import.meta.dir)],
+      target: 'browser',
+      format: 'esm',
+      minify: true,
+    })
+    const output = result.outputs[0]
+    if (!result.success || !output)
+      throw new Error('Could not build the dashboard chart library.')
+    return output.text()
+  }
 
   async function bundleBootstrap(): Promise<string> {
     const result = await Bun.build({
@@ -48,6 +67,18 @@ export function dashboardAssetRoutes(defaultsRoot: string, projectRoot: string):
   }
 
   return {
+    '/__deps/charts.js': async () => {
+      charts ??= bundleCharts()
+      try {
+        return new Response(await charts, {
+          headers: { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-cache' },
+        })
+      }
+      catch (error) {
+        charts = undefined
+        throw error
+      }
+    },
     '/__deps/dashboard-icons.css': async () => {
       iconCss ??= buildIconCss()
       try {

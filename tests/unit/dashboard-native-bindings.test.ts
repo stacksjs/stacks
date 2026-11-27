@@ -775,7 +775,6 @@ describe('dashboard native STX bindings', () => {
     expect(sharedModal).toContain("element.querySelector<HTMLElement>('[autofocus]:not([disabled])')")
     expect(sharedModal).toContain('autofocusTarget.focus()')
     expect(sharedModal).toContain('element.contains(currentFocus)')
-    expect(sharedModal).toContain('dialog.current.close()')
     expect(sharedModal).toContain('event.preventDefault()')
     expect(sharedModal).toContain("type ModalCloseReason = 'backdrop' | 'button' | 'escape'")
     expect(sharedModal).toContain("emit('close', reason)")
@@ -787,6 +786,22 @@ describe('dashboard native STX bindings', () => {
     expect(sharedModal).toContain('<dialog')
     expect(sharedModal).toContain('@cancel="handleCancel"')
     expect(sharedModal).toContain('.dashboard-modal-dialog::backdrop')
+    // Opening fades the dim in and lifts the panel into place, and both
+    // stand still for a visitor who asked for reduced motion.
+    expect(sharedModal).toMatch(/\.dashboard-modal-dialog\[open\] \{\s*animation: dashboard-modal-backdrop-in /)
+    expect(sharedModal).toMatch(/\.dashboard-modal-dialog\[open\] \[data-dashboard-overlay="modal"\] \{\s*animation: dashboard-modal-panel-in /)
+    expect(sharedModal).toContain('@keyframes dashboard-modal-backdrop-in')
+    expect(sharedModal).toContain('@keyframes dashboard-modal-panel-in')
+    expect(sharedModal).toMatch(/@media \(prefers-reduced-motion: reduce\) \{[^@]*animation: none;/)
+    // Closing fades a still copy out (stx's data-stx-if-transition). The copy
+    // is not a modal dialog, so the dim is the dialog's own background rather
+    // than its ::backdrop. The dialog still closes at once, so focus can go
+    // back to the page; the copy, closed or not, is drawn while it leaves.
+    expect(sharedModal).toContain('data-stx-if-transition="dashboard-modal"')
+    expect(sharedModal).toMatch(/\.dashboard-modal-leave-active \{\s*display: block;\s*transition: opacity /)
+    expect(sharedModal).toMatch(/\.dashboard-modal-leave-to \{\s*opacity: 0;/)
+    expect(sharedModal).toMatch(/\.dashboard-modal-dialog \{\s*background: rgb\(0 0 0 \/ 50%\);\s*backdrop-filter: blur\(4px\);/)
+    expect(sharedModal).toContain('dialog.current.close()')
 
     const sharedDrawer = componentSource('UI/Drawer.stx')
     expect(sharedDrawer).toContain("const dialog = useRef<HTMLDialogElement>('dashboardDrawerDialog')")

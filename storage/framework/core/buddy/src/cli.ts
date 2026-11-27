@@ -3,7 +3,7 @@ import type { CLI } from '@stacksjs/cli'
 import { writeSync } from 'node:fs'
 import process from 'node:process'
 import { registerGlobalOptions } from './global-options'
-import { shouldSkipAppKeyCheck } from './project-setup'
+import { isSdkOnlySupportInstall, shouldSkipAppKeyCheck } from './project-setup'
 import { resultFailed } from './result'
 import { versionLine } from './version-info'
 
@@ -196,9 +196,9 @@ async function runCli(): Promise<void> {
       const commandsToLoad = getCommandsToLoad(args)
       await loadCommands(commandsToLoad, buddy)
 
-      // Load user commands from app/Commands/. Not in a project with nothing
-      // installed: their imports have nothing to resolve to (see the launcher).
-      if (projectInstalled)
+      // Load user commands for project work. Dependency-only Support installs
+      // can run before the app and its command imports are ready.
+      if (projectInstalled && !isSdkOnlySupportInstall(args))
         await dynamicImports(buddy)
     }
     else {

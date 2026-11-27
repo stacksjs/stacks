@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/browser-extension",
   "type": "module",
-  "version": "0.75.699",
+  "version": "0.75.707",
   "description": "Build MV3 browser extensions (Chrome, Firefox, Safari) the Stacks way — manifest, content/background scripts, DNR rules, packaging, Safari container app, all config-driven.",
   "author": "Chris Breuer",
   "contributors": [
@@ -63,7 +63,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "bun-plugin-stx": "^0.2.948",
+    "bun-plugin-stx": "^0.2.957",
     "ts-pantry": "^0.11.198"
   },
   "peerDependencies": {

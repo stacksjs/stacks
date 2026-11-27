@@ -28,6 +28,22 @@ export interface Publishable {
   dir: string
 }
 
+/** Select the publication path before any package receives its initial tag. */
+export async function npmPublicationTag(token: string, registry = 'https://registry.npmjs.org'): Promise<'staging' | 'latest'> {
+  if (!token.trim())
+    return 'latest'
+  const response = await fetch(new URL('/-/whoami', registry), {
+    headers: { Authorization: `Bearer ${token}` },
+    redirect: 'error',
+    signal: AbortSignal.timeout(20_000),
+  })
+  if (response.status === 401)
+    return 'latest'
+  if (!response.ok)
+    throw new Error(`Could not check npm promotion credentials: registry HTTP ${response.status}`)
+  return 'staging'
+}
+
 /**
  * An accepted upload can remain unavailable during npm's automated review.
  * Defaults 0.75.122 was still Validating when the old five-minute budget ran
@@ -56,7 +72,7 @@ export async function confirmPublications(
     if (!pending.length) return
     if (attempt < attempts) await Bun.sleep(retryDelayMs)
   }
-  throw new Error(`Registry did not confirm publication of ${pending.map(pkg => `${pkg.name}@${pkg.version}`).join(', ')}; no latest tags were changed. Accepted uploads may still be awaiting npm automated review.`)
+  throw new Error(`Registry did not confirm publication of ${pending.map(pkg => `${pkg.name}@${pkg.version}`).join(', ')}. Accepted uploads may still be awaiting npm automated review.`)
 }
 
 /**
@@ -201,11 +217,17 @@ export function promotionFailureSummary(acknowledged: number, total: number): st
 }
 
 async function main(): Promise<void> {
+  if (process.argv.includes('--publication-tag')) {
+    console.log(await npmPublicationTag(process.env.NPM_TOKEN ?? ''))
+    return
+  }
+
   const dryRun = process.argv.includes('--dry-run')
+  const verifyOnly = process.argv.includes('--verify-only')
   const root = process.cwd()
   const packages = await publishables(root)
 
-  console.log(`promoting ${packages.length} package(s) to latest`)
+  console.log(`${verifyOnly ? 'verifying' : 'promoting'} ${packages.length} package(s)`)
 
   if (dryRun) {
     for (const pkg of packages)
@@ -219,6 +241,8 @@ async function main(): Promise<void> {
   let started = performance.now()
   await confirmPublications(packages)
   console.log(`  registry confirmed all ${packages.length} in ${Math.round((performance.now() - started) / 1000)}s`)
+
+  if (verifyOnly) return
 
   // Several tag writes at once. One at a time took minutes for 85 packages
   // (v0.75.236: 11 minutes with the confirmation above), and for all of that

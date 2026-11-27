@@ -32,6 +32,7 @@ interface Sent {
   method: string
   headers: Headers
   body: unknown
+  redirect?: RequestRedirect
 }
 
 /** Record every request; answer each with whatever `answer` returns for it. */
@@ -39,7 +40,7 @@ function mockFetch(answer: (url: string, sent: Sent) => unknown | Response): Sen
   const sent: Sent[] = []
   globalThis.fetch = (async (input: string | URL | Request, init: RequestInit = {}) => {
     const url = String(input)
-    const record: Sent = { url, method: init.method || 'GET', headers: new Headers(init.headers), body: init.body }
+    const record: Sent = { url, method: init.method || 'GET', headers: new Headers(init.headers), body: init.body, ...(init.redirect && { redirect: init.redirect }) }
     sent.push(record)
     const reply = answer(url, record)
     if (reply instanceof Response) return reply
@@ -58,6 +59,12 @@ function json(sent: Sent): any {
 
 const PNG = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0])
 const JPEG = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, 0, 0])
+const video = {
+  bytes: new Uint8Array([0, 0, 0, 20, 102, 116, 121, 112, 105, 115, 111, 109]),
+  mimeType: 'video/mp4' as const,
+  altText: 'A quiet harbor',
+  aspectRatio: { width: 640, height: 360 },
+}
 
 describe('post images', () => {
   it('identifies an image by its bytes', () => {
@@ -77,6 +84,124 @@ describe('post images', () => {
     await expect(resolvePostImage({ url: 'https://example.com/gone.png' }, async () => null)).rejects.toBeInstanceOf(PostImageError)
     expect(await resolvePostImage({ bytes: PNG }, async () => null)).toEqual({ bytes: PNG, mimeType: 'image/png' })
     expect(await resolvePostImage({}, async () => null)).toBeUndefined()
+  })
+})
+
+describe('publishing video', () => {
+  const mastodonIdentity = { handle: 'glenn', did: 'https://social.example', accessToken: 'AT' }
+  const blueskyIdentity = { handle: 'glenn.example', did: 'did:plc:glenn', accessToken: 'SESSION' }
+  const job = { did: blueskyIdentity.did, jobId: 'video-job', state: 'JOB_STATE_CREATED' }
+  const blob = { $type: 'blob', ref: { $link: 'bafkreivideo' }, mimeType: 'video/mp4', size: 4096 }
+
+  it('publishes Mastodon video only after the instance has finished processing', async () => {
+    let statusChecks = 0
+    const sent = mockFetch((url) => {
+      const path = new URL(url).pathname
+      if (path === '/api/v2/instance') return { configuration: { media_attachments: { video_size_limit: 20, supported_mime_types: ['video/mp4'] } } }
+      if (path === '/api/v2/media') return Response.json({ id: '42', url: null }, { status: 202 })
+      if (path === '/api/v1/media/42') {
+        statusChecks++
+        if (statusChecks === 1) return new Response(null, { status: 206 })
+        return { id: '42', type: 'video', url: 'https://media.example/video.mp4' }
+      }
+      if (path === '/api/v1/statuses') return { id: '99' }
+      throw new Error(`Unexpected request ${url}`)
+    })
+    const driver = new MastodonPublishingDriver()
+    await expect(driver.publish(mastodonIdentity, { text: 'Harbor', video }, { idempotencyKey: 'harbor-1' })).resolves.toMatchObject({ uri: '99' })
+    expect(sent.map(request => new URL(request.url).pathname)).toEqual(['/api/v2/instance', '/api/v2/media', '/api/v1/media/42', '/api/v1/media/42', '/api/v1/statuses'])
+    for (const request of sent.slice(1, 4)) {
+      expect(request.headers.get('authorization')).toBe('Bearer AT')
+      expect(request.redirect).toBe('error')
+    }
+    const fields = sent[1]!.body as FormData
+    expect(fields.get('description')).toBe('A quiet harbor')
+    const file = fields.get('file') as File
+    expect(file.name).toBe('upload.mp4')
+    expect(file.type).toBe('video/mp4')
+    expect(new Uint8Array(await file.arrayBuffer())).toEqual(video.bytes)
+    expect(sent.at(-1)!.headers.get('idempotency-key')).toBe('harbor-1')
+    expect(json(sent.at(-1)!)).toEqual({ status: 'Harbor', visibility: 'public', media_ids: ['42'] })
+  })
+
+  it('keeps Mastodon video failures and incompatible attachments from publishing', async () => {
+    const sent = mockFetch((url) => {
+      const path = new URL(url).pathname
+      if (path === '/api/v2/instance') return { configuration: { media_attachments: { video_size_limit: 12 } } }
+      if (path === '/api/v2/media') return Response.json({ id: '42', url: null }, { status: 202 })
+      if (path === '/api/v1/media/42') return Response.json({ error: 'Video encoding failed' }, { status: 422 })
+      throw new Error(`Unexpected request ${url}`)
+    })
+    const driver = new MastodonPublishingDriver()
+    await expect(driver.publish(mastodonIdentity, { text: 'Harbor', video, media: [{ bytes: PNG }] })).rejects.toThrow('together with images')
+    await expect(driver.publish(mastodonIdentity, { text: 'Harbor', video: { ...video, bytes: new Uint8Array(13) } })).rejects.toThrow('12-byte limit')
+    expect(sent).toHaveLength(1)
+    await expect(driver.publish(mastodonIdentity, { text: 'Harbor', video })).rejects.toThrow('Video encoding failed')
+    expect(sent).toHaveLength(3)
+  })
+
+  function blueskyApi(upload: Response, processing: unknown): Sent[] {
+    return mockFetch((url) => {
+      const path = new URL(url).pathname
+      if (path.endsWith('.getSession')) {
+        return {
+          did: blueskyIdentity.did, emailConfirmed: true,
+          didDoc: { id: blueskyIdentity.did, service: [{ id: '#atproto_pds', type: 'AtprotoPersonalDataServer', serviceEndpoint: 'https://pds.example' }] },
+        }
+      }
+      if (path.endsWith('.getServiceAuth')) return { token: 'UPLOAD' }
+      if (path.endsWith('.uploadVideo')) return upload
+      if (path.endsWith('.getJobStatus')) return { jobStatus: processing }
+      if (path.endsWith('.createRecord')) return { uri: 'at://did:plc:glenn/app.bsky.feed.post/3harbor' }
+      throw new Error(`Unexpected request ${url}`)
+    })
+  }
+
+  it('uploads to Bluesky with a PDS-scoped token and embeds the completed blob', async () => {
+    const sent = blueskyApi(Response.json(job), { ...job, state: 'JOB_STATE_COMPLETED', blob })
+    await new BlueskyPublishingDriver().publish(blueskyIdentity, { text: 'Harbor', video }, { rkey: '3harbor' })
+    expect(sent).toHaveLength(5)
+    const tokenUrl = new URL(sent[1]!.url)
+    expect(tokenUrl.origin).toBe('https://bsky.social')
+    expect(tokenUrl.searchParams.get('aud')).toBe('did:web:pds.example')
+    expect(tokenUrl.searchParams.get('lxm')).toBe('com.atproto.repo.uploadBlob')
+    expect(tokenUrl.searchParams.get('exp')).toMatch(/^\d+$/)
+    expect(sent[1]!.headers.get('authorization')).toBe('Bearer SESSION')
+
+    const upload = sent[2]!
+    expect(new URL(upload.url).origin).toBe('https://video.bsky.app')
+    expect(new URL(upload.url).searchParams.get('did')).toBe(blueskyIdentity.did)
+    expect(upload.headers.get('authorization')).toBe('Bearer UPLOAD')
+    expect(upload.headers.get('content-type')).toBe('video/mp4')
+    expect(upload.body).toEqual(video.bytes)
+    expect(upload.redirect).toBe('error')
+    expect(sent[3]!.headers.has('authorization')).toBe(false)
+    expect(new URL(sent[3]!.url).searchParams.get('jobId')).toBe(job.jobId)
+    expect(sent[4]!.headers.get('authorization')).toBe('Bearer SESSION')
+    expect(json(sent[4]!)).toMatchObject({
+      rkey: '3harbor',
+      record: { embed: { $type: 'app.bsky.embed.video', video: blob, alt: video.altText, aspectRatio: video.aspectRatio } },
+    })
+  })
+
+  it('reuses a previously processed Bluesky video and refuses a failed processing job', async () => {
+    const sent = blueskyApi(Response.json({ ...job, error: 'already_exists', state: 'JOB_STATE_COMPLETED' }, { status: 409 }), { ...job, error: 'already_exists', state: 'JOB_STATE_FAILED', blob })
+    const driver = new BlueskyPublishingDriver()
+    await driver.publish(blueskyIdentity, { text: 'Harbor', video })
+    expect(sent).toHaveLength(5)
+    expect(json(sent[4]!).record.embed.video).toEqual(blob)
+
+    const failed = blueskyApi(Response.json(job), { ...job, state: 'JOB_STATE_FAILED', message: 'Video could not be encoded' })
+    await expect(driver.publish(blueskyIdentity, { text: 'Harbor', video })).rejects.toThrow('Video could not be encoded')
+    expect(failed).toHaveLength(4)
+  })
+
+  it('rejects unsupported video without posting text to the requested provider', async () => {
+    const sent = mockFetch(() => { throw new Error('Unexpected request') })
+    const drivers = [new InstagramPublishingDriver(), new LinkedInPublishingDriver(), new ThreadsPublishingDriver(), new TwitterPublishingDriver()]
+    for (const driver of drivers)
+      await expect(driver.publish(blueskyIdentity, { text: 'Harbor', video })).rejects.toThrow('Video publishing')
+    expect(sent).toEqual([])
   })
 })
 
@@ -154,6 +279,73 @@ describe('Bluesky', () => {
       return { uri: 'at://did:plc:abc/app.bsky.feed.post/3k', cid: 'cid1' }
     })
   }
+
+  const quote = { uri: 'at://did:plc:friend/app.bsky.feed.post/3kquote', cid: 'bafyreiquote' }
+
+  it('resolves a quote by handle through the authenticated account service', async () => {
+    const service = 'https://account-pds.example'
+    const sent = mockFetch(url => url.includes('resolveHandle') ? { did: 'did:plc:friend' } : {
+      posts: [{ ...quote, uri: 'at://did:plc:other/app.bsky.feed.post/3kquote' }, quote],
+    })
+    const driver = new BlueskyPublishingDriver({ service })
+    await expect(driver.resolveQuote(identity, 'https://bsky.app/profile/friend.example/post/3kquote?ref=share')).resolves.toEqual(quote)
+    expect(sent.map(item => new URL(item.url).origin)).toEqual([service, service])
+    expect(new URL(sent[0]!.url).searchParams.get('handle')).toBe('friend.example')
+    expect(sent[0]!.headers.get('authorization')).toBeNull()
+    expect(new URL(sent[1]!.url).searchParams.getAll('uris')).toEqual([quote.uri])
+    expect(sent[1]!.headers.get('authorization')).toBe('Bearer AT')
+  })
+
+  it('declines inaccessible posts and posts whose author disables quoting', async () => {
+    const driver = new BlueskyPublishingDriver()
+    let disabled = false
+    const sent = mockFetch(() => ({ posts: disabled ? [{ ...quote, viewer: { embeddingDisabled: true } }] : [] }))
+    await expect(driver.resolveQuote(identity, 'https://bsky.app/profile/did%3Aplc%3Afriend/post/3kquote')).rejects.toThrow('Could not find')
+    disabled = true
+    await expect(driver.resolveQuote(identity, quote.uri)).rejects.toThrow('disabled quoting')
+    await expect(driver.resolveQuote(identity, 'https://example.org/profile/did:plc:friend/post/3kquote')).rejects.toThrow('valid Bluesky post')
+    expect(sent).toHaveLength(2)
+    expect(sent.every(request => request.url.includes('app.bsky.feed.getPosts'))).toBe(true)
+  })
+
+  it('publishes a quote with explicit self-labels and keeps its record key', async () => {
+    const sent = api()
+    const rkey = blueskyRecordKey()
+    await new BlueskyPublishingDriver().publish(identity, { text: 'My comment' }, {
+      rkey, quote, selfLabels: ['nudity', 'graphic-media', 'nudity'],
+    })
+    expect(json(sent.at(-1)!)).toMatchObject({
+      rkey,
+      record: {
+        embed: { $type: 'app.bsky.embed.record', record: quote },
+        labels: { $type: 'com.atproto.label.defs#selfLabels', values: [{ val: 'nudity' }, { val: 'graphic-media' }] },
+      },
+    })
+  })
+
+  it('combines a quote with an image or a link card through the native embed', async () => {
+    const sent = api()
+    const driver = new BlueskyPublishingDriver()
+    await driver.publish(identity, { text: 'Picture', media: [{ bytes: PNG, altText: 'An illustration' }] }, { quote })
+    await driver.publish(identity, { text: 'Related', external: { uri: 'https://example.org/article', title: 'An article' } }, { quote })
+    const records = sent.filter(request => request.url.includes('createRecord')).map(json)
+    expect(records.map(result => result.record.embed.$type)).toEqual(['app.bsky.embed.recordWithMedia', 'app.bsky.embed.recordWithMedia'])
+    expect(records[0]!.record.embed).toMatchObject({
+      record: { $type: 'app.bsky.embed.record', record: quote },
+      media: { $type: 'app.bsky.embed.images', images: [{ alt: 'An illustration' }] },
+    })
+    expect(records[1]!.record.embed.media.$type).toBe('app.bsky.embed.external')
+  })
+
+  it('rejects malformed quote references and labels before sending any writes', async () => {
+    const sent = api()
+    const driver = new BlueskyPublishingDriver()
+    await expect(driver.publish(identity, { text: 'Quote', media: [{ bytes: PNG }] }, {
+      quote: { ...quote, uri: 'at://friend.example/app.bsky.feed.post/3kquote' },
+    })).rejects.toThrow('Resolve the Bluesky post')
+    await expect(driver.publish(identity, { text: 'Label' }, { selfLabels: ['bad label'] })).rejects.toThrow('lowercase')
+    expect(sent).toHaveLength(0)
+  })
 
   it('lets 300 emoji through: Bluesky counts graphemes', async () => {
     api()
@@ -406,6 +598,64 @@ describe('Mastodon', () => {
     })
   }
 
+  const polls = { max_options: 3, max_characters_per_option: 3, min_expiration: 600, max_expiration: 7200 }
+
+  it('publishes native poll data with the connected instance’s advertised limits', async () => {
+    const sent = api({ configuration: { polls } })
+    const driver = new MastodonPublishingDriver()
+    expect((await driver.instanceLimits(identity)).poll).toEqual({
+      maxOptions: 3, maxCharactersPerOption: 3, minExpiration: 600, maxExpiration: 7200,
+    })
+    await driver.publish(identity, { text: 'Vote' }, {
+      poll: { options: [' 👨‍👩‍👦 ', 'Yes', 'No'], expiresIn: 3600, multiple: true, hideTotals: true },
+      idempotencyKey: 'poll-1',
+    })
+    expect(sent.at(-1)!.headers.get('idempotency-key')).toBe('poll-1')
+    expect(json(sent.at(-1)!)).toEqual({
+      status: 'Vote', visibility: 'public',
+      poll: { options: ['👨‍👩‍👦', 'Yes', 'No'], expires_in: 3600, multiple: true, hide_totals: true },
+    })
+  })
+
+  it('rejects incompatible or invalid polls before publishing or uploading', async () => {
+    const sent = api({ api_versions: { mastodon: 7 }, configuration: { polls } })
+    const driver = new MastodonPublishingDriver()
+    const poll = { options: ['Yes', 'No'], expiresIn: 3600 }
+    await expect(driver.publish(identity, { text: 'Vote', media: [{ bytes: PNG }] }, { poll })).rejects.toThrow('images')
+    await expect(driver.publish(identity, { text: 'Vote' }, { poll, quotedStatusId: '45' })).rejects.toThrow('poll or a quoted post')
+    await expect(driver.publish(identity, { text: 'Vote' }, { poll: { ...poll, options: ['Yes', 'Yes '] } })).rejects.toThrow('distinct')
+    await expect(driver.publish(identity, { text: 'Vote' }, { poll: { ...poll, options: ['Yes', 'Long'] } })).rejects.toThrow('3 characters')
+    await expect(driver.publish(identity, { text: 'Vote' }, { poll: { ...poll, expiresIn: 599 } })).rejects.toThrow('600 and 7200')
+    expect(sent.every(request => request.method === 'GET')).toBe(true)
+  })
+
+  it('resolves a federated quote to the instance-local status ID and sends it', async () => {
+    const address = 'https://remote.example/@author/456'
+    const sent = mockFetch((url) => {
+      if (url.endsWith('/api/v2/instance')) return { api_versions: { mastodon: 7 } }
+      if (new URL(url).pathname === '/api/v2/search')
+        return { statuses: [{ id: '899', url: 'https://remote.example/@another/457' }, { id: '944', url: address }] }
+      return { id: '935', url: 'https://social.example/@glenn/935' }
+    })
+    const driver = new MastodonPublishingDriver()
+    const quotedStatusId = await driver.resolvePostId(identity, address + '#context')
+    expect(quotedStatusId).toBe('944')
+    const search = sent[0]!
+    expect(new URL(search.url).origin).toBe(identity.did)
+    expect(Object.fromEntries(new URL(search.url).searchParams)).toEqual({ q: address, type: 'statuses', resolve: 'true', limit: '1' })
+    expect(search.headers.get('authorization')).toBe('Bearer AT')
+    await driver.publish(identity, { text: 'My comment' }, { quotedStatusId })
+    expect(json(sent.at(-1)!)).toMatchObject({ status: 'My comment', quoted_status_id: '944' })
+  })
+
+  it('declines a quote on older instances and polls when capabilities are unavailable', async () => {
+    const sent = api({ api_versions: { mastodon: 6 } })
+    const driver = new MastodonPublishingDriver()
+    await expect(driver.publish(identity, { text: 'Quote' }, { quotedStatusId: '45' })).rejects.toThrow('does not advertise quote posts')
+    await expect(driver.publish(identity, { text: 'Vote' }, { poll: { options: ['Yes', 'No'], expiresIn: 600 } })).rejects.toThrow('did not report')
+    expect(sent.every(request => request.method === 'GET')).toBe(true)
+  })
+
   it('sends an idempotency key, visibility, a content warning and a language', async () => {
     const sent = api()
     const result = await new MastodonPublishingDriver().publish(identity, { text: 'hello', langs: ['de'] }, {
@@ -513,6 +763,48 @@ describe('Threads', () => {
 
 describe('Instagram', () => {
   const identity = { handle: 'glenn', did: '1784', accessToken: 'AT' }
+
+  it('comments on published media with the authorized User token in a header', async () => {
+    const sent = mockFetch(() => ({ id: '17870913679156914' }))
+    const text = 'Link & details: https://example.org/?n=1+x #release'
+    const comment = await new InstagramPublishingDriver({ graphVersion: 'v27.0' }).createComment(
+      { ...identity, accessToken: 'USER_AT' }, '17895695668004550', text,
+    )
+    expect(comment).toBe('17870913679156914')
+    expect(sent).toHaveLength(1)
+    const request = sent[0]!
+    const url = new URL(request.url)
+    expect(url.origin).toBe('https://graph.facebook.com')
+    expect(url.pathname).toBe('/v27.0/17895695668004550/comments')
+    expect([...url.searchParams]).toEqual([['message', text]])
+    expect(request.method).toBe('POST')
+    expect(request.redirect).toBe('error')
+    expect(request.headers.get('authorization')).toBe('Bearer USER_AT')
+  })
+
+  it('refuses invalid media IDs and empty comments before a request', async () => {
+    const sent = mockFetch(() => undefined)
+    const driver = new InstagramPublishingDriver()
+    await expect(driver.createComment(identity, '42/media_publish', 'Hello')).rejects.toThrow('published media ID')
+    await expect(driver.createComment(identity, '42', ' ')).rejects.toThrow('comment text')
+    await expect(driver.createComment({ ...identity, accessToken: '' }, '42', 'Hello')).rejects.toThrow('access token')
+    expect(sent).toHaveLength(0)
+  })
+
+  it('reports the Graph comment response and keeps failed writes separate from publish', async () => {
+    const sent = mockFetch(() => new Response(JSON.stringify({ error: { code: 200, message: 'Comment permission is missing' } }), { status: 403 }))
+    await expect(new InstagramPublishingDriver().createComment(identity, '17895695668004550', 'Hello')).rejects.toMatchObject({
+      network: 'instagram', status: 403,
+    })
+    expect(sent).toHaveLength(1)
+    expect(new URL(sent[0]!.url).pathname).toEndWith('/comments')
+  })
+
+  it('reports acceptance even when Meta supplies no usable comment ID', async () => {
+    const sent = mockFetch(() => new Response(null, { status: 204 }))
+    expect(await new InstagramPublishingDriver().createComment(identity, '42', 'Hello')).toBeNull()
+    expect(sent).toHaveLength(1)
+  })
 
   function api(statuses: string[] = ['FINISHED']): Sent[] {
     let container = 0
@@ -668,6 +960,54 @@ describe('Threads deletion (stacksjs/stacks#3377)', () => {
 
 describe('LinkedIn', () => {
   const identity = { handle: 'glenn', did: 'urn:li:person:abc', accessToken: 'AT' }
+
+  it('creates a first comment as the published post’s author or organization', async () => {
+    const sent = mockFetch(() => new Response(null, { status: 201, headers: { 'x-restli-id': '6915442672119734272' } }))
+    const driver = new LinkedInPublishingDriver()
+    const text = 'Release notes (and links) #release.'
+    for (const [actor, urn] of [[identity.did, 'urn:li:share:9'], ['urn:li:organization:42', 'urn:li:ugcPost:8']] as const)
+      expect(await driver.createComment({ ...identity, did: actor }, urn, text)).toBe('6915442672119734272')
+
+    for (const [index, actor, object] of [
+      [0, identity.did, 'urn:li:share:9'], [1, 'urn:li:organization:42', 'urn:li:ugcPost:8'],
+    ] as const) {
+      const request = sent[index]!
+      expect(request.url).toBe(`https://api.linkedin.com/rest/socialActions/${encodeURIComponent(object)}/comments`)
+      expect(request.method).toBe('POST')
+      expect(request.redirect).toBe('error')
+      expect(request.headers.get('authorization')).toBe('Bearer AT')
+      expect(request.headers.get('linkedin-version')).toBe(LINKEDIN_API_VERSION)
+      expect(request.headers.get('x-restli-protocol-version')).toBe('2.0.0')
+      expect(json(request)).toEqual({ actor, object, message: { text } })
+    }
+  })
+
+  it('refuses the wrong URN, missing actor and empty text before a request', async () => {
+    const sent = mockFetch(() => undefined)
+    const driver = new LinkedInPublishingDriver()
+    await expect(driver.createComment(identity, 'https://www.linkedin.com/feed/update/urn:li:share:9', 'Test')).rejects.toThrow('post URN')
+    await expect(driver.createComment({ ...identity, did: undefined }, 'urn:li:share:9', 'Test')).rejects.toThrow('author URN')
+    await expect(driver.createComment(identity, 'urn:li:share:9', ' ')).rejects.toThrow('comment text')
+    expect(sent).toHaveLength(0)
+  })
+
+  it('accepts a body ID and preserves an acknowledged write with a missing ID', async () => {
+    const driver = new LinkedInPublishingDriver()
+    mockFetch(() => new Response(JSON.stringify({ id: '90071992547409931' }), { status: 201 }))
+    expect(await driver.createComment(identity, 'urn:li:share:9', 'First')).toBe('90071992547409931')
+    const sent = mockFetch(() => new Response('not a comment record', { status: 201 }))
+    expect(await driver.createComment(identity, 'urn:li:share:9', 'Second')).toBeNull()
+    expect(sent).toHaveLength(1)
+  })
+
+  it('reports comment permission failure without issuing another write', async () => {
+    const sent = mockFetch(() => new Response(JSON.stringify({ message: 'Comment permission required' }), { status: 403 }))
+    await expect(new LinkedInPublishingDriver().createComment(identity, 'urn:li:share:9', 'Hello')).rejects.toMatchObject({
+      network: 'linkedin', status: 403,
+    })
+    expect(sent).toHaveLength(1)
+    expect(sent[0]!.url).toEndWith('/comments')
+  })
 
   function api(): Sent[] {
     let image = 0

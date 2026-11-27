@@ -1,6 +1,9 @@
 @import('./UI/Button')
 
 <script server>
+import { dashboardPageVisibility } from '@stacksjs/defaults/resources/functions/dashboard/page-availability'
+
+export const dashboardLinkAvailable = dashboardPageVisibility()
 interface NavbarProps {
   showDropdown?: boolean
   isSidebarCollapsed?: boolean
@@ -69,30 +72,40 @@ useClickOutside(userMenu, () => setDropdownOpen(false))
     </StxLink>
 
     <nav class="flex gap-x-4 items-center lg:gap-x-6" aria-label="Dashboard utilities">
+      @if(dashboardLinkAvailable('/errors'))
       <a href="/errors" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/errors') ? 'active-header-link' : '' }}" x-tooltip="View errors" title="View errors">
         <span class="sr-only">View errors</span>
         <span aria-hidden="true" class="h-6 w-6 duration-150 ease-in-out transition i-hugeicons-alert-01"></span>
       </a>
+      @endif
 
+      @if(dashboardLinkAvailable('/health'))
       <a href="/health" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/health') ? 'active-header-link' : '' }}" x-tooltip="View health" title="View health">
         <span class="sr-only">View health</span>
         <span aria-hidden="true" class="h-6 w-6 duration-150 ease-in-out transition i-hugeicons-health"></span>
       </a>
+      @endif
 
+      @if(dashboardLinkAvailable('/insights'))
       <a href="/insights" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/insights') ? 'active-header-link' : '' }}" x-tooltip="View cloud insights" title="View cloud insights">
         <span class="sr-only">View cloud insights</span>
         <span aria-hidden="true" class="h-6 w-6 duration-150 ease-in-out transition i-hugeicons-pulse-01"></span>
       </a>
+      @endif
 
+      @if(dashboardLinkAvailable('/inbox'))
       <a href="/inbox" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/inbox') ? 'active-header-link' : '' }}" x-tooltip="View inbox" title="View inbox">
         <span class="sr-only">View inbox</span>
         <span aria-hidden="true" class="h-6 w-6 duration-150 ease-in-out transition i-hugeicons-mail-02"></span>
       </a>
+      @endif
 
+      @if(dashboardLinkAvailable('/notifications/dashboard'))
       <a href="/notifications/dashboard" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/notifications/dashboard') ? 'active-header-link' : '' }}" x-tooltip="View notifications" title="View notifications">
         <span class="sr-only">View notifications</span>
         <span aria-hidden="true" class="h-6 w-6 i-hugeicons-notification-02"></span>
       </a>
+      @endif
 
       <span class="h-6 w-px bg-gray-200 dark:bg-neutral-700" aria-hidden="true"></span>
 
@@ -116,8 +129,12 @@ useClickOutside(userMenu, () => setDropdownOpen(false))
           aria-labelledby="user-menu-button"
         >
           <a href="/settings" data-stx-link class="block px-4 py-2 text-gray-700 text-sm dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700" role="menuitem" @click="setDropdownOpen(false)">Account settings</a>
+          @if(dashboardLinkAvailable('/library/components'))
           <a href="/library/components" data-stx-link class="block px-4 py-2 text-gray-700 text-sm dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700" role="menuitem" @click="setDropdownOpen(false)">Components</a>
+          @endif
+          @if(dashboardLinkAvailable('/settings/billing'))
           <a href="/settings/billing" data-stx-link class="block px-4 py-2 text-gray-700 text-sm dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700" role="menuitem" @click="setDropdownOpen(false)">Billing</a>
+          @endif
           <div class="px-2 py-1">
             <Button type="button" variant="danger" size="sm" fullWidth :loading="signingOut()" @click="signOut()">Sign out</Button>
           </div>

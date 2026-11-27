@@ -772,8 +772,16 @@ The desktop sidebar is fixed and publishes its current width through
 drawers must use the shared `dashboard-modal-layer` class so their interactive
 surface starts beside that sidebar and returns to `left: 0` on mobile and in
 the Craft native-sidebar shell. The class owns the layer's whole horizontal
-box (`left`, `right` and `width`), so a dialog is centred over the content and
-a drawer ends at the window's edge. Do not put a width utility (`w-screen`,
+box (`left`, `right` and `width`), so a drawer ends at the window's edge. A
+dialog (`dashboard-modal-dialog` beside it) takes the whole window instead and
+is centred on it: its `::backdrop` dims the whole window, sidebar included, so
+centring it on the content alone looked off centre. Dialogs fade their dim in
+and lift their panel into place on open, and run the reverse on close through
+stx's `data-stx-if-transition` (a still copy of the dialog fades out, so its
+text does not change as the state that closed it is cleared). The dim is the
+dialog's own background, not its `::backdrop`, because the leaving copy is not
+a modal dialog. Under `prefers-reduced-motion` the panel does not move and
+closing is a short fade. Do not put a width utility (`w-screen`,
 `w-full`) on an element that carries it: beside `left: 250px` that runs the
 layer a sidebar's width past the window. The rule's selector is
 `html .dashboard-modal-layer`, so it outweighs `inset-0` whichever stylesheet
@@ -793,6 +801,20 @@ surface such as the global command palette or mobile navigation may own a
 custom layer only when the shared dialog or drawer semantics do not fit. It
 must still use `dashboard-modal-layer` and provide complete keyboard, focus,
 and ARIA behavior. Do not solve sidebar overlap by increasing z-index alone.
+
+### Which pages are available
+
+`config/dashboard.ts` controls bundled page sections through `sections`.
+Set a section or data row to `{ enabled: false }` to remove its bundled views
+and navigation. Content, Commerce, and Marketing require their corresponding
+installed features. Pages backed by optional schema models, the serverless
+mail inbox, or remote hosts are available when those resources are configured.
+
+The standalone Buddy dashboard can still run when `dashboard.enabled` is
+false. That flag controls dashboard integration in the app's own server.
+Settings remains reachable for the dashboard itself. Disabling All Models
+removes the index and keeps individual model pages. App views in
+`resources/views/dashboard` keep precedence, and `nav` adds their links.
 
 ### Live dashboard audit
 

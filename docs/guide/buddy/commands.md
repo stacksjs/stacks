@@ -3198,6 +3198,8 @@ Install your dependencies
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `-v`, `--verbose` | Enable verbose output | boolean, optional | `false` |
+| `--frozen-lockfile` | Install the exact versions in bun.lock without updating it | boolean, optional | - |
+| `--ignore-scripts` | Skip lifecycle scripts during installation | boolean, optional | - |
 
 ### `integrations:probe`
 
@@ -6283,6 +6285,7 @@ Install the HQ Support SDK and connect a project
 | `--messenger` | Explicitly mount the identified HQ.support messenger in the app layout | boolean, optional | `false` |
 | `--layout` | App-local stx layout to mount the opt-in messenger in | value, required | - |
 | `--sdk-only` | Install the published HQ Support SDK without connecting a project | boolean, optional | - |
+| `--sdk-version` | Install this exact published HQ Support SDK version | value, required | - |
 
 Examples:
 
@@ -6290,6 +6293,7 @@ Examples:
 buddy support:install
 buddy support:install --no-open
 buddy support:install --sdk-only
+buddy support:install --sdk-only --sdk-version 0.75.701
 ```
 
 ### `support:sync-docs`

@@ -1017,7 +1017,15 @@ consume it before accepting a callback. These helpers return provider subject
 identity only; they never assign roles or link a local account by email.
 
 HQ.support uses operator-approved issuer/endpoint configuration. The OIDC helper
-requires discovery endpoints on the issuer origin and client-secret-post support.
+requires HTTPS endpoints on the issuer origin by default, plus client-secret-post
+support. For a provider such as Amazon Cognito, set
+`approvedEndpoints.authorizationEndpoint` and `approvedEndpoints.tokenEndpoint`
+to the complete hosted URLs ending in `/oauth2/authorize` and `/oauth2/token`.
+Discovery must match each configured URL exactly. Keep the pool's regional URL
+as `issuer`. If the signing keys also use a separate origin, approve their exact
+URL with `approvedEndpoints.jwksUri`. Leave approvals unset for endpoints that
+follow the issuer-origin default.
+
 SAML requires persistent NameIDs, RSA-SHA256 and SHA256 digests, exact audience and
 callback recipient, request correlation and bounded assertion lifetime. Provider
 configuration and private keys belong to the operator, never login input.

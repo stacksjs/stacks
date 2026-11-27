@@ -216,6 +216,33 @@ describe('--project', () => {
     })
   })
 
+  it('uses the invoking Buddy for SDK-only installs into cold and installed projects', () => {
+    const fresh = makeProject('fresh', { shim: true })
+    const installed = makeProject('installed', { installed: true, shim: true })
+    const isolated = [...ISOLATED_RUNTIME_FLAGS]
+    const flags = ['--sdk-only', '--sdk-version', '0.75.705']
+    for (const root of [fresh, installed]) {
+      expect(planInvocation({
+        args: ['support:install', '--project', root, ...flags],
+        cwd: sandbox,
+        main: cliEntry,
+        execArgv: isolated,
+        builtInCommands,
+      })).toEqual({ kind: 'handoff', root, command: [process.execPath, ...isolated, cliEntry, 'support:install', ...flags] })
+      expect(planInvocation({
+        args: ['support:install', ...flags],
+        cwd: root,
+        main: cliEntry,
+        execArgv: isolated,
+        handedRoot: root,
+        builtInCommands,
+      })).toEqual({ kind: 'run', root, args: ['support:install', ...flags] })
+    }
+    expect(plan(['support:install', '--messenger'], fresh).kind).toBe('refuse')
+    expect(plan(['support:install'], installed)).toMatchObject({ kind: 'handoff', command: [join(installed, 'buddy'), 'support:install'] })
+    expect(plan(['support:install', '--', '--sdk-only'], fresh).kind).toBe('refuse')
+  })
+
   it('refuses a project it cannot identify rather than running in the wrong one', () => {
     registerProject(makeProject('shop-admin'))
     registerProject(makeProject('shop-api'))

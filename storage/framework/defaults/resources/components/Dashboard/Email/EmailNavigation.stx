@@ -1,3 +1,9 @@
+<script server>
+import { dashboardPageVisibility } from '@stacksjs/defaults/resources/functions/dashboard/page-availability'
+
+export const dashboardLinkAvailable = dashboardPageVisibility()
+</script>
+
 <script client>
 const active = useReactiveProp('active', 'inbox')
 
@@ -9,16 +15,22 @@ function linkClass(name: string): string {
 </script>
 
 <nav aria-label="Mail sections" class="flex overflow-x-auto gap-0.5 sm:gap-1 p-1 max-w-full bg-gray-100 dark:bg-neutral-900 rounded-lg">
+  @if(dashboardLinkAvailable('/inbox'))
   <StxLink to="/inbox" :class="'px-2 sm:px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('inbox')">
     Inbox
   </StxLink>
+  @endif
+  @if(dashboardLinkAvailable('/inbox/activity'))
   <StxLink to="/inbox/activity" :class="'px-2 sm:px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('activity')">
     Activity
   </StxLink>
+  @endif
   <StxLink to="/inbox/captured" :class="'px-2 sm:px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('captured')">
     Captured
   </StxLink>
+  @if(dashboardLinkAvailable('/inbox/settings'))
   <StxLink to="/inbox/settings" :class="'px-2 sm:px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('settings')">
     Settings
   </StxLink>
+  @endif
 </nav>

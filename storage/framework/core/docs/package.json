@@ -2,7 +2,7 @@
   "name": "@stacksjs/docs",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.699",
+  "version": "0.75.707",
   "description": "The Stacks way to document.",
   "author": "Chris Breuer",
   "contributors": [
@@ -62,7 +62,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/orm": "workspace:*",
-    "@stacksjs/stx": "^0.2.948",
+    "@stacksjs/stx": "^0.2.957",
     "@stacksjs/testing": "workspace:*",
     "@ts-videos/mp4": "^0.3.1",
     "craft-native": ">=0.0.499",

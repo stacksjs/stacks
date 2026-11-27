@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from 'bun:test'
+import { afterEach, describe, expect, mock, spyOn, test } from 'bun:test'
 import { Schedule } from '../src/schedule'
 
 // stacksjs/stacks#3364. The next tick started without waiting for the last,
@@ -11,39 +11,91 @@ afterEach(async () => {
   await Schedule.gracefulShutdown()
 })
 
-/** A task that takes `ms` and counts how many runs started. */
-function slowTask(ms: number): { task: () => Promise<void>, started: () => number } {
-  let started = 0
-  return {
-    task: async () => {
-      started++
-      await Bun.sleep(ms)
-    },
-    started: () => started,
+async function captureInterval(register: () => void): Promise<() => Promise<void>> {
+  const handle = setInterval(() => {}, 60_000)
+  const interval = spyOn(globalThis, 'setInterval').mockReturnValue(handle)
+  try {
+    register()
+    await Promise.resolve()
+    const [callback] = interval.mock.calls[0] ?? []
+    if (!callback)
+      throw new Error('The schedule did not register an interval.')
+    return async () => {
+      callback()
+      await new Promise<void>(resolve => setImmediate(resolve))
+    }
+  }
+  finally {
+    interval.mockRestore()
+    clearInterval(handle)
   }
 }
 
 describe('a task slower than its interval', () => {
   test('does not overlap itself by default', async () => {
-    const probe = slowTask(2500)
-    new Schedule(probe.task).everySecond().withName('slow-default')
-    await Bun.sleep(3300)
-    expect(probe.started()).toBe(1)
-  }, 10_000)
+    const active = Promise.withResolvers<void>()
+    const task = mock(() => active.promise)
+    const tick = await captureInterval(() => {
+      new Schedule(task).everySecond().withName('slow-default')
+    })
+    try {
+      await tick()
+      await tick()
+      await tick()
+      expect(task).toHaveBeenCalledTimes(1)
+    }
+    finally {
+      active.resolve()
+    }
+  })
 
   test('overlaps when it says it may', async () => {
-    const probe = slowTask(2500)
-    new Schedule(probe.task).everySecond().allowOverlapping().withName('slow-overlapping')
-    await Bun.sleep(3300)
-    expect(probe.started()).toBeGreaterThanOrEqual(3)
-  }, 10_000)
+    const active = Promise.withResolvers<void>()
+    const task = mock(() => active.promise)
+    const tick = await captureInterval(() => {
+      new Schedule(task).everySecond().allowOverlapping().withName('slow-overlapping')
+    })
+    try {
+      await tick()
+      await tick()
+      await tick()
+      expect(task).toHaveBeenCalledTimes(3)
+    }
+    finally {
+      active.resolve()
+    }
+  })
 
-  test('runNow still runs while a tick is in progress', async () => {
-    const probe = slowTask(2500)
-    new Schedule(probe.task).everySecond().withName('slow-run-now')
-    await Bun.sleep(1300)
-    expect(probe.started()).toBe(1)
-    await Schedule.runNow('slow-run-now', { inProcess: true })
-    expect(probe.started()).toBe(2)
-  }, 10_000)
+  test('runNow can start during a tick and later ticks wait for both runs', async () => {
+    const scheduled = Promise.withResolvers<void>()
+    const manual = Promise.withResolvers<void>()
+    const task = mock(() => Promise.resolve())
+      .mockImplementationOnce(() => scheduled.promise)
+      .mockImplementationOnce(() => manual.promise)
+    const tick = await captureInterval(() => {
+      new Schedule(task).everySecond().withName('slow-run-now')
+    })
+    let runNow: Promise<void> | undefined
+    try {
+      await tick()
+      expect(task).toHaveBeenCalledTimes(1)
+      runNow = Schedule.runNow('slow-run-now', { inProcess: true })
+      expect(task).toHaveBeenCalledTimes(2)
+
+      scheduled.resolve()
+      await scheduled.promise
+      await tick()
+      expect(task).toHaveBeenCalledTimes(2)
+
+      manual.resolve()
+      await runNow
+      await tick()
+      expect(task).toHaveBeenCalledTimes(3)
+    }
+    finally {
+      scheduled.resolve()
+      manual.resolve()
+      await runNow
+    }
+  })
 })

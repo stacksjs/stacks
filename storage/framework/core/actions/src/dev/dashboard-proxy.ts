@@ -8,16 +8,15 @@
  *   registry route is both sufficient and all an unprivileged process can do.
  *   Starting an in-process proxy instead could not bind :443, and rpx would
  *   settle on some high port that the pretty URL never reaches.
- * - `own-proxy`: nothing holds :443, so this process runs the proxy itself.
- * - `origin-only`: no custom domain configured; `http://localhost:<port>` is the
- *   only URL there is.
+ * - `origin-only`: no custom domain or working proxy. The local HTTP server
+ *   stays available. `buddy setup:ssl` owns privileged HTTPS setup.
  */
 import { lookup } from 'node:dns/promises'
 import { connect, isIP } from 'node:net'
 import process from 'node:process'
 import { getCACertificates } from 'node:tls'
 
-export type DashboardProxyStrategy = 'parent-managed' | 'daemon-route' | 'own-proxy' | 'origin-only'
+export type DashboardProxyStrategy = 'parent-managed' | 'daemon-route' | 'origin-only'
 
 /**
  * `dashboard.<host>` for APP_URL's host, or null when the dashboard is only
@@ -114,7 +113,7 @@ export async function resolveDashboardProxyStrategy(
   if (await probes.isDaemonRunning() && await probes.httpsPortAnswers())
     return 'daemon-route'
 
-  return 'own-proxy'
+  return 'origin-only'
 }
 
 /** Whether anything is listening on `port` of the loopback interface. */
@@ -155,11 +154,7 @@ async function registerWithRpxDaemon(domainToServe: string, dashboardAddress: st
   return true
 }
 
-/**
- * Make `https://dashboard.<domain>` reach this server. Returns whether the
- * pretty URL is actually served - see {@link resolveDashboardProxyStrategy}
- * for the cases.
- */
+/** Publish the dashboard URL through the proxy already managed by Buddy or rpx. */
 export async function startDashboardReverseProxy(options: {
   domain: string | null
   address: string
@@ -167,19 +162,12 @@ export async function startDashboardReverseProxy(options: {
   verbose: boolean
 }): Promise<boolean> {
   const { domain: dashboardDomain, address: dashboardAddress, pid, verbose } = options
-  const sslBasePath = `${process.env.HOME}/.stacks/ssl`
-  const background = process.env.STACKS_DASHBOARD_BACKGROUND === '1'
   if (!dashboardDomain) return false
 
   try {
-    // Loaded lazily: under `buddy dev` the strategy is settled without touching
-    // rpx at all, and importing it there only costs boot time and log noise.
-    let rpx: typeof import('@stacksjs/rpx') | undefined
-    const loadRpx = async (): Promise<typeof import('@stacksjs/rpx')> => (rpx ??= await import('@stacksjs/rpx'))
-
     const strategy = await resolveDashboardProxyStrategy(dashboardDomain, {
       proxyManagedExternally: Boolean(process.env.STACKS_PROXY_MANAGED),
-      isDaemonRunning: async () => (await loadRpx()).isDaemonRunning(),
+      isDaemonRunning: async () => (await import('@stacksjs/rpx')).isDaemonRunning(),
       httpsPortAnswers: () => portAnswers(443),
     })
 
@@ -190,31 +178,7 @@ export async function startDashboardReverseProxy(options: {
     if (strategy === 'parent-managed')
       return true
 
-    if (strategy === 'daemon-route') {
-      await registerWithRpxDaemon(dashboardDomain, dashboardAddress, pid, verbose)
-      return true
-    }
-
-    if (background)
-      return false
-
-    await (await loadRpx()).startProxies({
-      proxies: [
-        { from: dashboardAddress, to: dashboardDomain, cleanUrls: false },
-      ],
-      https: {
-        basePath: sslBasePath,
-        validityDays: 825,
-      },
-      regenerateUntrustedCerts: false,
-      verbose,
-    })
-
-    // rpx falls back to a high port when it cannot bind :443 (it needs root),
-    // and that fallback port is not in the pretty URL. Only claim the pretty
-    // URL once :443 actually answers; otherwise the banner below prints the
-    // origin URL, which always works.
-    return await portAnswers(443)
+    return await registerWithRpxDaemon(dashboardDomain, dashboardAddress, pid, verbose)
   }
   catch (error) {
     if (verbose) console.log(`  Proxy: ${error}`)

@@ -64,6 +64,103 @@ test('support setup moves a development SDK to runtime without replacing its ran
   finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('support setup applies an explicit SDK version over an older runtime or development pin', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'support-sdk-exact-'))
+  try {
+    const manifest = join(root, 'package.json')
+    const sdk = '@stacksjs/support'
+    const version = '0.75.701'
+    const earlierRuntime = JSON.stringify({ dependencies: { [sdk]: '0.75.695' } })
+    await writeFile(manifest, earlierRuntime)
+    const calls: string[][] = []
+    let available = false
+    const deps = {
+      print: () => {},
+      install: async (directory: string, args: string[]) => {
+        expect(directory).toBe(root)
+        calls.push(args)
+        if (!available) return false
+        if (args[0] === 'add') await writeFile(manifest, JSON.stringify({ dependencies: { [sdk]: version } }))
+        return true
+      },
+    }
+    expect(await installSupportSdk(root, '0.75.704', deps, version)).toBe(false)
+    expect(await readFile(manifest, 'utf8')).toBe(earlierRuntime)
+    available = true
+    expect(await installSupportSdk(root, '0.75.704', deps, version)).toBe(true)
+    expect(JSON.parse(await readFile(manifest, 'utf8')).dependencies[sdk]).toBe(version)
+    expect(calls).toEqual([['add', '--exact', `${sdk}@${version}`], ['add', '--exact', `${sdk}@${version}`]])
+
+    const earlierDevelopment = JSON.stringify({ devDependencies: { [sdk]: '0.75.695', 'test-helper': '1.0.0' } })
+    await writeFile(manifest, earlierDevelopment)
+    available = false
+    expect(await installSupportSdk(root, '0.75.704', deps, version)).toBe(false)
+    expect(await readFile(manifest, 'utf8')).toBe(earlierDevelopment)
+    available = true
+    expect(await installSupportSdk(root, '0.75.704', deps, version)).toBe(true)
+    const installed = JSON.parse(await readFile(manifest, 'utf8'))
+    expect(installed.dependencies[sdk]).toBe(version)
+    expect(installed.devDependencies).toEqual({ 'test-helper': '1.0.0' })
+    expect(calls.slice(2)).toEqual([['install'], ['install']])
+
+    for (const field of ['overrides', 'resolutions']) {
+      const overridden = JSON.stringify({ dependencies: { [sdk]: '0.75.695' }, [field]: { [sdk]: '0.75.695' } })
+      await writeFile(manifest, overridden)
+      expect(await installSupportSdk(root, '0.75.704', deps, version)).toBe(false)
+      expect(await readFile(manifest, 'utf8')).toBe(overridden)
+    }
+    expect(calls).toHaveLength(4)
+  }
+  finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('support setup refreshes an existing Pantry lock and can retry a partial install', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'support-sdk-pantry-'))
+  try {
+    const manifest = join(root, 'package.json')
+    const pantryLock = join(root, 'pantry.lock')
+    const bunLock = join(root, 'bun.lock')
+    const sdk = '@stacksjs/support'
+    const version = '0.75.705'
+    const original = JSON.stringify({ dependencies: { [sdk]: '0.75.695', other: '1.0.0' } })
+    await writeFile(manifest, original)
+    await writeFile(pantryLock, 'previous Pantry lock')
+    await writeFile(bunLock, 'previous Bun lock')
+    const output: string[] = []
+    const deps = {
+      print: (line: string) => output.push(line),
+      install: async () => { throw new Error('The Pantry project should use Pantry') },
+    }
+    expect(await installSupportSdk(root, '0.75.706', deps, version)).toBe(false)
+    expect(await readFile(manifest, 'utf8')).toBe(original)
+    expect(output.at(-1)).toContain('Pantry')
+
+    let pass = 'no-lock-change'
+    const installPantry = async (directory: string) => {
+      expect(directory).toBe(root)
+      expect(JSON.parse(await readFile(manifest, 'utf8')).dependencies).toEqual({ [sdk]: version, other: '1.0.0' })
+      if (pass === 'no-lock-change') return false
+      await writeFile(bunLock, 'updated Bun lock')
+      if (pass === 'partial-lock-change') return false
+      await writeFile(pantryLock, 'updated Pantry lock')
+      return true
+    }
+    expect(await installSupportSdk(root, '0.75.706', { ...deps, installPantry }, version)).toBe(false)
+    expect(await readFile(manifest, 'utf8')).toBe(original)
+    pass = 'partial-lock-change'
+    expect(await installSupportSdk(root, '0.75.706', { ...deps, installPantry }, version)).toBe(false)
+    expect(JSON.parse(await readFile(manifest, 'utf8')).dependencies[sdk]).toBe(version)
+    expect(await readFile(pantryLock, 'utf8')).toBe('previous Pantry lock')
+    expect(output.at(-1)).toContain('retry')
+    pass = 'complete'
+    expect(await installSupportSdk(root, '0.75.706', { ...deps, installPantry }, version)).toBe(true)
+    expect(await readFile(pantryLock, 'utf8')).toBe('updated Pantry lock')
+    expect(await readFile(bunLock, 'utf8')).toBe('updated Bun lock')
+    expect(output.at(-1)).toContain(`Installed ${sdk}@${version}`)
+  }
+  finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('messenger install approves only exact configured origin and makes idempotent opt-in stx changes', async () => {
   const root = await mkdtemp(join(tmpdir(), 'support-install-'))
   try {

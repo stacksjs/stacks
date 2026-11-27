@@ -1,4 +1,5 @@
 import type { PublicFetchOptions } from '@stacksjs/security'
+import type { PostVideo, PublishPostInput } from './types'
 import { fetchPublicUrl } from '@stacksjs/security'
 
 /**
@@ -84,4 +85,21 @@ export async function resolvePostImage(
   const fetched = await fetchImage(item.url)
   if (!fetched) throw new PostImageError(item.url)
   return fetched
+}
+
+/** Reject invalid video before a network can create an attachment or post. */
+export function validatePostVideo(video: PostVideo, images: PublishPostInput['media']): void {
+  if (images?.length)
+    throw new Error('A video cannot be attached together with images.')
+  if (video.mimeType !== 'video/mp4' || !video.bytes.length)
+    throw new Error('Attach a non-empty MP4 video.')
+  const ratio = video.aspectRatio
+  if (ratio && ![ratio.width, ratio.height].every(value => Number.isSafeInteger(value) && value > 0))
+    throw new Error('Video width and height must be positive integers.')
+}
+
+/** Avoid publishing a text-only post when the requested video cannot be sent. */
+export function rejectPostVideo(post: PublishPostInput, network: string): void {
+  if (post.video)
+    throw new Error(`Video publishing to ${network} is unavailable.`)
 }

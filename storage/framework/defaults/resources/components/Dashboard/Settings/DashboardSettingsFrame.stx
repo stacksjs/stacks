@@ -1,13 +1,16 @@
 <script server>
+import { dashboardPageVisibility } from '@stacksjs/defaults/resources/functions/dashboard/page-availability'
+
 const { pane } = defineProps<{ pane: 'general' | 'appearance' | 'mail' | 'billing' | 'software-update' }>()
 
-export const panes = [
+const isDashboardPageAvailable = dashboardPageVisibility()
+export const panes = ([
   { id: 'general', label: 'General', href: '/settings', icon: 'i-f7-gear-alt-fill', tone: 'grey', description: 'Manage this project’s configuration and environment bindings.', keywords: 'config project environment' },
   { id: 'appearance', label: 'Appearance', href: '/settings/appearance', icon: 'i-f7-circle-lefthalf-fill', tone: 'purple', description: 'Choose how the dashboard looks and which sections are shown in the sidebar.', keywords: 'theme color mode dark light sidebar display' },
   { id: 'software-update', label: 'Software Update', href: '/settings/software-update', icon: 'i-f7-arrow-down-circle-fill', tone: 'blue', description: 'Check for Stacks releases and update your projects through Buddy.', keywords: 'upgrade framework version install dependencies' },
   { id: 'mail', label: 'Mail', href: '/settings/mail', icon: 'i-f7-envelope-fill', tone: 'blue', description: 'Set the sender, delivery driver, and credentials for outgoing mail.', keywords: 'email smtp sender transport' },
   { id: 'billing', label: 'Billing', href: '/settings/billing', icon: 'i-f7-creditcard-fill', tone: 'green', description: 'View your subscription, payment methods, and transactions.', keywords: 'subscription payment transaction invoice' },
-] as const
+] as const).filter(item => isDashboardPageAvailable(item.href))
 export const activePane = panes.find(item => item.id === pane) ?? panes[0]
 defineClientPayload({ panes, activePane })
 </script>

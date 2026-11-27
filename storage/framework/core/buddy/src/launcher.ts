@@ -2,6 +2,7 @@ import { accessSync, constants, realpathSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import process from 'node:process'
 import { findProject, findProjectRoot, isCompiledBinary, isVisitingCli, noteProjectUsed, projectCliEntry } from '@stacksjs/path'
+import { isSdkOnlySupportInstall } from './project-setup'
 import { isIsolatedRuntime, withoutIsolation } from './runtime-flags'
 
 /**
@@ -145,16 +146,6 @@ function isExecutable(file: string): boolean {
   }
 }
 
-/**
- * What a project with nothing installed can still be asked: to install. Even
- * `help` and `list` cannot be answered there, because describing the commands
- * means loading them, and the project's own commands and models import
- * packages that are not there yet.
- */
-function runsWithoutInstall(args: string[]): boolean {
-  return args[0] === 'install'
-}
-
 export type Invocation
   /** Run in this process. `root` is the project it runs for, when there is one. */
   = | { kind: 'run', root: string | null, args: string[] }
@@ -221,13 +212,12 @@ export function planInvocation(context: InvocationContext): Invocation {
   if (!root)
     return { kind: 'run', root: null, args }
 
-  // A project with nothing installed has no `buddy` of its own, and its code
-  // (commands, models, config) imports packages that are not there. Run by
-  // this one, every such import would go to Bun's runtime auto-install and
-  // come back at whatever version it picked, so the command would run against
-  // a framework the project never asked for. Installing is the one thing to
-  // do there.
-  if (projectCliEntry(root) === null && !runsWithoutInstall(forwarded)) {
+  const sdkOnly = isSdkOnlySupportInstall(forwarded)
+  const projectHasCli = projectCliEntry(root) !== null
+
+  // Dependency-only installs can run without project code. Other commands
+  // require the project's own CLI so its imports use the pinned framework.
+  if (!projectHasCli && command !== 'install' && !sdkOnly) {
     const name = basename(root)
     return {
       kind: 'refuse',
@@ -240,8 +230,8 @@ export function planInvocation(context: InvocationContext): Invocation {
   // has a CLI of its own: whichever CLI ends up running this needs the
   // project's config. With nothing installed, the project's config only
   // preloads packages that are not there, and the isolation stays.
-  const projectHasCli = projectCliEntry(root) !== null
-  const needsProjectConfig = projectHasCli && isIsolatedRuntime(context.execArgv)
+  const useProjectRuntime = projectHasCli && !sdkOnly
+  const needsProjectConfig = useProjectRuntime && isIsolatedRuntime(context.execArgv)
 
   // A process this launcher already started for this root is where it should
   // be. Checked before the entries are compared, so a layout the comparison
@@ -249,7 +239,7 @@ export function planInvocation(context: InvocationContext): Invocation {
   if (context.handedRoot && samePath(context.handedRoot, root) && samePath(cwd, root) && !needsProjectConfig)
     return { kind: 'run', root, args: forwarded }
 
-  if (isVisitingCli(root, context.main)) {
+  if (useProjectRuntime && isVisitingCli(root, context.main)) {
     // The project's shim knows which Bun and which module roots it runs with.
     const shim = join(root, 'buddy')
     return {
@@ -259,10 +249,11 @@ export function planInvocation(context: InvocationContext): Invocation {
     }
   }
 
-  // This is the project's own CLI (or the project has none, for `install`).
+  // The SDK-only install stays on the invoking Buddy, even if the project
+  // has an older CLI that predates its flags.
   if (!samePath(cwd, root) || needsProjectConfig) {
     // A compiled binary is its own entry; anything else is Bun running one.
-    const execArgv = projectHasCli ? withoutIsolation(context.execArgv) : context.execArgv
+    const execArgv = useProjectRuntime ? withoutIsolation(context.execArgv) : context.execArgv
     const self = isCompiledBinary(context.main) ? [process.execPath] : [process.execPath, ...execArgv, context.main]
     return { kind: 'handoff', root, command: [...self, ...forwarded] }
   }

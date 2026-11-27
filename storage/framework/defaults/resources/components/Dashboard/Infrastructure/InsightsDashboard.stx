@@ -1,3 +1,9 @@
+<script server>
+import { dashboardPageVisibility } from '@stacksjs/defaults/resources/functions/dashboard/page-availability'
+
+export const dashboardLinkAvailable = dashboardPageVisibility()
+</script>
+
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
 
@@ -398,7 +404,9 @@ onMount(() => {
           <h2 class="font-semibold text-neutral-900 dark:text-white">Slowest request observations</h2>
           <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">The five longest durations retained by the Request model.</p>
         </div>
+        @if(dashboardLinkAvailable('/requests'))
         <a href="/requests" class="font-medium text-blue-600 text-xs dark:text-blue-400 hover:underline">All requests</a>
+        @endif
       </div>
       <div :if="insights().requests.slowest.length === 0" class="px-5 py-12 text-center">
         <span class="block mx-auto h-8 w-8 text-neutral-400 i-hugeicons-mouse-left-click-02"></span>
@@ -422,7 +430,9 @@ onMount(() => {
           <h2 class="font-semibold text-neutral-900 dark:text-white">Slow query observations</h2>
           <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Queries at or above the configured {{ formatDuration(insights().queries.slowThresholdMs) }} threshold.</p>
         </div>
+        @if(dashboardLinkAvailable('/queries'))
         <a href="/queries" class="font-medium text-blue-600 text-xs dark:text-blue-400 hover:underline">All queries</a>
+        @endif
       </div>
       <div :if="insights().queries.slowest.length === 0" class="px-5 py-12 text-center">
         <span class="block mx-auto h-8 w-8 text-neutral-400 i-hugeicons-database-02"></span>

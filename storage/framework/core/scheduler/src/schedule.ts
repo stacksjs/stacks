@@ -1053,7 +1053,7 @@ export class Schedule implements UntimedSchedule {
     // What the background process runs: the same task, in that process.
     const taskHere = this.shouldRunInBackground ? this.wrapTask(base, true) : task
     let stopped = false
-    let running = false
+    let activeRuns = 0
     let lastStartedAt: number | null = null
     let timer: ReturnType<typeof setTimeout> | ReturnType<typeof setInterval> | null = null
     let runCount = 0
@@ -1097,14 +1097,14 @@ export class Schedule implements UntimedSchedule {
         stop()
         return
       }
-      if (protect && running) {
+      if (protect && activeRuns > 0) {
         log.debug(`[scheduler] task ${taskName} is still running; skipping this tick (withProtection)`)
         if (typeof protect === 'function') protect(job)
         return
       }
       // A tick never starts on top of a running one unless the task allows it
       // (#3364). runNow() and a background run carry no slot and always run.
-      if (slot !== undefined && running && !this.allowOverlap) {
+      if (slot !== undefined && activeRuns > 0 && !this.allowOverlap) {
         log.info(`[scheduler] task ${taskName} is still running; skipping this tick (allowOverlapping() to run concurrently)`)
         return
       }
@@ -1127,7 +1127,7 @@ export class Schedule implements UntimedSchedule {
         }
       }
       runCount++
-      running = true
+      activeRuns++
       lastStartedAt = now
       let settle: () => void = () => {}
       const tracked = new Promise<void>((resolve) => { settle = resolve })
@@ -1158,7 +1158,7 @@ export class Schedule implements UntimedSchedule {
         throw error
       }
       finally {
-        running = false
+        activeRuns--
         const finished = Date.now()
         Schedule.recordRun(taskName, {
           startedAt: new Date(now).toISOString(),

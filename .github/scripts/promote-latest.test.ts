@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { confirmPublications, inParallel, meaningfulNpmError, promotionFailureSummary, promoteTags, publishables } from './promote-latest'
+import { confirmPublications, inParallel, meaningfulNpmError, npmPublicationTag, promotionFailureSummary, promoteTags, publishables } from './promote-latest'
 
 const root = new URL('../../', import.meta.url).pathname
 
@@ -33,7 +33,7 @@ describe('registry publication confirmation', () => {
       return Response.json({ name: '@stacksjs/buddy', version: '0.75.114', dist: { tarball: 'https://registry.npmjs.org/buddy.tgz' } })
     } })
     try {
-      await expect(confirmPublications([{ name: 'missing', version: '1.0.0', dir: '' }, { name: '@stacksjs/buddy', version: '0.75.115', dir: '' }], server.url.href, 1, 0)).rejects.toThrow('missing@1.0.0, @stacksjs/buddy@0.75.115; no latest tags were changed')
+      await expect(confirmPublications([{ name: 'missing', version: '1.0.0', dir: '' }, { name: '@stacksjs/buddy', version: '0.75.115', dir: '' }], server.url.href, 1, 0)).rejects.toThrow('missing@1.0.0, @stacksjs/buddy@0.75.115. Accepted uploads may still be awaiting')
     }
     finally { server.stop(true) }
   })
@@ -75,6 +75,27 @@ describe('publishables', () => {
     for (const pkg of found) {
       const manifest = JSON.parse(readFileSync(`${root}${pkg.dir}/package.json`, 'utf-8'))
       expect(manifest.private).toBeFalsy()
+    }
+  })
+
+  it('checks the promotion credential before selecting an initial tag', async () => {
+    const server = Bun.serve({
+      port: 0,
+      fetch(request) {
+        expect(new URL(request.url).pathname).toBe('/-/whoami')
+        const token = request.headers.get('authorization')
+        if (token === 'Bearer valid-token') return Response.json({ username: 'publisher' })
+        return new Response(null, { status: token === 'Bearer expired-token' ? 401 : 503 })
+      },
+    })
+    try {
+      expect(await npmPublicationTag(' ', server.url.href)).toBe('latest')
+      expect(await npmPublicationTag('expired-token', server.url.href)).toBe('latest')
+      expect(await npmPublicationTag('valid-token', server.url.href)).toBe('staging')
+      await expect(npmPublicationTag('unknown-token', server.url.href)).rejects.toThrow('HTTP 503')
+    }
+    finally {
+      server.stop(true)
     }
   })
 

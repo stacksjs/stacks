@@ -1,4 +1,8 @@
 import { describe, expect, it } from 'bun:test'
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import process from 'node:process'
 import type { DeploymentSiteKind } from '@stacksjs/types'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from '../src/commands/deploy-preview'
 
@@ -92,6 +96,25 @@ describe('deployment preview', () => {
     expect(plan.operations.find(operation => operation.phase === 'runtime')?.detail).toContain('2 configured pre-start commands')
   })
 
+  it('previews tenant mail and DNS after web TLS on its configured shared server', () => {
+    const plan = createDeploymentPreview({
+      config,
+      environment: 'production',
+      mail: { domain: 'acme.test', attachTo: 'stacks' },
+      resolveSiteKind,
+      applyEnvironmentToSites,
+    })
+
+    expect(plan.operations.map(operation => operation.phase).slice(-3)).toEqual(['dns', 'tls', 'mail'])
+    const mail = plan.operations.at(-1)
+    expect(mail?.detail).toContain('acme.test')
+    expect(mail?.detail).toContain("'stacks'")
+    expect(mail?.detail).toContain('A record for mail.acme.test')
+    expect(mail?.detail).toContain('MX record')
+    expect(mail?.detail).toContain('SPF, DKIM, and DMARC TXT records')
+    expect(formatDeploymentPreview(plan)).toContain('Reconcile mail tenant')
+  })
+
   it('narrows every site-scoped operation without dropping target context', () => {
     const plan = createDeploymentPreview({
       config,
@@ -170,10 +193,12 @@ describe('deployment preview for an ssh host', () => {
     },
   }
 
-  const build = (config: Record<string, unknown>, holdDns = false) => createDeploymentPreview({
+  const build = (config: Record<string, unknown>, holdDns = false, sshPublicIp?: string) => createDeploymentPreview({
     config: config as any,
     environment: 'production',
     holdDns,
+    mail: { domain: 'acme.test' },
+    sshPublicIp,
     resolveSiteKind,
     applyEnvironmentToSites,
   })
@@ -188,21 +213,35 @@ describe('deployment preview for an ssh host', () => {
     expect(infra?.detail).toContain('sudo')
   })
 
-  it('promises no DNS or TLS work for a host on the local network', () => {
+  it('promises no DNS, TLS, or mail work for a host on the local network', () => {
     const kinds = build(lan).operations.map(op => op.phase)
     expect(kinds).toContain('gateway')
     expect(kinds).not.toContain('dns')
     expect(kinds).not.toContain('tls')
+    expect(kinds).not.toContain('mail')
   })
 
   it('says the routes are local-network only', () => {
     expect(build(lan).operations.find(op => op.phase === 'gateway')?.detail).toContain('local network')
   })
 
-  it('still promises DNS and TLS when the host is actually reachable', () => {
-    const kinds = build(routable).operations.map(op => op.phase)
+  it('includes DNS, TLS, and mail when the host is publicly reachable', () => {
+    const plan = build(routable)
+    const kinds = plan.operations.map(op => op.phase)
     expect(kinds).toContain('dns')
     expect(kinds).toContain('tls')
+    expect(plan.operations.find(op => op.phase === 'mail')?.detail).toContain('on the deployment server')
+  })
+
+  it('uses the pinned SSH address to decide whether the shared server can publish DNS', () => {
+    const attachedLan = { ...lan, cloud: { ...lan.cloud, attachTo: 'shared' } }
+    const publicPlan = build(attachedLan, false, '203.0.113.9')
+    expect(publicPlan.operations.find(op => op.phase === 'infrastructure')?.detail).toContain('pi@203.0.113.9')
+    expect(publicPlan.operations.some(op => op.phase === 'mail')).toBe(true)
+
+    const attachedPublic = { ...routable, cloud: { ...routable.cloud, attachTo: 'shared' } }
+    const privatePlan = build(attachedPublic, false, '192.168.1.5')
+    expect(privatePlan.operations.some(op => op.phase === 'mail')).toBe(false)
   })
 
   it('names the port when the host does not use the default', () => {
@@ -210,10 +249,18 @@ describe('deployment preview for an ssh host', () => {
     expect(build(config).operations.find(op => op.phase === 'infrastructure')?.detail).toContain('pi@pi.local:2222')
   })
 
-  it('leaves the hetzner preview exactly as it was', () => {
+  it('omits the shared mail operation from the AWS and Fly.io pipelines', () => {
+    for (const provider of ['aws', 'fly']) {
+      const plan = build({ ...base, cloud: { provider } })
+      expect(plan.operations.some(op => op.phase === 'mail')).toBe(false)
+    }
+  })
+
+  it('includes the mail step for a public Hetzner deployment', () => {
     const kinds = build({ ...base, cloud: { provider: 'hetzner' }, infrastructure: { compute: { size: 'medium' } } }).operations.map(op => op.phase)
     expect(kinds).toContain('dns')
     expect(kinds).toContain('tls')
+    expect(kinds).toContain('mail')
   })
 
   it('keeps the release and gateway while holding publication on Hetzner and SSH', () => {
@@ -225,8 +272,103 @@ describe('deployment preview for an ssh host', () => {
       expect(phases).toContain('runtime')
       expect(phases).not.toContain('dns')
       expect(phases).not.toContain('tls')
+      expect(phases).not.toContain('mail')
       expect(plan.operations.find(op => op.phase === 'gateway')?.detail).toContain('Post-release DNS and TLS reconciliation is held.')
       expect(formatDeploymentPreview(plan)).toContain('Post-release DNS and TLS reconciliation is held.')
     }
   })
 })
+
+it('previews the selected mail environment without sending a webhook', () => {
+  const root = resolve(import.meta.dir, '../../../../..')
+  const directory = mkdtempSync(join(tmpdir(), 'buddy-mail-deploy-preview-'))
+
+  try {
+    mkdirSync(join(directory, 'config'))
+    mkdirSync(join(directory, 'storage/framework/core'), { recursive: true })
+    symlinkSync(join(root, 'node_modules'), join(directory, 'node_modules'), 'dir')
+    symlinkSync(join(root, 'storage/framework/core/buddy'), join(directory, 'storage/framework/core/buddy'), 'dir')
+    writeFileSync(join(directory, 'package.json'), '{"name":"mail-deploy-preview-fixture"}')
+    writeFileSync(join(directory, 'bunfig.toml'), 'preload = []')
+    writeFileSync(join(directory, 'config/cloud.ts'), `export const tsCloud = {
+      project: { slug: 'mail-preview' },
+      cloud: { provider: 'hetzner' },
+      sites: { web: { domain: 'www.example.com', start: 'bun server.ts' } },
+    }`)
+    writeFileSync(join(directory, 'config/email.ts'), `
+      if (process.env.MAIL_ON === 'broken') throw new Error('fixture-password')
+      export default {
+        domain: process.env.MAIL_DOMAIN,
+        server: { enabled: process.env.MAIL_ON === 'true', attachTo: process.env.MAIL_OWNER },
+        mailboxes: [{ email: 'info', password: 'fixture-password' }],
+      }
+    `)
+    writeFileSync(join(directory, 'target.env'), 'MAIL_DOMAIN=target.example.com\nMAIL_ON=true\nMAIL_OWNER=target-box\n')
+    writeFileSync(join(directory, 'broken.env'), 'MAIL_ON=broken\n')
+    const preload = join(directory, 'preload.ts')
+    writeFileSync(preload, `
+      import { awaitConfig } from ${JSON.stringify(join(root, 'storage/framework/core/config/src/index.ts'))}
+      await awaitConfig()
+      globalThis.fetch = async () => {
+        console.error('unexpected-preview-fetch')
+        return new Response('ok')
+      }
+    `)
+
+    const run = (...args: string[]) => Bun.spawnSync([
+      process.execPath,
+      '--no-env-file',
+      '--preload',
+      preload,
+      join(root, 'storage/framework/core/buddy/src/cli.ts'),
+      'deploy',
+      '--prod',
+      '--dry-run',
+      ...args,
+    ], {
+      cwd: directory,
+      env: {
+        ...process.env,
+        STACKS_BUDDY_ROOT: directory,
+        APP_ENV: 'development',
+        NODE_ENV: 'development',
+        MAIL_DOMAIN: 'launch.example.com',
+        MAIL_ON: 'false',
+        MAIL_OWNER: 'launch-box',
+        DEPLOY_WEBHOOK_URL: 'https://hooks.slack.com/services/fixture/preview/unused',
+        DEPLOY_WEBHOOK_NOTIFY: 'all',
+        DEPLOY_WEBHOOK_DRIVER: 'slack',
+      },
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+
+    const json = run('--json', '--env-file', 'target.env')
+    const human = run('--env-file', 'target.env')
+    const failed = run('--json', '--env-file', 'missing.env')
+    const brokenMail = run('--json', '--env-file', 'broken.env')
+    for (const result of [json, human, failed, brokenMail]) {
+      const output = `${result.stdout}${result.stderr}`
+      expect(output).not.toContain('unexpected-preview-fetch')
+      expect(output).not.toContain('fixture-password')
+    }
+
+    const parsePlan = (result: ReturnType<typeof run>) => {
+      expect(result.exitCode, `${result.stdout}${result.stderr}`).toBe(0)
+      const line = result.stdout.toString().split('\n').find(line => line.startsWith(deploymentPreviewJsonPrefix))
+      expect(line).toBeDefined()
+      return JSON.parse(line!.slice(deploymentPreviewJsonPrefix.length)) as ReturnType<typeof createDeploymentPreview>
+    }
+    const plan = parsePlan(json)
+    expect(plan.operations.find(op => op.phase === 'mail')?.detail ?? '').toContain("target.example.com on the attached 'target-box' server")
+    expect(human.exitCode, `${human.stdout}${human.stderr}`).toBe(0)
+    expect(human.stdout.toString()).toContain('Reconcile mail tenant')
+    expect(failed.exitCode).not.toBe(0)
+    expect(`${failed.stdout}${failed.stderr}`).toContain('The selected deployment environment file does not exist')
+    expect(parsePlan(brokenMail).operations.some(op => op.phase === 'mail')).toBe(false)
+    expect(brokenMail.stdout.toString()).toContain('Skipping mail reconciliation')
+  }
+  finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
+}, 30_000)

@@ -154,6 +154,14 @@ export interface SocialIdentityCredentials {
   refreshToken?: string
 }
 
+/** One MP4 attachment, supplied as bytes by the caller. */
+export interface PostVideo {
+  bytes: Uint8Array
+  mimeType: 'video/mp4'
+  altText?: string
+  aspectRatio?: { width: number, height: number }
+}
+
 export interface PublishPostInput {
   text: string
   scheduledAt?: string
@@ -186,6 +194,8 @@ export interface PublishPostInput {
     mimeType?: string
     altText?: string
   }>
+  /** A single video. A driver rejects video when its provider cannot publish it. */
+  video?: PostVideo
   /**
    * Precomputed rich-text facets (ATProto shape). When omitted, drivers
    * that support facets detect links/mentions/hashtags automatically.

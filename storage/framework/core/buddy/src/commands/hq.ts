@@ -120,9 +120,12 @@ function connectCommand(supportOnly = false) {
       '--timeout <seconds>': { description: 'How long to wait for each approval', default: 600 },
       '--messenger': { description: 'Explicitly mount the identified HQ.support messenger in the app layout', default: false },
       '--layout <path>': 'App-local stx layout to mount the opt-in messenger in',
-      ...(supportOnly ? { '--sdk-only': 'Install the published HQ Support SDK without connecting a project' } : {}),
+      ...(supportOnly ? {
+        '--sdk-only': 'Install the published HQ Support SDK without connecting a project',
+        '--sdk-version <version>': 'Install this exact published HQ Support SDK version',
+      } : {}),
     },
-    examples: supportOnly ? ['buddy support:install', 'buddy support:install --no-open', 'buddy support:install --sdk-only'] : [
+    examples: supportOnly ? ['buddy support:install', 'buddy support:install --no-open', 'buddy support:install --sdk-only', 'buddy support:install --sdk-only --sdk-version 0.75.701'] : [
       'buddy hq:connect',
       'buddy hq:connect loghq',
       'buddy hq:connect bughq loghq --no-open',
@@ -136,20 +139,37 @@ function connectCommand(supportOnly = false) {
         process.exit(1)
       }
 
-      const flags = options as { open?: boolean, verify?: boolean, timeout?: number | string, messenger?: boolean, layout?: string, sdkOnly?: boolean, 'sdk-only'?: boolean }
+      const flags = options as { open?: boolean, verify?: boolean, timeout?: number | string, messenger?: boolean, layout?: string, sdkOnly?: boolean, 'sdk-only'?: boolean, sdkVersion?: string }
       const sdkOnly = supportOnly && (flags.sdkOnly || flags['sdk-only'])
+      const sdkVersion = flags.sdkVersion
+      if (sdkVersion !== undefined && !/^\d+\.\d+\.\d+(?:-[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*)?$/.test(sdkVersion)) {
+        console.error('Use an exact published SDK version with --sdk-version, such as 0.75.701.')
+        process.exitCode = 1
+        return
+      }
       if (sdkOnly && flags.messenger) {
         console.error('Use --sdk-only for the SDK alone, or --messenger to connect and mount the Messenger.')
         process.exitCode = 1
         return
       }
-      const installSdk = async (directory: string, signal?: AbortSignal) => installSupportSdk(directory, frameworkVersion, {
-        print: line => console.log(line),
-        install: async (cwd, args) => {
-          const child = Bun.spawn([process.execPath, ...args], { cwd, stdin: 'ignore', stdout: 'ignore', stderr: 'ignore', signal })
+      const installSdk = async (directory: string, signal?: AbortSignal) => {
+        const pantry = existsSync(join(directory, 'pantry.lock'))
+          ? Bun.which(join(directory, 'pantry/.bin/pantry')) ?? Bun.which('pantry')
+          : null
+        const runInstall = async (cwd: string, args: string[]) => {
+          const child = Bun.spawn(args, { cwd, stdin: 'ignore', stdout: 'ignore', stderr: 'ignore', signal })
           return await child.exited === 0
-        },
-      })
+        }
+        return installSupportSdk(directory, frameworkVersion, {
+          print: line => console.log(line),
+          install: (cwd, args) => runInstall(cwd, [process.execPath, ...args]),
+          installPantry: pantry ? async (cwd) => {
+            const { chooseInstaller } = await import('../unvendor-rewrite')
+            const [, ...args] = chooseInstaller(cwd, 'pantry')
+            return runInstall(cwd, [pantry, ...args, '--ignore-scripts'])
+          } : undefined,
+        }, sdkVersion)
+      }
       if (sdkOnly) {
         const { projectPath } = await import('@stacksjs/path')
         process.exitCode = await installSdk(projectPath()) ? 0 : 1

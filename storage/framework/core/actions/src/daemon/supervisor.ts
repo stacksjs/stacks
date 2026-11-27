@@ -168,10 +168,8 @@ export class DashboardSupervisor {
         port,
         env: {
           PORT_ADMIN: String(port),
-          // A background launch can publish into a shared proxy without
-          // opening its own native window or prompting for administrator access.
+          // A background launch can publish into a shared proxy without opening a window.
           STACKS_NO_NATIVE: '1',
-          STACKS_DASHBOARD_BACKGROUND: '1',
           STACKS_DASHBOARD_IDLE_EXIT_MS: String(this.idleExitMs),
         },
       }),

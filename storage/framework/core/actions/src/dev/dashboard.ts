@@ -13,7 +13,7 @@ import { dashboardSoftwareUpdateRoutes } from './dashboard-software-updates'
 import { runDashboardSupervisor } from './dashboard-supervisor'
 import { createWorkerHmrRetirement, frontendHmrResponse } from './frontend-hmr'
 import { retainFrontendPageState } from './frontend-hmr-state'
-import { dashboardAssetRoutes } from '../dashboard-assets'
+import { dashboardAssetRoutes, dashboardRenderOptions } from '../dashboard-assets'
 import { ensureDiscoveredPackages } from '../discover-packages'
 import { resolveStxSource } from '../stx-source'
 import { installServeRelayWorker, serveRelayPort } from '../helpers/serve-relay-worker'
@@ -98,7 +98,7 @@ const dashboardInstance = (relay && process.env.STACKS_DASHBOARD_INSTANCE) || cr
 const hmrRetirement = relay && createWorkerHmrRetirement('stacks:dashboard-hmr-reconnect')
 let dashboardReady = false
 let dashboardPublished = false
-const { app, overridesReady } = await import('@stacksjs/config')
+const { app, config, feature, overridesReady } = await import('@stacksjs/config')
 await overridesReady
 const appUrl = process.env.APP_URL || app.url || ''
 const localhostOnly = process.env.STACKS_DEV_LOCALHOST === '1'
@@ -128,6 +128,12 @@ function restoreConsole(): void {
     originalConsoleWarn(...args)
   }
 }
+
+const { dashboardViewExclusions, readDashboardPageAvailability } = await import(
+  defaultsPath('resources/functions/dashboard/page-availability.ts')
+)
+const { resolveDashboardNav } = await import(defaultsPath('resources/functions/dashboard/toggles.ts'))
+const dashboardAvailability = readDashboardPageAvailability()
 
 async function startStxServer(): Promise<void> {
   // The dev preloader skips globals. Like the API worker, the dashboard must
@@ -204,91 +210,6 @@ async function startStxServer(): Promise<void> {
     return disabledFeatureConfigs(feature)
   }
 
-  // Dashboard chart modules are loaded lazily from explicit dev-server URLs.
-  // Package dist files are intentionally not served verbatim: they retain
-  // package-internal bare imports, which browsers cannot resolve. Build each
-  // entry into one browser-native ESM module and cache it for this dev session.
-  // Opt-in by env only. This defaulted to `~/Code/Libraries/ts-charts`, so a
-  // maintainer's unrelated checkout silently outranked the installed package
-  // for every chart on every dashboard - the same inversion as the stx chain
-  // above, one dependency over.
-  const localTsChartsRoot = process.env.TS_CHARTS_SRC
-  const dependencyBundles = new Map<string, Promise<string>>()
-
-  function resolveTsChartsSource(packageName: string): string | null {
-    const candidates = [
-      ...(localTsChartsRoot ? [`${localTsChartsRoot}/packages/${packageName}/src/index.ts`] : []),
-      projectPath(`node_modules/@ts-charts/${packageName}/src/index.ts`),
-    ]
-    return candidates.find(existsSync) || null
-  }
-
-  const tsChartsEntry = [
-    ...(localTsChartsRoot ? [`${localTsChartsRoot}/packages/ts-charts/src/index.ts`] : []),
-    projectPath('node_modules/ts-charts/src/index.ts'),
-  ].find(existsSync)
-
-  async function buildDashboardDependency(entrypoint: string): Promise<string> {
-    const cached = dependencyBundles.get(entrypoint)
-    if (cached)
-      return cached
-
-    const build = (async () => {
-      const result = await Bun.build({
-        entrypoints: [entrypoint],
-        target: 'browser',
-        format: 'esm',
-        minify: true,
-        plugins: [{
-          name: 'dashboard-ts-charts-source',
-          setup(builder) {
-            builder.onResolve({ filter: /^@ts-charts\/[a-z0-9-]+$/ }, (args) => {
-              const packageName = args.path.slice('@ts-charts/'.length)
-              const source = resolveTsChartsSource(packageName)
-              if (source)
-                return { path: source }
-              return null
-            })
-          },
-        }],
-      })
-      if (!result.success) {
-        const errors = result.logs
-          .filter(log => log.level === 'error')
-          .map(log => log.message)
-          .join('\n')
-        throw new Error(errors || `Failed to bundle ${entrypoint}`)
-      }
-      const output = result.outputs.find(file => file.path.endsWith('.js'))
-      if (!output)
-        throw new Error(`No JavaScript output produced for ${entrypoint}`)
-      return output.text()
-    })()
-
-    dependencyBundles.set(entrypoint, build)
-    return build
-  }
-
-  function browserDependencyRoute(entrypoint: string): () => Promise<Response> {
-    return async () => {
-      try {
-        return new Response(await buildDashboardDependency(entrypoint), {
-          headers: {
-            'content-type': 'text/javascript; charset=utf-8',
-            'cache-control': 'no-cache',
-          },
-        })
-      }
-      catch (error) {
-        dependencyBundles.delete(entrypoint)
-        return new Response(`throw new Error(${JSON.stringify((error as Error).message)})`, {
-          status: 500,
-          headers: { 'content-type': 'text/javascript; charset=utf-8' },
-        })
-      }
-    }
-  }
-
   const configRoutes: Record<string, (req: Request) => Response | Promise<Response>> = {
     ...dashboardAssetRoutes(defaultsPath(), projectPath()),
     ...projectSwitcherRoutes({
@@ -306,12 +227,6 @@ async function startStxServer(): Promise<void> {
       url: () => dashboardBrowserUrl,
       validateWrite: validateDevCsrfRequest,
     }),
-    '/__deps/charts.js': browserDependencyRoute(
-      storagePath('framework/core/charts/src/index.ts'),
-    ),
-    '/__deps/ts-charts.js': browserDependencyRoute(
-      tsChartsEntry || `${localTsChartsRoot}/packages/ts-charts/src/index.ts`,
-    ),
     '/api/config/list': async () => {
       try {
         const hidden = await hiddenConfigs()
@@ -452,16 +367,11 @@ async function startStxServer(): Promise<void> {
   await router.route.register(defaultsPath('routes/dashboard-api.ts'))
   const stacksRoute = router.route
 
-  // The framework pages of a feature that is off are not served at all, so
-  // their URLs reach the not-found page (dashboard-feature-views.ts). Read
-  // now, after the `overridesReady` above: before it, config is defaults.
-  const { feature } = await import('@stacksjs/config')
-  const { disabledFeatureViews } = await import('./dashboard-feature-views')
-
   const serverPromise = serve({
+    ...dashboardRenderOptions,
     root: projectPath('resources'),
     patterns: [userDashboardPath, dashboardPath],
-    exclude: disabledFeatureViews(dashboardPath, feature),
+    exclude: dashboardViewExclusions(dashboardPath, dashboardAvailability),
     // Local dashboard actions can run without an authenticated browser session.
     ...dashboardListener,
     port: listenerPort,
@@ -588,33 +498,9 @@ const [, allDiscoveredModels] = await Promise.all([
   discoverProjectModels(),
 ])
 
-// eslint-disable-next-line ts/no-top-level-await
-const { loadDashboardConfig } = await import(
-  defaultsPath('resources/functions/dashboard/toggles.ts')
-)
-// eslint-disable-next-line ts/no-top-level-await
-// `feature` is handed in rather than imported by the toggles module, which
-// stays free of `@stacksjs/*` imports because it also loads on the dashboard's
-// synchronous path. It makes a section whose feature is off default to hidden,
-// so switching commerce off in `config/commerce.ts` no longer leaves a
-// Commerce section whose every page 503s. See stacksjs/stacks#2928.
-// `feature` is handed in rather than imported by the toggles module, which
-// stays free of `@stacksjs/*` imports because it also loads on the dashboard's
-// synchronous path. It makes a section whose feature is off default to hidden,
-// so switching commerce off in `config/commerce.ts` no longer leaves a
-// Commerce section whose every page 503s. See stacksjs/stacks#2928.
-//
-// Imported here rather than at the top of the file, and read only now: a
-// config read before `overridesReady` has settled sees framework defaults, and
-// commerce's framework default is off - which would hide the section for an
-// app that actually has it on.
-// eslint-disable-next-line ts/no-top-level-await
-const { feature: featureEnabled } = await import('@stacksjs/config')
-// eslint-disable-next-line ts/no-top-level-await
-const { toggles: dashboardToggles, nav: dashboardNav } = await loadDashboardConfig(projectPath('config/dashboard.ts'), featureEnabled)
-// eslint-disable-next-line ts/no-top-level-await
+const dashboardNav = resolveDashboardNav(config.dashboard)
 const { frameworkModelFeature } = await import('@stacksjs/orm')
-const discoveredModels = modelsWithEnabledFeatures(allDiscoveredModels, frameworkModelFeature, name => featureEnabled(name as Parameters<typeof featureEnabled>[0]))
+const discoveredModels = modelsWithEnabledFeatures(allDiscoveredModels, frameworkModelFeature, name => feature(name as Parameters<typeof feature>[0]))
 
 // Write manifest. The envelope format includes the section toggles and any
 // app-declared nav sections so the web sidebar (which runs in STX
@@ -631,12 +517,10 @@ const discoveredModels = modelsWithEnabledFeatures(allDiscoveredModels, framewor
 const manifestDir = storagePath('framework/runtime/dashboard')
 const manifestPath = storagePath('framework/runtime/dashboard/.discovered-models.json')
 mkdirSync(manifestDir, { recursive: true })
-// eslint-disable-next-line ts/no-top-level-await
-const { listModelSources } = await import('@stacksjs/database/model-sources')
 const manifestPayload = {
   models: buildManifest(discoveredModels),
-  schemaModels: (listModelSources() ?? []).map(model => model.name),
-  sections: dashboardToggles,
+  schemaModels: dashboardAvailability.schemaModels,
+  sections: dashboardAvailability.sections,
   nav: dashboardNav,
 }
 writeFileIfChanged(manifestPath, JSON.stringify(manifestPayload, null, 2))

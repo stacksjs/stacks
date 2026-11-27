@@ -63,6 +63,56 @@ describe('scoped chat transport', () => {
     expect(result.data?.outcome).toBe('accepted')
   })
 
+  it('sends Discord bot attachments as multipart data and preserves mention policy', async () => {
+    const driver = new DiscordDriver({ botToken: 'scoped' }, { fetch: transport(async (url, init) => {
+      const request = new Request(url, init)
+      expect(request.url).toBe('https://discord.com/api/v10/channels/123/messages')
+      expect(request.headers.get('authorization')).toBe('Bot scoped')
+      expect(request.headers.get('content-type')).toMatch(/^multipart\/form-data; boundary=/)
+      const body = await request.formData()
+      expect(JSON.parse(String(body.get('payload_json')))).toEqual({
+        content: 'Private case image @everyone',
+        allowed_mentions: { parse: [] },
+        attachments: [{ id: 0, filename: 'case.png' }, { id: 1, filename: 'context.txt' }],
+      })
+      const image = body.get('files[0]') as File
+      expect([image.name, image.type]).toEqual(['case.png', 'image/png'])
+      expect([...new Uint8Array(await image.arrayBuffer())]).toEqual([137, 80, 78, 71])
+      expect(await (body.get('files[1]') as File).text()).toBe('case context')
+      return Response.json({ id: 'media-receipt' })
+    }) })
+    const result = await driver.send({
+      to: '123',
+      content: 'Private case image @everyone',
+      data: { allowedMentions: { parse: [] } },
+      attachments: [
+        { filename: 'case.png', contentType: 'image/png', content: new Uint8Array([137, 80, 78, 71]) },
+        { filename: 'context.txt', contentType: 'text/plain', content: 'case context' },
+      ],
+    })
+    expect(result).toMatchObject({ success: true, messageId: 'media-receipt', data: { outcome: 'accepted' } })
+  })
+
+  it('allows Discord webhooks to send a file without message text', async () => {
+    const driver = new DiscordDriver({ webhookUrl: 'https://discord.com/api/webhooks/123/secret' }, { fetch: transport(async (url, init) => {
+      const request = new Request(url, init)
+      expect(new URL(url).searchParams.get('wait')).toBe('true')
+      expect(request.headers.has('authorization')).toBe(false)
+      const body = await request.formData()
+      expect(JSON.parse(String(body.get('payload_json')))).toMatchObject({
+        username: 'Support',
+        attachments: [{ id: 0, filename: 'case.png' }],
+      })
+      expect(await (body.get('files[0]') as File).arrayBuffer()).toEqual(new Uint8Array([1, 2, 3]).buffer)
+      return Response.json({ id: 'file-only-receipt' })
+    }) })
+    const result = await driver.send({
+      from: { name: 'Support' },
+      attachments: [{ filename: 'case.png', contentType: 'image/png', content: new Uint8Array([1, 2, 3]) }],
+    })
+    expect(result).toMatchObject({ success: true, messageId: 'file-only-receipt', data: { outcome: 'accepted' } })
+  })
+
   it('requests Discord webhook acknowledgement and rejects oversized text before transport', async () => {
     let calls = 0
     const driver = new DiscordDriver({ webhookUrl: 'https://discord.com/api/webhooks/123/secret' }, { fetch: transport((url) => {

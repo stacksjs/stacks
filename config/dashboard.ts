@@ -3,9 +3,9 @@ import type { DashboardConfig } from '@stacksjs/types'
 /**
  * **Dashboard Configuration**
  *
- * Controls which sections render in the `buddy dev --dashboard` sidebar.
- * Each section defaults to enabled — flip a flag to `false` here to hide
- * a section that this project doesn't use.
+ * Choose which bundled sections and pages Buddy serves. Set a section to
+ * `{ enabled: false }` to omit it. Content, Commerce, and Marketing also
+ * follow their feature flags. App-owned dashboard views keep precedence.
  *
  * Common cases:
  *
