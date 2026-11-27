@@ -2163,14 +2163,20 @@ export function applyEnvironmentToSites(sites: Record<string, TsCloudSite | null
  *
  * The app is served directly on the server's public IP (no domain required).
  */
-async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: DeployOptions, envFile?: string): Promise<void> {
-  return withDeploymentIdentity(process.env.DEPLOY_SSH_KEY, identity => deployOverSshWithIdentity(deploymentIdentityConfig(tsCloudConfig, identity), deployEnv, options, envFile))
+async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: DeployOptions, holdPublicTls: boolean, envFile?: string): Promise<void> {
+  return withDeploymentIdentity(process.env.DEPLOY_SSH_KEY, identity => deployOverSshWithIdentity(deploymentIdentityConfig(tsCloudConfig, identity), deployEnv, options, holdPublicTls, envFile))
 }
 
-async function deployOverSshWithIdentity(tsCloudConfig: any, deployEnv: string, options: DeployOptions, envFile?: string): Promise<void> {
+async function deployOverSshWithIdentity(tsCloudConfig: any, deployEnv: string, options: DeployOptions, holdPublicTls: boolean, envFile?: string): Promise<void> {
   const verbose = options.verbose === true
   const environment = (deployEnv === 'prod' ? 'production' : deployEnv) as 'production' | 'staging' | 'development'
   const provider = resolveProvider(tsCloudConfig)
+
+  const cloudApi = await loadTsCloudDeployApi()
+  const { createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, shipsARelease, buildSiteDeployScript } = cloudApi
+  const supportsPublicTlsHold = cloudApi.RPX_PUBLIC_TLS_HOLD_VERSION === 1 && typeof cloudApi.renewRpxCertificates === 'function'
+  if (holdPublicTls && !supportsPublicTlsHold)
+    throw new Error('The selected @stacksjs/ts-cloud module does not support managed gateway TLS holds. Upgrade it before deploying with --hold-dns.')
 
   // Native providers bypass the AWS action, which otherwise owns this gate.
   // A rejected application hook must stop before any provider or host writes.
@@ -2219,13 +2225,6 @@ async function deployOverSshWithIdentity(tsCloudConfig: any, deployEnv: string, 
       process.exit(ExitCode.FatalError)
     }
   }
-
-  const cloudApi = await loadTsCloudDeployApi()
-  const { createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, shipsARelease, buildSiteDeployScript } = cloudApi
-  const holdPublicTls = dnsHeld()
-  const supportsPublicTlsHold = cloudApi.RPX_PUBLIC_TLS_HOLD_VERSION === 1 && typeof cloudApi.renewRpxCertificates === 'function'
-  if (holdPublicTls && !supportsPublicTlsHold)
-    throw new Error('The selected @stacksjs/ts-cloud module does not support managed gateway TLS holds. Upgrade it before deploying with --hold-dns.')
 
   // Refuse rather than deploy a release that would place an empty database over
   // the live one. See tsCloudPersistentStateSupport — an older ts-cloud honours
@@ -3127,7 +3126,7 @@ async function runSshDeploy(args: {
   // exist) rather than inside ts-cloud itself.
   // Before the environment is read: a mailbox password generated later, by
   // the mail step, would be on the mail server and not in this release.
-  if (!dnsHeld())
+  if (!holdPublicTls)
     await ensureMailboxPasswords(log, args.envFile ?? (environment === 'staging' ? '.env.staging' : '.env.production'))
   const resolvedDeployEnv = await resolveDeployEnvValues(environment, tsCloudConfig, args.envFile)
   // Persistent-state paths are declared AFTER the env merge: which file (or
@@ -6033,7 +6032,7 @@ async function runPreviewCommand(name: string, options: { base?: string, verbose
   const port = previewPort(owners, target.slug, Number(appConfig.sites?.[target.site]?.port) || 3000)
   log.info(`Deploying preview ${target.slug} to ${target.url} (port ${port} on ${host})`)
 
-  await deployOverSsh(derivePreviewConfig(appConfig, target, port), base, { verbose: options.verbose === true, yes: true } as DeployOptions, envFile)
+  await deployOverSsh(derivePreviewConfig(appConfig, target, port), base, { verbose: options.verbose === true, yes: true } as DeployOptions, dnsHeld(), envFile)
 
   log.success(`Preview deployed: ${target.url}`)
   // For the workflow that comments the URL on the pull request.
@@ -6240,8 +6239,7 @@ export function deploy(buddy: CLI): void {
       // Read from argv as well, for the reason given for --dry-run below: a
       // flag that is asked for and not seen would publish the very records it
       // exists to hold.
-      if (process.argv.includes('--hold-dns') || options.holdDns === true)
-        process.env.STACKS_DEPLOY_HOLD_DNS = '1'
+      const holdDnsFlag = process.argv.includes('--hold-dns') || options.holdDns === true
 
       const askedForDryRun = deploymentDryRunRequested(options)
 
@@ -6261,6 +6259,8 @@ export function deploy(buddy: CLI): void {
         const values = await resolveDeployEnvValues(deployEnvName as 'production', undefined, selectedEnvFile)
         for (const [key, value] of Object.entries(values)) process.env[key] = value
       }
+      if (holdDnsFlag)
+        process.env.STACKS_DEPLOY_HOLD_DNS = '1'
 
       try {
         applyDeploymentDomainOverride({}, options.domain)
@@ -6286,10 +6286,12 @@ export function deploy(buddy: CLI): void {
           }
         }
 
+        if (holdDnsFlag)
+          process.env.STACKS_DEPLOY_HOLD_DNS = '1'
+        const holdDns = dnsHeld()
         const tsCloudConfig = deploymentRetirements(await loadTsCloudConfig(deployEnvName) ?? {}, options.retireDomains)
         const provider = resolveProvider(tsCloudConfig)
         validateDeploymentProviderInputs(provider, { envFile: selectedEnvFile, retireDomains: options.retireDomains })
-        const holdDns = dnsHeld()
         const previewEmail = isSshPipelineProvider(provider) && !holdDns
           ? await loadDeploymentMailConfig(deployEnvName)
           : undefined
@@ -6368,6 +6370,9 @@ export function deploy(buddy: CLI): void {
       // provision + deploy through ts-cloud and have nothing to do with the AWS
       // CloudFormation path below. Route them off before any AWS credential or
       // domain check runs.
+      if (holdDnsFlag)
+        process.env.STACKS_DEPLOY_HOLD_DNS = '1'
+      const holdPublicTls = dnsHeld()
       const tsCloudConfig = deploymentRetirements(await loadTsCloudConfig(deployEnvName) ?? {}, options.retireDomains)
       validateDeploymentProviderInputs(resolveProvider(tsCloudConfig), { envFile: selectedEnvFile, retireDomains: options.retireDomains })
       // Fly.io runs an image on Machines: no box, no SSH, no CloudFormation.
@@ -6376,9 +6381,9 @@ export function deploy(buddy: CLI): void {
         return
       }
       if (tsCloudConfig && isSshPipelineProvider(resolveProvider(tsCloudConfig))) {
-        if (!dnsHeld())
+        if (!holdPublicTls)
           await loadDeploymentMailConfig(deployEnvName)
-        await deployOverSsh(applyDeploymentDomainOverride(tsCloudConfig, options.domain), deployEnv, options, selectedEnvFile)
+        await deployOverSsh(applyDeploymentDomainOverride(tsCloudConfig, options.domain), deployEnv, options, holdPublicTls, selectedEnvFile)
         return
       }
 
