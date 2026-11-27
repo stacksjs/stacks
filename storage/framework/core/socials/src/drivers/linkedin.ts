@@ -12,7 +12,7 @@ import type {
   TimelineQuery,
   TimelineResult,
 } from '../types'
-import { fetchPostImage, resolvePostImage } from '../media'
+import { fetchPostImage, rejectPostVideo, resolvePostImage } from '../media'
 import { exceedsLimit } from '../text'
 import { apiFailure, SocialApiError } from '../errors'
 
@@ -299,6 +299,7 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
    * of these, so images win over a link card, as on Bluesky.
    */
   async publish(identity: SocialIdentityCredentials, post: PublishPostInput): Promise<PublishedPost> {
+    rejectPostVideo(post, 'LinkedIn')
     if (!identity.accessToken) throw new Error('LinkedIn access token is missing for this identity.')
 
     // `did` carries the author URN: the member (urn:li:person:{sub}), or a

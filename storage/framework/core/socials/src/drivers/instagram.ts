@@ -9,6 +9,7 @@ import type {
   TimelineQuery,
   TimelineResult,
 } from '../types'
+import { rejectPostVideo } from '../media'
 import { isMissingGraphObject, META_GRAPH_VERSION } from '../meta-graph'
 import { exceedsLimit } from '../text'
 import { apiFailure, SocialApiError } from '../errors'
@@ -244,6 +245,7 @@ export class InstagramPublishingDriver implements SocialPublishingDriver, Social
    * with only bytes is refused rather than left out.
    */
   async publish(identity: SocialIdentityCredentials, post: PublishPostInput): Promise<PublishedPost> {
+    rejectPostVideo(post, 'Instagram')
     if (!identity.accessToken) throw new Error('Instagram access token is missing for this identity.')
 
     // `did` carries the Instagram Business account id for Instagram identities.

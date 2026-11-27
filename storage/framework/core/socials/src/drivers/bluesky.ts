@@ -4,6 +4,7 @@ import type {
   BlueskySession,
   BlueskySessionCredentials,
   PostMetrics,
+  PostVideo,
   PublishedPost,
   PublishPostInput,
   RemotePostRef,
@@ -15,6 +16,7 @@ import type {
   TimelineResult,
 } from '../types'
 import { fetchPublicUrl } from '@stacksjs/security'
+import { validatePostVideo } from '../media'
 import { exceedsLimit } from '../text'
 import { apiFailure, SocialApiError } from '../errors'
 
@@ -60,6 +62,36 @@ const BLUESKY_SESSION_ERRORS = ['ExpiredToken', 'InvalidToken']
 
 /** Bluesky refuses a blob over this size. */
 export const BLUESKY_MAX_BLOB_BYTES = 1_000_000
+
+/** The maximum MP4 blob size in the app.bsky.embed.video lexicon. */
+export const BLUESKY_MAX_VIDEO_BYTES = 300_000_000
+const BLUESKY_VIDEO_SERVICE = 'https://video.bsky.app'
+const VIDEO_PROCESSING_TIMEOUT_MS = 90_000
+
+interface BlueskyDidDocument {
+  id?: unknown
+  alsoKnownAs?: unknown[]
+  service?: Array<{ id?: unknown, type?: unknown, serviceEndpoint?: unknown }>
+}
+
+interface BlueskyVideoJob {
+  jobId?: string
+  did?: string
+  state?: string
+  blob?: { $type?: string, ref?: { $link?: string }, mimeType?: string, size?: number }
+  error?: string
+  message?: string
+  failureCode?: string
+}
+
+function pdsEndpoint(document: BlueskyDidDocument | undefined, did: string): string | undefined {
+  if (document?.id !== did) return undefined
+  const pds = document.service?.find(entry =>
+    (entry?.id === '#atproto_pds' || entry?.id === `${did}#atproto_pds`) && entry.type === 'AtprotoPersonalDataServer')
+  const endpoint = typeof pds?.serviceEndpoint === 'string' ? URL.parse(pds.serviceEndpoint) : null
+  if (!endpoint || endpoint.protocol !== 'https:' || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) return undefined
+  return endpoint.href.replace(/\/+$/, '')
+}
 
 /** Bluesky holds up to four images in one post. */
 export const BLUESKY_MAX_IMAGES = 4
@@ -183,7 +215,7 @@ export async function resolveBlueskyService(
     // the entryway and the PLC directory are fixed, known hosts.
     const known = url.startsWith(`${entryway}/`) || url.startsWith(`${directory}/`)
     const response = known
-      ? await fetch(url, { redirect: 'error' })
+      ? await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(10_000) })
       : await fetchPublicUrl(url, {}, { maxRedirects: 0, timeoutMs: 10_000, maxBytes: 256 * 1024 })
     if (!response.ok) throw new Error(`${response.status}`)
     return await response.json()
@@ -207,16 +239,10 @@ export async function resolveBlueskyService(
     else
       return undefined
 
-    const document = await fetchJson(documentUrl) as { id?: unknown, alsoKnownAs?: unknown[], service?: Array<{ id?: unknown, type?: unknown, serviceEndpoint?: unknown }> }
-    if (document?.id !== did) return undefined
-    const claimedHandle = document.alsoKnownAs?.find(alias => typeof alias === 'string' && alias.startsWith('at://'))
+    const document = await fetchJson(documentUrl) as BlueskyDidDocument
+    const claimedHandle = document?.alsoKnownAs?.find(alias => typeof alias === 'string' && alias.startsWith('at://'))
     if (handle !== undefined && claimedHandle !== `at://${handle}`) return undefined
-    const pds = (document.service ?? []).find(entry =>
-      (entry?.id === '#atproto_pds' || entry?.id === `${did}#atproto_pds`) && entry.type === 'AtprotoPersonalDataServer')
-    if (typeof pds?.serviceEndpoint !== 'string') return undefined
-    const endpoint = new URL(pds.serviceEndpoint)
-    if (endpoint.protocol !== 'https:' || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) return undefined
-    return endpoint.href.replace(/\/+$/, '')
+    return pdsEndpoint(document, did)
   }
   catch {
     return undefined
@@ -411,6 +437,12 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
       throw new Error(`Bluesky posts must be ${this.characterLimit} characters or fewer.`)
     }
 
+    if (post.video) {
+      validatePostVideo(post.video, post.media)
+      if (post.video.bytes.length > BLUESKY_MAX_VIDEO_BYTES)
+        throw new Error('Bluesky video must be 300 MB or smaller.')
+    }
+
     const quote = options.quote
     if (quote) {
       const target = postParts(quote.uri)
@@ -438,7 +470,17 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
     // what the author attached on purpose, and the link stays clickable
     // through its facet.
     const imageMedia = (post.media || []).filter(item => item.bytes?.length).slice(0, BLUESKY_MAX_IMAGES)
-    if (imageMedia.length) {
+    if (post.video) {
+      record.embed = {
+        $type: 'app.bsky.embed.video',
+        video: await this.uploadVideo(identity, post.video),
+        ...(post.video.altText && { alt: post.video.altText }),
+        ...(post.video.aspectRatio && { aspectRatio: post.video.aspectRatio }),
+      }
+      if (post.external)
+        warnings.push('A Bluesky post holds one attachment, so the video went out and the link card did not. The link in the text still works.')
+    }
+    else if (imageMedia.length) {
       const images = []
       for (const item of imageMedia) {
         const blob = await this.uploadBlob(identity, item.bytes!, item.mimeType || 'image/jpeg')
@@ -644,6 +686,82 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
     }
     catch {
       return null
+    }
+  }
+
+  /** Prepare the video on Bluesky's video service before publishing the post. */
+  private async uploadVideo(identity: SocialIdentityCredentials, video: PostVideo): Promise<NonNullable<BlueskyVideoJob['blob']>> {
+    const headers = { authorization: `Bearer ${identity.accessToken}` }
+    const session = await this.request<{ did: string, didDoc?: BlueskyDidDocument }>(
+      new URL(`${this.service}/xrpc/com.atproto.server.getSession`),
+      { headers, signal: AbortSignal.timeout(15_000) },
+    )
+    if (!BLUESKY_DID.test(session.did) || (identity.did && session.did !== identity.did))
+      throw new Error('Bluesky could not verify the account for this video.')
+
+    // bsky.social may be the sign-in entryway rather than this account's PDS.
+    // Only its host is used as the audience. No credential is sent to a URL
+    // taken from a DID document.
+    const pds = pdsEndpoint(session.didDoc, session.did) ?? await resolveBlueskyService(session.did)
+    if (!pds)
+      throw new Error('Bluesky could not find the account’s data server for this video.')
+    const tokenUrl = new URL(`${this.service}/xrpc/com.atproto.server.getServiceAuth`)
+    tokenUrl.searchParams.set('aud', `did:web:${new URL(pds).host.replace(':', '%3A')}`)
+    tokenUrl.searchParams.set('lxm', 'com.atproto.repo.uploadBlob')
+    tokenUrl.searchParams.set('exp', String(Math.floor(Date.now() / 1000) + 30 * 60))
+    const { token } = await this.request<{ token?: string }>(tokenUrl, { headers, signal: AbortSignal.timeout(15_000) })
+    if (typeof token !== 'string' || !token)
+      throw new Error('Bluesky did not authorize the video upload.')
+
+    const url = new URL('/xrpc/app.bsky.video.uploadVideo', BLUESKY_VIDEO_SERVICE)
+    url.searchParams.set('did', session.did)
+    url.searchParams.set('name', 'upload.mp4')
+    const response = await (this.fetcher ?? fetch)(url, {
+      method: 'POST',
+      headers: {
+        'authorization': `Bearer ${token}`,
+        'content-type': video.mimeType,
+        'content-length': String(video.bytes.length),
+      },
+      body: new Uint8Array(video.bytes),
+      redirect: 'error',
+      signal: AbortSignal.timeout(120_000),
+    })
+    const responseBody = await response.text()
+    // The service has returned both the bare job and the lexicon envelope.
+    let payload: (BlueskyVideoJob & { jobStatus?: BlueskyVideoJob }) | undefined
+    try { payload = JSON.parse(responseBody) }
+    catch { /* Treat non-JSON service errors as HTTP failures. */ }
+    let job = payload?.jobStatus ?? payload ?? {}
+    if (job.error === 'unconfirmed_email')
+      throw new Error('Verify your Bluesky account email before uploading video.')
+    if (!response.ok && !(response.status === 409 && job.error === 'already_exists'))
+      throw new SocialApiError('bluesky', ...apiFailure('Bluesky video service', response, responseBody))
+    if (job.did !== session.did || typeof job.jobId !== 'string' || !job.jobId || job.jobId.length > 200)
+      throw new Error('Bluesky did not return a video processing job for this account.')
+
+    const statusUrl = new URL('/xrpc/app.bsky.video.getJobStatus', BLUESKY_VIDEO_SERVICE)
+    statusUrl.searchParams.set('jobId', job.jobId)
+    const signal = AbortSignal.timeout(VIDEO_PROCESSING_TIMEOUT_MS)
+    for (;;) {
+      const blob = job.blob
+      if (blob) {
+        if (blob.$type !== 'blob' || blob.mimeType !== video.mimeType || typeof blob.ref?.$link !== 'string'
+          || !CID.test(blob.ref.$link) || typeof blob.size !== 'number' || !Number.isSafeInteger(blob.size)
+          || blob.size <= 0 || blob.size > BLUESKY_MAX_VIDEO_BYTES)
+          throw new Error('Bluesky did not return a valid processed video attachment.')
+        return blob
+      }
+      if (job.state === 'JOB_STATE_FAILED')
+        throw new SocialApiError('bluesky', job.message || 'Bluesky could not process the video.', 422, JSON.stringify({ message: job.message, error: job.failureCode }))
+      if (signal.aborted)
+        throw new BlueskyApiError('Bluesky took too long to process the attachment.', 503, '')
+
+      const status = await this.request<{ jobStatus?: BlueskyVideoJob }>(statusUrl, { signal })
+      if (status.jobStatus?.jobId !== job.jobId || status.jobStatus?.did !== session.did)
+        throw new Error('Bluesky returned a different video processing job.')
+      job = status.jobStatus
+      if (!job.blob && job.state !== 'JOB_STATE_FAILED') await Bun.sleep(1000)
     }
   }
 

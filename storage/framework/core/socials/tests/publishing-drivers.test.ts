@@ -59,6 +59,12 @@ function json(sent: Sent): any {
 
 const PNG = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0])
 const JPEG = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, 0, 0])
+const video = {
+  bytes: new Uint8Array([0, 0, 0, 20, 102, 116, 121, 112, 105, 115, 111, 109]),
+  mimeType: 'video/mp4' as const,
+  altText: 'A quiet harbor',
+  aspectRatio: { width: 640, height: 360 },
+}
 
 describe('post images', () => {
   it('identifies an image by its bytes', () => {
@@ -78,6 +84,124 @@ describe('post images', () => {
     await expect(resolvePostImage({ url: 'https://example.com/gone.png' }, async () => null)).rejects.toBeInstanceOf(PostImageError)
     expect(await resolvePostImage({ bytes: PNG }, async () => null)).toEqual({ bytes: PNG, mimeType: 'image/png' })
     expect(await resolvePostImage({}, async () => null)).toBeUndefined()
+  })
+})
+
+describe('publishing video', () => {
+  const mastodonIdentity = { handle: 'glenn', did: 'https://social.example', accessToken: 'AT' }
+  const blueskyIdentity = { handle: 'glenn.example', did: 'did:plc:glenn', accessToken: 'SESSION' }
+  const job = { did: blueskyIdentity.did, jobId: 'video-job', state: 'JOB_STATE_CREATED' }
+  const blob = { $type: 'blob', ref: { $link: 'bafkreivideo' }, mimeType: 'video/mp4', size: 4096 }
+
+  it('publishes Mastodon video only after the instance has finished processing', async () => {
+    let statusChecks = 0
+    const sent = mockFetch((url) => {
+      const path = new URL(url).pathname
+      if (path === '/api/v2/instance') return { configuration: { media_attachments: { video_size_limit: 20, supported_mime_types: ['video/mp4'] } } }
+      if (path === '/api/v2/media') return Response.json({ id: '42', url: null }, { status: 202 })
+      if (path === '/api/v1/media/42') {
+        statusChecks++
+        if (statusChecks === 1) return new Response(null, { status: 206 })
+        return { id: '42', type: 'video', url: 'https://media.example/video.mp4' }
+      }
+      if (path === '/api/v1/statuses') return { id: '99' }
+      throw new Error(`Unexpected request ${url}`)
+    })
+    const driver = new MastodonPublishingDriver()
+    await expect(driver.publish(mastodonIdentity, { text: 'Harbor', video }, { idempotencyKey: 'harbor-1' })).resolves.toMatchObject({ uri: '99' })
+    expect(sent.map(request => new URL(request.url).pathname)).toEqual(['/api/v2/instance', '/api/v2/media', '/api/v1/media/42', '/api/v1/media/42', '/api/v1/statuses'])
+    for (const request of sent.slice(1, 4)) {
+      expect(request.headers.get('authorization')).toBe('Bearer AT')
+      expect(request.redirect).toBe('error')
+    }
+    const fields = sent[1]!.body as FormData
+    expect(fields.get('description')).toBe('A quiet harbor')
+    const file = fields.get('file') as File
+    expect(file.name).toBe('upload.mp4')
+    expect(file.type).toBe('video/mp4')
+    expect(new Uint8Array(await file.arrayBuffer())).toEqual(video.bytes)
+    expect(sent.at(-1)!.headers.get('idempotency-key')).toBe('harbor-1')
+    expect(json(sent.at(-1)!)).toEqual({ status: 'Harbor', visibility: 'public', media_ids: ['42'] })
+  })
+
+  it('keeps Mastodon video failures and incompatible attachments from publishing', async () => {
+    const sent = mockFetch((url) => {
+      const path = new URL(url).pathname
+      if (path === '/api/v2/instance') return { configuration: { media_attachments: { video_size_limit: 12 } } }
+      if (path === '/api/v2/media') return Response.json({ id: '42', url: null }, { status: 202 })
+      if (path === '/api/v1/media/42') return Response.json({ error: 'Video encoding failed' }, { status: 422 })
+      throw new Error(`Unexpected request ${url}`)
+    })
+    const driver = new MastodonPublishingDriver()
+    await expect(driver.publish(mastodonIdentity, { text: 'Harbor', video, media: [{ bytes: PNG }] })).rejects.toThrow('together with images')
+    await expect(driver.publish(mastodonIdentity, { text: 'Harbor', video: { ...video, bytes: new Uint8Array(13) } })).rejects.toThrow('12-byte limit')
+    expect(sent).toHaveLength(1)
+    await expect(driver.publish(mastodonIdentity, { text: 'Harbor', video })).rejects.toThrow('Video encoding failed')
+    expect(sent).toHaveLength(3)
+  })
+
+  function blueskyApi(upload: Response, processing: unknown): Sent[] {
+    return mockFetch((url) => {
+      const path = new URL(url).pathname
+      if (path.endsWith('.getSession')) {
+        return {
+          did: blueskyIdentity.did, emailConfirmed: true,
+          didDoc: { id: blueskyIdentity.did, service: [{ id: '#atproto_pds', type: 'AtprotoPersonalDataServer', serviceEndpoint: 'https://pds.example' }] },
+        }
+      }
+      if (path.endsWith('.getServiceAuth')) return { token: 'UPLOAD' }
+      if (path.endsWith('.uploadVideo')) return upload
+      if (path.endsWith('.getJobStatus')) return { jobStatus: processing }
+      if (path.endsWith('.createRecord')) return { uri: 'at://did:plc:glenn/app.bsky.feed.post/3harbor' }
+      throw new Error(`Unexpected request ${url}`)
+    })
+  }
+
+  it('uploads to Bluesky with a PDS-scoped token and embeds the completed blob', async () => {
+    const sent = blueskyApi(Response.json(job), { ...job, state: 'JOB_STATE_COMPLETED', blob })
+    await new BlueskyPublishingDriver().publish(blueskyIdentity, { text: 'Harbor', video }, { rkey: '3harbor' })
+    expect(sent).toHaveLength(5)
+    const tokenUrl = new URL(sent[1]!.url)
+    expect(tokenUrl.origin).toBe('https://bsky.social')
+    expect(tokenUrl.searchParams.get('aud')).toBe('did:web:pds.example')
+    expect(tokenUrl.searchParams.get('lxm')).toBe('com.atproto.repo.uploadBlob')
+    expect(tokenUrl.searchParams.get('exp')).toMatch(/^\d+$/)
+    expect(sent[1]!.headers.get('authorization')).toBe('Bearer SESSION')
+
+    const upload = sent[2]!
+    expect(new URL(upload.url).origin).toBe('https://video.bsky.app')
+    expect(new URL(upload.url).searchParams.get('did')).toBe(blueskyIdentity.did)
+    expect(upload.headers.get('authorization')).toBe('Bearer UPLOAD')
+    expect(upload.headers.get('content-type')).toBe('video/mp4')
+    expect(upload.body).toEqual(video.bytes)
+    expect(upload.redirect).toBe('error')
+    expect(sent[3]!.headers.has('authorization')).toBe(false)
+    expect(new URL(sent[3]!.url).searchParams.get('jobId')).toBe(job.jobId)
+    expect(sent[4]!.headers.get('authorization')).toBe('Bearer SESSION')
+    expect(json(sent[4]!)).toMatchObject({
+      rkey: '3harbor',
+      record: { embed: { $type: 'app.bsky.embed.video', video: blob, alt: video.altText, aspectRatio: video.aspectRatio } },
+    })
+  })
+
+  it('reuses a previously processed Bluesky video and refuses a failed processing job', async () => {
+    const sent = blueskyApi(Response.json({ ...job, error: 'already_exists', state: 'JOB_STATE_COMPLETED' }, { status: 409 }), { ...job, error: 'already_exists', state: 'JOB_STATE_FAILED', blob })
+    const driver = new BlueskyPublishingDriver()
+    await driver.publish(blueskyIdentity, { text: 'Harbor', video })
+    expect(sent).toHaveLength(5)
+    expect(json(sent[4]!).record.embed.video).toEqual(blob)
+
+    const failed = blueskyApi(Response.json(job), { ...job, state: 'JOB_STATE_FAILED', message: 'Video could not be encoded' })
+    await expect(driver.publish(blueskyIdentity, { text: 'Harbor', video })).rejects.toThrow('Video could not be encoded')
+    expect(failed).toHaveLength(4)
+  })
+
+  it('rejects unsupported video without posting text to the requested provider', async () => {
+    const sent = mockFetch(() => { throw new Error('Unexpected request') })
+    const drivers = [new InstagramPublishingDriver(), new LinkedInPublishingDriver(), new ThreadsPublishingDriver(), new TwitterPublishingDriver()]
+    for (const driver of drivers)
+      await expect(driver.publish(blueskyIdentity, { text: 'Harbor', video })).rejects.toThrow('Video publishing')
+    expect(sent).toEqual([])
   })
 })
 
