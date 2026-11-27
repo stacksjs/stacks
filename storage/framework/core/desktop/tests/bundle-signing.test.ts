@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { bundleDirectoryFor, codesignArgs, isMachO } from '../src/index'
+import { assembleWebviewMacosApp, resignWebviewMacosApp, resolveWebviewDesktop } from '../src/webview-app'
 
 /**
  * Signing what `build:dmg` produces.
@@ -86,6 +87,33 @@ describe.if(process.platform === 'darwin')('signing a bundle', () => {
     const verify = Bun.spawnSync(['codesign', '--verify', '--strict', '--deep', app], { stderr: 'pipe' })
     expect(verify.stderr.toString()).toBe('')
     expect(verify.exitCode).toBe(0)
+  }, 60_000)
+
+  test('keeps the app identity on its Craft runtime after assembly and re-signing', () => {
+    const bundleId = 'org.example.desktop.notification'
+    const config = resolveWebviewDesktop({
+      appName: 'Signing Test',
+      appId: 'org.example.desktop',
+      agent: { entry: launcherSource },
+      macos: { bundleId },
+    }, '1.0.0')
+    const { appPath } = assembleWebviewMacosApp({
+      config,
+      root: scratch,
+      output: scratch,
+      agent: compiledBinary,
+      runtime: compiledBinary,
+    })
+    const runtime = join(appPath, 'Contents', 'MacOS', 'craft-runtime')
+    const verifyIdentity = () => {
+      const description = Bun.spawnSync(['codesign', '-dvv', runtime], { stderr: 'pipe' })
+      expect(description.exitCode).toBe(0)
+      expect(description.stderr.toString().split('\n')).toContain(`Identifier=${bundleId}`)
+      expect(Bun.spawnSync(['codesign', '--verify', '--strict', '--deep', appPath]).exitCode).toBe(0)
+    }
+    verifyIdentity()
+    resignWebviewMacosApp({ appPath, config: {}, signingIdentity: '-' })
+    verifyIdentity()
   }, 60_000)
 
   test('fails with the manifest beside the executable, as build:dmg used to put it', () => {

@@ -809,6 +809,7 @@ export interface CodesignOptions {
   identity: string
   target: string
   entitlements?: string
+  identifier?: string
 }
 
 /**
@@ -825,6 +826,7 @@ export function codesignArgs(options: CodesignOptions): string[] {
     '--options',
     'runtime',
     ...(options.entitlements ? ['--entitlements', options.entitlements] : []),
+    ...(options.identifier ? ['--identifier', options.identifier] : []),
     '--sign',
     options.identity,
     options.target,
