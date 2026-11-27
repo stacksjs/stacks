@@ -350,7 +350,7 @@ jobs:
           set -euo pipefail
           bun .github/scripts/check-pantry-version.ts
 
-          publication_tag="$(bun .github/scripts/promote-latest.ts --publication-tag)"
+          publication_tag="$(bun --config=/dev/null .github/scripts/promote-latest.ts --publication-tag)"
           # Publish a dependency layer at a time. Registry readback is
           # performed across the full scoped set before publishing stacks.
           if [ "$publication_tag" = staging ]; then
