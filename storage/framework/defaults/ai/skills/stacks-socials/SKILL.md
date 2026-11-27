@@ -170,8 +170,10 @@ time before 4.3 (no views; quotes from 4.5). Threads asks one post at a time
 post at a time too (`/{id}/insights`, instagram_manage_insights) and adds
 `reach` and `saves`. LinkedIn batches 20 through Social Metadata: `likes` is
 every reaction together, and it needs r_organization_social_feed for a Page
-(r_member_social_feed for a member, granted to select developers only). X has
-no metrics driver; its counts come with the session driver (#3372).
+(r_member_social_feed for a member, granted to select developers only). X uses
+Post Lookup with `tweet.read` and requests public metrics for up to 100 post IDs
+per call. These reads are billed per returned post. Apply the application's
+read budget before calling the driver.
 
 ## Authorization and operational limits
 

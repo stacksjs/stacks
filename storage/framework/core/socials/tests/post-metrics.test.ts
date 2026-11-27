@@ -4,7 +4,7 @@ import { InstagramApiError, InstagramPublishingDriver } from '../src/drivers/ins
 import { LinkedInApiError, LinkedInPublishingDriver } from '../src/drivers/linkedin'
 import { MastodonPublishingDriver } from '../src/drivers/mastodon'
 import { ThreadsApiError, ThreadsPublishingDriver } from '../src/drivers/threads'
-import { TwitterPublishingDriver } from '../src/drivers/twitter'
+import { TwitterApiError, TwitterPublishingDriver } from '../src/drivers/twitter'
 import { supportsMetrics } from '../src/types'
 
 /**
@@ -31,10 +31,44 @@ function mockFetch(answer: (url: string) => unknown | Response): Sent[] {
 }
 
 describe('which drivers read metrics', () => {
-  it('every API driver but X does; X is feature-detected as not', () => {
-    for (const driver of [new BlueskyPublishingDriver(), new MastodonPublishingDriver(), new ThreadsPublishingDriver(), new InstagramPublishingDriver(), new LinkedInPublishingDriver()])
+  it('detects the metrics capability on all six publishing drivers', () => {
+    for (const driver of [new BlueskyPublishingDriver(), new MastodonPublishingDriver(), new ThreadsPublishingDriver(), new InstagramPublishingDriver(), new LinkedInPublishingDriver(), new TwitterPublishingDriver()])
       expect(supportsMetrics(driver)).toBe(true)
-    expect(supportsMetrics(new TwitterPublishingDriver())).toBe(false)
+  })
+})
+
+describe('X', () => {
+  const identity = { handle: 'example', accessToken: 'AT' }
+
+  it('batches unique post IDs and keeps measured zeros and missing counts distinct', async () => {
+    const ids = Array.from({ length: 102 }, (_, index) => String(index + 1))
+    const sent = mockFetch((url) => {
+      const asked = new URL(url).searchParams.get('ids')!.split(',')
+      return {
+        data: asked.flatMap((id) => {
+          if (id === '1') return [{ id, public_metrics: { like_count: 0, reply_count: 2, retweet_count: 3, quote_count: 4, impression_count: 10, bookmark_count: 6 } }]
+          if (id === '101') return [{ id, public_metrics: { repost_count: 0, like_count: -1 } }]
+          if (id === '102') return [{ id }]
+          return []
+        }),
+      }
+    })
+    const metrics = await new TwitterPublishingDriver().metrics(identity, [...ids, '1', 'invalid'])
+    expect(sent.map(({ url }) => new URL(url).searchParams.get('ids')!.split(','))).toEqual([ids.slice(0, 100), ids.slice(100)])
+    for (const request of sent) {
+      expect(new URL(request.url).pathname).toBe('/2/tweets')
+      expect(new URL(request.url).searchParams.get('tweet.fields')).toBe('public_metrics')
+      expect(request.headers.get('authorization')).toBe('Bearer AT')
+    }
+    expect(metrics).toEqual([
+      { uri: '1', likes: 0, replies: 2, reposts: 3, quotes: 4, views: 10, saves: 6 },
+      { uri: '101', reposts: 0 },
+    ])
+  })
+
+  it('keeps provider errors distinct from missing posts', async () => {
+    mockFetch(() => new Response(JSON.stringify({ detail: 'The access token is not valid' }), { status: 401 }))
+    await expect(new TwitterPublishingDriver().metrics(identity, ['1'])).rejects.toBeInstanceOf(TwitterApiError)
   })
 })
 

@@ -1,12 +1,14 @@
 import type { SocialApiErrorOptions } from '../errors'
 import type {
   AuthoredPostPage,
+  PostMetrics,
   ProviderInterface,
   PublishedPost,
   PublishPostInput,
   RemotePostRef,
   SocialDeletionDriver,
   SocialIdentityCredentials,
+  SocialMetricsDriver,
   SocialPublishingDriver,
   SocialUser,
   TimelineQuery,
@@ -207,7 +209,7 @@ function base64Url(bytes: Uint8Array): string {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
-export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver {
+export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver, SocialMetricsDriver {
   readonly provider: 'twitter' = 'twitter'
   characterLimit = 280
   /** Images attached per post. X's own ceiling; an app may lower it. */
@@ -407,6 +409,40 @@ export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDe
         url: `https://x.com/i/web/status/${tweet.id}`,
       })),
     }
+  }
+
+  /** Read public engagement for published post IDs, up to 100 per request. */
+  async metrics(identity: SocialIdentityCredentials, uris: string[]): Promise<PostMetrics[]> {
+    const ids = [...new Set(uris.filter(id => /^[0-9]{1,19}$/.test(id)))]
+    if (!ids.length) return []
+    if (!identity.accessToken) throw new Error('Twitter access token is missing for this identity.')
+
+    const results: PostMetrics[] = []
+    const headers = { authorization: `Bearer ${identity.accessToken}` }
+    for (let offset = 0; offset < ids.length; offset += 100) {
+      const chunk = ids.slice(offset, offset + 100)
+      const query = new URLSearchParams({ 'ids': chunk.join(','), 'tweet.fields': 'public_metrics' })
+      const payload = await this.request<{ data?: Array<{ id: string, public_metrics?: Record<string, number> }> }>(
+        `${this.apiBase}/2/tweets?${query}`,
+        { headers },
+      )
+      const requested = new Set(chunk)
+      for (const post of payload.data ?? []) {
+        const counts = post.public_metrics
+        if (!counts || !requested.delete(post.id)) continue
+        const fields = {
+          likes: counts.like_count,
+          replies: counts.reply_count,
+          reposts: counts.repost_count ?? counts.retweet_count,
+          quotes: counts.quote_count,
+          views: counts.impression_count,
+          saves: counts.bookmark_count,
+        }
+        const reported = Object.entries(fields).filter(([, value]) => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0)
+        if (reported.length) results.push({ uri: post.id, ...Object.fromEntries(reported) })
+      }
+    }
+    return results
   }
 
   /** Permanently delete one tweet. */
