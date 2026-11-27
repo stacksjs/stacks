@@ -207,15 +207,20 @@ effect(() => {
  * (data-stx-if-transition above), which stx removes when it ends. The copy
  * may be taken after the dialog closed, and a closed dialog is not drawn, so
  * the copy is drawn here for as long as it leaves.
+ *
+ * The rules on the dialog itself name two of its classes. The layout's
+ * `html .dashboard-modal-layer` sets the dialog's transition (to animate its
+ * left edge), and with one class this rule weighed less: the panel eased
+ * down while the dim and everything in it vanished in one frame.
  */
-.dashboard-modal-leave-active {
+.dashboard-modal-dialog.dashboard-modal-leave-active {
   display: block;
   transition: opacity 160ms ease-in;
 }
 .dashboard-modal-leave-active [data-dashboard-overlay="modal"] {
   transition: opacity 160ms ease-in, transform 160ms ease-in;
 }
-.dashboard-modal-leave-to {
+.dashboard-modal-dialog.dashboard-modal-leave-to {
   opacity: 0;
 }
 .dashboard-modal-leave-to [data-dashboard-overlay="modal"] {
@@ -232,7 +237,7 @@ effect(() => {
   .dashboard-modal-dialog[open] [data-dashboard-overlay="modal"] {
     animation: none;
   }
-  .dashboard-modal-leave-active,
+  .dashboard-modal-dialog.dashboard-modal-leave-active,
   .dashboard-modal-leave-active [data-dashboard-overlay="modal"] {
     transition: opacity 100ms linear;
   }
