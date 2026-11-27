@@ -1,5 +1,39 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.701...v0.75.702)
+
+## ✨ Features
+
+- **buddy**: integrate reproducible installs (#3427) ([a57f15e](https://github.com/stacksjs/stacks/commit/a57f15e)) _(by Chris)_ ([#3427](https://github.com/stacksjs/stacks/issues/3427))
+- **buddy**: support frozen installs without lifecycle scripts ([a764e31](https://github.com/stacksjs/stacks/commit/a764e31)) _(by Chris)_
+
+## 🐛 Bug Fixes
+
+- **release**: keep npm publication mode output machine-readable ([b3969a2](https://github.com/stacksjs/stacks/commit/b3969a2)) _(by Chris Breuer)_
+- **release**: detect rejected npm promotion credentials ([9248c55](https://github.com/stacksjs/stacks/commit/9248c55)) _(by Chris Breuer)_
+- **dashboard**: serve available pages and packaged assets ([a89895e](https://github.com/stacksjs/stacks/commit/a89895e)) _(by Chris Breuer)_
+- **scheduler**: track every active run for overlap guards ([7e1120a](https://github.com/stacksjs/stacks/commit/7e1120a)) _(by Chris)_
+- **ci**: integrate complete framework preview graphs (#3425) ([0190718](https://github.com/stacksjs/stacks/commit/0190718)) _(by Chris)_ ([#3425](https://github.com/stacksjs/stacks/issues/3425))
+- **ci**: link required workspace peers in commit previews ([479c623](https://github.com/stacksjs/stacks/commit/479c623)) _(by Chris)_
+- **ci**: build the runtime graph for commit previews ([fc7729e](https://github.com/stacksjs/stacks/commit/fc7729e)) _(by Chris)_
+
+## 📝 Documentation
+
+- **buddy**: refresh the native skills test inventory ([d3faeab](https://github.com/stacksjs/stacks/commit/d3faeab)) _(by Chris)_
+
+## ✅ Tests
+
+- **ci**: assert the published preview peer links ([ae03ed2](https://github.com/stacksjs/stacks/commit/ae03ed2)) _(by Chris)_
+
+## 🔧 Chores
+
+- **deps**: adopt the published STX dashboard router ([a8e7d64](https://github.com/stacksjs/stacks/commit/a8e7d64)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.700...v0.75.701)
 
 ## ✨ Features

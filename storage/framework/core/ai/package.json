@@ -2,7 +2,7 @@
   "name": "@stacksjs/ai",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.701",
+  "version": "0.75.702",
   "description": "Stacks Artificial Intelligence.",
   "author": "Chris Breuer",
   "contributors": [
