@@ -9,24 +9,34 @@ const supportPackage = '@stacksjs/support'
 export async function installSupportSdk(directory: string, frameworkVersion: string, deps: {
   install: (directory: string, args: string[]) => Promise<boolean>
   print: (line: string) => void
-}): Promise<boolean> {
+}, requestedVersion?: string): Promise<boolean> {
   const path = resolve(directory, 'package.json')
   try {
     const original = await readFile(path, 'utf8')
     const manifest = JSON.parse(original) as {
       dependencies?: Record<string, string>
       devDependencies?: Record<string, string>
+      overrides?: Record<string, unknown>
+      resolutions?: Record<string, unknown>
+    }
+    if (requestedVersion && [manifest.overrides, manifest.resolutions].some((entries) => {
+      const override = entries?.[supportPackage]
+      return override !== undefined && override !== requestedVersion
+    })) {
+      deps.print('The app has a conflicting HQ Support SDK override. Update the override to match --sdk-version before installing.')
+      return false
     }
     const runtimeVersion = manifest.dependencies?.[supportPackage]
     const development = manifest.devDependencies
     const devVersion = development?.[supportPackage]
-    const spec = `${supportPackage}@${runtimeVersion || devVersion || frameworkVersion}`
-    if (runtimeVersion) {
+    const version = requestedVersion ?? (runtimeVersion || devVersion || frameworkVersion)
+    const spec = `${supportPackage}@${version}`
+    if (runtimeVersion === version) {
       if (!await deps.install(directory, ['install'])) throw new Error('SDK install failed')
     }
-    else if (development && devVersion) {
+    else if (!runtimeVersion && development && devVersion) {
       // Bun add keeps an existing development dependency in that section.
-      manifest.dependencies = { ...manifest.dependencies, [supportPackage]: devVersion }
+      manifest.dependencies = { ...manifest.dependencies, [supportPackage]: version }
       delete development[supportPackage]
       const indent = original.match(/\n([ \t]+)"/)?.[1] ?? '  '
       const updated = `${JSON.stringify(manifest, null, indent)}\n`
@@ -43,7 +53,7 @@ export async function installSupportSdk(directory: string, frameworkVersion: str
     else {
       if (!await deps.install(directory, ['add', '--exact', spec])) throw new Error('SDK install failed')
       const updated = JSON.parse(await readFile(path, 'utf8')) as typeof manifest
-      if (!updated.dependencies?.[supportPackage]) throw new Error('SDK missing from runtime dependencies')
+      if (updated.dependencies?.[supportPackage] !== version) throw new Error('Requested SDK missing from runtime dependencies')
     }
     deps.print(`Installed ${spec} as an app dependency.`)
     return true

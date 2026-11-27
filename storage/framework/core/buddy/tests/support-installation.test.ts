@@ -64,6 +64,56 @@ test('support setup moves a development SDK to runtime without replacing its ran
   finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('support setup applies an explicit SDK version over an older runtime or development pin', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'support-sdk-exact-'))
+  try {
+    const manifest = join(root, 'package.json')
+    const sdk = '@stacksjs/support'
+    const version = '0.75.701'
+    const earlierRuntime = JSON.stringify({ dependencies: { [sdk]: '0.75.695' } })
+    await writeFile(manifest, earlierRuntime)
+    const calls: string[][] = []
+    let available = false
+    const deps = {
+      print: () => {},
+      install: async (directory: string, args: string[]) => {
+        expect(directory).toBe(root)
+        calls.push(args)
+        if (!available) return false
+        if (args[0] === 'add') await writeFile(manifest, JSON.stringify({ dependencies: { [sdk]: version } }))
+        return true
+      },
+    }
+    expect(await installSupportSdk(root, '0.75.704', deps, version)).toBe(false)
+    expect(await readFile(manifest, 'utf8')).toBe(earlierRuntime)
+    available = true
+    expect(await installSupportSdk(root, '0.75.704', deps, version)).toBe(true)
+    expect(JSON.parse(await readFile(manifest, 'utf8')).dependencies[sdk]).toBe(version)
+    expect(calls).toEqual([['add', '--exact', `${sdk}@${version}`], ['add', '--exact', `${sdk}@${version}`]])
+
+    const earlierDevelopment = JSON.stringify({ devDependencies: { [sdk]: '0.75.695', 'test-helper': '1.0.0' } })
+    await writeFile(manifest, earlierDevelopment)
+    available = false
+    expect(await installSupportSdk(root, '0.75.704', deps, version)).toBe(false)
+    expect(await readFile(manifest, 'utf8')).toBe(earlierDevelopment)
+    available = true
+    expect(await installSupportSdk(root, '0.75.704', deps, version)).toBe(true)
+    const installed = JSON.parse(await readFile(manifest, 'utf8'))
+    expect(installed.dependencies[sdk]).toBe(version)
+    expect(installed.devDependencies).toEqual({ 'test-helper': '1.0.0' })
+    expect(calls.slice(2)).toEqual([['install'], ['install']])
+
+    for (const field of ['overrides', 'resolutions']) {
+      const overridden = JSON.stringify({ dependencies: { [sdk]: '0.75.695' }, [field]: { [sdk]: '0.75.695' } })
+      await writeFile(manifest, overridden)
+      expect(await installSupportSdk(root, '0.75.704', deps, version)).toBe(false)
+      expect(await readFile(manifest, 'utf8')).toBe(overridden)
+    }
+    expect(calls).toHaveLength(4)
+  }
+  finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('messenger install approves only exact configured origin and makes idempotent opt-in stx changes', async () => {
   const root = await mkdtemp(join(tmpdir(), 'support-install-'))
   try {

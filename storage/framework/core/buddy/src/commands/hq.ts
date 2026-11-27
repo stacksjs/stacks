@@ -120,9 +120,12 @@ function connectCommand(supportOnly = false) {
       '--timeout <seconds>': { description: 'How long to wait for each approval', default: 600 },
       '--messenger': { description: 'Explicitly mount the identified HQ.support messenger in the app layout', default: false },
       '--layout <path>': 'App-local stx layout to mount the opt-in messenger in',
-      ...(supportOnly ? { '--sdk-only': 'Install the published HQ Support SDK without connecting a project' } : {}),
+      ...(supportOnly ? {
+        '--sdk-only': 'Install the published HQ Support SDK without connecting a project',
+        '--sdk-version <version>': 'Install this exact published HQ Support SDK version',
+      } : {}),
     },
-    examples: supportOnly ? ['buddy support:install', 'buddy support:install --no-open', 'buddy support:install --sdk-only'] : [
+    examples: supportOnly ? ['buddy support:install', 'buddy support:install --no-open', 'buddy support:install --sdk-only', 'buddy support:install --sdk-only --sdk-version 0.75.701'] : [
       'buddy hq:connect',
       'buddy hq:connect loghq',
       'buddy hq:connect bughq loghq --no-open',
@@ -136,8 +139,14 @@ function connectCommand(supportOnly = false) {
         process.exit(1)
       }
 
-      const flags = options as { open?: boolean, verify?: boolean, timeout?: number | string, messenger?: boolean, layout?: string, sdkOnly?: boolean, 'sdk-only'?: boolean }
+      const flags = options as { open?: boolean, verify?: boolean, timeout?: number | string, messenger?: boolean, layout?: string, sdkOnly?: boolean, 'sdk-only'?: boolean, sdkVersion?: string }
       const sdkOnly = supportOnly && (flags.sdkOnly || flags['sdk-only'])
+      const sdkVersion = flags.sdkVersion
+      if (sdkVersion !== undefined && !/^\d+\.\d+\.\d+(?:-[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*)?$/.test(sdkVersion)) {
+        console.error('Use an exact published SDK version with --sdk-version, such as 0.75.701.')
+        process.exitCode = 1
+        return
+      }
       if (sdkOnly && flags.messenger) {
         console.error('Use --sdk-only for the SDK alone, or --messenger to connect and mount the Messenger.')
         process.exitCode = 1
@@ -149,7 +158,7 @@ function connectCommand(supportOnly = false) {
           const child = Bun.spawn([process.execPath, ...args], { cwd, stdin: 'ignore', stdout: 'ignore', stderr: 'ignore', signal })
           return await child.exited === 0
         },
-      })
+      }, sdkVersion)
       if (sdkOnly) {
         const { projectPath } = await import('@stacksjs/path')
         process.exitCode = await installSdk(projectPath()) ? 0 : 1
