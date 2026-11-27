@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.709...v0.75.710)
+
+## 🐛 Bug Fixes
+
+- **dashboard**: combine model links under All Models ([7e4cf43](https://github.com/stacksjs/stacks/commit/7e4cf43)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.708...v0.75.709)
 
 ## 🐛 Bug Fixes
