@@ -155,6 +155,73 @@ describe('Bluesky', () => {
     })
   }
 
+  const quote = { uri: 'at://did:plc:friend/app.bsky.feed.post/3kquote', cid: 'bafyreiquote' }
+
+  it('resolves a quote by handle through the authenticated account service', async () => {
+    const service = 'https://account-pds.example'
+    const sent = mockFetch(url => url.includes('resolveHandle') ? { did: 'did:plc:friend' } : {
+      posts: [{ ...quote, uri: 'at://did:plc:other/app.bsky.feed.post/3kquote' }, quote],
+    })
+    const driver = new BlueskyPublishingDriver({ service })
+    await expect(driver.resolveQuote(identity, 'https://bsky.app/profile/friend.example/post/3kquote?ref=share')).resolves.toEqual(quote)
+    expect(sent.map(item => new URL(item.url).origin)).toEqual([service, service])
+    expect(new URL(sent[0]!.url).searchParams.get('handle')).toBe('friend.example')
+    expect(sent[0]!.headers.get('authorization')).toBeNull()
+    expect(new URL(sent[1]!.url).searchParams.getAll('uris')).toEqual([quote.uri])
+    expect(sent[1]!.headers.get('authorization')).toBe('Bearer AT')
+  })
+
+  it('declines inaccessible posts and posts whose author disables quoting', async () => {
+    const driver = new BlueskyPublishingDriver()
+    let disabled = false
+    const sent = mockFetch(() => ({ posts: disabled ? [{ ...quote, viewer: { embeddingDisabled: true } }] : [] }))
+    await expect(driver.resolveQuote(identity, 'https://bsky.app/profile/did%3Aplc%3Afriend/post/3kquote')).rejects.toThrow('Could not find')
+    disabled = true
+    await expect(driver.resolveQuote(identity, quote.uri)).rejects.toThrow('disabled quoting')
+    await expect(driver.resolveQuote(identity, 'https://example.org/profile/did:plc:friend/post/3kquote')).rejects.toThrow('valid Bluesky post')
+    expect(sent).toHaveLength(2)
+    expect(sent.every(request => request.url.includes('app.bsky.feed.getPosts'))).toBe(true)
+  })
+
+  it('publishes a quote with explicit self-labels and keeps its record key', async () => {
+    const sent = api()
+    const rkey = blueskyRecordKey()
+    await new BlueskyPublishingDriver().publish(identity, { text: 'My comment' }, {
+      rkey, quote, selfLabels: ['nudity', 'graphic-media', 'nudity'],
+    })
+    expect(json(sent.at(-1)!)).toMatchObject({
+      rkey,
+      record: {
+        embed: { $type: 'app.bsky.embed.record', record: quote },
+        labels: { $type: 'com.atproto.label.defs#selfLabels', values: [{ val: 'nudity' }, { val: 'graphic-media' }] },
+      },
+    })
+  })
+
+  it('combines a quote with an image or a link card through the native embed', async () => {
+    const sent = api()
+    const driver = new BlueskyPublishingDriver()
+    await driver.publish(identity, { text: 'Picture', media: [{ bytes: PNG, altText: 'An illustration' }] }, { quote })
+    await driver.publish(identity, { text: 'Related', external: { uri: 'https://example.org/article', title: 'An article' } }, { quote })
+    const records = sent.filter(request => request.url.includes('createRecord')).map(json)
+    expect(records.map(result => result.record.embed.$type)).toEqual(['app.bsky.embed.recordWithMedia', 'app.bsky.embed.recordWithMedia'])
+    expect(records[0]!.record.embed).toMatchObject({
+      record: { $type: 'app.bsky.embed.record', record: quote },
+      media: { $type: 'app.bsky.embed.images', images: [{ alt: 'An illustration' }] },
+    })
+    expect(records[1]!.record.embed.media.$type).toBe('app.bsky.embed.external')
+  })
+
+  it('rejects malformed quote references and labels before sending any writes', async () => {
+    const sent = api()
+    const driver = new BlueskyPublishingDriver()
+    await expect(driver.publish(identity, { text: 'Quote', media: [{ bytes: PNG }] }, {
+      quote: { ...quote, uri: 'at://friend.example/app.bsky.feed.post/3kquote' },
+    })).rejects.toThrow('Resolve the Bluesky post')
+    await expect(driver.publish(identity, { text: 'Label' }, { selfLabels: ['bad label'] })).rejects.toThrow('lowercase')
+    expect(sent).toHaveLength(0)
+  })
+
   it('lets 300 emoji through: Bluesky counts graphemes', async () => {
     api()
     await expect(new BlueskyPublishingDriver().publish(identity, { text: '🎉'.repeat(300) })).resolves.toBeDefined()
@@ -405,6 +472,64 @@ describe('Mastodon', () => {
       return { id: 's1', url: 'https://social.example/@glenn/s1' }
     })
   }
+
+  const polls = { max_options: 3, max_characters_per_option: 3, min_expiration: 600, max_expiration: 7200 }
+
+  it('publishes native poll data with the connected instance’s advertised limits', async () => {
+    const sent = api({ configuration: { polls } })
+    const driver = new MastodonPublishingDriver()
+    expect((await driver.instanceLimits(identity)).poll).toEqual({
+      maxOptions: 3, maxCharactersPerOption: 3, minExpiration: 600, maxExpiration: 7200,
+    })
+    await driver.publish(identity, { text: 'Vote' }, {
+      poll: { options: [' 👨‍👩‍👦 ', 'Yes', 'No'], expiresIn: 3600, multiple: true, hideTotals: true },
+      idempotencyKey: 'poll-1',
+    })
+    expect(sent.at(-1)!.headers.get('idempotency-key')).toBe('poll-1')
+    expect(json(sent.at(-1)!)).toEqual({
+      status: 'Vote', visibility: 'public',
+      poll: { options: ['👨‍👩‍👦', 'Yes', 'No'], expires_in: 3600, multiple: true, hide_totals: true },
+    })
+  })
+
+  it('rejects incompatible or invalid polls before publishing or uploading', async () => {
+    const sent = api({ api_versions: { mastodon: 7 }, configuration: { polls } })
+    const driver = new MastodonPublishingDriver()
+    const poll = { options: ['Yes', 'No'], expiresIn: 3600 }
+    await expect(driver.publish(identity, { text: 'Vote', media: [{ bytes: PNG }] }, { poll })).rejects.toThrow('images')
+    await expect(driver.publish(identity, { text: 'Vote' }, { poll, quotedStatusId: '45' })).rejects.toThrow('poll or a quoted post')
+    await expect(driver.publish(identity, { text: 'Vote' }, { poll: { ...poll, options: ['Yes', 'Yes '] } })).rejects.toThrow('distinct')
+    await expect(driver.publish(identity, { text: 'Vote' }, { poll: { ...poll, options: ['Yes', 'Long'] } })).rejects.toThrow('3 characters')
+    await expect(driver.publish(identity, { text: 'Vote' }, { poll: { ...poll, expiresIn: 599 } })).rejects.toThrow('600 and 7200')
+    expect(sent.every(request => request.method === 'GET')).toBe(true)
+  })
+
+  it('resolves a federated quote to the instance-local status ID and sends it', async () => {
+    const address = 'https://remote.example/@author/456'
+    const sent = mockFetch((url) => {
+      if (url.endsWith('/api/v2/instance')) return { api_versions: { mastodon: 7 } }
+      if (new URL(url).pathname === '/api/v2/search')
+        return { statuses: [{ id: '899', url: 'https://remote.example/@another/457' }, { id: '944', url: address }] }
+      return { id: '935', url: 'https://social.example/@glenn/935' }
+    })
+    const driver = new MastodonPublishingDriver()
+    const quotedStatusId = await driver.resolvePostId(identity, address + '#context')
+    expect(quotedStatusId).toBe('944')
+    const search = sent[0]!
+    expect(new URL(search.url).origin).toBe(identity.did)
+    expect(Object.fromEntries(new URL(search.url).searchParams)).toEqual({ q: address, type: 'statuses', resolve: 'true', limit: '1' })
+    expect(search.headers.get('authorization')).toBe('Bearer AT')
+    await driver.publish(identity, { text: 'My comment' }, { quotedStatusId })
+    expect(json(sent.at(-1)!)).toMatchObject({ status: 'My comment', quoted_status_id: '944' })
+  })
+
+  it('declines a quote on older instances and polls when capabilities are unavailable', async () => {
+    const sent = api({ api_versions: { mastodon: 6 } })
+    const driver = new MastodonPublishingDriver()
+    await expect(driver.publish(identity, { text: 'Quote' }, { quotedStatusId: '45' })).rejects.toThrow('does not advertise quote posts')
+    await expect(driver.publish(identity, { text: 'Vote' }, { poll: { options: ['Yes', 'No'], expiresIn: 600 } })).rejects.toThrow('did not report')
+    expect(sent.every(request => request.method === 'GET')).toBe(true)
+  })
 
   it('sends an idempotency key, visibility, a content warning and a language', async () => {
     const sent = api()
