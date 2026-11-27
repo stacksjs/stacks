@@ -2,7 +2,63 @@ import { expect, test } from 'bun:test'
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { installSupportMessenger } from '../src/support-installation'
+import { installSupportMessenger, installSupportSdk } from '../src/support-installation'
+
+test('support setup declares the released SDK and preserves an application-selected version', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'support-sdk-install-'))
+  try {
+    const manifest = join(root, 'package.json')
+    await writeFile(manifest, JSON.stringify({ name: 'support-consumer' }))
+    const calls: string[][] = []
+    const output: string[] = []
+    let unavailable = true
+    const deps = {
+      print: (line: string) => output.push(line),
+      install: async (directory: string, args: string[]) => {
+        expect(directory).toBe(root)
+        calls.push(args)
+        if (unavailable) return false
+        await writeFile(manifest, JSON.stringify({ name: 'support-consumer', dependencies: { '@stacksjs/support': '0.75.695' } }))
+        return true
+      },
+    }
+    expect(await installSupportSdk(root, '0.75.695', deps)).toBe(false)
+    expect(JSON.parse(await readFile(manifest, 'utf8')).dependencies).toBeUndefined()
+    unavailable = false
+    expect(await installSupportSdk(root, '0.75.695', deps)).toBe(true)
+    expect(await installSupportSdk(root, '0.75.696', deps)).toBe(true)
+    expect(calls).toEqual(Array.from({ length: 2 }, () => ['add', '--exact', '@stacksjs/support@0.75.695']))
+    expect(JSON.parse(await readFile(manifest, 'utf8')).dependencies['@stacksjs/support']).toBe('0.75.695')
+    expect(output.join('\n')).toContain('could not install')
+  }
+  finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('support setup moves a development SDK to runtime without replacing its range', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'support-sdk-promote-'))
+  try {
+    const manifest = join(root, 'package.json')
+    const original = '{"name":"support-consumer","devDependencies":{"@stacksjs/support":"^0.75.643","test-helper":"1.0.0"}}\n'
+    await writeFile(manifest, original)
+    let unavailable = true
+    const deps = {
+      print: () => {},
+      install: async (directory: string, args: string[]) => {
+        expect(directory).toBe(root)
+        expect(args).toEqual(['install'])
+        const pkg = JSON.parse(await readFile(manifest, 'utf8'))
+        expect(pkg.dependencies).toEqual({ '@stacksjs/support': '^0.75.643' })
+        expect(pkg.devDependencies).toEqual({ 'test-helper': '1.0.0' })
+        return !unavailable
+      },
+    }
+    expect(await installSupportSdk(root, '0.75.695', deps)).toBe(false)
+    expect(await readFile(manifest, 'utf8')).toBe(original)
+    unavailable = false
+    expect(await installSupportSdk(root, '0.75.695', deps)).toBe(true)
+  }
+  finally { await rm(root, { recursive: true, force: true }) }
+})
 
 test('messenger install approves only exact configured origin and makes idempotent opt-in stx changes', async () => {
   const root = await mkdtemp(join(tmpdir(), 'support-install-'))
