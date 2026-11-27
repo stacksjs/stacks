@@ -34,6 +34,12 @@ describe('release registries', () => {
       'Publish Dummy Libraries',
     ])
     for (const step of npmOnly) expect(step.if).toContain('steps.registries.outputs.npm == \'true\'')
+    const sample = steps.find(step => step.name === 'Publish Dummy Libraries')!
+    const resume = steps.find(step => step.name === 'Verify original npm publications before resuming')!
+    const node = steps.find(step => step.name === 'Setup Node for trusted sample publishing')!
+    expect(node.if).toBe(sample.if)
+    expect(sample.env?.STACKS_NPM_RESUME_RECEIPTS).toBe(resume.env?.STACKS_NPM_RESUME_RECEIPTS)
+    expect(JSON.stringify(sample.env)).not.toContain('secrets.NPM_TOKEN')
 
     const pantry = steps.filter(step => step.if?.includes('steps.registries.outputs.pantry'))
     expect(pantry.map(step => step.name)).toEqual(['Publish Framework to Pantry', 'Verify Pantry publication'])

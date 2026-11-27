@@ -142,6 +142,34 @@ describe('resolveRedirect', () => {
     expect(resolveRedirect(at('/temp'), rules)?.headers.get('Cache-Control')).toBe('no-store')
   })
 
+  test('sends a fragment request to an external destination through the browser', () => {
+    const destination = 'https://policies.example.test/privacy?version=current'
+    const external = resolveRedirectRules({ '/policy': { to: destination, preserveQuery: false } })
+    const url = at('/policy?source=registration')
+    const fragment = resolveRedirect(url, external, new Headers({ 'X-STX-Router': 'true' }))
+
+    expect(fragment?.status).toBe(200)
+    expect(fragment?.headers.get('X-STX-Location')).toBe(destination)
+    expect(fragment?.headers.get('Location')).toBeNull()
+    expect(fragment?.headers.get('Cache-Control')).toBe('no-store')
+    expect(fragment?.headers.get('Vary')).toBe('X-STX-Router')
+
+    const document = resolveRedirect(url, external)
+    expect(document?.status).toBe(301)
+    expect(document?.headers.get('Location')).toBe(destination)
+    expect(document?.headers.get('Vary')).toBe('X-STX-Router')
+    expect(document?.headers.get('Cache-Control')).toBe('public, max-age=3600')
+  })
+
+  test('preserves a same-origin redirect for an stx fragment', () => {
+    const local = resolveRedirectRules({ '/old': 'http://localhost/new' })
+    const response = resolveRedirect(at('/old?ref=news'), local, new Headers({ 'X-STX-Router': 'true' }))
+
+    expect(response?.status).toBe(301)
+    expect(response?.headers.get('Location')).toBe('http://localhost/new?ref=news')
+    expect(response?.headers.get('X-STX-Location')).toBeNull()
+  })
+
   test('carries on routing for an unmatched path', () => {
     expect(resolveRedirect(at('/menu'), rules)).toBeUndefined()
     expect(resolveRedirect(at('/'), rules)).toBeUndefined()

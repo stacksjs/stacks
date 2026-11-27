@@ -17,6 +17,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { selectLintableFiles } from '../src/lint/lint'
+import { runStxLint } from '../src/lint/stx-gate'
 
 let repo: string
 
@@ -43,6 +44,19 @@ beforeEach(() => {
 
 afterEach(() => {
   rmSync(repo, { recursive: true, force: true })
+})
+
+test('stx navigation conformance honors both full-page navigation attributes', async () => {
+  write('resources/views/home.stx', [
+    '<a href="/docs#install" data-stx-no-router>Install</a>',
+    '<a data-no-router href="/login">Sign in</a>',
+    '<a data-stx-link href="/help">Help</a>',
+    '<a href="/plans">Plans</a>',
+  ].join('\n'))
+
+  const report = await runStxLint({ root: repo })
+  expect(report.results.find(result => result.id === 'plain-internal-anchor')?.detail)
+    .toEqual(['resources/views/home.stx:4  <a href="/plans">Plans</a>'])
 })
 
 describe('selectLintableFiles', () => {

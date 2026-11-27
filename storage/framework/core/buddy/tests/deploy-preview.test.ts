@@ -303,7 +303,10 @@ it('previews the selected mail environment without sending a webhook', () => {
         mailboxes: [{ email: 'info', password: 'fixture-password' }],
       }
     `)
-    writeFileSync(join(directory, 'target.env'), 'MAIL_DOMAIN=target.example.com\nMAIL_ON=true\nMAIL_OWNER=target-box\n')
+    const targetEnv = 'MAIL_DOMAIN=target.example.com\nMAIL_ON=true\nMAIL_OWNER=target-box\n'
+    writeFileSync(join(directory, 'target.env'), `${targetEnv}STACKS_DEPLOY_HOLD_DNS=0\n`)
+    writeFileSync(join(directory, '.env.production'), `${targetEnv}STACKS_DEPLOY_HOLD_DNS=0\n`)
+    writeFileSync(join(directory, 'inherit.env'), targetEnv)
     writeFileSync(join(directory, 'broken.env'), 'MAIL_ON=broken\n')
     const preload = join(directory, 'preload.ts')
     writeFileSync(preload, `
@@ -315,7 +318,7 @@ it('previews the selected mail environment without sending a webhook', () => {
       }
     `)
 
-    const run = (...args: string[]) => Bun.spawnSync([
+    const run = (args: string[], callerEnv: Record<string, string> = {}) => Bun.spawnSync([
       process.execPath,
       '--no-env-file',
       '--preload',
@@ -338,16 +341,23 @@ it('previews the selected mail environment without sending a webhook', () => {
         DEPLOY_WEBHOOK_URL: 'https://hooks.slack.com/services/fixture/preview/unused',
         DEPLOY_WEBHOOK_NOTIFY: 'all',
         DEPLOY_WEBHOOK_DRIVER: 'slack',
+        STACKS_DEPLOY_HOLD_DNS: '0',
+        ...callerEnv,
       },
       stdout: 'pipe',
       stderr: 'pipe',
     })
 
-    const json = run('--json', '--env-file', 'target.env')
-    const human = run('--env-file', 'target.env')
-    const failed = run('--json', '--env-file', 'missing.env')
-    const brokenMail = run('--json', '--env-file', 'broken.env')
-    for (const result of [json, human, failed, brokenMail]) {
+    const json = run(['--json', '--env-file', 'target.env'])
+    const human = run(['--env-file', 'target.env'])
+    const failed = run(['--json', '--env-file', 'missing.env'])
+    const brokenMail = run(['--json', '--env-file', 'broken.env'])
+    const held = [
+      run(['--json', '--hold-dns', '--env-file', 'target.env']),
+      run(['--json', '--hold-dns']),
+      run(['--json', '--env-file', 'inherit.env'], { STACKS_DEPLOY_HOLD_DNS: '1' }),
+    ]
+    for (const result of [json, human, failed, brokenMail, ...held]) {
       const output = `${result.stdout}${result.stderr}`
       expect(output).not.toContain('unexpected-preview-fetch')
       expect(output).not.toContain('fixture-password')
@@ -367,6 +377,13 @@ it('previews the selected mail environment without sending a webhook', () => {
     expect(`${failed.stdout}${failed.stderr}`).toContain('The selected deployment environment file does not exist')
     expect(parsePlan(brokenMail).operations.some(op => op.phase === 'mail')).toBe(false)
     expect(brokenMail.stdout.toString()).toContain('Skipping mail reconciliation')
+    for (const result of held) {
+      const phases = parsePlan(result).operations.map(op => op.phase)
+      expect(phases).toContain('gateway')
+      expect(phases).not.toContain('dns')
+      expect(phases).not.toContain('tls')
+      expect(phases).not.toContain('mail')
+    }
   }
   finally {
     rmSync(directory, { recursive: true, force: true })

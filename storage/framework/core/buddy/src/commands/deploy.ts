@@ -6187,49 +6187,25 @@ export function deploy(buddy: CLI): void {
     verbose: 'Enable verbose output',
   }
 
-  buddy
-    .command('deploy [env]', descriptions.deploy)
-    .option('--domain <domain>', descriptions.domain, { default: undefined })
-    .option('--env-file <file>', 'Deploy with only this runtime environment file', { default: undefined })
-    .option('--retire-domains <domains>', 'Explicitly retire omitted gateway hostnames (comma-separated)', { default: undefined })
-    .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--prod', descriptions.production, { default: false })
-    .option('--dev', descriptions.development, { default: false })
-    .option('--yes', descriptions.yes, { default: false })
-    .option('--site <name>', 'Deploy only this one site to the existing server (multi-tenant surgical add)', { default: undefined })
-    .option('--staging', descriptions.staging, { default: false })
-    .option('--dry-run', 'Preview the deployment and change nothing', { default: false })
-    .option('--hold-dns', 'Ship and start the release without publishing DNS, TLS, CDN or mail records (bring a new server up before a cutover)', { default: false })
-    .option('--docker', 'Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry', { default: false })
-    .option('-J, --json', 'Emit a machine-readable deployment preview', { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(withDeployNotification(async (envArg: string | undefined, options: DeployOptions) => {
+  const deployToEnvironment = withDeployNotification(
+    async (deployEnvName: string, options: DeployOptions) => {
       log.debug('Running `buddy deploy` ...', options)
 
       // Read from argv as well, for the reason given for --dry-run below: a
       // flag that is asked for and not seen would publish the very records it
       // exists to hold.
-      if (process.argv.includes('--hold-dns') || options.holdDns === true)
-        process.env.STACKS_DEPLOY_HOLD_DNS = '1'
+      const holdDnsFlag = process.argv.includes('--hold-dns') || options.holdDns === true
 
       const askedForDryRun = deploymentDryRunRequested(options)
 
-      // Resolve the target environment from the positional arg or the
-      // --staging/--dev/--prod flags (the flags were previously ignored, so
-      // `buddy deploy --staging` silently deployed production).
-      const optionEnvironment = (options as unknown as { env?: string }).env
-      const deployEnvName = resolveDeploymentEnvironment({
-        positional: envArg,
-        option: optionEnvironment,
-        staging: options.staging,
-        development: options.dev,
-      })
       const deployEnv = deployEnvName
       const selectedEnvFile = explicitDeploymentEnvFile(p.projectPath(), options.envFile)
       if (selectedEnvFile) {
         const values = await resolveDeployEnvValues(deployEnvName as 'production', undefined, selectedEnvFile)
         for (const [key, value] of Object.entries(values)) process.env[key] = value
       }
+      if (holdDnsFlag)
+        process.env.STACKS_DEPLOY_HOLD_DNS = '1'
 
       try {
         applyDeploymentDomainOverride({}, options.domain)
@@ -6255,6 +6231,8 @@ export function deploy(buddy: CLI): void {
           }
         }
 
+        if (holdDnsFlag)
+          process.env.STACKS_DEPLOY_HOLD_DNS = '1'
         const tsCloudConfig = deploymentRetirements(await loadTsCloudConfig(deployEnvName) ?? {}, options.retireDomains)
         const provider = resolveProvider(tsCloudConfig)
         validateDeploymentProviderInputs(provider, { envFile: selectedEnvFile, retireDomains: options.retireDomains })
@@ -6337,6 +6315,8 @@ export function deploy(buddy: CLI): void {
       // provision + deploy through ts-cloud and have nothing to do with the AWS
       // CloudFormation path below. Route them off before any AWS credential or
       // domain check runs.
+      if (holdDnsFlag)
+        process.env.STACKS_DEPLOY_HOLD_DNS = '1'
       const tsCloudConfig = deploymentRetirements(await loadTsCloudConfig(deployEnvName) ?? {}, options.retireDomains)
       validateDeploymentProviderInputs(resolveProvider(tsCloudConfig), { envFile: selectedEnvFile, retireDomains: options.retireDomains })
       // Fly.io runs an image on Machines: no box, no SSH, no CloudFormation.
@@ -6422,7 +6402,35 @@ export function deploy(buddy: CLI): void {
       }
 
       await outro('Project deployed.', { startTime, useSeconds: true })
-    }, (_environment, options) => !deploymentDryRunRequested(options)))
+    },
+    (_environment, options) => !deploymentDryRunRequested(options),
+  )
+
+  buddy
+    .command('deploy [env]', descriptions.deploy)
+    .option('--domain <domain>', descriptions.domain, { default: undefined })
+    .option('--env-file <file>', 'Deploy with only this runtime environment file', { default: undefined })
+    .option('--retire-domains <domains>', 'Explicitly retire omitted gateway hostnames (comma-separated)', { default: undefined })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--prod', descriptions.production, { default: false })
+    .option('--dev', descriptions.development, { default: false })
+    .option('--yes', descriptions.yes, { default: false })
+    .option('--site <name>', 'Deploy only this one site to the existing server (multi-tenant surgical add)', { default: undefined })
+    .option('--staging', descriptions.staging, { default: false })
+    .option('--dry-run', 'Preview the deployment and change nothing', { default: false })
+    .option('--hold-dns', 'Ship and start the release without publishing DNS, TLS, CDN or mail records (bring a new server up before a cutover)', { default: false })
+    .option('--docker', 'Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry', { default: false })
+    .option('-J, --json', 'Emit a machine-readable deployment preview', { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action((envArg: string | undefined, options: DeployOptions) => {
+      const environment = resolveDeploymentEnvironment({
+        positional: envArg,
+        option: (options as unknown as { env?: string }).env,
+        staging: options.staging,
+        development: options.dev,
+      })
+      return deployToEnvironment(environment, options)
+    })
 
   buddy
     .command('deploy:rollback [site]', 'Roll back a deployment to a preserved release')

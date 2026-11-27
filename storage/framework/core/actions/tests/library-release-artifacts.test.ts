@@ -112,14 +112,14 @@ test('resumes a partially published package set, refusing different bytes withou
     if (url.endsWith(`/${pkg.version}`)) return Response.json({ name: pkg.name, version: pkg.version, dist: { tarball: `https://registry.npmjs.org/${i}.tgz`, integrity: pkg.archive.integrity } })
     return Response.json({ 'dist-tags': { alpha: pkg.version } })
   }
-  const options = { publisher: 'bun' as const, readAuth: { registry: 'https://registry.npmjs.org', token: 'fixture-read-only' }, which: (bin: string) => bin, fetch: request, execute: async (args: string[]) => {
+  const options = { publisher: 'bun' as const, readAuth: { registry: 'https://registry.npmjs.org', token: 'fixture-read-only' }, deadlineMs: 500, retryDelayMs: 10, which: (bin: string) => bin, fetch: request, execute: async (args: string[]) => {
     const i = args.some(arg => arg.endsWith('/1.tgz')) ? 1 : 0
     calls.push(i)
     if (i === 1 && failSecond) return 1
     published.add(i)
     return 0
   } }
-  await expect(publishPreparedLibraryRelease(directory, options)).rejects.toThrow('failed with exit code 1')
+  await expect(publishPreparedLibraryRelease(directory, options)).rejects.toThrow('exited with code 1. Registry readback timed out.')
   failSecond = false
   const retry = await publishPreparedLibraryRelease(directory, options)
   expect(calls).toEqual([0, 1, 1])
@@ -129,7 +129,16 @@ test('resumes a partially published package set, refusing different bytes withou
   expect(calls).toEqual([0, 1, 1])
 })
 
-test.each(['bun', ...(Bun.which('npm') ? ['npm' as const] : [])] as const)('the actual %s publisher uploads the original retained archive to an owned local registry', async (publisher) => {
+const localPublishers = [
+  { publisher: 'bun' as const, lostReply: false },
+  { publisher: 'bun' as const, lostReply: true },
+  ...(Bun.which('npm') ? [
+    { publisher: 'npm' as const, lostReply: false },
+    { publisher: 'npm' as const, lostReply: true },
+  ] : []),
+]
+
+test.each(localPublishers)('the actual $publisher publisher sends the retained archive once (lost reply: $lostReply)', async ({ publisher, lostReply }) => {
   const { publishPreparedLibraryRelease } = await import('../src/library/release-registry')
   const { root, dir } = await fixture()
   const packageHook = join(root, 'package-hook-ran')
@@ -142,14 +151,22 @@ test.each(['bun', ...(Bun.which('npm') ? ['npm' as const] : [])] as const)('the 
   const original = await Bun.file(join(directory, 'archives/0.tgz')).bytes()
   let uploaded: Uint8Array | undefined
   let authorization = ''
+  let uploads = 0
+  let pendingReads = 0
+  let publisherExit: number | undefined
   const server = Bun.serve({ hostname: '127.0.0.1', port: 0, async fetch(request) {
     if (request.method === 'PUT') {
+      uploads++
       authorization = request.headers.get('authorization') ?? ''
       const body = await request.json() as { _attachments: Record<string, { data: string }> }
       uploaded = new Uint8Array(Buffer.from(Object.values(body._attachments)[0]!.data, 'base64'))
-      return Response.json({ ok: true }, { status: 201 })
+      return lostReply ? Response.json({ error: 'upload receipt lost' }, { status: 503 }) : Response.json({ ok: true }, { status: 201 })
     }
     if (!uploaded) return new Response('', { status: 404 })
+    if (lostReply && pendingReads < 2) {
+      pendingReads++
+      return new Response('', { status: 404 })
+    }
     if (new URL(request.url).pathname.endsWith('.tgz')) return new Response(uploaded)
     const pkg = candidate.packages[0]!
     if (new URL(request.url).pathname.endsWith(`/${pkg.version}`)) return Response.json({ name: pkg.name, version: pkg.version, dist: { integrity: pkg.archive.integrity, tarball: `${server.url.origin}/math.tgz` } })
@@ -160,13 +177,19 @@ test.each(['bun', ...(Bun.which('npm') ? ['npm' as const] : [])] as const)('the 
   await writeFile(join(root, 'package.json'), JSON.stringify({ private: true, name: 'isolated-local-registry-consumer', version: '0.0.0', scripts: { prepublishOnly: `touch ${JSON.stringify(join(root, 'root-hook-ran'))}`, prepare: `touch ${JSON.stringify(join(root, 'root-hook-ran'))}` } }))
   await writeFile(join(root, '.npmrc'), `registry=${server.url.origin}\n//127.0.0.1:${server.port}/:_authToken=local-fixture-token\n`)
   try {
-    const receipt = await publishPreparedLibraryRelease(directory, { publisher, cwd: root, npmRegistry: server.url.origin, deadlineMs: 10_000, retryDelayMs: 1, execute: async (args, execution) => {
-      const child = Bun.spawn(args, { cwd: execution.cwd, env: { PATH: process.env.PATH!, HOME: home, USERPROFILE: home, APPDATA: home, LOCALAPPDATA: home, NPM_CONFIG_CACHE: join(home, 'cache'), NPM_CONFIG_USERCONFIG: join(home, '.npmrc'), BUN_AUTH_TOKEN: 'local-fixture-token', NPM_CONFIG_UPDATE_NOTIFIER: 'false', NPM_CONFIG_AUDIT: 'false' }, stdout: 'pipe', stderr: 'pipe' })
+    const options = { publisher, cwd: root, npmRegistry: server.url.origin, deadlineMs: 10_000, retryDelayMs: 1, execute: async (args: string[], execution: { cwd: string }) => {
+      const child = Bun.spawn(args, { cwd: execution.cwd, env: { PATH: process.env.PATH!, HOME: home, USERPROFILE: home, APPDATA: home, LOCALAPPDATA: home, NPM_CONFIG_CACHE: join(home, 'cache'), NPM_CONFIG_USERCONFIG: join(home, '.npmrc'), BUN_AUTH_TOKEN: 'local-fixture-token', NPM_CONFIG_UPDATE_NOTIFIER: 'false', NPM_CONFIG_AUDIT: 'false', NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: '5', NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: '10' }, stdout: 'pipe', stderr: 'pipe' })
       const [exit, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
-      if (exit !== 0) throw new Error(`Local publisher failed: ${stdout} ${stderr}`)
+      if ((exit !== 0) !== lostReply) throw new Error(`Unexpected local publisher exit ${exit}: ${stdout} ${stderr}`)
+      publisherExit = exit
       return exit
-    } })
+    } }
+    const receipt = await publishPreparedLibraryRelease(directory, options)
     expect(receipt.packages[0]!.status).toBe('published')
+    expect(publisherExit !== 0).toBe(lostReply)
+    expect(pendingReads).toBe(lostReply ? 2 : 0)
+    expect((await publishPreparedLibraryRelease(directory, options)).packages[0]!.status).toBe('existing-identical')
+    expect(uploads).toBe(1)
     expect(authorization).toBe('Bearer local-fixture-token')
     expect(uploaded).toEqual(original)
     await expect(access(packageHook)).rejects.toThrow()

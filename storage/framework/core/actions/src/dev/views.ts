@@ -274,7 +274,7 @@ async function startDefaultServer() {
       // Declared redirects from `config/server.ts`. After the maintenance gate
       // (a site being down outranks a URL having moved) and before everything
       // else, so a legacy path never needs a stub page to bounce off.
-      const redirected = resolveRedirect(url, redirectRules)
+      const redirected = resolveRedirect(url, redirectRules, req.headers)
       if (redirected)
         return redirected
 

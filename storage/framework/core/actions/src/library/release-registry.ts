@@ -5,7 +5,7 @@ import type { LibraryRegistryReadAuthOptions } from './release-registry-auth'
 import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
 import { resolve } from 'node:path'
 import { inspectLibraryRelease, libraryIntegrity, librarySha256 } from './release-artifacts'
-import { createLibraryReleaseReader } from './release-network'
+import { createLibraryReleaseReader, LibraryReadFailure } from './release-network'
 import { publishCommand } from './publish'
 import { libraryRegistryOrigin, libraryRegistryReadHeaders } from './release-registry-auth'
 
@@ -98,7 +98,10 @@ export function retainedArchivePublishCommand(pkg: LibraryReleasePackage, archiv
   const command = publishCommand(pkg.registry, archiveCapable, pkg.tag, options.publisher)
   if (command[0] === 'pantry')
     throw new Error('Unsupported publisher capability: Pantry publish accepts package directories, not an exact retained .tgz. Select bun or npm for an npm-bound package.')
-  return [...command, archive, '--access', pkg.access, '--ignore-scripts', '--registry', libraryRegistryOrigin(options.npmRegistry), ...(options.dryRun ? ['--dry-run'] : [])]
+  // A server can accept an upload before returning an error. Only the
+  // subsequent readback may retry requests in that case.
+  const retryOptions = command[0] === 'npm' ? ['--fetch-retries=0'] : []
+  return [...command, archive, '--access', pkg.access, '--ignore-scripts', '--registry', libraryRegistryOrigin(options.npmRegistry), ...retryOptions, ...(options.dryRun ? ['--dry-run'] : [])]
 }
 
 /** Never repack restored content. Retry skips existing versions only after comparing actual bytes. */
@@ -146,11 +149,14 @@ export async function publishPreparedLibraryRelease(directory: string, options: 
     if (JSON.stringify(await inspectLibraryRelease(directory, options.source, options)) !== original) throw new Error('Retained candidate record changed during publication')
     if (reader.remaining() <= 0) throw new Error('Library publication deadline exceeded')
     const exit = await execute(commands[i]!, { cwd: resolve(options.cwd ?? process.cwd()), timeoutMs: Math.min(60_000, reader.remaining()) })
-    // An interrupted/failed upload may already have committed. Verify it before
-    // returning failure; never blindly execute a second mutable publish.
-    const actual = await publishedPackage(pkg, options, reader, exit !== 0, true)
-    if (!actual) throw new Error(`Publishing ${pkg.name} failed with exit code ${exit}`)
-    packages.push({ ...actual, status: 'published' })
+    // After an upload attempt, a 404 can mean the registry is still processing
+    // the original archive, including when the publisher lost its response.
+    const actual = await publishedPackage(pkg, options, reader, false, true).catch((error) => {
+      if (exit === 0 || !(error instanceof LibraryReadFailure) || reader.remaining() > 0)
+        throw error
+      throw new Error(`Publisher for ${pkg.name} exited with code ${exit}. Registry readback timed out. Run buddy release:readback for the retained candidate before retrying.`, { cause: error })
+    })
+    packages.push({ ...actual!, status: 'published' })
   }
   return { schemaVersion: 1, source: candidate.source, verifiedAt: new Date().toISOString(), packages }
 }

@@ -193,8 +193,9 @@ export async function loadRouteRedirects(file: string = p.storagePath('framework
  * `'/dashboard/*': 'https://dash.example.com'` lands on
  * `https://dash.example.com/events/42`. No regular expressions, no captures,
  * no ordering to reason about.
+ * External fragment navigations use the stx browser handoff header.
  */
-export function resolveRedirect(url: URL, rules?: RedirectRules): Response | undefined {
+export function resolveRedirect(url: URL, rules?: RedirectRules, requestHeaders?: Headers): Response | undefined {
   if (!rules?.size)
     return undefined
 
@@ -219,10 +220,21 @@ export function resolveRedirect(url: URL, rules?: RedirectRules): Response | und
     location += location.includes('?') ? `&${url.search.slice(1)}` : url.search
   }
 
+  const target = URL.parse(location, url)
+  const external = target && (target.protocol === 'http:' || target.protocol === 'https:') && target.origin !== url.origin
+
+  if (external && requestHeaders?.get('X-STX-Router') === 'true') {
+    // stx would otherwise follow the redirect as a fetch subject to CORS.
+    return new Response(null, {
+      headers: { 'X-STX-Location': location, 'Cache-Control': 'no-store', 'Vary': 'X-STX-Router' },
+    })
+  }
+
   return new Response(null, {
     status: rule.status,
     headers: {
       'Location': location,
+      ...(external && { Vary: 'X-STX-Router' }),
       // A permanent redirect is worth caching; a temporary one is not, and
       // caching it is how a seasonal rule outlives the season.
       'Cache-Control': rule.status === 301 || rule.status === 308
