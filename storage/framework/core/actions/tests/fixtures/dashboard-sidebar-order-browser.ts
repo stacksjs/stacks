@@ -6,6 +6,8 @@ export async function verifySidebarOrdering(origin: string): Promise<void> {
   const { cdp } = browser
   const missingAssets = new Set<string>()
   const pane = '[data-stx-sidebar]'
+  const modelsId = 'models'
+  const modelsRow = `${pane} [data-item-id="${modelsId}"]`
   const item = (id: string) => `${pane} [data-item-id="${id}"] > [data-sidebar-order-handle="item"]`
   const section = (id: string) => `${pane} [data-section-id="${id}"] > [data-sidebar-order-handle="section"]`
   const order = () => cdp.evaluate<string[]>(`[...document.querySelectorAll('${pane} [data-section-id="app-nav-0"] [data-sidebar-row]')].map(row => row.dataset.itemId)`)
@@ -24,6 +26,15 @@ export async function verifySidebarOrdering(origin: string): Promise<void> {
     await navigate(cdp, `${origin}/order-test`)
     await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('${item('alpha')}:not(:disabled)'))`), 15_000, { label: 'hydrated drag grips' })
     expect(await cdp.evaluate(`getComputedStyle(document.querySelector('${item('alpha')} span')).maskImage`)).not.toBe('none')
+    expect(await cdp.evaluate(`document.querySelectorAll('${pane} [data-label="All Models"]').length`)).toBe(1)
+    expect(await cdp.evaluate(`Boolean(document.querySelector('${pane} [data-item-id="models-more"]'))`)).toBe(false)
+    await click(cdp, `${modelsRow} [data-sidebar-disclosure]`)
+    await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('${modelsRow}[data-expanded="true"]'))`))
+    expect(await cdp.evaluate('location.pathname')).toBe('/order-test')
+    await click(cdp, `${modelsRow} [href="/models"]`)
+    await waitFor(() => cdp.evaluate('location.pathname === "/models"'))
+    await navigate(cdp, `${origin}/order-test`)
+    await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('${item('alpha')}:not(:disabled)'))`))
     await click(cdp, { selector: '[data-sidebar-order-controls] button', text: 'Reset order' })
     await waitFor(() => cdp.evaluate(`document.querySelector('[data-sidebar-order-controls] [role="status"]')?.textContent.includes('saved')`))
     expect(await order()).toEqual(['alpha', 'beta', 'gamma'])
@@ -79,16 +90,14 @@ export async function verifySidebarOrdering(origin: string): Promise<void> {
     finally { await fresh.close() }
 
     await startReordering()
-    const moreId = await cdp.evaluate<string>(`[...document.querySelectorAll('${pane} [data-sidebar-row]')].find(row => row.textContent.includes('More models'))?.dataset.itemId`)
-    const moreSelector = `${pane} [data-item-id="${moreId}"]`
-    await click(cdp, `${moreSelector} [data-sidebar-disclosure]`)
-    const nested = await cdp.evaluate<string[]>(`[...document.querySelectorAll('${pane} [data-parents="${moreId}"]')].map(row => row.dataset.itemId)`)
+    await click(cdp, `${modelsRow} [data-sidebar-disclosure]`)
+    const nested = await cdp.evaluate<string[]>(`[...document.querySelectorAll('${pane} [data-parents="${modelsId}"]')].map(row => row.dataset.itemId)`)
     expect(nested.length).toBeGreaterThanOrEqual(2)
     await click(cdp, item(nested[0]!))
     await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowDown', windowsVirtualKeyCode: 40 })
     await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowDown', windowsVirtualKeyCode: 40 })
-    await waitFor(async () => (await saved()).order.items[JSON.stringify(['data', moreId])]?.[0] === nested[1])
-    expect(await cdp.evaluate(`document.querySelector('${pane} [data-item-id="${nested[0]}"]')?.getAttribute('data-parents')`)).toBe(moreId)
+    await waitFor(async () => (await saved()).order.items[JSON.stringify(['data', modelsId])]?.[0] === nested[1])
+    expect(await cdp.evaluate(`document.querySelector('${pane} [data-item-id="${nested[0]}"]')?.getAttribute('data-parents')`)).toBe(modelsId)
     // A tall section must scroll past its own descendants while a drag is
     // held at the viewport edge, including when the pointer stays still.
     await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 320, deviceScaleFactor: 1, mobile: false })
@@ -114,7 +123,7 @@ export async function verifySidebarOrdering(origin: string): Promise<void> {
     await Bun.sleep(80)
     expect(await cdp.evaluate(`document.querySelector('${pane} [data-sidebar-scroll]').scrollTop`)).toBe(stoppedAt)
     await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
-    await click(cdp, `${moreSelector} [data-sidebar-disclosure]`)
+    await click(cdp, `${modelsRow} [data-sidebar-disclosure]`)
     expect(await cdp.evaluate(`document.querySelector('${pane} [data-item-id="${nested[0]}"]')?.hasAttribute('data-collapsed')`)).toBe(true)
 
     // A rejected save restores the acknowledged order and tells the operator.
@@ -133,6 +142,18 @@ export async function verifySidebarOrdering(origin: string): Promise<void> {
     expect(await order()).toEqual(['alpha', 'beta', 'gamma'])
     await click(cdp, { selector: '[data-sidebar-order-controls] button', text: 'Done reordering' })
     await waitFor(() => cdp.evaluate(`document.querySelector('[data-sidebar-order-editing="false"] .dashboard-sidebar-order-mode')?.textContent.trim() === 'Reorder sidebar'`))
+
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true })
+    await navigate(cdp, `${origin}/order-test`)
+    await click(cdp, 'button[aria-label="Open dashboard navigation"]')
+    const mobilePane = '[data-dashboard-mobile-sidebar]'
+    const mobileModelsRow = `${mobilePane} [data-item-id="${modelsId}"]`
+    await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('${mobileModelsRow} [href="/models"]'))`))
+    expect(await cdp.evaluate(`document.querySelectorAll('${mobilePane} [data-label="All Models"]').length`)).toBe(1)
+    await click(cdp, `${mobileModelsRow} [data-sidebar-disclosure]`)
+    await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('${mobileModelsRow}[data-expanded="true"]'))`))
+    await click(cdp, `${mobileModelsRow} [href="/models"]`)
+    await waitFor(() => cdp.evaluate(`location.pathname === '/models' && !document.querySelector('#dashboard-mobile-navigation')`), 12_000, { label: 'the registry to open and close the mobile drawer' })
     expect(cdp.errors.filter(error => !error.includes('503') && !error.includes('Disk unavailable'))).toEqual([])
   }
   catch (error) {

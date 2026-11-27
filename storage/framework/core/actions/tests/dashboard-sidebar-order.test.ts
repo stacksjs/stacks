@@ -9,7 +9,7 @@ import { filterSchemaNavSections } from '../../../defaults/resources/functions/d
 const sections = [
   { id: 'data', label: 'Data', items: [
     { id: 'users', label: 'Users', icon: 'i-lucide-users', iconColor: 'blue' },
-    { id: 'more', label: 'More models', icon: '', iconColor: 'blue', children: [
+    { id: 'models', label: 'All Models', href: '/models', icon: '', iconColor: 'blue', children: [
       { id: 'bookings', label: 'Bookings', icon: '', iconColor: 'blue' },
       { id: 'classes', label: 'Classes', icon: '', iconColor: 'blue' },
     ] },
@@ -23,14 +23,14 @@ test('local sidebar order survives a new reader without changing the team defaul
     const options = { configHome: directory, projectRoot: directory, viewer: 'local' }
     const original = JSON.stringify(sections)
     const order = { ...emptySidebarOrder(), sections: ['management', 'data'], items: {
-      [sidebarGroupKey('data')]: ['more', 'users'],
-      [sidebarGroupKey('data', ['more'])]: ['classes', 'bookings'],
+      [sidebarGroupKey('data')]: ['models', 'users'],
+      [sidebarGroupKey('data', ['models'])]: ['classes', 'bookings'],
     } }
     await writeSidebarOrder(order, options)
     const saved = await readSidebarOrder(options)
     const displayed = orderSidebarSections(sections, saved.order)
     expect(displayed.map(section => section.id)).toEqual(['management', 'data'])
-    expect(displayed[1]!.items.map(item => item.id)).toEqual(['more', 'users'])
+    expect(displayed[1]!.items.map(item => item.id)).toEqual(['models', 'users'])
     expect(displayed[1]!.items[0]!.children!.map(item => item.id)).toEqual(['classes', 'bookings'])
     expect(JSON.stringify(sections)).toBe(original)
     expect(JSON.parse(await readFile(sidebarOrderPath(options), 'utf8'))).toEqual(order)
@@ -44,16 +44,31 @@ test('local sidebar order survives a new reader without changing the team defaul
 
 test('team changes preserve access, groups and new rows while honoring known personal identifiers', () => {
   const order = { ...emptySidebarOrder(), sections: ['removed-section', 'management', 'data'], items: {
-    [sidebarGroupKey('data')]: ['removed', 'more', 'classes', 'users'],
-    [sidebarGroupKey('data', ['more'])]: ['classes', 'removed', 'bookings'],
+    [sidebarGroupKey('data')]: ['removed', 'models', 'classes', 'users'],
+    [sidebarGroupKey('data', ['models'])]: ['classes', 'removed', 'bookings'],
   } }
   const team = structuredClone(sections)
   team[0]!.items.push({ id: 'athletes', label: 'Athletes', icon: '', iconColor: 'blue' })
   const displayed = orderSidebarSections(team, order)
   expect(displayed.map(section => section.id)).toEqual(['management', 'data'])
-  expect(displayed[1]!.items.map(item => item.id)).toEqual(['more', 'users', 'athletes'])
+  expect(displayed[1]!.items.map(item => item.id)).toEqual(['models', 'users', 'athletes'])
   expect(displayed[1]!.items[0]!.children!.map(item => item.id)).toEqual(['classes', 'bookings'])
   expect(displayed[1]!.items[0]!.children![0]!.label).toBe('Classes')
+})
+
+test('merges the old model rows without losing their saved order', () => {
+  const data = sidebarGroupKey('data')
+  const legacy = sidebarGroupKey('data', ['models-more'])
+  const models = sidebarGroupKey('data', ['models'])
+  const parse = (rows: string[], modelOrder?: string[]) => parseSidebarOrder({ ...emptySidebarOrder(), items: {
+    [data]: rows,
+    [legacy]: ['classes', 'bookings'],
+    ...(modelOrder ? { [models]: modelOrder } : {}),
+  } }).items
+
+  expect(parse(['models-more', 'users', 'models'])).toEqual({ [data]: ['users', 'models'], [models]: ['classes', 'bookings'] })
+  expect(parse(['models-more', 'users'])).toEqual({ [data]: ['models', 'users'], [models]: ['classes', 'bookings'] })
+  expect(parse(['users', 'models'], ['bookings'])).toEqual({ [data]: ['users', 'models'], [models]: ['bookings'] })
 })
 
 test('optional mail and schema destinations stay out of built-in navigation without hiding application-defined links', () => {

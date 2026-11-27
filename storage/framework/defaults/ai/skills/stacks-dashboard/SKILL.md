@@ -1803,7 +1803,8 @@ reporter stores allowlisted operational context and excludes bodies and headers.
 
 Declare `dashboard: { highlight: true }` on a model to pin its Data row, or use
 numeric `highlight` values to order pinned rows. Other enabled Data models live
-under the native Sidebar's collapsed More models disclosure. Labels, icons and
+under the All Models disclosure. The row label opens the registry when the
+All Models page is enabled in dashboard config. Labels, icons and
 role gates apply to nested rows too. `enabled: false` omits navigation;
 `access: false` excludes generic catalogs and reads as well.
 

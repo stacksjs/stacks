@@ -425,8 +425,8 @@ export function buildNavSections(
     ...categoryNavItems(discoveredModels, 'system', new Set()),
   ]])
 
-  // Data pins model-declared highlights. Other visible models stay accessible
-  // through a collapsed disclosure using the shared Sidebar component.
+  // Data pins model-declared highlights. All Models links to the registry and
+  // discloses the remaining models through the shared Sidebar component.
   // Per-model rows link to `/models/<id>` (dynamic ORM viewer); the
   // built-in dashboard / activity / users / teams / subscribers rows keep
   // their bespoke pages under `/data/<row>`.
@@ -438,8 +438,8 @@ export function buildNavSections(
   if (dataRows.users) dataNav.push({ to: '/data/users', icon: 'users', text: 'Users' })
   if (dataRows.teams) dataNav.push({ to: '/data/teams', icon: 'group', text: 'Teams' })
   if (dataRows.subscribers) dataNav.push({ to: '/data/subscribers', icon: 'mail', text: 'Subscribers' })
-  if (dataRows.allModels) dataNav.push({ to: '/models', icon: 'table', text: 'All Models' })
-  const moreModels: NavItem[] = []
+  const pinnedModels: NavItem[] = []
+  const modelChildren: NavItem[] = []
   const highlighted = (model: DiscoveredModel) => model.dashboard?.highlight === true
     || (typeof model.dashboard?.highlight === 'number' && Number.isFinite(model.dashboard.highlight))
   const rank = (model: DiscoveredModel) => typeof model.dashboard?.highlight === 'number' ? model.dashboard.highlight : Number.POSITIVE_INFINITY
@@ -465,10 +465,19 @@ export function buildNavSections(
         ? { roles: m.dashboard.roles }
         : {}),
     }
-    if (highlighted(m)) dataNav.push(item)
-    else moreModels.push(item)
+    if (highlighted(m)) pinnedModels.push(item)
+    else modelChildren.push(item)
   }
-  if (moreModels.length) dataNav.push({ id: 'models-more', to: '', text: 'More models', icon: 'table', expanded: false, children: moreModels })
+  if (dataRows.allModels || modelChildren.length) {
+    dataNav.push({
+      id: 'models',
+      to: dataRows.allModels ? '/models' : '',
+      icon: 'table',
+      text: 'All Models',
+      ...(modelChildren.length ? { children: modelChildren, expanded: false } : {}),
+    })
+  }
+  dataNav.push(...pinnedModels)
   sections.push(['data', 'data', dataNav])
 
   if (toggles.commerce) {
