@@ -100,7 +100,6 @@ export function unavailableDashboardPages({ sections, schemaModels, inbox, remot
   if (inbox === false) {
     exclude('/inbox', true)
     exclude('/inbox/activity')
-    exclude('/inbox/settings')
   }
 
   if (remote === false)
@@ -136,7 +135,8 @@ export function readDashboardPageAvailability(): Required<DashboardPageAvailabil
   return {
     sections: { ...sections, ci: sections.management && sections.ci },
     schemaModels,
-    // Captured Mail uses the local transport. The live inbox reads the serverless mail store.
+    // The live inbox reads the serverless mail store. Captured Mail and the
+    // database-backed Mail Settings page are available independently.
     inbox: Boolean(mailServer?.enabled && mailServer.mode === 'serverless'),
     remote,
     providers: config.dashboard?.providers ?? {},
