@@ -979,5 +979,21 @@ jobs:
       - name: Build
         run: bun run build
 
+      - name: Build and check the HQ Support SDK preview
+        working-directory: storage/framework/core/support
+        run: |
+          bun run build
+          archive=$(bun pm pack --ignore-scripts --quiet --destination "$RUNNER_TEMP")
+          tar -tzf "$RUNNER_TEMP/$(basename "$archive")" > "$RUNNER_TEMP/support-preview-files"
+          bun --no-env-file -e '
+            const manifest = await Bun.file("package.json").json()
+            const files = new Set((await Bun.file(process.env.RUNNER_TEMP + "/support-preview-files").text()).split("\n"))
+            const exports = new Set(Object.values(manifest.exports).flatMap(entry => Object.values(entry)))
+            for (const path of exports) {
+              const archivePath = "package/" + path.replace(/^\.\//, "")
+              if (!files.has(archivePath)) throw new Error("Missing SDK export in the preview archive: " + path)
+            }
+          '
+
       - name: Publish Commit
         run: ./storage/framework/scripts/publish-commit
