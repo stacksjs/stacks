@@ -21,8 +21,7 @@ describe('networkReason', () => {
 describe('classifySocialError', () => {
   it('does not call a duplicate post on X an expired sign-in', () => {
     const error = new TwitterApiError('Twitter API failed (403)', 403, '{"detail":"You are not allowed to create a Tweet with duplicate content."}')
-    // The driver's own `isAuthError` says yes; the classification knows better.
-    expect(error.isAuthError).toBe(true)
+    expect(error.isAuthError).toBe(false)
     expect(classifySocialError(error).kind).toBe('duplicate')
     expect(isExpiredSignIn(error)).toBe(false)
   })

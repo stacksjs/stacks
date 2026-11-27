@@ -209,6 +209,16 @@ read budget before calling the driver.
 
 ## Authorization and operational limits
 
+For X messaging, request `dm.read` and `dm.write` only when the user enables
+that feature. `TwitterPublishingDriver.listDirectMessageEvents(identity,
+{ limit, cursor, conversationId })` reads one page for the account or a
+conversation and returns the next cursor. The request expands only the sender
+so a caller can reserve the maximum charge for one DM event and one user per
+result. `sendDirectMessage(identity, conversationId, text)` sends one reply
+and returns its confirmed event ID. A permission refusal does not invalidate
+the account's token. See the [X API pricing](https://docs.x.com/x-api/getting-started/pricing)
+and [DM lookup reference](https://docs.x.com/x-api/direct-messages/lookup/introduction).
+
 The native terminal consent helper in authorize.ts currently supports X only.
 It uses loopback callback URI, checked state and PKCE; offline.access supplies
 refresh credentials. Declaring another publishing platform does not make the
