@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.707...v0.75.708)
+
+## ✨ Features
+
+- **socials**: support paginated X direct messages and replies ([d7219c4](https://github.com/stacksjs/stacks/commit/d7219c4)) _(by Chris)_ ([#3461](https://github.com/stacksjs/stacks/issues/3461), [stacksjs/postline#123](https://github.com/stacksjs/postline/issues/123))
+- **socials**: publish processed Mastodon and Bluesky videos ([fdbaa79](https://github.com/stacksjs/stacks/commit/fdbaa79)) _(by Chris Breuer)_
+- **socials**: create LinkedIn and Instagram comments ([723bb80](https://github.com/stacksjs/stacks/commit/723bb80)) _(by Chris Breuer)_ ([stacksjs/postline#242](https://github.com/stacksjs/postline/issues/242))
+- **dashboard**: dialogs fade and drop away when they close ([bbaee16](https://github.com/stacksjs/stacks/commit/bbaee16)) _(by glennmichael123)_
+
+## 🐛 Bug Fixes
+
+- **support**: refresh the identified messenger on history restore ([bbea74a](https://github.com/stacksjs/stacks/commit/bbea74a)) _(by Chris)_ ([#3454](https://github.com/stacksjs/stacks/issues/3454), [#3455](https://github.com/stacksjs/stacks/issues/3455))
+- **socials**: request X DM sender IDs and bound request time ([f97bf42](https://github.com/stacksjs/stacks/commit/f97bf42)) _(by Chris)_ ([#3461](https://github.com/stacksjs/stacks/issues/3461), [stacksjs/postline#123](https://github.com/stacksjs/postline/issues/123))
+- **support**: restore the identified messenger from browser history ([4cbee2c](https://github.com/stacksjs/stacks/commit/4cbee2c)) _(by Chris Breuer)_
+- **dashboard**: a hovered row's Actions cell matches the row in dark mode ([1d46a8d](https://github.com/stacksjs/stacks/commit/1d46a8d)) _(by glennmichael123)_
+
+## 📝 Documentation
+
+- **skills**: refresh socials test evidence ([c96ffc8](https://github.com/stacksjs/stacks/commit/c96ffc8)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.706...v0.75.707)
 
 ## ✨ Features
