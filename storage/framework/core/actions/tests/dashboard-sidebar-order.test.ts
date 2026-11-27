@@ -65,7 +65,8 @@ test('optional mail and schema destinations stay out of built-in navigation with
   expect(filterSchemaNavSections(input, [], { inbox: false })[0]![2].map(item => item.to)).toEqual(['/inbox/captured'])
   expect(filterSchemaNavSections(input, [], { inbox: false })[1]![2].map(item => item.to)).toEqual(['/inbox'])
   expect(filterSchemaNavSections(input, ['MailPreference', 'Team'], { inbox: true })[0]![2]).toHaveLength(5)
-  expect(filterSchemaNavSections(input, undefined, { inbox: false })[0]![2].map(item => item.to)).toEqual(['/inbox/captured', '/inbox/settings', '/data/teams'])
+  expect(filterSchemaNavSections(input, ['MailPreference', 'Team'], { inbox: false })[0]![2].map(item => item.to)).toEqual(['/inbox/captured', '/data/teams'])
+  expect(filterSchemaNavSections(input, undefined, { inbox: false })[0]![2].map(item => item.to)).toEqual(['/inbox/captured', '/data/teams'])
 })
 
 test('malformed or excessive preference payloads cannot become filesystem paths or corrupt a saved order', async () => {
