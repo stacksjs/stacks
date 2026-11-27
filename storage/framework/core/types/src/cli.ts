@@ -475,7 +475,10 @@ export interface FreshOptions extends CliOptions {
 }
 
 export interface InspireOptions extends CliOptions {}
-export interface InstallOptions extends CliOptions {}
+export interface InstallOptions extends CliOptions {
+  frozenLockfile?: boolean
+  ignoreScripts?: boolean
+}
 
 export interface KeyOptions extends CliOptions {}
 
