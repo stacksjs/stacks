@@ -1,5 +1,51 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.708...v0.75.709)
+
+## 🐛 Bug Fixes
+
+- **desktop**: sign Craft with the macOS bundle identifier ([a28f0a6](https://github.com/stacksjs/stacks/commit/a28f0a6)) _(by Chris Breuer)_
+- **dashboard**: a closing dialog fades instead of vanishing ([839cb73](https://github.com/stacksjs/stacks/commit/839cb73)) _(by glennmichael123)_
+- **buddy**: honor stx full-page navigation in lint ([d0e27af](https://github.com/stacksjs/stacks/commit/d0e27af)) _(by Chris)_
+- **release**: verify retained archives after a lost upload response ([0fed683](https://github.com/stacksjs/stacks/commit/0fed683)) _(by Chris Breuer)_
+- **release**: use trusted npm publication for the verified stx sample ([9e4e302](https://github.com/stacksjs/stacks/commit/9e4e302)) _(by Chris)_
+- **buddy**: report the resolved deploy target in notifications ([7377e8c](https://github.com/stacksjs/stacks/commit/7377e8c)) _(by Chris Breuer)_
+- **buddy**: preserve explicit DNS holds after environment loading ([b0fe074](https://github.com/stacksjs/stacks/commit/b0fe074)) _(by Chris Breuer)_
+- **buddy**: wait for the requested command registrar ([78e4931](https://github.com/stacksjs/stacks/commit/78e4931)) _(by Chris)_
+- **server**: hand external stx redirects to the browser ([12e4d47](https://github.com/stacksjs/stacks/commit/12e4d47)) _(by Chris)_
+- **auth**: render one named password recovery link ([6a989fd](https://github.com/stacksjs/stacks/commit/6a989fd)) _(by Chris)_
+
+## ✅ Tests
+
+- **release**: exercise the stx sample publisher with npm ([862f666](https://github.com/stacksjs/stacks/commit/862f666)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **deps**: adopt stx 0.2.960 ([4d6de74](https://github.com/stacksjs/stacks/commit/4d6de74)) _(by Chris)_
+- verify Mail and Buddy with stx 0.2.958 ([6801b86](https://github.com/stacksjs/stacks/commit/6801b86)) _(by Chris)_
+- **deps**: adopt stx 0.2.958 ([23b4bc4](https://github.com/stacksjs/stacks/commit/23b4bc4)) _(by glennmichael123)_
+- integrate Stacks 0.75.708 for Mail and Buddy ([74c7adc](https://github.com/stacksjs/stacks/commit/74c7adc)) _(by Chris)_
+- include verified recovery and support fixes for Mail ([804c67e](https://github.com/stacksjs/stacks/commit/804c67e)) _(by Chris Breuer)_
+- integrate current Stacks main for Mail account setup ([2ca53ea](https://github.com/stacksjs/stacks/commit/2ca53ea)) _(by Chris Breuer)_
+- include the verified Buddy startup fix in redirect CI ([69d2daa](https://github.com/stacksjs/stacks/commit/69d2daa)) _(by Chris Breuer)_
+- verify redirects against current Stacks main ([4a8960c](https://github.com/stacksjs/stacks/commit/4a8960c)) _(by Chris Breuer)_
+- refresh external view redirects against Stacks main ([fda7860](https://github.com/stacksjs/stacks/commit/fda7860)) _(by Chris)_
+- refresh the recovery link against current Stacks main ([a4a46a1](https://github.com/stacksjs/stacks/commit/a4a46a1)) _(by Chris)_
+- integrate current Stacks main with external view redirects ([add0383](https://github.com/stacksjs/stacks/commit/add0383)) _(by Chris)_
+- integrate current Stacks main with password recovery accessibility ([197a127](https://github.com/stacksjs/stacks/commit/197a127)) _(by Chris)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/support-release-deploy-integration ([630e185](https://github.com/stacksjs/stacks/commit/630e185)) _(by Chris)_
+- Merge remote-tracking branch 'origin/main' into codex/support-release-deploy-integration ([5b686e1](https://github.com/stacksjs/stacks/commit/5b686e1)) _(by Chris Breuer)_
+- Merge remote-tracking branch 'origin/main' into codex/password-recovery-link ([1307980](https://github.com/stacksjs/stacks/commit/1307980)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.707...v0.75.708)
 
 ## ✨ Features
