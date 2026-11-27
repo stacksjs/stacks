@@ -844,7 +844,9 @@ onDestroy(() => {
         </thead>
 
         <tbody :class="bodyClass()" :aria-busy="loading() ? 'true' : null">
-          <tr :for="row in rows()" class="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
+          <!-- One hover colour for the row and its sticky Actions cell, opaque so
+               the columns scrolling under that cell never show through it. -->
+          <tr :for="row in rows()" class="hover:bg-[var(--row-hover)] transition-colors [--row-hover:#fafafa] dark:[--row-hover:#232323] group">
             <td :if="selectable()" class="pl-3 pr-1 py-2 w-8">
               <input
                 type="checkbox"
@@ -864,7 +866,7 @@ onDestroy(() => {
               <img :if="cellKind(row, column) === 'image'" :src="cellHref(row, column)" alt="" loading="lazy" class="inline-block object-cover h-7 w-7 bg-neutral-100 dark:bg-neutral-800 rounded" />
               <code :if="cellKind(row, column) === 'code'" class="font-mono text-[12px]">{{ cellValue(row, column) }}</code>
             </td>
-            <td class="right-0 sticky z-10 px-3 py-2 text-right bg-white dark:bg-neutral-900 group-hover:bg-neutral-50 dark:group-hover:bg-white/5 border-black/5 border-l dark:border-white/10 transition-colors">
+            <td class="right-0 sticky z-10 px-3 py-2 text-right bg-white dark:bg-neutral-900 group-hover:bg-[var(--row-hover)] border-black/5 border-l dark:border-white/10 transition-colors">
               <ModelRecordActions
                 :record="row"
                 :modelName="modelName()"

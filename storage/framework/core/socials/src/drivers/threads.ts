@@ -11,6 +11,7 @@ import type {
   TimelineQuery,
   TimelineResult,
 } from '../types'
+import { rejectPostVideo } from '../media'
 import { exceedsLimit } from '../text'
 import { apiFailure, SocialApiError } from '../errors'
 import { isMissingGraphObject } from '../meta-graph'
@@ -217,6 +218,7 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver, SocialDe
    * is refused rather than dropped from the post.
    */
   async publish(identity: SocialIdentityCredentials, post: PublishPostInput): Promise<PublishedPost> {
+    rejectPostVideo(post, 'Threads')
     if (!identity.accessToken) throw new Error('Threads access token is missing for this identity.')
 
     // `did` carries the Threads user id for Threads identities.

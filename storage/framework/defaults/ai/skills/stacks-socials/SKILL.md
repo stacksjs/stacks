@@ -148,6 +148,14 @@ reference with the post, then pass it as `quote` in the driver's third
 argument. A quote can accompany images or an external card. Supply
 `selfLabels` in the same argument to attach the author's content labels.
 
+Mastodon and Bluesky take one MP4 in `PublishPostInput.video` with its bytes,
+MIME type, optional alt text, and optional dimensions. Mastodon checks the
+instance's advertised media limits and waits for its attachment endpoint to
+return the processed video. Bluesky uses a PDS-scoped upload token and waits
+for its video service to return the processed blob. Reuse the normal Mastodon
+idempotency key or Bluesky record key on retry. The other drivers reject a
+video before they publish a post.
+
 Instagram waits for
 each media container to be FINISHED before publishing it (containerTimeoutMs,
 five minutes by default), sends alt text on images and carousel items, refuses an
@@ -159,6 +167,15 @@ w_organization_social scope; listOrganizations(accessToken) lists the Pages the
 member may post for (rw_organization_admin). PublishedPost.warnings
 lists what went out without failing the post. The LinkedIn version is
 LINKEDIN_API_VERSION unless a configured one is still supported.
+
+For LinkedIn and Instagram first comments, call
+`createComment(identity, publishedPost.uri, text)` after saving the published
+post. LinkedIn needs `w_member_social_feed` or `w_organization_social_feed`
+and the matching author URN. Instagram (Facebook Login) needs a Facebook User
+token with `instagram_manage_comments` in addition to its normal account access.
+An accepted response can return no comment ID. The comment is a distinct
+write. Do not send the parent post again when this write fails, and do not
+blindly repeat a timed-out comment whose outcome is unknown.
 
 A driver error's isAuthError is narrow; classifySocialError in
 publish-errors.ts sorts any failure by status and body, and only `expired`

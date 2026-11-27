@@ -9,6 +9,7 @@ import type {
   TimelineQuery,
   TimelineResult,
 } from '../types'
+import { rejectPostVideo } from '../media'
 import { isMissingGraphObject, META_GRAPH_VERSION } from '../meta-graph'
 import { exceedsLimit } from '../text'
 import { apiFailure, SocialApiError } from '../errors'
@@ -244,6 +245,7 @@ export class InstagramPublishingDriver implements SocialPublishingDriver, Social
    * with only bytes is refused rather than left out.
    */
   async publish(identity: SocialIdentityCredentials, post: PublishPostInput): Promise<PublishedPost> {
+    rejectPostVideo(post, 'Instagram')
     if (!identity.accessToken) throw new Error('Instagram access token is missing for this identity.')
 
     // `did` carries the Instagram Business account id for Instagram identities.
@@ -328,6 +330,26 @@ export class InstagramPublishingDriver implements SocialPublishingDriver, Social
       uri: published.id,
       url: permalink?.permalink,
     }
+  }
+
+  /**
+   * Add a comment to published media, using a token with comment permission.
+   * Returns the comment ID, or null if Meta accepted the comment without one.
+   */
+  async createComment(identity: SocialIdentityCredentials, mediaId: string, text: string): Promise<string | null> {
+    const token = identity.accessToken
+    if (!token) throw new Error('Instagram access token is missing for this identity.')
+    const id = mediaId.trim()
+    if (!/^[0-9]{1,32}$/.test(id)) throw new Error('An Instagram published media ID is required to comment.')
+    const message = text.trim()
+    if (!message) throw new Error('Instagram comment text is required.')
+
+    const result = await this.graph<{ id?: string }>(`/${id}/comments?${new URLSearchParams({ message })}`, {
+      method: 'POST',
+      redirect: 'error',
+      signal: AbortSignal.timeout(15_000),
+    }, token)
+    return typeof result?.id === 'string' && /^[0-9]{1,32}$/.test(result.id) ? result.id : null
   }
 
   /**
