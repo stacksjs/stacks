@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.698...v0.75.699)
+
+## 🐛 Bug Fixes
+
+- **buddy**: use the shared GitHub API version for schedules ([3746546](https://github.com/stacksjs/stacks/commit/3746546)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.697...v0.75.698)
 
 ## ✨ Features
