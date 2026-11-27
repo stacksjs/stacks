@@ -46,18 +46,30 @@ test('the actual Buddy CLI generates and checks application workflows', async ()
     writeFileSync(join(root, 'bunfig.toml'), 'preload = []')
     writeFileSync(join(root, 'config/workflows.ts'), 'export default { provider: "reviewos", origin: "https://reviewos.org", repository: "owner/app", runners: { checks: ["self-hosted", "linux"] } }')
     const cli = fileURLToPath(new URL('../src/cli.ts', import.meta.url))
-    async function run(...args: string[]) {
-      const child = Bun.spawn([process.execPath, '--no-env-file', cli, ...args], { cwd: root, env: { ...process.env, CI: '1', APP_ENV: 'test' }, stdout: 'pipe', stderr: 'pipe' })
+    async function run(args: string[], preload?: string) {
+      const child = Bun.spawn([process.execPath, '--no-env-file', ...(preload ? ['--preload', preload] : []), cli, ...args], { cwd: root, env: { ...process.env, CI: '1', APP_ENV: 'test' }, stdout: 'pipe', stderr: 'pipe' })
       const [output, error, code] = await Promise.all([new Response(child.stdout).text(), new Response(child.stderr).text(), child.exited])
       return { output, error, code }
     }
-    expect((await run('workflow:setup')).code).toBe(0)
-    expect((await run('workflow:setup', '--check')).code).toBe(0)
+    expect((await run(['workflow:setup'])).code).toBe(0)
+    expect((await run(['workflow:setup', '--check'])).code).toBe(0)
     writeFileSync(join(root, '.reviewos/workflows/ci.yml'), '# edited workflow')
-    const stale = await run('workflow:setup', '--check')
+    const stale = await run(['workflow:setup', '--check'])
     expect(stale.code).not.toBe(0)
     expect(stale.output + stale.error).toContain('Regenerate')
-    const nonNative = await run('workflow:check-credentials', 'native-accept')
+    const delay = join(root, 'delay-workflow.ts')
+    writeFileSync(delay, String.raw`
+Bun.plugin({
+  name: 'slow-workflow-command-fixture',
+  setup(build) {
+    build.onLoad({ filter: /[\\/]commands[\\/]workflow\.ts$/ }, async ({ path }) => {
+      await Bun.sleep(5300)
+      return { contents: await Bun.file(path).text(), loader: 'ts' }
+    })
+  },
+})
+`)
+    const nonNative = await run(['workflow:check-credentials', 'native-accept'], delay)
     expect(nonNative.code).not.toBe(0)
     expect(nonNative.output + nonNative.error).toContain('Configure a native workflow')
   }

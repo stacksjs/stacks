@@ -6,7 +6,7 @@ script_dir="$(cd "$(dirname "$0")" && pwd)"
 workspace_root="$script_dir/.."
 normalize_package="$script_dir/normalize-workspace-deps-for-publish"
 validate_package="$script_dir/validate-publish-exports.ts"
-publish_flags="--access public --ignore-scripts"
+publish_package="$script_dir/../../../.github/scripts/publish-verified-sample.ts"
 failed=0
 package_backup=""
 package_archive_dir=""
@@ -27,9 +27,6 @@ trap restore_package EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
-if [ "${PUBLISH_DRY_RUN:-}" = "1" ]; then
-  publish_flags="$publish_flags --dry-run"
-fi
 roots=(
   "$script_dir/../libs/components"
   "$script_dir/../libs/functions"
@@ -72,11 +69,6 @@ for package_file in "${package_files[@]}"; do
     continue
   fi
 
-  if npm view "$package_name@$package_version" version >/dev/null 2>&1; then
-    echo "↪ $package_name@$package_version already exists on npm; skipping"
-    continue
-  fi
-
   backup_candidate=$(mktemp)
   if ! cp "$package_file" "$backup_candidate"; then
     rm -f "$backup_candidate"
@@ -96,7 +88,7 @@ for package_file in "${package_files[@]}"; do
     cd "$dir" &&
     bun run build &&
     bun "$validate_package" "$package_file" "$package_archive_dir/package.tgz" &&
-    bun publish "$package_archive_dir/package.tgz" $publish_flags
+    bun --config=/dev/null "$publish_package" "$package_archive_dir/package.tgz" "$package_name" "$package_version"
   ); then
     status=0
   else

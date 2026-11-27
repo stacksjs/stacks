@@ -143,14 +143,19 @@ export function mountNativeSupport(container: HTMLElement, options: NativeSuppor
       for (const name of ['stx:navigate', 'stacks:auth-changed']) events?.removeEventListener(name, refresh)
       events?.removeEventListener('storage', storage)
       events?.removeEventListener('pagehide', clear)
+      events?.removeEventListener('pageshow', restore)
       events?.removeEventListener('stacks:auth-changing', clear)
     },
   }
   const refresh = () => { void controller.refresh() }
+  const restore = (event: Event) => {
+    if ((event as PageTransitionEvent).persisted) refresh()
+  }
   const storage = (event: Event) => { const key = (event as StorageEvent).key; if (key === null || /auth|token|session/i.test(key)) refresh() }
   for (const name of ['stx:navigate', 'stacks:auth-changed']) events?.addEventListener(name, refresh)
   events?.addEventListener('storage', storage)
   events?.addEventListener('pagehide', clear)
+  events?.addEventListener('pageshow', restore)
   events?.addEventListener('stacks:auth-changing', clear)
   return controller
 }

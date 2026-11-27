@@ -78,7 +78,9 @@ The stx component uses `mountNativeSupport` from the browser subpath and native
 so the bridge uses the native double-submit cookie from the current page.
 Navigation, page removal,
 logout, sign-in and cross-tab auth changes clear the old messenger before any
-new customer session is booted. Customer credentials remain element properties.
+new customer session is booted. When a browser restores a cached page from
+history, the bridge requests a fresh session for the current account. Customer
+credentials remain element properties.
 No framework upgrade enables this integration or sends customer data by itself.
 
 `buddy support:doctor` checks usage, bounded summaries and, when native UI is

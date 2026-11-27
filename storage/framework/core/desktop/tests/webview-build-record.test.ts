@@ -211,6 +211,7 @@ describe('the identity a Mac app is signed with', () => {
     const appPath = join(directory, 'TinkerBelle.app')
     mkdirSync(join(appPath, 'Contents/MacOS'), { recursive: true })
     writeFileSync(join(appPath, 'Contents/MacOS/craft-runtime'), 'runtime')
+    writeFileSync(join(appPath, 'Contents/Info.plist'), '<plist><dict><key>CFBundleIdentifier</key><string>org.test.tinkerbelle</string></dict></plist>')
     const ran: string[][] = []
     resignWebviewMacosApp({ appPath, config: {}, signingIdentity: 'Developer ID Application: Example (ABCDE12345)', run: (command) => { ran.push(command) } })
     const entitlements = join(directory, 'TinkerBelle.entitlements')
@@ -218,6 +219,9 @@ describe('the identity a Mac app is signed with', () => {
     expect(ran.map(command => command.at(-1))).toEqual([join(appPath, 'Contents/MacOS/craft-runtime'), appPath])
     expect(ran.every(command => command.includes('Developer ID Application: Example (ABCDE12345)') && command.includes('--timestamp') && command.includes('runtime'))).toBe(true)
     expect(ran[0]).not.toContain('--entitlements')
+    expect(ran[0]).toContain('--identifier')
+    expect(ran[0]).toContain('org.test.tinkerbelle')
+    expect(ran[1]).not.toContain('--identifier')
     expect(ran[1]).toContain(entitlements)
 
     const kept = join(directory, 'kept.entitlements')

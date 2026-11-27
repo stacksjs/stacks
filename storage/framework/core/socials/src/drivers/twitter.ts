@@ -154,7 +154,7 @@ export class TwitterApiError extends SocialApiError {
   }
 
   get isAuthError(): boolean {
-    return this.status === 401 || this.status === 403
+    return this.kind === 'expired'
   }
 }
 
@@ -200,6 +200,27 @@ export interface TwitterProfile {
   id: string
   username: string
   name?: string
+}
+
+export interface TwitterDirectMessageEvent {
+  id: string
+  dm_conversation_id: string
+  sender_id?: string
+  participant_ids?: string[]
+  created_at?: string
+  text?: string
+  attachments?: { media_keys?: string[], card_ids?: string[] }
+}
+
+export interface TwitterDirectMessagePage {
+  events: TwitterDirectMessageEvent[]
+  users: Array<TwitterProfile & { profile_image_url?: string }>
+  cursor?: string
+}
+
+function directMessageConversationId(id: string): string {
+  if (!/^\d{1,19}(?:-\d{1,19})?$/.test(id)) throw new Error('An X direct-message conversation id is required.')
+  return id
 }
 
 /** base64url with padding stripped — the encoding OAuth2/PKCE expects. */
@@ -410,6 +431,66 @@ export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDe
         url: `https://x.com/i/web/status/${tweet.id}`,
       })),
     }
+  }
+
+  /**
+   * One page of the user's message creation events. Reads are billable. Only
+   * the sender is expanded, so each event can add at most one billable user.
+   */
+  async listDirectMessageEvents(
+    identity: SocialIdentityCredentials,
+    query: TimelineQuery & { conversationId?: string } = {},
+  ): Promise<TwitterDirectMessagePage> {
+    if (!identity.accessToken) throw new Error('Twitter access token is missing for this identity.')
+    const endpoint = query.conversationId === undefined
+      ? '/2/dm_events'
+      : `/2/dm_conversations/${directMessageConversationId(query.conversationId)}/dm_events`
+    const url = new URL(`${this.apiBase}${endpoint}`)
+    const requested = query.limit ?? 50
+    const limit = Number.isFinite(requested) ? Math.max(1, Math.min(100, Math.trunc(requested))) : 50
+    url.searchParams.set('max_results', String(limit))
+    url.searchParams.set('event_types', 'MessageCreate')
+    url.searchParams.set('dm_event.fields', 'attachments,created_at,dm_conversation_id,sender_id,text')
+    url.searchParams.set('expansions', 'sender_id')
+    url.searchParams.set('user.fields', 'profile_image_url')
+    if (query.cursor) url.searchParams.set('pagination_token', query.cursor)
+
+    const payload = await this.request<{
+      data?: TwitterDirectMessageEvent[]
+      includes?: { users?: TwitterDirectMessagePage['users'] }
+      meta?: { next_token?: string }
+      errors?: unknown[]
+    }>(url.toString(), { headers: { authorization: `Bearer ${identity.accessToken}` }, signal: AbortSignal.timeout(15_000) })
+
+    if (!payload.data?.length && payload.errors?.length)
+      throw new TwitterApiError('X did not return the requested direct messages.', 502, JSON.stringify(payload))
+
+    return { events: payload.data ?? [], users: payload.includes?.users ?? [], cursor: payload.meta?.next_token }
+  }
+
+  /** Send one text reply to an existing conversation using the user's token. */
+  async sendDirectMessage(
+    identity: SocialIdentityCredentials,
+    conversationId: string,
+    text: string,
+  ): Promise<{ conversationId: string, eventId: string }> {
+    if (!identity.accessToken) throw new Error('Twitter access token is missing for this identity.')
+    if (!text.trim()) throw new Error('Write a message before sending.')
+    const id = directMessageConversationId(conversationId)
+    const payload = await this.request<{ data?: { dm_conversation_id?: string, dm_event_id?: string } }>(
+      `${this.apiBase}/2/dm_conversations/${id}/messages`,
+      {
+        method: 'POST',
+        headers: { 'authorization': `Bearer ${identity.accessToken}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ text }),
+        signal: AbortSignal.timeout(15_000),
+      },
+    )
+    const eventId = payload.data?.dm_event_id
+    if (payload.data?.dm_conversation_id !== id || !eventId || !/^\d{1,19}$/.test(eventId))
+      throw new TwitterApiError('X did not confirm the reply. Refresh the conversation before sending again.', 502, JSON.stringify(payload))
+
+    return { conversationId: id, eventId }
   }
 
   /** Read public engagement for published post IDs, up to 100 per request. */

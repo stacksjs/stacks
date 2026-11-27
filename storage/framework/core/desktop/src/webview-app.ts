@@ -321,7 +321,9 @@ export function assembleWebviewMacosApp(options: AssembleWebviewMacosAppOptions)
   const entitlementsPath = join(options.output, `${config.appName}.entitlements`)
   writeFileSync(entitlementsPath, renderWebviewEntitlements(config))
 
-  run(codesignArgs({ identity, target: runtime }))
+  // Craft runs as a child process but presents itself to Notification Center
+  // as the enclosing app. macOS checks both the bundle and the caller's signature.
+  run(codesignArgs({ identity, target: runtime, identifier: config.macos?.bundleId ?? config.appId }))
   run(codesignArgs({ identity, target: appPath, entitlements: entitlementsPath }))
   return { appPath, entitlementsPath, ignoredPlistKeys: plist.ignored }
 }
@@ -443,12 +445,15 @@ export function resignWebviewMacosApp(options: { appPath: string, config: Pick<R
   const run = options.run ?? runBundleCommand
   const runtime = join(options.appPath, 'Contents', 'MacOS', WEBVIEW_RUNTIME_NAME)
   if (!existsSync(runtime)) throw new Error(`${options.appPath} has no ${WEBVIEW_RUNTIME_NAME}: it is not a web view app this build made.`)
+  const plist = readFileSync(join(options.appPath, 'Contents', 'Info.plist'), 'utf8')
+  const identifier = /<key>CFBundleIdentifier<\/key>\s*<string>([a-z0-9.-]+)<\/string>/i.exec(plist)?.[1]
+  if (!identifier) throw new Error(`${options.appPath} has no valid CFBundleIdentifier in its Info.plist.`)
   let entitlements = options.entitlementsPath
   if (!entitlements || !existsSync(entitlements)) {
     entitlements = join(dirname(options.appPath), `${basename(options.appPath, '.app')}.entitlements`)
     writeFileSync(entitlements, renderWebviewEntitlements(options.config))
   }
-  run(codesignArgs({ identity: options.signingIdentity, target: runtime }))
+  run(codesignArgs({ identity: options.signingIdentity, target: runtime, identifier }))
   run(codesignArgs({ identity: options.signingIdentity, target: options.appPath, entitlements }))
 }
 

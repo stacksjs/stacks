@@ -2,7 +2,7 @@
   "name": "@stacksjs/query-builder",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.707",
+  "version": "0.75.708",
   "description": "The Stacks Query Builder integration",
   "author": "Chris Breuer",
   "contributors": [
