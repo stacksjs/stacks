@@ -1,5 +1,38 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.696...v0.75.697)
+
+## ✨ Features
+
+- **buddy**: alert before scheduled GitHub tokens expire ([9f27034](https://github.com/stacksjs/stacks/commit/9f27034)) _(by Chris)_
+- **buddy**: schedule GitHub workflows with EventBridge ([2ccd67a](https://github.com/stacksjs/stacks/commit/2ccd67a)) _(by Chris)_
+- **desktop**: adopt existing workspaces in the native webview launcher ([c93ddb3](https://github.com/stacksjs/stacks/commit/c93ddb3)) _(by Chris Breuer)_ ([#3404](https://github.com/stacksjs/stacks/issues/3404), [stacksjs/postline#204](https://github.com/stacksjs/postline/issues/204))
+- **socials**: list linked Instagram publishing pages ([8b9ab0c](https://github.com/stacksjs/stacks/commit/8b9ab0c)) _(by Chris Breuer)_ ([#3402](https://github.com/stacksjs/stacks/issues/3402), [stacksjs/postline#128](https://github.com/stacksjs/postline/issues/128))
+- **desktop**: run app preparation before installing updates ([e60f4ab](https://github.com/stacksjs/stacks/commit/e60f4ab)) _(by Chris Breuer)_ ([#3400](https://github.com/stacksjs/stacks/issues/3400), [stacksjs/postline#193](https://github.com/stacksjs/postline/issues/193))
+
+## 🐛 Bug Fixes
+
+- **buddy**: show declared mailboxes in provisioning previews ([9bbd917](https://github.com/stacksjs/stacks/commit/9bbd917)) _(by Chris Breuer)_
+- **buddy**: isolate mailboxes on shared mail deployments ([ab0a30e](https://github.com/stacksjs/stacks/commit/ab0a30e)) _(by Chris)_
+- **buddy**: restore dependency files after failed upgrade installs ([d2c4efa](https://github.com/stacksjs/stacks/commit/d2c4efa)) _(by Chris Breuer)_
+- **buddy**: rearm GitHub expiry alerts during token rotation ([d7fe09e](https://github.com/stacksjs/stacks/commit/d7fe09e)) _(by Chris)_
+- **dashboard**: polish theme contrast and restore inset scrolling ([c31a9e0](https://github.com/stacksjs/stacks/commit/c31a9e0)) _(by Chris Breuer)_
+- **bootstrap**: install Buddy in fresh package apps ([f6ed890](https://github.com/stacksjs/stacks/commit/f6ed890)) _(by Chris Breuer)_ ([#3406](https://github.com/stacksjs/stacks/issues/3406), [stacksjs/postline#230](https://github.com/stacksjs/postline/issues/230))
+- **upgrade**: resolve app releases through Bun registries ([b24add3](https://github.com/stacksjs/stacks/commit/b24add3)) _(by Chris Breuer)_ ([#3405](https://github.com/stacksjs/stacks/issues/3405), [stacksjs/postline#230](https://github.com/stacksjs/postline/issues/230))
+- **socials**: verify Bluesky discovery and guard credential requests ([397d9a7](https://github.com/stacksjs/stacks/commit/397d9a7)) _(by Chris Breuer)_ ([#3401](https://github.com/stacksjs/stacks/issues/3401), [stacksjs/postline#132](https://github.com/stacksjs/postline/issues/132), [stacksjs/postline#237](https://github.com/stacksjs/postline/issues/237))
+- **docs**: reserve space for the home hero logo ([34bdc74](https://github.com/stacksjs/stacks/commit/34bdc74)) _(by Chris Breuer)_
+- **server**: prewarm the replacement worker during deploys ([2b3ea5b](https://github.com/stacksjs/stacks/commit/2b3ea5b)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **docs**: refresh native capability catalog ([c80430f](https://github.com/stacksjs/stacks/commit/c80430f)) _(by Chris Breuer)_
+- **cloud**: enable HTTP/2 on the shared gateway ([430e98b](https://github.com/stacksjs/stacks/commit/430e98b)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.695...v0.75.696)
 
 ## ✨ Features
