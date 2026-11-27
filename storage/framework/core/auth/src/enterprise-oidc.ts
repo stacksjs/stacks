@@ -6,6 +6,12 @@ export interface EnterpriseOidcConfig {
   clientId: string
   clientSecret: string
   redirectUri: string
+  /** Exact HTTPS endpoint URLs approved by the operator for this client. */
+  approvedEndpoints?: {
+    authorizationEndpoint?: string
+    tokenEndpoint?: string
+    jwksUri?: string
+  }
   /** An injected provider HTTP boundary for tests or a controlled egress transport. */
   fetch?: typeof fetch
 }
@@ -26,18 +32,28 @@ function options(config: EnterpriseOidcConfig) {
     return response
   } }
 }
+
+function verifyEndpoint(endpoint: string | undefined, approved: string | undefined, issuerOrigin: string) {
+  if (!endpoint) throw new TypeError('OIDC discovery is missing a required endpoint.')
+  const url = https(endpoint)
+  if (approved !== undefined) {
+    if (endpoint !== approved) throw new TypeError('OIDC discovery does not match the approved endpoint.')
+  }
+  else if (url.origin !== issuerOrigin) {
+    throw new TypeError('OIDC endpoints must use the approved issuer origin.')
+  }
+}
+
 async function provider(config: EnterpriseOidcConfig) {
   const issuer = https(config.issuer)
   https(config.redirectUri)
   if (!config.clientId || !config.clientSecret) throw new TypeError('OIDC client configuration is missing.')
   const requestOptions = options(config)
   const metadata = await oauth.processDiscoveryResponse(issuer, await oauth.discoveryRequest(issuer, { ...requestOptions, algorithm: 'oidc' }))
-  // The operator approves one issuer origin. Discovery may not redirect a
-  // client secret, browser, or JWKS fetch to a different origin.
-  for (const endpoint of [metadata.authorization_endpoint, metadata.token_endpoint, metadata.jwks_uri]) {
-    if (!endpoint || https(endpoint).origin !== issuer.origin)
-      throw new TypeError('OIDC endpoints must use the approved issuer origin.')
-  }
+  const approved = config.approvedEndpoints
+  verifyEndpoint(metadata.authorization_endpoint, approved?.authorizationEndpoint, issuer.origin)
+  verifyEndpoint(metadata.token_endpoint, approved?.tokenEndpoint, issuer.origin)
+  verifyEndpoint(metadata.jwks_uri, approved?.jwksUri, issuer.origin)
   const client: oauth.Client = { client_id: config.clientId, id_token_signed_response_alg: 'RS256' }
   return { metadata, client, requestOptions }
 }
