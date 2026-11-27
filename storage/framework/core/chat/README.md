@@ -34,7 +34,10 @@ Drivers are configured with the following environment variables:
 
 #### Discord
 
-- None
+Set `DISCORD_BOT_TOKEN` or `DISCORD_WEBHOOK_URL` for the configured driver.
+`DiscordDriver.send` accepts `ChatMessage.attachments` alongside text or on its
+own. Pass the filename, MIME type, and bytes as a `Uint8Array` or UTF-8 string.
+The driver uploads those bytes in the same request as the message.
 
 #### Slack
 
