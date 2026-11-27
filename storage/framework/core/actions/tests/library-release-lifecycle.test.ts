@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path'
 // Public Buddy commands prove config loading and orchestration in a generic app;
 // provider transports are exercised separately, without registry credentials.
 const cli = resolve(import.meta.dir, '../../buddy/src/cli.ts')
-async function app(config: string, args: string[], env: Record<string, string> = {}, localPush = false, sourceWorkflow = true, upstream = 'main') {
+async function app(config: string, args: string[], env: Record<string, string> = {}, localPush: boolean | 'existing-tag' = false, sourceWorkflow = true, upstream = 'main') {
   const root = await mkdtemp(join(tmpdir(), 'stacks-buddy-release-'))
   try {
     await mkdir(join(root, 'config'), { recursive: true })
@@ -21,7 +21,9 @@ async function app(config: string, args: string[], env: Record<string, string> =
     }
     if (localPush) {
       const bare = join(root, '.release-remote.git')
-      for (const args of [['init', '--bare', '--quiet', bare], ['remote', 'add', 'origin', bare], ['push', '--quiet', '--set-upstream', 'origin', `HEAD:${upstream}`]]) {
+      const commands = [['init', '--bare', '--quiet', bare], ['remote', 'add', 'origin', bare], ['push', '--quiet', '--set-upstream', 'origin', `HEAD:${upstream}`]]
+      if (localPush === 'existing-tag') commands.push(['--git-dir', bare, 'tag', 'v1.0.1', `refs/heads/${upstream}`])
+      for (const args of commands) {
         const result = Bun.spawnSync(['git', ...args], { cwd: root, stdout: 'pipe', stderr: 'pipe' })
         if (result.exitCode) throw new Error(result.stderr.toString())
       }
@@ -110,6 +112,16 @@ test('normal Buddy release validates libraries then uses the existing Bump and a
   expect(result.manifest.version).toBe('1.0.1')
   expect(result.pushedTag).toMatch(/^[a-f0-9]{40}$/)
   expect(result.output).toContain('Triggered CI/CD Release')
+  expect(result.candidate).toBe(false)
+}, 30_000)
+
+test('normal Buddy release refuses an occupied remote tag before generating library entries', async () => {
+  const config = `{ repository: 'fixture/libraries', release: { publisher: 'bun' }, packages: [{ name: '@fixture/math', registry: 'npm' }] }`
+  const result = await app(config, ['release', '--bump', 'patch'], {}, 'existing-tag')
+  expect(result.code).not.toBe(0)
+  expect(result.output).toContain(`refs/tags/v1.0.1 already exists on origin at ${result.pushedTag}`)
+  expect(result.output).not.toContain('Generating library entry points')
+  expect(result.manifest.version).toBe('1.0.0')
   expect(result.candidate).toBe(false)
 }, 30_000)
 
