@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.710...v0.75.711)
+
+## ✨ Features
+
+- **desktop**: opt in to managed auth schema initialization ([629382b](https://github.com/stacksjs/stacks/commit/629382b)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- guard Buddy releases against concurrent tags ([f35d5d8](https://github.com/stacksjs/stacks/commit/f35d5d8)) _(by Chris)_
+- **realtime**: resolve acknowledged Redis registrations ([d0c6cb6](https://github.com/stacksjs/stacks/commit/d0c6cb6)) _(by Chris)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/webview-managed-auth-schema ([61c5e0b](https://github.com/stacksjs/stacks/commit/61c5e0b)) _(by Chris Breuer)_
+- Merge remote-tracking branch 'origin/main' into codex/buddy-release-concurrency ([f8e06e8](https://github.com/stacksjs/stacks/commit/f8e06e8)) _(by Chris Breuer)_
+- Merge remote-tracking branch 'origin/main' into codex/redis-invalidation-topic-readiness ([41abaf6](https://github.com/stacksjs/stacks/commit/41abaf6)) _(by Chris)_
+- Merge remote-tracking branch 'origin/main' into codex/redis-invalidation-topic-readiness ([91c9df6](https://github.com/stacksjs/stacks/commit/91c9df6)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.709...v0.75.710)
 
 ## 🐛 Bug Fixes
