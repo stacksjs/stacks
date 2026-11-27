@@ -507,7 +507,7 @@ export async function startProductionServer(options?: { port?: string | number, 
           // gate (a site being down outranks a URL having moved) and before
           // everything else, so a legacy path never needs a stub page to
           // bounce off. Identical placement to the dev views server.
-          const redirected = resolveRedirect(url, redirectRules)
+          const redirected = resolveRedirect(url, redirectRules, req.headers)
           if (redirected)
             return redirected
 
