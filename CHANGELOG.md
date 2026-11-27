@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.704...v0.75.705)
+
+## 🐛 Bug Fixes
+
+- **dashboard**: keep local mail settings available without a live inbox ([3bd917e](https://github.com/stacksjs/stacks/commit/3bd917e)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.703...v0.75.704)
 
 ## ✅ Tests

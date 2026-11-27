@@ -95,6 +95,15 @@ describe('CMS and commerce are off until installed', () => {
       expect(dashboardPageAvailable(path, unavailable)).toBe(true)
   })
 
+  test('mail settings follow the local preferences model when there is no inbox provider', () => {
+    const availability = { schemaModels: ['MailPreference'], inbox: false }
+    const unavailable = unavailableDashboardPages(availability)
+    expect(dashboardPageAvailable('/inbox', unavailable)).toBe(false)
+    expect(dashboardPageAvailable('/inbox/activity', unavailable)).toBe(false)
+    expect(dashboardPageAvailable('/inbox/settings', unavailable)).toBe(true)
+    expect(dashboardViewExclusions(frameworkDashboard, availability)).not.toContain(join(frameworkDashboard, 'inbox/settings.stx'))
+  })
+
   test('analytics and telemetry pages follow their local models or hosted providers', () => {
     const local = unavailableDashboardPages({ schemaModels: ['AnalyticsEvent'] })
     expect(dashboardPageAvailable('/analytics/web', local)).toBe(false)
