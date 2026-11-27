@@ -18,7 +18,7 @@ test('support setup declares the released SDK and preserves an application-selec
         expect(directory).toBe(root)
         calls.push(args)
         if (unavailable) return false
-        await writeFile(manifest, JSON.stringify({ name: 'support-consumer', dependencies: { '@stacksjs/support': '0.75.695' } }))
+        if (args[0] === 'add') await writeFile(manifest, JSON.stringify({ name: 'support-consumer', dependencies: { '@stacksjs/support': '0.75.695' } }))
         return true
       },
     }
@@ -27,7 +27,11 @@ test('support setup declares the released SDK and preserves an application-selec
     unavailable = false
     expect(await installSupportSdk(root, '0.75.695', deps)).toBe(true)
     expect(await installSupportSdk(root, '0.75.696', deps)).toBe(true)
-    expect(calls).toEqual(Array.from({ length: 2 }, () => ['add', '--exact', '@stacksjs/support@0.75.695']))
+    expect(calls).toEqual([
+      ['add', '--exact', '@stacksjs/support@0.75.695'],
+      ['add', '--exact', '@stacksjs/support@0.75.695'],
+      ['install'],
+    ])
     expect(JSON.parse(await readFile(manifest, 'utf8')).dependencies['@stacksjs/support']).toBe('0.75.695')
     expect(output.join('\n')).toContain('could not install')
   }

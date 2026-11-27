@@ -17,11 +17,14 @@ export async function installSupportSdk(directory: string, frameworkVersion: str
       dependencies?: Record<string, string>
       devDependencies?: Record<string, string>
     }
-    if (manifest.dependencies?.[supportPackage]) return true
+    const runtimeVersion = manifest.dependencies?.[supportPackage]
     const development = manifest.devDependencies
     const devVersion = development?.[supportPackage]
-    const spec = `${supportPackage}@${devVersion || frameworkVersion}`
-    if (development && devVersion) {
+    const spec = `${supportPackage}@${runtimeVersion || devVersion || frameworkVersion}`
+    if (runtimeVersion) {
+      if (!await deps.install(directory, ['install'])) throw new Error('SDK install failed')
+    }
+    else if (development && devVersion) {
       // Bun add keeps an existing development dependency in that section.
       manifest.dependencies = { ...manifest.dependencies, [supportPackage]: devVersion }
       delete development[supportPackage]
