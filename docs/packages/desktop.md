@@ -56,6 +56,14 @@ which is traded for an HttpOnly cookie; every request must carry the cookie and 
 `127.0.0.1:<port>` in its Host header. The port is remembered between launches. A second launch
 hands its arguments to the first and exits.
 
+On macOS, set `webview.window.keepRunning: true` to keep the app and its agent
+running after the last window closes. Use it when scheduled jobs or a menu bar
+item should outlive the window. The Dock can reopen the window, and Quit stops
+the agent and runs its `stop` hook. Set `keepRunning: false` to quit on close
+even for a tray app. Omit the setting for Craft's default close behavior. The
+setting takes precedence over lifecycle flags in `window.arguments`. Buddy
+checks that the selected macOS Craft runtime supports the requested behavior.
+
 | Command | What it does |
 |---|---|
 | `buddy dev:desktop` | Runs the app from source, with the views rendered live by stx |

@@ -15,7 +15,7 @@ import { applyWidenedPath, desktopAppPaths, INSTANCE_HEADER, INSTANCE_PATH, star
 /**
  * The executable of a web view desktop app (`desktop.webview`), on macOS,
  * Windows and Linux. It takes the instance lock, starts the agent, and opens
- * a Craft web view window on it; when the window closes, the app ends. A
+ * a Craft web view window on it; when Craft exits, the app ends. A
  * second launch hands its arguments to the first and exits.
  *
  * `buddy dev:desktop` runs this from source in the project, with the views
@@ -62,8 +62,8 @@ export interface WebviewAppManifest {
   sourceRevision?: string
 }
 
-/** Craft flags the launcher uses when the runtime has them. */
-export const OPTIONAL_CRAFT_FLAGS = ['--single-instance', '--deep-link', '--app-name'] as const
+/** Craft flags the build detects before generating the launcher. */
+export const OPTIONAL_CRAFT_FLAGS = ['--single-instance', '--deep-link', '--app-name', '--keep-running', '--quit-on-close'] as const
 
 export const WEBVIEW_RUNTIME_NAME = 'craft-runtime'
 /** Passed to a relaunched app: wait for this process (the one being replaced) to end before taking the lock. */
@@ -81,7 +81,7 @@ export interface WebviewAgentModule {
   beforeUpdate?: BeforeDesktopUpdate
   /** Immediately before an app-managed install, for preparation such as a workspace backup. */
   beforeInstall?: BeforeDesktopInstall
-  /** When the window has closed. */
+  /** When the app is shutting down. */
   stop?: () => void | Promise<void>
 }
 

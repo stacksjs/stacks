@@ -115,6 +115,8 @@ export interface WebviewWindowConfig {
   devtools?: boolean
   /** Hide the title bar and let the page draw under it. */
   titlebarHidden?: boolean
+  /** On macOS, keep the app and its agent running after the last window closes. Unset uses Craft's default. */
+  keepRunning?: boolean
   /** Extra flags for the Craft binary, passed through as written (`['--frame-autosave', 'main']`). */
   arguments?: string[]
 }
