@@ -80,7 +80,7 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/cloud": "workspace:*",
     "@stacksjs/cms": "workspace:*",
-    "@stacksjs/components": "^0.2.948",
+    "@stacksjs/components": "^0.2.957",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/desktop-build": "workspace:*",
@@ -110,7 +110,7 @@
     "@stacksjs/sites": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/stx": "^0.2.948",
+    "@stacksjs/stx": "^0.2.957",
     "@stacksjs/tlsx": "^0.13.19",
     "@stacksjs/ts-cloud": "^0.16.144",
     "@stacksjs/ts-md": "^0.1.1",
@@ -118,7 +118,7 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "bun-plugin-stx": "^0.2.948",
+    "bun-plugin-stx": "^0.2.957",
     "pickier": "^0.1.92"
   },
   "peerDependencies": {

@@ -1,10 +1,10 @@
-import type { StxOptions } from '@stacksjs/stx'
+import type { ServeOptions } from 'bun-plugin-stx/serve'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 
 // The dashboard's layouts share <main>. The app's UI router may target a
 // different container or disable client navigation entirely.
-export const dashboardRenderOptions = { router: { container: 'main' } } satisfies { router: StxOptions['router'] }
+export const dashboardRenderOptions = { router: { container: 'main' } } satisfies Pick<ServeOptions, 'router'>
 
 export function dashboardAssetRoutes(defaultsRoot: string, projectRoot: string): Record<string, (request: Request) => Response | Promise<Response>> {
   let script: Promise<string> | undefined
