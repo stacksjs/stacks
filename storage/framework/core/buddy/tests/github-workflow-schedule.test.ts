@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test'
+import { GITHUB_API_VERSION } from '@stacksjs/github'
 import { workflowScheduleTemplate } from '../src/github-workflow-schedule'
 
 const schedule = {
@@ -17,6 +18,7 @@ test('uses a masked token and passes the AWS event timestamp to the GitHub workf
     .toBe('https://api.github.com/repos/owner/predicthq/actions/workflows/realtime-monitor.yml/dispatches')
   const rule = template.Resources.Rule.Properties
   expect(rule.ScheduleExpression).toBe(schedule.expression)
+  expect(rule.Targets[0].HttpParameters.HeaderParameters['X-GitHub-Api-Version']).toBe(GITHUB_API_VERSION)
   expect(rule.Targets[0].InputTransformer).toEqual({
     InputPathsMap: { scheduledAt: '$.time' },
     InputTemplate: '{"ref":"main","inputs":{"scheduled_at":"<scheduledAt>"}}',

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { delimiter, join } from 'node:path'
 import { isDowngrade } from '../src/upgrade/packages'
 
 // stacksjs/stacks#3011: `buddy upgrade` pinned an app's STX 0.2.706 back to
@@ -52,7 +52,11 @@ describe('buddy upgrade and a release that declares older versions (#3011)', () 
   async function upgrade(...flags: string[]): Promise<{ code: number, out: string }> {
     const stdout = join(app, '.stdout')
     const stderr = join(app, '.stderr')
-    const child = Bun.spawn([process.execPath, '--no-env-file', fixture, ...flags], { cwd: app, stdout: Bun.file(stdout), stderr: Bun.file(stderr) })
+    const bin = join(app, 'test-bin')
+    const env = { ...process.env, BUDDY_TEST_BUN: process.execPath, PATH: [bin, process.env.PATH].filter(Boolean).join(delimiter) }
+    const child = Bun.spawn([process.execPath, '--no-env-file', fixture, ...flags], {
+      cwd: app, env, stdout: Bun.file(stdout), stderr: Bun.file(stderr),
+    })
     const code = await child.exited
     const read = (path: string): string => existsSync(path) ? readFileSync(path, 'utf8') : ''
     return { code, out: `${read(stdout)}${read(stderr)}` }
@@ -134,6 +138,45 @@ describe('buddy upgrade and a release that declares older versions (#3011)', () 
     expect(out).not.toContain('downgrade')
     expect(pins()).toEqual(expected('0.2.691'))
   })
+
+  for (const command of ['update', 'add']) {
+    it.skipIf(process.platform === 'win32')(`restores manifests and Bun lockfiles after bun ${command} fails`, async () => {
+      const pkg = join(app, 'package.json')
+      const original = manifest('0.2.680')
+      writeFileSync(pkg, original)
+      const vendored = join(app, 'storage/framework/api/package.json')
+      const originalVendored = '{ "dependencies": { "@stacksjs/actions": "^0.75.310" } }\n'
+      mkdirSync(join(vendored, '..'), { recursive: true })
+      writeFileSync(vendored, originalVendored)
+      const lock = join(app, command === 'add' ? 'bun.lock' : 'bun.lockb')
+      const otherLock = join(app, command === 'add' ? 'bun.lockb' : 'bun.lock')
+      const originalLock = command === 'add' ? Buffer.from('{ "lockfileVersion": 1 }\n') : Buffer.from([0, 255, 0, 73])
+      writeFileSync(lock, originalLock)
+
+      const bin = join(app, 'test-bin')
+      mkdirSync(bin)
+      writeFileSync(join(bin, 'bun'), [
+        '#!/bin/sh',
+        `if [ "$1" = "${command}" ]; then`,
+        '  printf "changed manifest" > package.json',
+        '  printf "changed lock" > bun.lock',
+        '  printf "changed binary lock" > bun.lockb',
+        '  exit 1',
+        'fi',
+        'exec "$BUDDY_TEST_BUN" "$@"',
+        '',
+      ].join('\n'), { mode: 0o755 })
+
+      const { code, out } = await upgrade('--with-install')
+      expect(code).toBe(1)
+      expect(out).toContain(command === 'update' ? 'The install step failed.' : 'bun add')
+      expect(out).toContain('Restored the package manifests and Bun lockfiles.')
+      expect(readFileSync(pkg, 'utf8')).toBe(original)
+      expect(readFileSync(vendored, 'utf8')).toBe(originalVendored)
+      expect(readFileSync(lock).equals(originalLock)).toBe(true)
+      expect(existsSync(otherLock)).toBe(false)
+    })
+  }
 
   it('raises Craft pins and their overrides to the floor the release declares', async () => {
     const app_ = { name: 'app', dependencies: { 'stacks': '0.75.318', 'craft-native': '0.0.435', '@craft-native/android': '0.0.435' }, devDependencies: { '@craft-native/ios': '^0.0.435' }, overrides: { 'craft-native': '0.0.435', '@craft-native/ios': '0.0.435' } }

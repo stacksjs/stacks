@@ -37,7 +37,7 @@ try {
   await upgradeStacksPackages(process.cwd(), {
     dryRun: flags.has('--dry-run'),
     allowDowngrade: flags.has('--allow-downgrade'),
-    noPostinstall: true,
+    noPostinstall: !flags.has('--with-install'),
   })
 }
 finally {

@@ -77,6 +77,8 @@ export interface NativeSupportMount {
 export interface NativeSupportMountOptions {
   /** The native app access token, if it uses bearer auth rather than HttpOnly cookies. */
   getToken?: () => string | null | undefined
+  /** Read the native CSRF token already issued to the page. */
+  getCsrfToken?: () => string | null | undefined
   fetch?: (input: string, init?: RequestInit) => Promise<Response>
   load?: (url: string) => Promise<{ createSupport: (options: { container: HTMLElement, inline?: boolean }) => SupportBrowser }>
   events?: Pick<EventTarget, 'addEventListener' | 'removeEventListener'>
@@ -109,12 +111,16 @@ export function mountNativeSupport(container: HTMLElement, options: NativeSuppor
           const url = new URL(input)
           if (url.username || url.password || url.hash || url.search || (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)))) throw new Error('Invalid support origin')
         }
-        const csrfResponse = await fetcher('/api/csrf-token', init)
-        if (!csrfResponse.ok) throw new Error('Session unavailable')
-        const csrf = await csrfResponse.json() as { token?: unknown }
-        if (typeof csrf.token !== 'string') throw new Error('Session unavailable')
+        let csrfToken = options.getCsrfToken?.()
+        if (!csrfToken) {
+          const csrfResponse = await fetcher('/api/csrf-token', init)
+          if (!csrfResponse.ok) throw new Error('Session unavailable')
+          const csrf = await csrfResponse.json() as { token?: unknown }
+          if (typeof csrf.token !== 'string' || !csrf.token) throw new Error('Session unavailable')
+          csrfToken = csrf.token
+        }
         const token = options.getToken?.()
-        const sessionResponse = await fetcher('/api/support/session', { ...init, method: 'POST', headers: { Accept: 'application/json', 'x-csrf-token': csrf.token, ...(token ? { Authorization: `Bearer ${token}` } : {}) } })
+        const sessionResponse = await fetcher('/api/support/session', { ...init, method: 'POST', headers: { Accept: 'application/json', 'x-csrf-token': csrfToken, ...(token ? { Authorization: `Bearer ${token}` } : {}) } })
         if (sessionResponse.status === 401 || sessionResponse.status === 403) return
         if (!sessionResponse.ok) throw new Error('Session unavailable')
         const session = await sessionResponse.json() as { token?: unknown }

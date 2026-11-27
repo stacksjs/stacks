@@ -161,11 +161,11 @@ function runDkim(env: Record<string, string>, options: { staleKey?: boolean, sha
   }
 }
 
-function runEnvironmentReconcile(mode: 'reject' | 'accept' | 'concurrent-change' | 'restart-fails') {
+function runEnvironmentReconcile(mode: 'reject' | 'accept' | 'concurrent-change' | 'restart-fails', exact = false) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stacks-mail-env-'))
   try {
     const liveFile = path.join(dir, 'mail.env')
-    const original = 'SMTP_LOCAL_DOMAINS=existing.example\nSMTP_HOSTNAME=mail.existing.example\n'
+    const original = 'SMTP_LOCAL_DOMAINS=existing.example\nSMTP_EXACT_MAILBOX_DOMAINS=existing.example\nSMTP_HOSTNAME=mail.existing.example\n'
     fs.writeFileSync(liveFile, original, { mode: 0o600 })
     fs.writeFileSync(path.join(dir, 'before.env'), original)
     const script = [
@@ -173,7 +173,7 @@ function runEnvironmentReconcile(mode: 'reject' | 'accept' | 'concurrent-change'
       sedShim,
       `cd '${dir}'`,
       `ENVF='${liveFile}' LIVE_MAIL_ENV='${liveFile}' MAIL_ENV_LOCK='${dir}/test.lock'`,
-      `MODE='${mode}' DOMAIN='new.example' RELAY_ACCOUNT='' DKIMDIR='${dir}/dkim' MS='${process.execPath}'`,
+      `MODE='${mode}' DOMAIN='new.example' EXACT_MAILBOXES='${exact ? 'yes' : 'no'}' RELAY_ACCOUNT='' DKIMDIR='${dir}/dkim' MS='${process.execPath}'`,
       'ENV_CHANGED=0',
       'flock() { :; }',
       'sleep() { :; }',
@@ -186,6 +186,11 @@ function runEnvironmentReconcile(mode: 'reject' | 'accept' | 'concurrent-change'
         [ -n "$candidate" ] && [ "$candidate" != "$LIVE_MAIL_ENV" ] || return 4
         grep -q '^SMTP_LOCAL_DOMAINS=existing.example,new.example$' "$candidate" || return 5
         grep -q '^DKIM_EXTRA_KEYS=new.example:mail:' "$candidate" || return 6
+        if [ "$EXACT_MAILBOXES" = yes ]; then
+          grep -q '^SMTP_EXACT_MAILBOX_DOMAINS=existing.example,new.example$' "$candidate" || return 7
+        else
+          grep -q '^SMTP_EXACT_MAILBOX_DOMAINS=existing.example$' "$candidate" || return 8
+        fi
         printf 'validate\\n' >> trace
         if [ "$MODE" = concurrent-change ]; then
           printf '# external update\\n' >> "$LIVE_MAIL_ENV"
@@ -225,6 +230,12 @@ function runEnvironmentReconcile(mode: 'reject' | 'accept' | 'concurrent-change'
 }
 
 describe('Mail environment activation', () => {
+  it('adds exact mailbox routing to the candidate and preserves existing domain settings', () => {
+    expect(runEnvironmentReconcile('accept', true)).toEqual({
+      ok: true, unchanged: false, externalUpdatePreserved: false, mode: 0o600, trace: ['validate', 'restart-candidate'], candidates: [],
+    })
+  })
+
   it('leaves live settings and service alone when native validation rejects the candidate', () => {
     expect(runEnvironmentReconcile('reject')).toEqual({
       ok: false, unchanged: true, externalUpdatePreserved: false, mode: 0o600, trace: ['validate'], candidates: [],

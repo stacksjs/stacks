@@ -61,7 +61,10 @@ in a plain host. Package tests alone do not prove the hosted product is ready.
 `APP_URL` origin, creates `resources/components/HqSupport.stx`, mounts it in the
 chosen app-local layout (`--layout` selects another), and writes
 `SUPPORTHQ_ENABLED=true` / `SUPPORTHQ_MESSENGER=true`. Existing customized components
-are preserved. Plain `support:install` connects server keys without enabling UI.
+are preserved. Plain `support:install` connects server keys and adds the SDK as
+a runtime dependency. Use `buddy support:install --sdk-only` to install the
+published package before connecting a project. Buddy preserves a declared SDK
+version and moves a development-only declaration to runtime.
 
 The native `/api/support/config` and authenticated `/api/support/session` routes
 exist only when the session integration is enabled. The session action reads
@@ -71,7 +74,9 @@ fields explicitly with `config.services.supporthq.expose`. A custom tenant-aware
 session action may pass the helper an authorized `resolveTenant` callback.
 
 The stx component uses `mountNativeSupport` from the browser subpath and native
-`authFetch`, so access-token refresh remains native. Navigation, page removal,
+`authFetch`, so access-token refresh remains native. It passes `readCsrfToken`
+so the bridge uses the native double-submit cookie from the current page.
+Navigation, page removal,
 logout, sign-in and cross-tab auth changes clear the old messenger before any
 new customer session is booted. Customer credentials remain element properties.
 No framework upgrade enables this integration or sends customer data by itself.

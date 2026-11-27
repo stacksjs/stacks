@@ -88,7 +88,7 @@ async function runCli(): Promise<void> {
   // We still need the full command registry so help output lists every command,
   // but we can skip the APP_KEY check and other project-setup work.
   const isHelpMode = requestedCommand === 'help' || (isHelpFlag && args.length <= 2)
-  const skipAppKeyCheck = shouldSkipAppKeyCheck(requestedCommand, { isHelpFlag, isHelpMode })
+  const skipAppKeyCheck = shouldSkipAppKeyCheck(requestedCommand, { isHelpFlag, isHelpMode, args })
   const needsFullSetup = !isVersionOnly
 
   /**

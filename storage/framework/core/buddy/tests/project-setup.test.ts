@@ -26,6 +26,11 @@ it('unpublishes framework defaults without generating or replacing application s
 }, 15_000)
 
 describe('Buddy project setup guards', () => {
+  it('runs package-only support installation without creating an application key', () => {
+    expect(shouldSkipAppKeyCheck('support:install', { args: ['support:install', '--sdk-only'] })).toBe(true)
+    expect(shouldSkipAppKeyCheck('support:install', { args: ['support:install', '--messenger'] })).toBe(false)
+  })
+
   it('runs the machine-level commands without a project around them', () => {
     for (const command of ['projects', 'projects:scan', 'cd', 'daemon', 'daemon:status', 'dashboard'])
       expect(shouldSkipAppKeyCheck(command), command).toBe(true)

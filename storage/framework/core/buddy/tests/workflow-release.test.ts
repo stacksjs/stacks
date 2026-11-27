@@ -163,6 +163,7 @@ test('release waiting keeps the last interruption at the deadline and surfaces p
   finally { rmSync(root, { recursive: true, force: true }) }
 })
 
+// This fixture exercises real commits and an atomic push between two Git repositories.
 test('a normal workflow release atomically publishes aligned metadata, notes and its immutable tag', () => {
   const { root, config, git } = fixture()
   try {
@@ -184,4 +185,4 @@ test('a normal workflow release atomically publishes aligned metadata, notes and
     expect(git('status', '--porcelain', '--untracked-files=no')).toBe('')
   }
   finally { rmSync(root, { recursive: true, force: true }) }
-})
+}, 20_000)

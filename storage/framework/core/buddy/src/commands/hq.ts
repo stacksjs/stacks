@@ -8,7 +8,7 @@ import { HQ_SERVICE_NAMES, resolveHqServices, runHqConnect, runHqRouteSync, runH
 import { runSupportVerification } from '../support-verification'
 import { runSupportDocsSync, selectSupportDocuments } from '../support-documentation'
 import { runSupportImport } from '../support-import'
-import { installSupportMessenger } from '../support-installation'
+import { installSupportMessenger, installSupportSdk } from '../support-installation'
 import { version as frameworkVersion } from '../../package.json'
 
 /**
@@ -113,15 +113,16 @@ function deps(signal?: AbortSignal): HqCliDeps {
 function connectCommand(supportOnly = false) {
   return defineCommand({
     name: supportOnly ? 'support:install' : 'hq:connect [...services]',
-    description: supportOnly ? 'Connect HQ.support and write its server keys to .env' : 'Connect this app to HQ services (BugHQ and LogHQ by default) and write their keys to .env',
+    description: supportOnly ? 'Install the HQ Support SDK and connect a project' : 'Connect this app to HQ services (BugHQ and LogHQ by default) and write their keys to .env',
     options: {
       '--no-open': 'Print the approve link without opening the browser',
       '--no-verify': 'Skip service read checks and test log/error delivery',
       '--timeout <seconds>': { description: 'How long to wait for each approval', default: 600 },
       '--messenger': { description: 'Explicitly mount the identified HQ.support messenger in the app layout', default: false },
       '--layout <path>': 'App-local stx layout to mount the opt-in messenger in',
+      ...(supportOnly ? { '--sdk-only': 'Install the published HQ Support SDK without connecting a project' } : {}),
     },
-    examples: supportOnly ? ['buddy support:install', 'buddy support:install --no-open'] : [
+    examples: supportOnly ? ['buddy support:install', 'buddy support:install --no-open', 'buddy support:install --sdk-only'] : [
       'buddy hq:connect',
       'buddy hq:connect loghq',
       'buddy hq:connect bughq loghq --no-open',
@@ -135,7 +136,25 @@ function connectCommand(supportOnly = false) {
         process.exit(1)
       }
 
-      const flags = options as { open?: boolean, verify?: boolean, timeout?: number | string, messenger?: boolean, layout?: string }
+      const flags = options as { open?: boolean, verify?: boolean, timeout?: number | string, messenger?: boolean, layout?: string, sdkOnly?: boolean, 'sdk-only'?: boolean }
+      const sdkOnly = supportOnly && (flags.sdkOnly || flags['sdk-only'])
+      if (sdkOnly && flags.messenger) {
+        console.error('Use --sdk-only for the SDK alone, or --messenger to connect and mount the Messenger.')
+        process.exitCode = 1
+        return
+      }
+      const installSdk = async (directory: string, signal?: AbortSignal) => installSupportSdk(directory, frameworkVersion, {
+        print: line => console.log(line),
+        install: async (cwd, args) => {
+          const child = Bun.spawn([process.execPath, ...args], { cwd, stdin: 'ignore', stdout: 'ignore', stderr: 'ignore', signal })
+          return await child.exited === 0
+        },
+      })
+      if (sdkOnly) {
+        const { projectPath } = await import('@stacksjs/path')
+        process.exitCode = await installSdk(projectPath()) ? 0 : 1
+        return
+      }
       const seconds = Number(flags.timeout)
       const { config, app } = await hqConfig()
 
@@ -153,7 +172,15 @@ function connectCommand(supportOnly = false) {
           timeoutMs: (Number.isFinite(seconds) && seconds > 0 ? seconds : 600) * 1000,
           routes: routeSyncInput,
         }, deps(controller.signal))
-        if (result.ok && flags.messenger && resolved.services.includes('supporthq')) {
+        const supportConnected = result.outcomes.some(outcome => outcome.service === 'supporthq' && outcome.status === 'connected')
+        if (supportConnected && !controller.signal.aborted) {
+          const { projectPath } = await import('@stacksjs/path')
+          if (!await installSdk(projectPath(), controller.signal)) {
+            process.exitCode = controller.signal.aborted ? 130 : 1
+            return
+          }
+        }
+        if (result.ok && flags.messenger && supportConnected && !controller.signal.aborted) {
           const { projectPath, frameworkPath } = await import('@stacksjs/path')
           const { config: fullConfig } = await import('@stacksjs/config')
           const installed = await installSupportMessenger({ ...config, supporthq: { ...config.supporthq!, key: process.env.SUPPORTHQ_KEY || config.supporthq?.key, project: process.env.SUPPORTHQ_PROJECT_ID || config.supporthq?.project } }, {
@@ -162,7 +189,7 @@ function connectCommand(supportOnly = false) {
           }, deps(controller.signal))
           if (!installed) { process.exitCode = 1; return }
         }
-        process.exit(controller.signal.aborted ? 130 : result.ok ? 0 : 1)
+        process.exit(controller.signal.aborted ? 130 : result.ok && (!supportOnly || supportConnected) ? 0 : 1)
       }
       finally {
         process.off('SIGINT', cancel)

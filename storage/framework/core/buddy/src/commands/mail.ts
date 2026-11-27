@@ -715,23 +715,30 @@ export function mailCommands(buddy: CLI): void {
       }
 
       const { provisionMailTenant, reconcileMailDns } = await import('./deploy')
-      const serverEnabled = (emailConfig as { server?: { enabled?: boolean } })?.server?.enabled !== false
+      const server = (emailConfig as { server?: { enabled?: boolean, exactMailboxes?: boolean } })?.server
+      const serverEnabled = server?.enabled !== false
 
       // `--dry-run` is a global buddy option, and this command used to accept it
       // and then provision anyway: SSH to the server, write its config, create
       // mailboxes, publish DNS. Against a shared mail server that is the one
       // flag that has to mean what it says. Report the plan and stop.
       if (options.dryRun) {
-        const mailboxes = ((emailConfig as { mailboxes?: Array<string | { address?: string, username?: string }> })?.mailboxes ?? [])
-          .map(box => typeof box === 'string' ? (box.includes('@') ? box : `${box}@${domain}`) : (box.address ?? box.username ?? '?'))
+        const mailboxes = ((emailConfig as { mailboxes?: Array<string | { email?: string, username?: string, passwordPolicy?: string }> })?.mailboxes ?? [])
+          .flatMap((box) => {
+            const name = typeof box === 'string' ? box : box.email ?? box.username
+            if (!name) return []
+            return [{ address: `${name.split('@')[0]}@${domain}`, requireChange: typeof box !== 'string' && box.passwordPolicy === 'initial-change' }]
+          })
         log.info(`Dry run: nothing is written to ${ip}.`)
         if (!serverEnabled) {
           log.warn('config/email.ts sets server.enabled: false, so a real run would provision nothing.')
         }
         else {
           log.info(`Would register ${domain} as a local domain and make sure it has a DKIM key.`)
-          for (const address of mailboxes)
-            log.info(`Would create or update mailbox ${address} (needs MAIL_PASSWORD_${address.split('@')[0]?.toUpperCase().replace(/[^A-Z0-9]/g, '_')})`)
+          if (server?.exactMailboxes)
+            log.info(`Would require full-address mailboxes for ${domain}.`)
+          for (const { address, requireChange } of mailboxes)
+            log.info(`Would create or update mailbox ${address} (needs MAIL_PASSWORD_${address.split('@')[0]?.toUpperCase().replace(/[^A-Z0-9]/g, '_')})${requireChange ? ' with first-login password setup on creation' : ''}`)
           log.info(`Would reconcile ${domain}'s MX, SPF, DKIM and DMARC records.`)
         }
         await log.flush()
@@ -750,6 +757,12 @@ export function mailCommands(buddy: CLI): void {
         process.exit(ExitCode.Success)
       }
       await reconcileMailDns(res, ip!, log)
+      if (res.certificateFailed) {
+        log.info(`Mail: asking for the mail.${res.domain} certificate after DNS reconciliation`)
+        const retried = await provisionMailTenant(ip!, log)
+        if (!retried || retried.certificateFailed)
+          log.warn(`Mail: verify DNS propagation and retry the certificate for mail.${res.domain}`)
+      }
       log.success(`Mail provisioned for ${domain}. Add MAIL_PASSWORD_<LOCALPART> env vars to pin mailbox passwords.`)
       await log.flush()
       process.exit(ExitCode.Success)
