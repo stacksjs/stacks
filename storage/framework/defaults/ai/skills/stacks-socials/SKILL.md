@@ -160,6 +160,15 @@ member may post for (rw_organization_admin). PublishedPost.warnings
 lists what went out without failing the post. The LinkedIn version is
 LINKEDIN_API_VERSION unless a configured one is still supported.
 
+For LinkedIn and Instagram first comments, call
+`createComment(identity, publishedPost.uri, text)` after saving the published
+post. LinkedIn needs `w_member_social_feed` or `w_organization_social_feed`
+and the matching author URN. Instagram (Facebook Login) needs a Facebook User
+token with `instagram_manage_comments` in addition to its normal account access.
+An accepted response can return no comment ID. The comment is a distinct
+write. Do not send the parent post again when this write fails, and do not
+blindly repeat a timed-out comment whose outcome is unknown.
+
 A driver error's isAuthError is narrow; classifySocialError in
 publish-errors.ts sorts any failure by status and body, and only `expired`
 means the account must sign in again (a duplicate post on X is a 403).

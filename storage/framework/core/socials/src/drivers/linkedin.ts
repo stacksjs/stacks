@@ -377,6 +377,51 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
     }
   }
 
+  /**
+   * Comment on a published share as this member or organization.
+   * Keep this write separate from publish(): the post already exists even
+   * when the comment is refused or its acknowledgement is lost.
+   *
+   * Returns the comment ID, or null if LinkedIn accepted the comment without one.
+   */
+  async createComment(identity: SocialIdentityCredentials, postUrn: string, text: string): Promise<string | null> {
+    if (!identity.accessToken) throw new Error('LinkedIn access token is missing for this identity.')
+    const actor = identity.did
+    if (!actor || !/^urn:li:(?:person:[\w-]{1,128}|organization(?:Brand)?:[0-9]{1,32})$/.test(actor))
+      throw new Error('A LinkedIn author URN for a member or organization is required to comment.')
+
+    const object = postUrn.trim()
+    if (!/^urn:li:(?:share|ugcPost):[0-9]{1,32}$/.test(object))
+      throw new Error('A LinkedIn share or UGC post URN is required to comment.')
+    const message = text.trim()
+    if (!message) throw new Error('LinkedIn comment text is required.')
+
+    const response = await fetch(`${this.apiBase}/rest/socialActions/${encodeURIComponent(object)}/comments`, {
+      method: 'POST',
+      headers: {
+        'authorization': `Bearer ${identity.accessToken}`,
+        'content-type': 'application/json',
+        'linkedin-version': this.apiVersion,
+        'x-restli-protocol-version': RESTLI_PROTOCOL_VERSION,
+      },
+      body: JSON.stringify({ actor, object, message: { text: message } }),
+      redirect: 'error',
+      signal: AbortSignal.timeout(15_000),
+    })
+
+    if (!response.ok) {
+      throw new LinkedInApiError(...apiFailure('LinkedIn comment', response, await response.text().catch(() => '')))
+    }
+
+    const header = response.headers.get('x-restli-id')
+    if (header && /^[0-9]{1,32}$/.test(header)) {
+      await response.body?.cancel().catch(() => {})
+      return header
+    }
+    const data = await response.json().catch(() => null) as { id?: string } | null
+    return typeof data?.id === 'string' && /^[0-9]{1,32}$/.test(data.id) ? data.id : null
+  }
+
   // LinkedIn does not expose a personal home timeline under `w_member_social`.
   async timeline(_identity: SocialIdentityCredentials, _query: TimelineQuery = {}): Promise<TimelineResult> {
     return { items: [] }
