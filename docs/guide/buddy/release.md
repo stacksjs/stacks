@@ -157,6 +157,25 @@ normal release checks `latest` again before each upload or promotion that
 could replace it. This protection applies to tags created after the workflow
 change. Rerunning an older tag still uses the workflow stored at that tag.
 
+Recover a missing npm `stacks` umbrella from a historical release using the
+current `release.yml` workflow on `main`. Provide the old stable version and
+original tagged release run ID. The job checks the tag, original source and
+release gates, the published scoped package receipts, and the unchanged Pantry
+umbrella archive. It installs the archive in a clean project before attempting
+the npm operation. Start with a dry run:
+
+```bash
+gh workflow run release.yml --ref main \
+  -f npm_backfill_version=0.75.709 \
+  -f npm_backfill_release_run=46060820578
+```
+
+After that run passes, setting `-f npm_backfill_publish=true` uses the existing
+trusted publisher to publish only `stacks@0.75.709` under `backfill-0.75.709`. The
+job verifies the public archive, tag, and installed Buddy CLI. A retry of the
+same workflow run verifies npm readback without sending another upload. The
+normal install and upgrade channel stays on the newer `latest` release.
+
 For other failures, resolve the failing command's cause and keep its evidence.
 Do not repeat a version bump over partially generated release metadata.
 

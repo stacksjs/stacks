@@ -47,22 +47,31 @@ export function acceptedPublications(log: string): AcceptedPublication[] {
 
 type ReadPublic = (url: string, init: { method: 'GET', signal: AbortSignal, cache?: 'no-store', redirect?: 'error' }) => Promise<Response>
 
-export async function npmLatestVersion(
+export async function npmDistTags(
   name: string,
   registry = 'https://registry.npmjs.org',
   read: ReadPublic = fetch,
   timeoutMs = 20_000,
-): Promise<string | undefined> {
+): Promise<Record<string, unknown>> {
   const url = new URL(`/-/package/${encodeURIComponent(name)}/dist-tags`, registry)
   const response = await read(url.href, { method: 'GET', signal: AbortSignal.timeout(timeoutMs), cache: 'no-store', redirect: 'error' })
   if (!response.ok) {
     await response.body?.cancel()
-    if (response.status === 404) return undefined
+    if (response.status === 404) return {}
     throw new Error(`Could not read npm latest for ${name}: HTTP ${response.status}`)
   }
   const tags: unknown = await response.json().catch(() => null)
   if (!tags || typeof tags !== 'object' || Array.isArray(tags)) throw new Error(`npm returned invalid dist-tags for ${name}`)
-  const latest = (tags as { latest?: unknown }).latest
+  return tags as Record<string, unknown>
+}
+
+export async function npmLatestVersion(
+  name: string,
+  registry?: string,
+  read?: ReadPublic,
+  timeoutMs?: number,
+): Promise<string | undefined> {
+  const { latest } = await npmDistTags(name, registry, read, timeoutMs)
   if (latest === undefined) return undefined
   if (typeof latest !== 'string' || !/^\d+\.\d+\.\d+(?:-[\w.-]+)?(?:\+[\w.-]+)?$/.test(latest))
     throw new Error(`npm returned an invalid latest version for ${name}`)

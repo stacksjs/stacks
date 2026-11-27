@@ -81,7 +81,7 @@ test('manual recovery accepts only complete exact-main CI and an immutable relea
   expect(evaluateReleaseCi(sha, [run, { ...manual, id: 43, status: 'in_progress', conclusion: null }], jobs()).kind).toBe('pending')
   const workflow = Bun.YAML.parse(readFileSync(new URL('../workflows/release.yml', import.meta.url), 'utf8')) as any
   expect(workflow.on).toHaveProperty('workflow_dispatch')
-  expect(workflow.jobs.serialize.if).toBe("startsWith(github.ref, 'refs/tags/v')")
+  expect(workflow.jobs.serialize.if).toBe("startsWith(github.ref, 'refs/tags/v') && (github.event_name == 'push' || inputs.npm_backfill_version == '')")
   expect(workflow.jobs['source-ci'].needs).toBe('serialize')
   expect(workflow.jobs['release-gate'].needs).toEqual(['serialize', 'source-ci'])
   expect(workflow.jobs.publish.needs).toBe('release-gate')

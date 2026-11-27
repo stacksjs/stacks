@@ -5,8 +5,20 @@ on:
     tags:
       - 'v*'
   # Recover a missed tag event without moving the immutable release tag.
-  # Dispatch with --ref v<VERSION>; main and arbitrary branches cannot publish.
+  # Normal release recovery runs at --ref v<VERSION>. Historical umbrella
+  # backfill runs on main so it can use the current checks with the old bytes.
   workflow_dispatch:
+    inputs:
+      npm_backfill_version:
+        description: 'Historical stable stacks version for an umbrella-only npm backfill'
+        type: string
+      npm_backfill_release_run:
+        description: 'GitHub run ID of the original tagged release'
+        type: string
+      npm_backfill_publish:
+        description: 'Publish the verified archive under its backfill tag'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -36,6 +48,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  npm-backfill:
+    name: backfill the exact npm umbrella archive
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.npm_backfill_version != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.4'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Verify original release and backfill exact bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STACKS_NPM_BACKFILL_VERSION: ${{ inputs.npm_backfill_version }}
+          STACKS_NPM_BACKFILL_RELEASE_RUN: ${{ inputs.npm_backfill_release_run }}
+          STACKS_NPM_BACKFILL_PUBLISH: ${{ inputs.npm_backfill_publish }}
+        run: bun --no-env-file --config=/dev/null .github/scripts/npm-umbrella-backfill.ts
+
   # Serialization moved here from the concurrency group, because a queue that
   # silently discards its contents is worse than no queue.
   #
@@ -55,7 +96,7 @@ jobs:
   # problem than either deadlocking the pool or the old behaviour of dropping
   # releases outright.
   serialize:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') && (github.event_name == 'push' || inputs.npm_backfill_version == '')
     name: wait for earlier releases
     runs-on: ubuntu-latest
     timeout-minutes: 60
