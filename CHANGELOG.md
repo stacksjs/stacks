@@ -1,5 +1,30 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.706...v0.75.707)
+
+## ✨ Features
+
+- **dashboard**: dialogs fade and lift in when they open ([36d835f](https://github.com/stacksjs/stacks/commit/36d835f)) _(by glennmichael123)_
+- **socials**: support native polls, quotes and self-labels ([e3f46d8](https://github.com/stacksjs/stacks/commit/e3f46d8)) _(by Chris Breuer)_ ([stacksjs/postline#254](https://github.com/stacksjs/postline/issues/254))
+
+## 🐛 Bug Fixes
+
+- **buddy**: preview native mail reconciliation ([7c12388](https://github.com/stacksjs/stacks/commit/7c12388)) _(by Chris)_ ([#3444](https://github.com/stacksjs/stacks/issues/3444))
+- **dashboard**: dialogs are centred on the window they dim ([98e416d](https://github.com/stacksjs/stacks/commit/98e416d)) _(by glennmichael123)_ ([stacksjs/stacks#3255](https://github.com/stacksjs/stacks/issues/3255))
+- **desktop**: bundle deferred webview client modules ([d7cf363](https://github.com/stacksjs/stacks/commit/d7cf363)) _(by Chris Breuer)_ ([#3445](https://github.com/stacksjs/stacks/issues/3445))
+- **buddy**: refresh Pantry locks during Support SDK install ([091ac21](https://github.com/stacksjs/stacks/commit/091ac21)) _(by Chris)_
+- **buddy**: install the Support SDK before app boot ([992cd03](https://github.com/stacksjs/stacks/commit/992cd03)) _(by Chris)_
+
+## 🔧 Chores
+
+- **buddy**: integrate Stacks v0.75.706 ([eb14ef6](https://github.com/stacksjs/stacks/commit/eb14ef6)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.705...v0.75.706)
 
 ## ✨ Features

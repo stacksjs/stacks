@@ -1,5 +1,5 @@
 import type { TsCloudConfig } from './deploy'
-import { dnsPublishingAllowed, resolveSshTarget } from './deploy-ssh-target'
+import { dnsPublishingAllowed, isSshPipelineProvider, resolveSshTarget } from './deploy-ssh-target'
 import type {
   DeploymentPreview,
   DeploymentPreviewOperation,
@@ -24,6 +24,8 @@ export interface CreateDeploymentPreviewOptions {
   domain?: string
   docker?: boolean
   holdDns?: boolean
+  mail?: { domain: string, attachTo?: string }
+  sshPublicIp?: string
   fallbackProjectName?: string
   fallbackProjectSlug?: string
   fallbackProvider?: string
@@ -158,15 +160,17 @@ export function createDeploymentPreview(options: CreateDeploymentPreviewOptions)
   // An ssh host is adopted rather than created: the preview should promise a
   // check and a bootstrap, not a server that will come into existence.
   const sshTarget = provider === 'ssh' ? resolveSshTarget(config) : null
-  const publicationHeld = options.holdDns && (provider === 'hetzner' || provider === 'ssh')
+  const sshHost = sshTarget ? options.sshPublicIp ?? sshTarget.host : undefined
+  const sshDeploy = isSshPipelineProvider(provider)
+  const publicationHeld = options.holdDns && sshDeploy
   const publishesDns = dnsPublishingAllowed({
     provider,
-    publicIp: sshTarget?.host,
+    publicIp: sshHost,
     sites: configuredSites as Record<string, { domain?: string | string[] } | null | undefined>,
   })
 
   if (provider === 'ssh') {
-    const where = sshTarget ? `${sshTarget.user}@${sshTarget.host}${sshTarget.port === 22 ? '' : `:${sshTarget.port}`}` : 'the configured host'
+    const where = sshTarget ? `${sshTarget.user}@${sshHost}${sshTarget.port === 22 ? '' : `:${sshTarget.port}`}` : 'the configured host'
     operations.push(attachTo
       ? operation('infrastructure', 'Use attached server', `Resolve the existing '${attachTo}' server at ${where} and verify that this project owns its gateway fragment and ports.`, siteNames)
       : operation('infrastructure', 'Adopt SSH host', `Check ${where} over SSH (architecture, OS, memory, disk, sudo, clock, outbound HTTPS), then install bun, the rpx gateway and the systemd units if they are missing.`, siteNames))
@@ -230,6 +234,16 @@ export function createDeploymentPreview(options: CreateDeploymentPreviewOptions)
       operations.push(operation('dns', 'Reconcile DNS records', 'Publish the configured public domains through their resolved DNS providers.', publicSites.map(site => site.name)))
       operations.push(operation('tls', 'Reconcile TLS certificates', 'Issue or renew certificates for public domains and reload the gateway when records change.', publicSites.map(site => site.name)))
     }
+  }
+
+  if (options.mail && sshDeploy && publishesDns && !publicationHeld) {
+    const { domain, attachTo: mailOwner } = options.mail
+    const target = mailOwner ? `the attached '${mailOwner}' server` : 'the deployment server'
+    operations.push(operation(
+      'mail',
+      'Reconcile mail tenant',
+      `Configure mailboxes, forwarding, DKIM signing, and mail TLS for ${domain} on ${target}. Reconcile the A record for mail.${domain}, the MX record, and the SPF, DKIM, and DMARC TXT records.`,
+    ))
   }
 
   if (options.docker) {

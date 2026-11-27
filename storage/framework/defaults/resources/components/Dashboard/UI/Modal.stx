@@ -97,6 +97,9 @@ effect(() => {
     return
   }
 
+  // Closed at once, so the page behind is no longer inert when focus goes
+  // back below. The copy that fades out in its place shows all the same; see
+  // .dashboard-modal-leave-active.
   if (dialog.current?.open)
     dialog.current.close()
   const target = restoreFocus
@@ -111,7 +114,8 @@ effect(() => {
     :role="liveRole()"
     aria-modal="true"
     :aria-label="liveAriaLabel() || liveTitle() || 'Dialog'"
-    class="fixed inset-0 overflow-y-auto z-[55] m-0 p-0 h-dvh max-h-none max-w-none bg-transparent dashboard-modal-dialog dashboard-modal-layer"
+    data-stx-if-transition="dashboard-modal"
+    class="fixed inset-0 overflow-y-auto z-[55] m-0 p-0 h-dvh max-h-none max-w-none dashboard-modal-dialog dashboard-modal-layer"
     @cancel="handleCancel"
   >
     <!-- Modal container -->
@@ -166,8 +170,74 @@ effect(() => {
   </dialog>
 
 <style>
-.dashboard-modal-dialog::backdrop {
+/*
+ * The dim and blur behind the panel are the dialog's own background, not its
+ * ::backdrop. The dialog fills the window, so it covers the same area, and
+ * the copy that fades out on close (a plain open dialog, not a modal one) has
+ * no ::backdrop: a dim drawn there would vanish the moment closing began.
+ */
+.dashboard-modal-dialog {
   background: rgb(0 0 0 / 50%);
   backdrop-filter: blur(4px);
+}
+.dashboard-modal-dialog::backdrop {
+  background: transparent;
+}
+
+/*
+ * Opening fades the dim in and lifts the panel into place. The dialog is
+ * added to the page as it opens, so an animation (which runs when an element
+ * first appears) does this without any script.
+ */
+.dashboard-modal-dialog[open] {
+  animation: dashboard-modal-backdrop-in 180ms ease-out;
+}
+.dashboard-modal-dialog[open] [data-dashboard-overlay="modal"] {
+  animation: dashboard-modal-panel-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes dashboard-modal-backdrop-in {
+  from { opacity: 0; }
+}
+@keyframes dashboard-modal-panel-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+}
+
+/*
+ * Closing runs the same in reverse on a still copy of the dialog
+ * (data-stx-if-transition above), which stx removes when it ends. The copy
+ * may be taken after the dialog closed, and a closed dialog is not drawn, so
+ * the copy is drawn here for as long as it leaves.
+ */
+.dashboard-modal-leave-active {
+  display: block;
+  transition: opacity 160ms ease-in;
+}
+.dashboard-modal-leave-active [data-dashboard-overlay="modal"] {
+  transition: opacity 160ms ease-in, transform 160ms ease-in;
+}
+.dashboard-modal-leave-to {
+  opacity: 0;
+}
+.dashboard-modal-leave-to [data-dashboard-overlay="modal"] {
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+}
+
+/*
+ * Asked for less motion, the panel does not move: opening is immediate and
+ * closing is a short fade, so a closed dialog does not linger.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-modal-dialog[open],
+  .dashboard-modal-dialog[open] [data-dashboard-overlay="modal"] {
+    animation: none;
+  }
+  .dashboard-modal-leave-active,
+  .dashboard-modal-leave-active [data-dashboard-overlay="modal"] {
+    transition: opacity 100ms linear;
+  }
+  .dashboard-modal-leave-to [data-dashboard-overlay="modal"] {
+    transform: none;
+  }
 }
 </style>

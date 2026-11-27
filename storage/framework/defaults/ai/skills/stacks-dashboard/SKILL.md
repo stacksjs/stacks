@@ -772,8 +772,16 @@ The desktop sidebar is fixed and publishes its current width through
 drawers must use the shared `dashboard-modal-layer` class so their interactive
 surface starts beside that sidebar and returns to `left: 0` on mobile and in
 the Craft native-sidebar shell. The class owns the layer's whole horizontal
-box (`left`, `right` and `width`), so a dialog is centred over the content and
-a drawer ends at the window's edge. Do not put a width utility (`w-screen`,
+box (`left`, `right` and `width`), so a drawer ends at the window's edge. A
+dialog (`dashboard-modal-dialog` beside it) takes the whole window instead and
+is centred on it: its `::backdrop` dims the whole window, sidebar included, so
+centring it on the content alone looked off centre. Dialogs fade their dim in
+and lift their panel into place on open, and run the reverse on close through
+stx's `data-stx-if-transition` (a still copy of the dialog fades out, so its
+text does not change as the state that closed it is cleared). The dim is the
+dialog's own background, not its `::backdrop`, because the leaving copy is not
+a modal dialog. Under `prefers-reduced-motion` the panel does not move and
+closing is a short fade. Do not put a width utility (`w-screen`,
 `w-full`) on an element that carries it: beside `left: 250px` that runs the
 layer a sidebar's width past the window. The rule's selector is
 `html .dashboard-modal-layer`, so it outweighs `inset-0` whichever stylesheet

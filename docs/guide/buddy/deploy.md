@@ -45,6 +45,9 @@ production.
 `--dry-run` evaluates the target environment and the cloud model, then exits before prerequisites,
 builds, packaging, hooks, provider calls, persistence, DNS or TLS can change anything. Combined
 with `-J` it emits a versioned `STACKS_DEPLOY_PREVIEW_JSON=` line for tools to read.
+A Hetzner or public SSH deploy preview includes the configured mail tenant and its planned
+mail host A, MX, and SPF, DKIM, and DMARC TXT record reconciliation when the selected
+environment enables mail and DNS publishing. The mail step is omitted with `--hold-dns`.
 
 ## Deploy targets
 

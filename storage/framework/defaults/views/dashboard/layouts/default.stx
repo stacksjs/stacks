@@ -145,9 +145,9 @@ select:not([multiple]):not([size]):not([data-ui-select]) {
   transition: margin-left 0.3s ease-out;
 }
 /*
- * A dialog or drawer covers the content pane: from the sidebar's edge to the
- * window's, so a dialog is centred over the page and a drawer ends where the
- * window does.
+ * A drawer covers the content pane: from the sidebar's edge to the window's,
+ * so it ends where the window does. A dialog takes the whole window; see the
+ * rule after this one.
  *
  * `html` is in the selector for its weight, not its meaning. The dialogs also
  * carry `inset-0`, a utility of the same weight as a bare class, and the
@@ -166,6 +166,16 @@ html .dashboard-modal-layer {
   left: var(--stx-sidebar-width, 250px);
   width: auto;
   transition: left 0.3s ease-out;
+}
+/*
+ * A dialog is centred on the whole window, not on the content beside the
+ * sidebar. Its ::backdrop dims the whole window, sidebar included, so a dialog
+ * centred on the content alone sat half a sidebar right of the middle of what
+ * the visitor sees. A drawer keeps the rule above: it is pinned to the right
+ * edge, and starting beside the sidebar only caps how wide it can grow.
+ */
+html .dashboard-modal-layer.dashboard-modal-dialog {
+  left: 0;
 }
 /*
  * The window's sidebar pane while it is in the mobile drawer: it fills the
