@@ -44,6 +44,14 @@ function write(path: string, contents: string): void {
 }
 
 describe('framework-only files', () => {
+  test('drops framework scan exceptions and keeps the app security config', () => {
+    copy('.security-ignore.json')
+    copy('config/security.ts')
+
+    expect(pruneFrameworkOnlyFiles(app)).toEqual(['.security-ignore.json'])
+    expect(existsSync(join(app, 'config/security.ts'))).toBe(true)
+  })
+
   test('strips the framework changelog repository from current and older templates', () => {
     copy('config/changelog.ts')
     write('logsmith.config.ts', 'export default { repo: "stacksjs/stacks" }')

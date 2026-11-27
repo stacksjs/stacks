@@ -36,6 +36,8 @@ export const VENDORED_DEFAULTS = 'storage/framework/defaults'
  * repository, so a moved file cannot quietly start shipping again.
  */
 export const FRAMEWORK_ONLY_PATHS = [
+  // These scan exceptions apply to fixtures in the vendored security audit.
+  '.security-ignore.json',
   'bench',
   // Its only setting is `repo: stacksjs/stacks`, which pointed every app's
   // changelog links at the framework. logsmith reads the repo from git without it.

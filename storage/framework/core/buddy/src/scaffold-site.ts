@@ -20,6 +20,9 @@ import { join } from 'node:path'
  * the site grows a page.
  */
 export const SITE_ONLY_PATHS: readonly string[] = [
+  // The repository's sample console command and its companion listener.
+  'app/Commands/Inspire.ts',
+  'app/Listeners/Console.ts',
   // The marketing site: pages, their data and their shared partials.
   'resources/views/index.stx',
   'resources/views/coming-soon.stx',
@@ -219,7 +222,6 @@ export const APP_TOP_LEVEL: readonly string[] = [
   // Replaced with the app's own workflows from `defaults/vcs/github`.
   '.github',
   '.gitignore',
-  '.security-ignore.json',
   'AGENTS.md',
   'CHANGELOG.md',
   'README.md',
