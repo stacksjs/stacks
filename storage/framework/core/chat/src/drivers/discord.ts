@@ -80,6 +80,24 @@ export function discordPayload(message: DiscordMessage): Record<string, unknown>
   }
 }
 
+function discordRequest(message: DiscordMessage, attachments: ChatMessage['attachments']): { body: BodyInit, headers?: Record<string, string> } {
+  const payload = discordPayload(message)
+  if (!attachments?.length)
+    return { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
+
+  const form = new FormData()
+  payload.attachments = attachments.map((attachment, id) => {
+    if (!attachment.filename.trim())
+      throw new Error('Discord attachments require a filename')
+    const content = typeof attachment.content === 'string' ? attachment.content : new Uint8Array(attachment.content)
+    const file = new Blob([content], { type: attachment.contentType })
+    form.append(`files[${id}]`, file, attachment.filename)
+    return { id, filename: attachment.filename }
+  })
+  form.set('payload_json', JSON.stringify(payload))
+  return { body: form }
+}
+
 /**
  * Configure Discord with webhook URL or bot token.
  *
@@ -172,7 +190,8 @@ export class DiscordDriver extends BaseChatDriver {
     log.info('Sending message via Discord...', logContext)
 
     try {
-      this.validateMessage(message)
+      if (!message.attachments?.length)
+        this.validateMessage(message)
       const settings = this.explicitSettings ?? await resolveConfig()
       this.config = {
         ...this.config,
@@ -244,8 +263,7 @@ export class DiscordDriver extends BaseChatDriver {
     webhookUrl.searchParams.set('wait', 'true')
     const response = await chatRequest(this.fetcher, webhookUrl.href, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(discordPayload(this.messageFor(message))),
+      ...discordRequest(this.messageFor(message), message.attachments),
     })
 
 
@@ -268,13 +286,11 @@ export class DiscordDriver extends BaseChatDriver {
     // A bot posts as itself, so no username.
     const { username: _username, ...payload } = this.messageFor(message)
 
+    const request = discordRequest(payload, message.attachments)
     const response = await chatRequest(this.fetcher, `https://discord.com/api/v10/channels/${channelId}/messages`, {
+      ...request,
       method: 'POST',
-      headers: {
-        'Authorization': `Bot ${settings.botToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(discordPayload(payload)),
+      headers: { ...request.headers, Authorization: `Bot ${settings.botToken}` },
     })
 
 
