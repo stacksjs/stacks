@@ -1,9 +1,10 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const sha = process.env.STACKS_PREVIEW_SHA ?? ''
 if (!/^[a-f0-9]{40}$/.test(sha)) throw new Error('Set STACKS_PREVIEW_SHA to the published pull request head SHA')
+const revision = sha.slice(0, 7)
 const directory = mkdtempSync(join(tmpdir(), 'stacks-preview-consumer-'))
 
 function bun(args: string[]) {
@@ -18,7 +19,7 @@ function bun(args: string[]) {
 
 try {
   const dependencies = Object.fromEntries(['auth', 'support'].map(pkg => [
-    `@stacksjs/${pkg}`, `https://pkg.pr.new/@stacksjs/${pkg}@${sha.slice(0, 7)}`,
+    `@stacksjs/${pkg}`, `https://pkg.pr.new/@stacksjs/${pkg}@${revision}`,
   ]))
   writeFileSync(join(directory, 'package.json'), JSON.stringify({ name: 'stacks-preview-consumer', private: true, type: 'module', dependencies }))
   writeFileSync(join(directory, 'probe.ts'), `
@@ -38,6 +39,15 @@ try {
   `)
   bun(['install', '--ignore-scripts'])
   bun(['install', '--frozen-lockfile', '--ignore-scripts'])
+  // A newly available npm release must not hide a broken preview link.
+  for (const [consumer, peers] of Object.entries({ orm: ['payments'], types: ['actions', 'scheduler'] })) {
+    const manifest = JSON.parse(readFileSync(join(directory, 'node_modules/@stacksjs', consumer, 'package.json'), 'utf8'))
+    for (const peer of peers) {
+      const link: unknown = manifest.dependencies?.[`@stacksjs/${peer}`]
+      if (typeof link !== 'string' || !link.startsWith('https://pkg.pr.new/') || !link.endsWith(`/@stacksjs/${peer}@${revision}`))
+        throw new Error(`@stacksjs/${consumer} is missing the same-commit preview link for @stacksjs/${peer}`)
+    }
+  }
   bun(['run', 'probe.ts'])
 }
 finally {
