@@ -9,7 +9,8 @@ import { projectPath } from '@stacksjs/path'
 import { assertPublicationAllowed } from './publication-preflight'
 import { runActions } from './helpers/utils'
 import { resolvePantryToolchain } from './pantry-toolchain'
-import { releasePushTarget } from './release-push-target'
+import { assertReleaseAvailable, releasePushTarget } from './release-push-target'
+import { chooseReleaseVersion, resolveReleaseVersion } from './release-version'
 import { BYPASS_ENV, formatPreflightFailure, runPinnedChecks } from './release-preflight'
 
 // Forward any flags passed from `buddy release` (e.g. --bump patch, --dry-run)
@@ -48,7 +49,8 @@ for (const [k, v] of Object.entries(raw)) {
 // corrupting the working tree.
 const isDryRun = passthrough.dryRun === true || passthrough.dryRun === 'true'
 const manifest = await Bun.file(projectPath('package.json')).json()
-const frameworkRelease = manifest.name === 'stacks' && await Bun.file(projectPath('storage/framework/core/package.json')).exists()
+const frameworkManifest = Bun.file(projectPath('storage/framework/core/package.json'))
+const frameworkRelease = manifest.name === 'stacks' && await frameworkManifest.exists()
 if (!frameworkRelease && !passthrough.bump) {
   const selected = await selectNativeLibraryReleaseVersion({ cwd: projectPath(), preid: passthrough.preid?.toString() })
   if (selected) passthrough.bump = selected
@@ -56,15 +58,20 @@ if (!frameworkRelease && !passthrough.bump) {
 const libraryPlan = frameworkRelease ? undefined : await planNativeLibraryRelease({ cwd: projectPath(), validateWorkflow: true, bump: passthrough.bump?.toString(), preid: passthrough.preid?.toString() })
 // The tag lifecycle creates the app release after exact archives verify.
 if (libraryPlan) {
-  releasePushTarget(projectPath(), libraryPlan.sourceCi.branch)
   passthrough.skipGithubRelease = true
 }
 const actions: Action[] = isDryRun ? [Action.Bump] : [Action.GenerateLibraryEntries, Action.Bump]
 if (!isDryRun) {
   await assertPublicationAllowed({ cwd: projectPath(), channel: 'github-release' })
-  const rootManifest = await Bun.file(projectPath('package.json')).json()
-  const framework = rootManifest.name === 'stacks' && await Bun.file(projectPath('storage/framework/core/package.json')).exists()
-  if (framework) releasePushTarget(projectPath(), 'main')
+  const target = releasePushTarget(projectPath(), frameworkRelease ? 'main' : libraryPlan?.sourceCi.branch)
+  const { version } = frameworkRelease ? await frameworkManifest.json() : manifest
+  const preid = passthrough.preid?.toString()
+  const bump = passthrough.bump?.toString()
+  const next = bump
+    ? resolveReleaseVersion(version, bump, preid)
+    : await chooseReleaseVersion(version, { subject: frameworkRelease ? 'framework' : 'app', preid })
+  assertReleaseAvailable(projectPath(), target, next)
+  passthrough.bump = next
 }
 
 // Pre-flight BEFORE anything mutates the tree or creates a tag.

@@ -1,12 +1,12 @@
 #!/usr/bin/env bun
 import { execSync, log, parseOptions } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
-import { incrementVersion, isReleaseType, isValidVersion, versionBump } from '@stacksjs/bumpx'
-import { isCalendarBump, nextCalendarVersion } from './calendar-version'
+import { isValidVersion, versionBump } from '@stacksjs/bumpx'
 import { describeGitHubRelease, publishGitHubRelease } from './github-release'
 import { pantryLockViolations } from './pantry-lock'
 import { resolvePantryToolchain } from './pantry-toolchain'
-import { releasePushTarget } from './release-push-target'
+import { assertReleaseAvailable, readReleaseRefs, releasePushTarget } from './release-push-target'
+import { chooseReleaseVersion, resolveReleaseVersion } from './release-version'
 import { planNativeLibraryRelease } from './library/release-plan'
 import { generateChangelog } from '@stacksjs/logsmith'
 import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
@@ -15,16 +15,7 @@ import { loadChangelogConfig } from './changelog-config'
 
 const options = parseOptions() as { dryRun?: boolean, bump?: string, preid?: string, verbose?: boolean, skipGithubRelease?: boolean } | undefined
 
-// Accept --bump patch|minor|major|<explicit-version>; without it, bumpx prompts
-// interactively. The `release:patch` / `release:minor` / `release:major` npm
-// shortcuts at the project root pipe through to here non-interactively.
 const rawBump = options?.bump?.toString()
-const bumpArg = rawBump
-  ? (isReleaseType(rawBump) || isCalendarBump(rawBump) || isValidVersion(rawBump) ? rawBump : null)
-  : null
-if (rawBump && !bumpArg)
-  throw new Error(`Invalid --bump "${rawBump}"; expected a Bumpx release type, calendar, or semantic version`)
-
 const isDryRun = options?.dryRun === true
 const isVerbose = (options as { verbose?: boolean })?.verbose === true
 
@@ -52,26 +43,10 @@ const isFrameworkRelease = rootPkg?.name === 'stacks' && existsSync(p.frameworkP
 const bumpCwd = isFrameworkRelease ? p.frameworkPath('core') : p.projectPath()
 const primaryManifest = isFrameworkRelease ? p.frameworkPath('core/package.json') : rootManifest
 
-async function resolveBumpArg(bump: string | null): Promise<string | null> {
-  if (!bump)
-    return bump
-
-  // Calendar versioning (stacksjs/stacks#475). Resolved to an explicit
-  // `x.y.z` here rather than handed to bumpx as a keyword, because bumpx only
-  // knows semver increments - and the result has to be a literal version
-  // anyway for the framework's own re-pinning step downstream.
-  if (isCalendarBump(bump)) {
-    const pkg = await readPackage(primaryManifest)
-    return nextCalendarVersion(pkg?.version)
-  }
-
-  const pkg = await readPackage(primaryManifest)
-  if (!pkg?.version)
-    throw new Error(`${primaryManifest} declares no version`)
-  return incrementVersion(pkg.version, bump, options?.preid)
-}
-
-const resolvedBumpArg = await resolveBumpArg(bumpArg)
+const currentVersion = (await readPackage(primaryManifest))?.version
+const resolvedBumpArg = rawBump
+  ? resolveReleaseVersion(currentVersion, rawBump, options?.preid)
+  : await chooseReleaseVersion(currentVersion, { subject: isFrameworkRelease ? 'framework' : 'app', preid: options?.preid })
 
 /**
  * Run git, and fail loudly when git fails.
@@ -94,8 +69,10 @@ async function git(args: string[], cwd = p.projectPath(), options: { throwOnErro
   })
 }
 
-const libraryPlan = isFrameworkRelease ? undefined : await planNativeLibraryRelease({ cwd: p.projectPath(), bump: resolvedBumpArg ?? undefined, preid: options?.preid })
+const libraryPlan = isFrameworkRelease ? undefined : await planNativeLibraryRelease({ cwd: p.projectPath(), bump: resolvedBumpArg, preid: options?.preid })
 const pushTarget = isDryRun ? undefined : releasePushTarget(p.projectPath(), isFrameworkRelease ? 'main' : libraryPlan?.sourceCi.branch)
+if (pushTarget) assertReleaseAvailable(p.projectPath(), pushTarget, resolvedBumpArg)
+const startingRef = pushTarget ? { branch: (await git(['symbolic-ref', 'HEAD'])).trim(), commit: (await git(['rev-parse', 'HEAD'])).trim() } : undefined
 
 /**
  * Whether a .gitignore rule covers this path.
@@ -113,7 +90,7 @@ async function isGitIgnored(file: string): Promise<boolean> {
 async function readVersion(file: string): Promise<string> {
   const pkg = await readPackage(file)
 
-  if (!pkg?.version || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(pkg.version))
+  if (!pkg?.version || !isValidVersion(pkg.version))
     throw new Error(`Invalid version in ${file}: ${pkg?.version ?? '<missing>'}`)
 
   return pkg.version
@@ -191,9 +168,9 @@ log.debug(`Bumping ${bumpFiles.length} package manifest(s) in ${bumpCwd}`)
 // below (custom commit message + changelog staged first), so bumpx only rewrites
 // the version in each manifest: `commit/tag/push` off, `recursive` off (the file
 // list is explicit), `changelog` off (logsmith owns that). Passing `release`
-// non-interactively implies `yes`; omitting it lets bumpx prompt for the bump.
+// non-interactively implies `yes`; the release resolves the version before writes.
 await versionBump({
-  release: resolvedBumpArg ?? undefined,
+  release: resolvedBumpArg,
   preid: options?.preid,
   files: bumpFiles,
   cwd: bumpCwd,
@@ -206,15 +183,14 @@ await versionBump({
   // The release action handles its own Git checks, staging and commit below.
   noGitCheck: true,
   dryRun: isDryRun,
-  yes: Boolean(resolvedBumpArg),
+  yes: true,
   verbose: isVerbose,
 })
 
 // On a dry run bumpx doesn't write the manifest, so trust the resolved arg for
 // the next version; otherwise read it back from the freshly bumped manifest.
-const nextVersion = isDryRun && resolvedBumpArg && isValidVersion(resolvedBumpArg)
-  ? resolvedBumpArg
-  : await readVersion(primaryManifest)
+const nextVersion = isDryRun ? resolvedBumpArg : await readVersion(primaryManifest)
+if (nextVersion !== resolvedBumpArg) throw new Error(`Expected the prepared release version ${resolvedBumpArg}, found ${nextVersion}`)
 
 // Generate the changelog through logsmith's SDK (was a `buddy changelog` shell
 // call into changelogen). `from` is the latest tag so only this release's
@@ -635,12 +611,36 @@ async function stageReleaseArtifacts(): Promise<void> {
   }
 }
 
-if (!isDryRun) {
+if (pushTarget && startingRef) {
+  if ((await git(['symbolic-ref', 'HEAD'])).trim() !== startingRef.branch || (await git(['rev-parse', 'HEAD'])).trim() !== startingRef.commit)
+    throw new Error('The release checkout changed during preparation. Review the prepared files before retrying.')
+  assertReleaseAvailable(p.projectPath(), pushTarget, nextVersion)
   await stageReleaseArtifacts()
   await git(['commit', '-m', `chore: release v${nextVersion}`])
-  await git(['tag', `v${nextVersion}`])
-  if (!pushTarget) throw new Error('No release push destination was resolved')
-  await git(['push', '--atomic', '--', pushTarget.remote, `HEAD:${pushTarget.ref}`, `refs/tags/v${nextVersion}`])
+  const commit = (await git(['rev-parse', 'HEAD'])).trim()
+  const tag = `v${nextVersion}`
+  let tagged = false
+  try {
+    await git(['tag', tag, commit])
+    tagged = true
+    await git(['push', '--atomic', '--', pushTarget.remote, `${commit}:${pushTarget.ref}`, `${commit}:refs/tags/${tag}`])
+  }
+  catch (cause) {
+    // A disconnected client might have lost the acknowledgement after Git
+    // accepted the atomic push. Leave the published commit in place if so.
+    let remote: ReturnType<typeof readReleaseRefs> | undefined
+    if (tagged) {
+      try { remote = readReleaseRefs(p.projectPath(), pushTarget, nextVersion) }
+      catch { /* Keep the local tag if remote acceptance cannot be confirmed. */ }
+    }
+    if (remote?.tag !== commit) {
+      const recovery = `refs/stacks/release-recovery/${tag}/${commit}`
+      await git(['update-ref', recovery, commit])
+      await git(['update-ref', startingRef.branch, startingRef.commit, commit])
+      if (tagged && remote) await git(['update-ref', '-d', `refs/tags/${tag}`, commit])
+      throw new Error(`Prepared release commit preserved at ${recovery}. The release files are still available in the checkout.`, { cause })
+    }
+  }
 }
 
 // An app's release leaves a GitHub release behind, with the changes since the
