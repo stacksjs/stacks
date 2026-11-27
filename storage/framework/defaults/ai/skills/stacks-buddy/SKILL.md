@@ -666,9 +666,10 @@ buddy test:types             # typecheck (alias: typecheck)
 ```bash
 buddy fresh                  # reinstall dependencies
 buddy install                # install deps
+buddy install --frozen-lockfile --ignore-scripts  # verify the locked install without lifecycle scripts
 buddy clean                  # remove node_modules
 buddy outdated               # check outdated deps
-buddy add                    # add dependency
+buddy add <stack>            # install a registered stack scaffold
 
 buddy upgrade                # upgrade Stacks framework (alias: update)
   -V/--version <version>     # install specific version (e.g., 0.70.23)

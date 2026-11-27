@@ -3198,6 +3198,8 @@ Install your dependencies
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `-v`, `--verbose` | Enable verbose output | boolean, optional | `false` |
+| `--frozen-lockfile` | Install the exact versions in bun.lock without updating it | boolean, optional | - |
+| `--ignore-scripts` | Skip lifecycle scripts during installation | boolean, optional | - |
 
 ### `integrations:probe`
 
