@@ -220,6 +220,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'serve:api': { path: './commands/serve.ts', load: () => import('./commands/serve.ts'), exportName: 'serveApi' },
   'workflow:setup': { path: './commands/workflow.ts', load: () => import('./commands/workflow.ts'), exportName: 'workflow' },
   'workflow:step': { path: './commands/workflow.ts', load: () => import('./commands/workflow.ts'), exportName: 'workflow' },
+  'workflow:check-credentials': { path: './commands/workflow.ts', load: () => import('./commands/workflow.ts'), exportName: 'workflow' },
   'workflow:release-state': { path: './commands/workflow.ts', load: () => import('./commands/workflow.ts'), exportName: 'workflow' },
   'workflow:runs': { path: './commands/workflow.ts', load: () => import('./commands/workflow.ts'), exportName: 'workflow' },
   'workflow:show': { path: './commands/workflow.ts', load: () => import('./commands/workflow.ts'), exportName: 'workflow' },
@@ -299,7 +300,7 @@ export function markLoaded(buddy: CLI, commandName: string): void {
 /**
  * Load a specific command lazily
  */
-export async function loadCommand(commandName: string, buddy: CLI): Promise<boolean> {
+export async function loadCommand(commandName: string, buddy: CLI, required = false): Promise<boolean> {
   const loader = commandRegistry[commandName]
 
   if (!loader) {
@@ -321,23 +322,22 @@ export async function loadCommand(commandName: string, buddy: CLI): Promise<bool
     const module = await loader.load()
     const commandFunction = module[loader.exportName]
 
-    if (typeof commandFunction === 'function') {
-      commandFunction(buddy)
-      return true
-    }
-    else {
-      // Silent fail - don't spam the console during list
-      return false
-    }
+    if (typeof commandFunction !== 'function')
+      throw new Error(`The ${loader.exportName} registrar is missing from ${loader.path}.`)
+    commandFunction(buddy)
+    return true
   }
-  catch {
-    // Silent fail - command will not be available but won't crash the CLI
+  catch (error) {
+    set.delete(key)
+    if (required)
+      throw new Error(`Could not load built-in command "${commandName}": ${error instanceof Error ? error.message : String(error)}`, { cause: error })
     return false
   }
 }
 
 /**
- * Load multiple commands with timeout.
+ * Bound optional catalogue discovery. An explicitly requested registrar must
+ * finish loading before parsing, including on a slow first start.
  *
  * Many registry entries point at the same module (e.g. `down`, `up`, `status`,
  * `maintenance` all share `./commands/maintenance.ts`, and `cloud:*` aliases
@@ -346,7 +346,7 @@ export async function loadCommand(commandName: string, buddy: CLI): Promise<bool
  * duplicate rows in `buddy list`. Dedupe by loader identity so each module's
  * registrar runs at most once per CLI instance.
  */
-export async function loadCommands(commandNames: string[], buddy: CLI): Promise<void> {
+export async function loadCommands(commandNames: string[], buddy: CLI, requiredCommand?: string): Promise<void> {
   const seen = new Set<string>()
   const unique: string[] = []
   for (const name of commandNames) {
@@ -359,6 +359,10 @@ export async function loadCommands(commandNames: string[], buddy: CLI): Promise<
   }
 
   await Promise.all(unique.map(async (name) => {
+    if (name === requiredCommand) {
+      await loadCommand(name, buddy, true)
+      return
+    }
     try {
       await withTimeout(loadCommand(name, buddy), 5000)
     }
