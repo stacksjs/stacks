@@ -145,6 +145,9 @@ export default {
    * A page CSP is opt-in: `csp: 'report-only'` to see what it would block,
    * then `csp: true`. Every `<script>` gets a per-response nonce. The API's
    * `STACKS_CSP` never reaches a page.
+   * For reactive pages, enable `csp.enabled`, `csp.precompile` and
+   * `csp.useNonce` in `stx.config.ts`. Use `csp.addMetaTag: false` when
+   * Stacks supplies the HTTP policy.
    *
    * `STACKS_SECURITY_HEADERS_DISABLE=true` turns the whole set off, for a
    * deployment behind a proxy that injects its own.

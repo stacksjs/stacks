@@ -420,6 +420,30 @@ export default {
 Both `buddy dev` and `buddy serve` print the list at boot, because a page
 another origin can frame is a deliberate exception worth seeing.
 
+Set `security.csp` in `config/server.ts` to `'report-only'` to observe the page
+policy, then use `true` to enforce it. Stacks generates a fresh nonce for the
+response and adds it to the page scripts. The API continues to read
+`STACKS_CSP` and `STACKS_CSP_REPORT_ONLY`.
+
+For reactive stx pages, add the compiler settings below to `stx.config.ts`
+before enforcement. This compiles signal bindings, event handlers, and loops
+ahead of time. Stacks supplies the HTTP policy for the rendered document.
+
+```typescript
+export default {
+  csp: {
+    enabled: true,
+    precompile: true,
+    useNonce: true,
+    addMetaTag: false,
+    directives: {},
+  },
+}
+```
+
+Check a first page load and an in-app navigation under the enforced policy.
+Bindings that the compiler cannot resolve need to be addressed before rollout.
+
 Enable page CSP with `config.server.security.csp`. Start with
 `'report-only'` to observe violations while the page runs. Use
 `{ reportOnly: true, reportUri: '/api/csp-report' }` to send reports to a
