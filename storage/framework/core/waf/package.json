@@ -2,7 +2,7 @@
   "name": "@stacksjs/waf",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.707",
+  "version": "0.75.708",
   "description": "zig-waf in process through bun:ffi: OWASP CRS inspection for Stacks apps that are not behind rpx.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",
