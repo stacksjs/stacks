@@ -18,10 +18,14 @@ function bun(args: string[]) {
 }
 
 try {
+  const preview = (pkg: string): string => `https://pkg.pr.new/@stacksjs/${pkg}@${revision}`
   const dependencies = Object.fromEntries(['auth', 'support'].map(pkg => [
-    `@stacksjs/${pkg}`, `https://pkg.pr.new/@stacksjs/${pkg}@${revision}`,
+    `@stacksjs/${pkg}`, preview(pkg),
   ]))
-  writeFileSync(join(directory, 'package.json'), JSON.stringify({ name: 'stacks-preview-consumer', private: true, type: 'module', dependencies }))
+  // ts-pantry's npm range can select a newly published env before its exact
+  // path dependency is downloadable. Use the env from the commit under test.
+  const overrides = { '@stacksjs/env': preview('env') }
+  writeFileSync(join(directory, 'package.json'), JSON.stringify({ name: 'stacks-preview-consumer', private: true, type: 'module', dependencies, overrides }))
   writeFileSync(join(directory, 'probe.ts'), `
     for (const name of [
       '@stacksjs/auth',
