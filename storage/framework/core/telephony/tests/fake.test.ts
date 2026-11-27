@@ -19,6 +19,7 @@ test('fake exercises search/provision/inbound/outbound/control/release through t
   expect((await fake.endCall(outbound.sid, 'canceled', { operationKey: 'cancel' })).status).toBe('canceled')
   expect((await fake.endCall(inbound.sid, 'completed', { operationKey: 'complete' })).status).toBe('completed')
   expect((await fake.listCalls({ to: ca.phoneNumber })).length).toBe(1)
+  expect(await fake.listCalls({ parentSid: inbound.sid })).toEqual([])
   await fake.releaseNumber(number.sid, { operationKey: 'release' })
   await fake.releaseNumber(number.sid, { operationKey: 'release' })
   expect(await fake.listNumbers()).toEqual([])
