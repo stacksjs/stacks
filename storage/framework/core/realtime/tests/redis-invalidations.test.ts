@@ -1,10 +1,15 @@
 import { expect, test } from 'bun:test'
 import { RedisClient } from 'bun'
 import { createHash, randomUUID } from 'node:crypto'
+import { assertIsolatedOk, runIsolated } from '../../testing/src/isolated'
 import { createRedisInvalidationBus, supportsRedisInvalidations } from '../src/redis-invalidations'
 import { ownedRedisBinary, ownedRedisFixture } from './fixtures/owned-redis'
 
 async function until(predicate: () => boolean) { const end = Date.now() + 10000; while (!predicate()) { if (Date.now() > end) throw new Error('Invalidation observation timed out'); await Bun.sleep(5) } }
+test('an acknowledged Redis subscription becomes ready while an unrelated command is pending', async () => {
+  const result = await runIsolated(`${import.meta.dir}/fixtures/redis-topic-readiness.ts`, { envFile: false, preload: [], timeoutMs: 5000 })
+  assertIsolatedOk(result, 'PASS Redis topic readiness')
+})
 test('missing native Pub/Sub is explicitly unavailable without creating clients', async () => {
   expect(supportsRedisInvalidations({})).toBe(false)
   expect(supportsRedisInvalidations({ RedisClient: class { connect() {} close() {} } })).toBe(false)

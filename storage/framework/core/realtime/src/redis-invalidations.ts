@@ -46,10 +46,14 @@ export function createRedisInvalidationBus(options: RedisInvalidationOptions): I
   const maxPublishes = bound(options.maxPendingPublishes ?? 64, 1024), maxSeen = bound(options.maxRememberedHints ?? 1024, 10000)
   if (maxDelay < delay) throw new TypeError('Invalid Redis reconnect delay range')
   const url = endpoint.href, namespace = options.namespace, origin = randomUUID(), statusObserver = options.onStatus?.bind(options)
-  let status: InvalidationStatus = 'idle', closed = false, pair: Pair | undefined, connecting: Promise<Pair> | undefined, synchronizing: Promise<void> | undefined
+  let status: InvalidationStatus = 'idle', closed = false, pair: Pair | undefined, connecting: Promise<Pair> | undefined, synchronizing: Promise<number> | undefined
   let timer: ReturnType<typeof setTimeout> | undefined, attempts = 0, activePublishes = 0, previouslyReady = false
   const remembered = new Map<string, true>(), cancelPending = new Set<() => void>()
-  const listeners = createInvalidationListeners(options, () => { queueMicrotask(() => { if (closed) return; if (!listeners.channels().length && !pair) { clearTimeout(timer); timer = undefined; return } void synchronize().catch(() => {}) }) })
+  let listenerRevision = 0
+  const listeners = createInvalidationListeners(options, () => {
+    listenerRevision++
+    queueMicrotask(() => { if (closed) return; if (!listeners.channels().length && !pair) { clearTimeout(timer); timer = undefined; return } void synchronize().catch(() => {}) })
+  })
   const topic = (channel: string) => `${namespace}:invalidation:v1:${createHash('sha256').update(channel).digest('hex')}`
   function state(next: InvalidationStatus) {
     if (status === next) return
@@ -118,34 +122,38 @@ export function createRedisInvalidationBus(options: RedisInvalidationOptions): I
     void pending.then(() => { if (connecting === pending) connecting = undefined }, () => { if (connecting === pending) connecting = undefined })
     return pending
   }
-  function synchronize(): Promise<void> {
+  function synchronize(): Promise<number> {
     if (closed) return Promise.reject(new InvalidationError('invalidation_closed', 'Redis invalidation bus is closed'))
     if (synchronizing) return synchronizing
     const pending = (async () => {
       const target = await connection(), end = Date.now() + operationTimeout
       try {
-        while (!closed && pair === target) {
-          const desired = new Map(listeners.channels().map(channel => [topic(channel), channel]))
-          const add = [...desired.keys()].filter(name => !target.topics.has(name)), remove = [...target.topics].filter(name => !desired.has(name))
-          for (const [physical, logical] of desired) target.logical.set(physical, logical)
-          if (add.length) { await timed(target.subscriber.subscribe(add, target.receive), target, Math.max(1, end - Date.now())); for (const name of add) target.topics.add(name) }
-          if (remove.length) { await timed(target.subscriber.unsubscribe(remove), target, Math.max(1, end - Date.now())); for (const name of remove) { target.topics.delete(name); target.logical.delete(name) } }
-          if (closed || pair !== target) break
-          const latest = listeners.channels()
-          if (latest.length === target.topics.size && latest.every(channel => target.topics.has(topic(channel)))) {
-            clearTimeout(timer); timer = undefined; attempts = 0; state('ready')
-            if (!target.initialized && previouslyReady) listeners.resync()
-            target.initialized = true; previouslyReady = true
-            return
-          }
-          if (Date.now() >= end) throw new InvalidationError('invalidation_unavailable', 'Redis subscription synchronization exceeded its deadline')
+        // Finish this acknowledged set before processing listener changes that arrive during Redis I/O.
+        const revision = listenerRevision
+        const desired = new Map(listeners.channels().map(channel => [topic(channel), channel]))
+        const add = [...desired.keys()].filter(name => !target.topics.has(name)), remove = [...target.topics].filter(name => !desired.has(name))
+        for (const [physical, logical] of desired) target.logical.set(physical, logical)
+        if (remove.length) {
+          for (const name of remove) { target.topics.delete(name); target.logical.delete(name) }
+          await timed(target.subscriber.unsubscribe(remove), target, Math.max(1, end - Date.now()))
         }
-        throw new InvalidationError('invalidation_unavailable', 'Redis invalidation connection changed')
+        if (add.length) {
+          await timed(target.subscriber.subscribe(add, target.receive), target, Math.max(1, end - Date.now()))
+          for (const name of add) target.topics.add(name)
+        }
+        if (closed || pair !== target) throw new InvalidationError('invalidation_unavailable', 'Redis invalidation connection changed')
+        clearTimeout(timer); timer = undefined; attempts = 0; state('ready')
+        if (!target.initialized && previouslyReady) listeners.resync()
+        target.initialized = true; previouslyReady = true
+        return revision
       }
       catch { lost(target); throw new InvalidationError(closed ? 'invalidation_closed' : 'invalidation_unavailable', 'Redis invalidation subscription is unavailable') }
     })()
     synchronizing = pending
-    void pending.then(() => { if (synchronizing === pending) synchronizing = undefined }, () => { if (synchronizing === pending) synchronizing = undefined; schedule() })
+    void pending.then((revision) => {
+      if (synchronizing === pending) synchronizing = undefined
+      if (!closed && listenerRevision !== revision) void synchronize().catch(() => {})
+    }, () => { if (synchronizing === pending) synchronizing = undefined; schedule() })
     return pending
   }
   return {
@@ -169,7 +177,24 @@ export function createRedisInvalidationBus(options: RedisInvalidationOptions): I
     async subscribe(input) {
       const record = listeners.add(input)
       try {
-        await Promise.race([synchronize(), record.ended.then(() => { throw new InvalidationError('invalidation_closed', 'Invalidation subscription ended before readiness') })])
+        const topics = record.channels.map(topic)
+        const hasTopics = () => {
+          const target = pair
+          return target?.publisher.connected && target.subscriber.connected && topics.every(name => target.topics.has(name))
+        }
+        if (!hasTopics()) {
+          const ended = record.ended.then(() => { throw new InvalidationError('invalidation_closed', 'Invalidation subscription ended before readiness') })
+          const deadline = Promise.withResolvers<never>()
+          const budget = pair?.publisher.connected && pair.subscriber.connected ? operationTimeout : connectTimeout + operationTimeout
+          const timeout = setTimeout(() => deadline.reject(new InvalidationError('invalidation_unavailable', 'Redis invalidation subscription exceeded its deadline')), budget)
+          try {
+            await Promise.race([synchronize(), ended, deadline.promise])
+            // The in-flight set may have been captured before this registration.
+            if (!hasTopics()) await Promise.race([synchronize(), ended, deadline.promise])
+            if (!hasTopics()) throw new InvalidationError('invalidation_unavailable', 'Redis invalidation subscription is unavailable')
+          }
+          finally { clearTimeout(timeout) }
+        }
         listeners.activate(record)
         return () => listeners.remove(record)
       }
