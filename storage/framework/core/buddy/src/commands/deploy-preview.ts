@@ -23,6 +23,7 @@ export interface CreateDeploymentPreviewOptions {
   site?: string
   domain?: string
   docker?: boolean
+  holdDns?: boolean
   fallbackProjectName?: string
   fallbackProjectSlug?: string
   fallbackProvider?: string
@@ -157,6 +158,7 @@ export function createDeploymentPreview(options: CreateDeploymentPreviewOptions)
   // An ssh host is adopted rather than created: the preview should promise a
   // check and a bootstrap, not a server that will come into existence.
   const sshTarget = provider === 'ssh' ? resolveSshTarget(config) : null
+  const publicationHeld = options.holdDns && (provider === 'hetzner' || provider === 'ssh')
   const publishesDns = dnsPublishingAllowed({
     provider,
     publicIp: sshTarget?.host,
@@ -215,13 +217,16 @@ export function createDeploymentPreview(options: CreateDeploymentPreviewOptions)
   }
 
   if (publicSites.length > 0) {
-    operations.push(operation('gateway', 'Reconcile public routes', publishesDns
-      ? 'Regenerate the reverse-proxy routes from the complete environment-aware site model.'
-      : 'Regenerate the reverse-proxy routes from the complete environment-aware site model, served over the local network only.', publicSites.map(site => site.name)))
+    let detail = 'Regenerate the reverse-proxy routes from the complete environment-aware site model.'
+    if (publicationHeld)
+      detail += ' Post-release DNS and TLS reconciliation is held.'
+    else if (!publishesDns)
+      detail = 'Regenerate the reverse-proxy routes from the complete environment-aware site model, served over the local network only.'
+    operations.push(operation('gateway', 'Reconcile public routes', detail, publicSites.map(site => site.name)))
 
     // A private host publishes nothing and asks for no certificate: neither a
     // public A record nor an ACME challenge can reach it.
-    if (publishesDns) {
+    if (publishesDns && !publicationHeld) {
       operations.push(operation('dns', 'Reconcile DNS records', 'Publish the configured public domains through their resolved DNS providers.', publicSites.map(site => site.name)))
       operations.push(operation('tls', 'Reconcile TLS certificates', 'Issue or renew certificates for public domains and reload the gateway when records change.', publicSites.map(site => site.name)))
     }

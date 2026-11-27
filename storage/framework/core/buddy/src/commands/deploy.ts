@@ -6219,6 +6219,7 @@ export function deploy(buddy: CLI): void {
             site: options.site,
             domain: options.domain,
             docker: options.docker === true,
+            holdDns: dnsHeld(),
             fallbackProjectName: app.name,
             fallbackProjectSlug: app.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'app',
             fallbackProvider: 'aws',

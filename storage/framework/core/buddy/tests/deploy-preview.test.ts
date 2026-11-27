@@ -170,9 +170,10 @@ describe('deployment preview for an ssh host', () => {
     },
   }
 
-  const build = (config: Record<string, unknown>) => createDeploymentPreview({
+  const build = (config: Record<string, unknown>, holdDns = false) => createDeploymentPreview({
     config: config as any,
     environment: 'production',
+    holdDns,
     resolveSiteKind,
     applyEnvironmentToSites,
   })
@@ -213,5 +214,19 @@ describe('deployment preview for an ssh host', () => {
     const kinds = build({ ...base, cloud: { provider: 'hetzner' }, infrastructure: { compute: { size: 'medium' } } }).operations.map(op => op.phase)
     expect(kinds).toContain('dns')
     expect(kinds).toContain('tls')
+  })
+
+  it('keeps the release and gateway while holding publication on Hetzner and SSH', () => {
+    const hetzner = { ...base, cloud: { provider: 'hetzner' } }
+    for (const config of [hetzner, routable]) {
+      const plan = build(config, true)
+      const phases = plan.operations.map(op => op.phase)
+      expect(phases).toContain('release')
+      expect(phases).toContain('runtime')
+      expect(phases).not.toContain('dns')
+      expect(phases).not.toContain('tls')
+      expect(plan.operations.find(op => op.phase === 'gateway')?.detail).toContain('Post-release DNS and TLS reconciliation is held.')
+      expect(formatDeploymentPreview(plan)).toContain('Post-release DNS and TLS reconciliation is held.')
+    }
   })
 })
