@@ -136,11 +136,10 @@ async function scanGlob(pattern: string, root: string): Promise<string[]> {
  * Anchors that have already declared what they are.
  *
  * `data-stx-link` hands the anchor to the router, which is exactly what rule 9
- * asks for; `data-no-router` is a deliberate full page load. Flagging either
- * fires on the fix as loudly as on the problem, and a check that cannot be
- * satisfied gets its baseline raised instead of cleared.
+ * asks for. The router honors `data-stx-no-router` and `data-no-router` for
+ * deliberate full page navigation.
  */
-const ROUTED_ANCHOR = /\bdata-stx-link\b|\bdata-no-router\b/
+const ROUTED_ANCHOR = /\bdata-stx-link\b|\bdata-(?:stx-)?no-router\b/
 
 async function grepLines(re: RegExp, files: string[], root: string, ignore?: RegExp): Promise<string[]> {
   const hits: string[] = []
