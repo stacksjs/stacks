@@ -125,12 +125,18 @@ export default {
    * `buddy dev` and `buddy serve` both print the list at boot, because a page
    * that can be framed is a deliberate exception worth seeing.
    *
-   * Two headers are deliberately NOT sent on pages. A `STACKS_CSP` policy is
-   * not, because it has only ever reached JSON responses and a blanket policy
-   * breaks inline stx script bootstrapping, Stripe iframes and OAuth popups.
-   * `Strict-Transport-Security` is not, because `buddy serve` treats itself as
-   * production even on a laptop, and HSTS on localhost pins that host to
-   * HTTPS in your browser for a year.
+   * Pages also get `Cross-Origin-Opener-Policy` and `Permissions-Policy`.
+   * Stacks adds `Strict-Transport-Security` when `APP_URL` uses HTTPS on a
+   * public host.
+   * The `hsts`, `crossOriginOpenerPolicy`, and `permissionsPolicy` fields
+   * configure those headers. Set a field to `false` to omit its header.
+   *
+   * Set `csp: 'report-only'` to observe the page policy, then `csp: true`
+   * to enforce it. Stacks adds a fresh response nonce to page scripts.
+   * `STACKS_CSP` and `STACKS_CSP_REPORT_ONLY` configure the API policy.
+   * For reactive pages, enable `csp.enabled`, `csp.precompile` and
+   * `csp.useNonce` in `stx.config.ts`. Use `csp.addMetaTag: false` when
+   * Stacks supplies the HTTP policy.
    *
    * `STACKS_SECURITY_HEADERS_DISABLE=true` turns the whole set off, for a
    * deployment behind a proxy that injects its own.
