@@ -16,7 +16,8 @@
  * unauthenticated.
  */
 
-import { feature } from '@stacksjs/config'
+import { config, feature } from '@stacksjs/config'
+import { listModelSources } from '@stacksjs/database/model-sources'
 import { isLocalDeployment } from '@stacksjs/env'
 import { route } from '@stacksjs/router'
 
@@ -552,15 +553,20 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // Error monitoring - the same native Error model aggregation exposed by
   // the token-authenticated `/api/monitoring` routes, projected through the
   // dashboard guard so the local dashboard session can read and manage it.
-  guard(route.get('/monitoring/errors', 'Actions/Monitoring/ErrorIndexAction'))
-  guard(route.get('/monitoring/errors/stats', 'Actions/Monitoring/ErrorStatsAction'))
-  guard(route.get('/monitoring/errors/timeline', 'Actions/Monitoring/ErrorTimelineAction'))
-  guard(route.get('/monitoring/errors/group', 'Actions/Monitoring/ErrorGroupAction'))
-  guard(route.get('/monitoring/errors/{id}', 'Actions/Monitoring/ErrorShowAction'))
-  guard(route.patch('/monitoring/errors/resolve', 'Actions/Monitoring/ErrorResolveAction'))
-  guard(route.patch('/monitoring/errors/ignore', 'Actions/Monitoring/ErrorIgnoreAction'))
-  guard(route.patch('/monitoring/errors/unresolve', 'Actions/Monitoring/ErrorUnresolveAction'))
-  guard(route.delete('/monitoring/errors', 'Actions/Monitoring/ErrorDestroyAction'))
+  const hasErrorModel = listModelSources()?.some(model => model.name === 'Error')
+  if (hasErrorModel || config.dashboard?.providers?.errors?.driver === 'hq') {
+    guard(route.get('/monitoring/errors', 'Actions/Monitoring/ErrorIndexAction'))
+    guard(route.get('/monitoring/errors/stats', 'Actions/Monitoring/ErrorStatsAction'))
+    guard(route.get('/monitoring/errors/timeline', 'Actions/Monitoring/ErrorTimelineAction'))
+    guard(route.get('/monitoring/errors/group', 'Actions/Monitoring/ErrorGroupAction'))
+    guard(route.get('/monitoring/errors/{id}', 'Actions/Monitoring/ErrorShowAction'))
+  }
+  if (hasErrorModel) {
+    guard(route.patch('/monitoring/errors/resolve', 'Actions/Monitoring/ErrorResolveAction'))
+    guard(route.patch('/monitoring/errors/ignore', 'Actions/Monitoring/ErrorIgnoreAction'))
+    guard(route.patch('/monitoring/errors/unresolve', 'Actions/Monitoring/ErrorUnresolveAction'))
+    guard(route.delete('/monitoring/errors', 'Actions/Monitoring/ErrorDestroyAction'))
+  }
 
   guard(route.get('/queries', 'Actions/Dashboard/Queries/QueryDashboardAction'))
   guard(route.get('/queries/{id}', 'Actions/Dashboard/Queries/QueryShowAction'))

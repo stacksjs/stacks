@@ -126,14 +126,15 @@ describe('the generator\'s staging directory is the generator\'s alone', () => {
     expect(/\bresolveModelSources\(/.test(code(`${generator}/migrations.ts`))).toBe(true)
   })
 
-  it('the four that only wanted the list of models ask for the list', () => {
+  it('read-only model consumers ask for the list', () => {
     const listing: Array<[string, RegExp]> = [
       ['search-engine/src/documents/models.ts', /\(listModelSources\(\) \?\? \[\]\)\.map\(\(?model\)? => model\.file\)/],
       ['actions/src/dev/dashboard-utils.ts', /for \(const model of listModelSources\(\) \?\? \[\]\)/],
-      ['actions/src/dev/dashboard.ts', /schemaModels: \(listModelSources\(\) \?\? \[\]\)\.map/],
       ['actions/src/generate/erd.ts', /const sources = listModelSources\(\)/],
       ['actions/src/generate/vschema.ts', /const sources = listModelSources\(\)/],
     ]
+    const availability = join(defaults, 'resources/functions/dashboard/page-availability.ts')
+    expect(code(availability)).toMatch(/const schemaModels = \(listModelSources\(\) \?\? \[\]\)\.map/)
     for (const [file, call] of listing)
       expect(code(`${core}/${file}`), file).toMatch(call)
   })

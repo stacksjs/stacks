@@ -3,7 +3,9 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { DEFAULT_VIEW_ROUTE_BUNDLES } from '../../storage/framework/core/config/src/views'
 import { DEFAULT_ROUTE_BUNDLE_FEATURES, mountedDefaultRouteBundles } from '../../storage/framework/core/router/src/route-loader'
-import { disabledFeatureConfigs, disabledFeatureViews, FEATURE_DASHBOARD_VIEWS } from '../../storage/framework/core/actions/src/dev/dashboard-feature-views'
+import { disabledFeatureConfigs } from '../../storage/framework/core/actions/src/dev/dashboard-feature-views'
+import { dashboardPageAvailable, dashboardViewExclusions, unavailableDashboardPages } from '../../storage/framework/defaults/resources/functions/dashboard/page-availability'
+import { resolveDashboardToggles } from '../../storage/framework/defaults/resources/functions/dashboard/toggles'
 
 /**
  * CMS and commerce are opt-in: off until `./buddy cms:install` or
@@ -56,23 +58,67 @@ describe('CMS and commerce are off until installed', () => {
     expect(mountedDefaultRouteBundles(name => name === 'dashboard' || name === 'commerce', {}).has('storefront')).toBe(true)
   })
 
-  test('their framework pages are left out of serving while off', () => {
-    const off = disabledFeatureViews(frameworkDashboard, () => false)
-    expect(off).toContain(join(frameworkDashboard, 'content'))
-    expect(off).toContain(join(frameworkDashboard, 'commerce'))
-    expect(off).toContain(join(frameworkDashboard, 'analytics/commerce'))
-    // A listed directory that no longer exists would gate nothing.
-    for (const dir of off)
-      expect(existsSync(dir)).toBe(true)
-
-    expect(disabledFeatureViews(frameworkDashboard, () => true)).toEqual([])
-    expect(disabledFeatureViews(frameworkDashboard, feature => feature === 'cms'))
-      .toEqual(FEATURE_DASHBOARD_VIEWS.commerce.map(relative => join(frameworkDashboard, relative)))
+  test('the page policy hides uninstalled features even when their sections are explicitly enabled', () => {
+    const sections = resolveDashboardToggles({
+      sections: { content: { enabled: true }, commerce: { enabled: true }, marketing: { enabled: true } },
+    }, () => false)
+    const exclusions = dashboardViewExclusions(frameworkDashboard, { sections })
+    const paths = ['content', 'commerce', 'analytics/commerce', 'marketing', 'marketing/reviews', 'marketing/abandoned-carts']
+    for (const path of paths) {
+      expect(exclusions).toContain(join(frameworkDashboard, path))
+      expect(existsSync(join(frameworkDashboard, path))).toBe(true)
+    }
+    expect(exclusions).not.toContain(join(frameworkDashboard, 'analytics'))
   })
 
-  test('both dashboard servers exclude them', () => {
+  test('a dashboard section can opt out with its feature installed', () => {
+    const sections = resolveDashboardToggles({
+      sections: { library: { enabled: false }, analytics: { enabled: false }, data: { users: { enabled: false }, allModels: { enabled: false } } },
+    }, () => true)
+    const exclusions = dashboardViewExclusions(frameworkDashboard, { sections })
+    for (const path of ['library', 'analytics', 'data/users.stx', 'data/users', 'models/index.stx'])
+      expect(exclusions).toContain(join(frameworkDashboard, path))
+    expect(exclusions).not.toContain(join(frameworkDashboard, 'models'))
+    expect(exclusions).not.toContain(join(frameworkDashboard, 'commerce'))
+    expect(exclusions).not.toContain(join(frameworkDashboard, 'settings'))
+  })
+
+  test('page links and file exclusions agree for unavailable schema and provider pages', () => {
+    const availability = { schemaModels: ['User'], inbox: false, remote: false }
+    const exclusions = dashboardViewExclusions(frameworkDashboard, availability)
+    const unavailable = unavailableDashboardPages(availability)
+    for (const path of ['/requests', '/notifications/dashboard', '/data/activity', '/settings/billing', '/inbox', '/inbox/activity', '/inbox/settings', '/remote'])
+      expect(dashboardPageAvailable(path, unavailable)).toBe(false)
+    for (const path of ['requests', 'notifications', 'data/activity', 'settings/billing.stx', 'inbox/index.stx', 'inbox/activity.stx', 'inbox/settings.stx', 'remote'])
+      expect(exclusions).toContain(join(frameworkDashboard, path))
+    for (const path of ['/data/users', '/inbox/captured', '/models/user', '/settings/appearance'])
+      expect(dashboardPageAvailable(path, unavailable)).toBe(true)
+  })
+
+  test('analytics and telemetry pages follow their local models or hosted providers', () => {
+    const local = unavailableDashboardPages({ schemaModels: ['AnalyticsEvent'] })
+    expect(dashboardPageAvailable('/analytics/web', local)).toBe(false)
+    expect(dashboardPageAvailable('/analytics/commerce/web', local)).toBe(false)
+    expect(dashboardPageAvailable('/analytics/commerce/sales', local)).toBe(true)
+    expect(dashboardPageAvailable('/analytics', local)).toBe(false)
+    expect(dashboardPageAvailable('/analytics/events', local)).toBe(true)
+    expect(dashboardPageAvailable('/analytics/marketing', local)).toBe(false)
+    expect(dashboardPageAvailable('/errors', local)).toBe(false)
+    expect(dashboardPageAvailable('/logs', local)).toBe(false)
+
+    const providers = { analytics: { driver: 'hq' }, logs: { driver: 'hq' }, errors: { driver: 'hq' } } as const
+    const hosted = unavailableDashboardPages({ schemaModels: [], providers })
+    for (const path of ['/analytics', '/analytics/web', '/errors', '/logs'])
+      expect(dashboardPageAvailable(path, hosted)).toBe(true)
+
+    const sections = resolveDashboardToggles({ sections: { analytics: { enabled: false } } }, () => true)
+    const disabled = unavailableDashboardPages({ sections, schemaModels: [] })
+    expect(dashboardPageAvailable('/analytics/commerce/web', disabled)).toBe(false)
+  })
+
+  test('both dashboard servers use the shared page exclusions', () => {
     for (const file of ['storage/framework/core/actions/src/dev/dashboard.ts', 'storage/framework/core/actions/src/serve/dashboard.ts'])
-      expect(readFileSync(resolve(file), 'utf8')).toMatch(/exclude: disabledFeatureViews\(/)
+      expect(readFileSync(resolve(file), 'utf8')).toMatch(/exclude: dashboardViewExclusions\(/)
   })
 
   test('the home activity card names orders only with commerce on', () => {
@@ -92,18 +138,11 @@ describe('CMS and commerce are off until installed', () => {
     expect(server.match(/\(await hiddenConfigs\(\)\)\.has\(/g)?.length).toBe(3)
   })
 
-  test('the home page offers a feature\'s card only once the server says it exists', () => {
-    // "!== false" showed the Blog and Commerce cards until the answer arrived,
-    // and their links were prefetched: two 404s on every load with both off.
+  test('the home page filters its links on the server before emitting them', () => {
     const home = readFileSync(resolve('storage/framework/defaults/resources/components/Dashboard/Home/DashboardHome.stx'), 'utf8')
-    expect(home).toContain('!link.section || available[link.section] === true')
-    expect(home).not.toContain('available[link.section] !== false')
-  })
-
-  test('the not-found page does not link into a gated section', () => {
-    const notFound = readFileSync(resolve('storage/framework/defaults/resources/components/Dashboard/NotFoundDashboard.stx'), 'utf8')
-    const gated = Object.values(FEATURE_DASHBOARD_VIEWS).flat()
-    for (const match of notFound.matchAll(/\bto="(\/[^"]*)"/g))
-      expect(gated.some(relative => match[1] === `/${relative}` || match[1].startsWith(`/${relative}/`))).toBe(false)
+    expect(home).toContain('const isDashboardPageAvailable = dashboardPageVisibility()')
+    expect(home).toContain('.filter(link => isDashboardPageAvailable(link.href))')
+    expect(home).toContain('@if(showRequestHistory)')
+    expect(home).toContain('@if(showActivityLink)')
   })
 })

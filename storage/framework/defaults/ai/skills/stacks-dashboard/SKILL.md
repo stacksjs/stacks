@@ -794,6 +794,20 @@ custom layer only when the shared dialog or drawer semantics do not fit. It
 must still use `dashboard-modal-layer` and provide complete keyboard, focus,
 and ARIA behavior. Do not solve sidebar overlap by increasing z-index alone.
 
+### Which pages are available
+
+`config/dashboard.ts` controls bundled page sections through `sections`.
+Set a section or data row to `{ enabled: false }` to remove its bundled views
+and navigation. Content, Commerce, and Marketing require their corresponding
+installed features. Pages backed by optional schema models, the serverless
+mail inbox, or remote hosts are available when those resources are configured.
+
+The standalone Buddy dashboard can still run when `dashboard.enabled` is
+false. That flag controls dashboard integration in the app's own server.
+Settings remains reachable for the dashboard itself. Disabling All Models
+removes the index and keeps individual model pages. App views in
+`resources/views/dashboard` keep precedence, and `nav` adds their links.
+
 ### Live dashboard audit
 
 Start `./buddy dev --dashboard`, then run the dependency-free live audit from

@@ -71,7 +71,7 @@ const FEATURE_BACKED_SECTIONS = {
  *
  * Omitted, every section defaults on exactly as it did before.
  */
-export type FeatureResolver = (name: string) => boolean
+export type FeatureResolver = (name: typeof FEATURE_BACKED_SECTIONS[keyof typeof FEATURE_BACKED_SECTIONS]) => boolean
 
 function sectionFallback(section: keyof typeof FEATURE_BACKED_SECTIONS, isFeatureEnabled?: FeatureResolver): boolean {
   if (!isFeatureEnabled)
@@ -111,11 +111,10 @@ export function resolveDashboardToggles(value: unknown, isFeatureEnabled?: Featu
 
   return {
     library: sectionEnabled(sections.library, 'library', true),
-    // An explicit `enabled` in config/dashboard.ts still wins, both ways: an
-    // app can show a section whose feature is off, or hide one that is on.
-    content: sectionEnabled(sections.content, 'content', sectionFallback('content', isFeatureEnabled)),
-    commerce: sectionEnabled(sections.commerce, 'commerce', sectionFallback('commerce', isFeatureEnabled)),
-    marketing: sectionEnabled(sections.marketing, 'marketing', sectionFallback('marketing', isFeatureEnabled)),
+    // A section can opt out of an installed feature. Its pages need the feature's routes and models.
+    content: sectionEnabled(sections.content, 'content', true) && sectionFallback('content', isFeatureEnabled),
+    commerce: sectionEnabled(sections.commerce, 'commerce', true) && sectionFallback('commerce', isFeatureEnabled),
+    marketing: sectionEnabled(sections.marketing, 'marketing', true) && sectionFallback('marketing', isFeatureEnabled),
     analytics: sectionEnabled(sections.analytics, 'analytics', true),
     management: sectionEnabled(sections.management, 'management', true),
     utilities: sectionEnabled(sections.utilities, 'utilities', true),

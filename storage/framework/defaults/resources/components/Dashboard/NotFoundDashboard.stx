@@ -1,3 +1,9 @@
+<script server>
+import { dashboardPageVisibility } from '@stacksjs/defaults/resources/functions/dashboard/page-availability'
+
+export const dashboardLinkAvailable = dashboardPageVisibility()
+</script>
+
 <template>
   <div class="flex items-center justify-center pb-12 pt-6 px-6 min-h-[80vh]">
     <div class="mx-auto space-y-6 max-w-7xl w-full">
@@ -37,6 +43,7 @@
               </div>
             </div>
           </StxLink>
+          @if(dashboardLinkAvailable('/models'))
           <StxLink to="/models" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
             <div class="p-5">
               <div class="flex items-center">
@@ -54,6 +61,7 @@
               </div>
             </div>
           </StxLink>
+          @endif
           <StxLink to="/settings" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
             <div class="p-5">
               <div class="flex items-center">
