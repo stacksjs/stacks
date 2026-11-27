@@ -170,4 +170,28 @@ effect(() => {
   background: rgb(0 0 0 / 50%);
   backdrop-filter: blur(4px);
 }
+
+/*
+ * Opening fades the backdrop in and lifts the panel into place. The dialog is
+ * added to the page as it opens, so an animation (which runs when an element
+ * first appears) does this without any script.
+ */
+.dashboard-modal-dialog[open]::backdrop {
+  animation: dashboard-modal-backdrop-in 180ms ease-out;
+}
+.dashboard-modal-dialog[open] [data-dashboard-overlay="modal"] {
+  animation: dashboard-modal-panel-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes dashboard-modal-backdrop-in {
+  from { opacity: 0; }
+}
+@keyframes dashboard-modal-panel-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-modal-dialog[open]::backdrop,
+  .dashboard-modal-dialog[open] [data-dashboard-overlay="modal"] {
+    animation: none;
+  }
+}
 </style>
