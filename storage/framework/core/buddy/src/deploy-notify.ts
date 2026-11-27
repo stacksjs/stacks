@@ -246,7 +246,7 @@ export function withDeployNotification<A extends unknown[]>(
   return async (...args: A): Promise<void> => {
     const notify = shouldNotify(...args)
     const startedAt = Date.now()
-    // The command's first positional is the target environment.
+    // The caller passes the resolved target as the first argument.
     const environment = typeof args[0] === 'string' && args[0] ? args[0] : 'production'
     const context = {
       environment,
