@@ -32,6 +32,22 @@ export function parseSidebarOrder(value: unknown): SidebarOrder {
     items[key] = ids(list, 2048)
   }
   if (JSON.stringify(input).length > 256 * 1024) throw new TypeError('Sidebar order is too large.')
+
+  // Keep the registry row's position and the old disclosure's child order
+  // when the two rows become a single All Models entry.
+  const dataKey = sidebarGroupKey('data')
+  const dataRows = items[dataKey]
+  if (dataRows?.includes('models-more')) {
+    items[dataKey] = dataRows.includes('models')
+      ? dataRows.filter(id => id !== 'models-more')
+      : dataRows.map(id => id === 'models-more' ? 'models' : id)
+  }
+  const oldModelGroup = sidebarGroupKey('data', ['models-more'])
+  if (items[oldModelGroup]) {
+    items[sidebarGroupKey('data', ['models'])] ??= items[oldModelGroup]
+    delete items[oldModelGroup]
+  }
+
   return { version: 1, sections: ids(input.sections, 128), items }
 }
 

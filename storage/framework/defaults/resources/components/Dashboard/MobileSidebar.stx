@@ -53,7 +53,7 @@ function handleKeydown(event: KeyboardEvent): void {
 
 function handlePanelClick(event: MouseEvent): void {
   const target = event.target as HTMLElement | null
-  if (target?.closest('a[href]'))
+  if (!event.defaultPrevented && target?.closest('a[href]'))
     closeSidebar()
 }
 
