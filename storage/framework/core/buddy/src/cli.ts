@@ -194,7 +194,8 @@ async function runCli(): Promise<void> {
 
       // Use lazy loading for better cold start performance
       const commandsToLoad = getCommandsToLoad(args)
-      await loadCommands(commandsToLoad, buddy)
+      const requiredCommand = commandsToLoad.length === 1 || requestedCommand === 'list' ? commandsToLoad[0] : undefined
+      await loadCommands(commandsToLoad, buddy, requiredCommand)
 
       // Load user commands for project work. Dependency-only Support installs
       // can run before the app and its command imports are ready.

@@ -7,6 +7,7 @@ describe('lazy command timeout', () => {
     expect(getCommandsToLoad(['ensure'])).toEqual(['ensure'])
     expect(getCommandsToLoad(['setup:ai'])).toEqual(['setup:ai'])
     expect(getCommandsToLoad(['ai:setup'])).toEqual(['ai:setup'])
+    expect(getCommandsToLoad(['workflow:check-credentials', 'native-accept'])).toEqual(['workflow:check-credentials'])
     expect(getCommandsToLoad(['--help'])).toContain('setup')
   })
 
