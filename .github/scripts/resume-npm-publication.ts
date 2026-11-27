@@ -1,7 +1,9 @@
 import process from 'node:process'
+import { writeFile } from 'node:fs/promises'
 import { stripVTControlCharacters } from 'node:util'
 import { acceptedPublications, verifyAcceptedPublications } from './npm-publication'
 import { publishables } from './promote-latest'
+import { sampleLibraryNames } from './publish-verified-sample'
 
 /** Only this immutable release's acknowledged original archives can resume it. */
 export function priorPublicationReceipts(logs: readonly string[], version: string, names: ReadonlySet<string>) {
@@ -150,10 +152,12 @@ if (import.meta.main) {
     }
   }
   const root = new URL('../../', import.meta.url).pathname
-  const names = new Set(['stacks', ...(await publishables(root)).map(pkg => pkg.name)])
+  const names = new Set(['stacks', ...(await publishables(root)).map(pkg => pkg.name), ...await sampleLibraryNames(root)])
   const receipts = priorPublicationReceipts(logs, version, names)
   console.log(`Verifying ${receipts.length} original accepted archives from ${attempt - 1} earlier attempt(s)`)
   // As long as promote-latest.ts allows for npm's automated review: a rerun
   // after that wait timed out should be able to outlast the same review.
   await verifyAcceptedPublications(receipts, { budgetMs: 30 * 60_000 })
+  if (process.env.STACKS_NPM_RESUME_RECEIPTS)
+    await writeFile(process.env.STACKS_NPM_RESUME_RECEIPTS, JSON.stringify(receipts), { mode: 0o600 })
 }

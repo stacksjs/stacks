@@ -340,6 +340,7 @@ jobs:
         if: steps.registries.outputs.npm == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          STACKS_NPM_RESUME_RECEIPTS: ${{ runner.temp }}/stacks-npm-resume.json
         run: bun .github/scripts/resume-npm-publication.ts
 
       - name: Publish Framework to npm
@@ -474,12 +475,19 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           exit 1
 
+      # npm's CLI exchanges this job's OIDC identity for the sample package.
+      # The sample must grant release.yml direct publish access on npm.
+      - name: Setup Node for trusted sample publishing
+        if: steps.registries.outputs.npm == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
       - name: Publish Dummy Libraries
         if: steps.registries.outputs.npm == 'true'
         run: ./storage/framework/scripts/publish-dummy-libs
         env:
-          BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+          STACKS_NPM_RESUME_RECEIPTS: ${{ runner.temp }}/stacks-npm-resume.json
 
       # The extension's tests include a build that must load as CommonJS on
       # Node, the way VS Code loads it, so a bundle VS Code would refuse is
