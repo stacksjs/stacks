@@ -15,7 +15,7 @@ describe.skipIf(!dashboardE2EAvailable)('mail settings', () => {
   let e2e: DashboardE2E | undefined
 
   beforeAll(async () => {
-    e2e = await startDashboardE2E()
+    e2e = await startDashboardE2E({ mailServerMode: 'serverless' })
     await signIn(e2e)
   }, 180_000)
 

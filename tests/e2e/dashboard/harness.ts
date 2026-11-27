@@ -59,7 +59,7 @@ export interface DashboardE2E {
 }
 
 /** Start the dashboard on a fresh, migrated and seeded database. */
-export async function startDashboardE2E(): Promise<DashboardE2E> {
+export async function startDashboardE2E({ mailServerMode = 'server' }: { mailServerMode?: 'server' | 'serverless' } = {}): Promise<DashboardE2E> {
   const database = await createDisposableDatabase('postgres', { prefix: 'stacks_e2e' })
   const checkoutBefore = trackedChanges()
   let server: ReturnType<typeof Bun.spawn> | undefined
@@ -80,7 +80,7 @@ export async function startDashboardE2E(): Promise<DashboardE2E> {
   }
 
   try {
-    const env = dashboardEnv(database)
+    const env = { ...dashboardEnv(database), MAIL_SERVER_MODE: mailServerMode }
     await buddy(['migrate', '--generate', '--force'], env, database.directory, 'migrate')
     await buddy(['seed'], env, database.directory, 'seed')
 
