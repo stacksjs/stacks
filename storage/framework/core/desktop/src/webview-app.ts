@@ -79,8 +79,12 @@ export function validateWebviewDesktop(config: ResolvedWebviewDesktop): string[]
   }
   if (config.updates) errors.push(...desktopUpdatesProblems(config.updates, 'webview.updates'))
   const database = config.agent.database
-  if (database && typeof database === 'object' && database.filename !== undefined && !validWebviewDatabaseFilename(database.filename))
-    errors.push('webview.agent.database.filename must be a filename within the app data directory')
+  if (database && typeof database === 'object') {
+    if (database.filename !== undefined && !validWebviewDatabaseFilename(database.filename))
+      errors.push('webview.agent.database.filename must be a filename within the app data directory')
+    if (database.auth !== undefined && typeof database.auth !== 'boolean')
+      errors.push('webview.agent.database.auth must be a boolean')
+  }
   return errors
 }
 

@@ -91,6 +91,13 @@ upstream. Review `git status` and commit the source changes before releasing.
 The release uses the configured Git identity and pushes its release commit
 and tag atomically to the resolved destination.
 
+Buddy checks the intended remote branch and exact release tag before preparing
+the release. If another publisher wins the race after preparation, Buddy
+retains the proposed commit under the reported `refs/stacks/release-recovery/`
+ref and restores the checkout's branch tip. Review the retained commit with
+`git show` and the prepared files with `git diff --cached`. If the remote
+already has the release tag, use that tag's workflow for publication status.
+
 ### Refresh locks without starting the project
 
 When dependency declarations change, regenerate both locks with the pinned

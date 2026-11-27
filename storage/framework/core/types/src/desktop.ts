@@ -158,7 +158,14 @@ export interface WebviewAgentConfig {
    * refused, and a failure is undone. `DB_CONNECTION` and `DB_DATABASE_PATH`
    * point the app at it. Default `false` (stacksjs/stacks#3368).
    */
-  database?: boolean | { filename?: string }
+  database?: boolean | {
+    filename?: string
+    /**
+     * Initialize Stacks' managed auth tables after numbered migrations and
+     * config load, before importing the agent. Default `false`.
+     */
+    auth?: boolean
+  }
   /** A module whose default function prepares the workspace before migrations and config load. */
   prepare?: string
   /**
