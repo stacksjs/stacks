@@ -1,5 +1,5 @@
 import type { DnsConfig, EnvironmentConfig } from '@stacksjs/ts-cloud'
-import type { CLI, DeploymentPreview, DeploymentSiteKind, DeployOptions } from '@stacksjs/types'
+import type { CLI, DeploymentPreview, DeploymentSiteKind, DeployOptions, EmailConfig } from '@stacksjs/types'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
@@ -10,7 +10,7 @@ import { runAction } from '@stacksjs/actions/run-action'
 import { assertPublicationAllowed } from '@stacksjs/actions/publication-preflight'
 import { runBeforeDeployHook } from '@stacksjs/actions/deploy/hooks'
 import { italic, onUnknownSubcommand, outro, prompts } from "@stacksjs/cli"
-import { app, dns as dnsConfig, email as emailConfig, security as securityConfig } from '@stacksjs/config'
+import { app, awaitConfig, config as stacksConfig, dns as dnsConfig, email as emailConfig, security as securityConfig } from '@stacksjs/config'
 import { resolvePrivateTenants } from '../cloud-tenants'
 import { addDomain, hasUserDomainBeenAddedToCloud, syncDnsConfig } from '@stacksjs/dns'
 import { loadProjectDnsConfig } from '../config'
@@ -3101,7 +3101,8 @@ async function runSshDeploy(args: {
   // exist) rather than inside ts-cloud itself.
   // Before the environment is read: a mailbox password generated later, by
   // the mail step, would be on the mail server and not in this release.
-  await ensureMailboxPasswords(log, args.envFile ?? (environment === 'staging' ? '.env.staging' : '.env.production'))
+  if (!dnsHeld())
+    await ensureMailboxPasswords(log, args.envFile ?? (environment === 'staging' ? '.env.staging' : '.env.production'))
   const resolvedDeployEnv = await resolveDeployEnvValues(environment, tsCloudConfig, args.envFile)
   // Persistent-state paths are declared AFTER the env merge: which file (or
   // whether any file) the app opens is decided by the site's resolved
@@ -3363,8 +3364,8 @@ async function runSshDeploy(args: {
   // config/email.ts: register its local domain and provision its auto-forward
   // rules (forwards.json + compiled RFC 5228 Sieve). Idempotent, merge-based and best-effort — it never
   // removes another tenant's domains/forwards and never fails the release.
-  if (ok && dnsAllowed) {
-    const mailOwner = mailServerOwnerFromConfig(emailConfig)
+  if (ok && dnsAllowed && hasExplicitEmailConfig() && stacksConfig.email?.server?.enabled !== false) {
+    const mailOwner = mailServerOwnerFromConfig(stacksConfig.email)
     let mailIp: string | undefined = ip
     if (mailOwner) {
       const mailLookup = await resolveAttachTargetBox(mailOwner, environment, tsCloudConfig)
@@ -3625,6 +3626,36 @@ export interface MailTenantResult {
  */
 export function hasExplicitEmailConfig(projectRoot = p.projectPath()): boolean {
   return existsSync(join(projectRoot, 'config', 'email.ts'))
+}
+
+async function loadDeploymentMailConfig(environment: string): Promise<EmailConfig | undefined> {
+  if (!hasExplicitEmailConfig())
+    return undefined
+
+  const config = await awaitConfig()
+  // The application config may have loaded before Buddy selected the target
+  // dotenv. Use a query on the path, as loadTsCloudConfig does. Bun ignores
+  // the query on a file: URL when it looks up a cached module.
+  const file = p.projectPath('config/email.ts')
+  try {
+    const { default: selectedEmail } = await import(`${file}?deploy-env=${encodeURIComponent(environment)}`)
+    if (!selectedEmail || typeof selectedEmail !== 'object')
+      throw new Error('Expected a default email configuration export')
+    config.email = selectedEmail
+    return config.email
+  }
+  catch {
+    // Mail is best-effort. An invalid target config must neither stop the app
+    // release nor fall back to a different tenant from the launch environment.
+    config.email = { server: { enabled: false } }
+    log.warn(`Mail: could not load config/email.ts for ${environment}. Skipping mail reconciliation.`)
+    return undefined
+  }
+}
+
+function deploymentMailDomain(config: Pick<EmailConfig, 'domain' | 'from'> | undefined): string | undefined {
+  const address = config?.from?.address
+  return config?.domain || (typeof address === 'string' && address.includes('@') ? address.split('@')[1] : undefined)
 }
 
 export function mailServerOwnerFromConfig(config: { server?: { attachTo?: unknown } } | null | undefined): string | undefined {
@@ -3984,11 +4015,10 @@ export async function ensureMailboxPasswords(
 ): Promise<string[]> {
   if (!(options.hasConfig ?? hasExplicitEmailConfig()))
     return []
-  const cfg: any = options.config ?? emailConfig ?? {}
+  const cfg: any = options.config ?? stacksConfig.email ?? {}
   if (cfg.server?.enabled === false)
     return []
-  const domain: string | undefined = cfg.domain
-    || (typeof cfg.from?.address === 'string' && cfg.from.address.includes('@') ? cfg.from.address.split('@')[1] : undefined)
+  const domain = deploymentMailDomain(cfg)
   if (!domain)
     return []
 
@@ -4048,7 +4078,7 @@ export async function provisionMailTenant(ip: string, logger: typeof log, option
   // domain's owner and refuses another project's domain (step 0 below).
   const projectSlug = mailProjectSlug(options.projectSlug ?? (await loadTsCloudConfig(process.env.APP_ENV || 'production').catch(() => undefined))?.project?.slug)
 
-  const cfg: any = emailConfig || {}
+  const cfg: any = stacksConfig.email || {}
   // Mail explicitly disabled for this app (config/email.ts `server.enabled:
   // false`): skip the shared-mail tenant reconcile entirely — no local-domain
   // registration, DKIM key, mailboxes, or mail DNS. Without this gate the
@@ -4057,8 +4087,7 @@ export async function provisionMailTenant(ip: string, logger: typeof log, option
   if (cfg.server?.enabled === false)
     return null
 
-  const domain: string | undefined = cfg.domain
-    || (typeof cfg.from?.address === 'string' && cfg.from.address.includes('@') ? cfg.from.address.split('@')[1] : undefined)
+  const domain = deploymentMailDomain(cfg)
   const declaredForwards: Record<string, string[]> = (cfg.forwards && typeof cfg.forwards === 'object') ? cfg.forwards : {}
 
   /*
@@ -5147,7 +5176,7 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
   const spf = `v=spf1 ip4:${ip} ~all`
   // DMARC aggregate reports go to the configured from-address (falling back to
   // the first declared mailbox, then chris@) so reports reach a real inbox.
-  const cfg: any = emailConfig || {}
+  const cfg: any = stacksConfig.email || {}
   const firstBox = resolveMailboxes(cfg.mailboxes, domain)[0]?.address
   const fromAddress = typeof cfg.from?.address === 'string' && cfg.from.address.includes('@') ? cfg.from.address : undefined
   const dmarcCfg: any = cfg.server?.dmarc || {}
@@ -6140,6 +6169,12 @@ async function buildContainerImageWithPantry(args: {
   }
 }
 
+function deploymentDryRunRequested(options: DeployOptions): boolean {
+  // Read the literal flag as well as the parsed option. CLI parser changes
+  // must never turn a preview into a real deployment or send a webhook.
+  return process.argv.includes('--dry-run') || options.dryRun === true
+}
+
 export function deploy(buddy: CLI): void {
   const descriptions = {
     deploy: 'Deploy your project',
@@ -6177,12 +6212,7 @@ export function deploy(buddy: CLI): void {
       if (process.argv.includes('--hold-dns') || options.holdDns === true)
         process.env.STACKS_DEPLOY_HOLD_DNS = '1'
 
-      // Read argv in addition to the parsed option. Which key a global flag
-      // lands on is clapp's business and has changed before; the literal argv
-      // check guarantees that a requested preview can never fall through into
-      // the mutating deployment pipeline.
-      const askedForDryRun = process.argv.includes('--dry-run')
-        || options.dryRun === true
+      const askedForDryRun = deploymentDryRunRequested(options)
 
       // Resolve the target environment from the positional arg or the
       // --staging/--dev/--prod flags (the flags were previously ignored, so
@@ -6226,7 +6256,13 @@ export function deploy(buddy: CLI): void {
         }
 
         const tsCloudConfig = deploymentRetirements(await loadTsCloudConfig(deployEnvName) ?? {}, options.retireDomains)
-        validateDeploymentProviderInputs(resolveProvider(tsCloudConfig), { envFile: selectedEnvFile, retireDomains: options.retireDomains })
+        const provider = resolveProvider(tsCloudConfig)
+        validateDeploymentProviderInputs(provider, { envFile: selectedEnvFile, retireDomains: options.retireDomains })
+        const holdDns = dnsHeld()
+        const previewEmail = isSshPipelineProvider(provider) && !holdDns
+          ? await loadDeploymentMailConfig(deployEnvName)
+          : undefined
+        const mailDomain = previewEmail?.server?.enabled === false ? undefined : deploymentMailDomain(previewEmail)
         const { resolveSiteKind } = await loadTsCloudDeployApi()
         const unbacked = tsCloudConfig ? findUnbackedManagedServices(tsCloudConfig, await hasOffsiteBackupDestination()) : []
         let plan: DeploymentPreview
@@ -6237,10 +6273,12 @@ export function deploy(buddy: CLI): void {
             site: options.site,
             domain: options.domain,
             docker: options.docker === true,
-            holdDns: dnsHeld(),
+            holdDns,
+            mail: mailDomain ? { domain: mailDomain, attachTo: mailServerOwnerFromConfig(previewEmail) } : undefined,
+            sshPublicIp: provider === 'ssh' ? resolvePersistedAttachTargetBox(tsCloudConfig, deployEnvName)?.publicIp : undefined,
             fallbackProjectName: app.name,
             fallbackProjectSlug: app.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'app',
-            fallbackProvider: 'aws',
+            fallbackProvider: provider,
             // From the freshly loaded config, not the statically imported
             // section: that section has no `mode` key at all, so this fallback
             // was always 'server' and a serverless project's preview said
@@ -6307,6 +6345,8 @@ export function deploy(buddy: CLI): void {
         return
       }
       if (tsCloudConfig && isSshPipelineProvider(resolveProvider(tsCloudConfig))) {
+        if (!dnsHeld())
+          await loadDeploymentMailConfig(deployEnvName)
         await deployOverSsh(applyDeploymentDomainOverride(tsCloudConfig, options.domain), deployEnv, options, selectedEnvFile)
         return
       }
@@ -6382,7 +6422,7 @@ export function deploy(buddy: CLI): void {
       }
 
       await outro('Project deployed.', { startTime, useSeconds: true })
-    }))
+    }, (_environment, options) => !deploymentDryRunRequested(options)))
 
   buddy
     .command('deploy:rollback [site]', 'Roll back a deployment to a preserved release')
