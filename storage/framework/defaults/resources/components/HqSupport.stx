@@ -2,12 +2,17 @@
 import { mountNativeSupport } from '@stacksjs/support/browser'
 import type { NativeSupportMount } from '@stacksjs/support/browser'
 import { useAuth } from '@stacksjs/browser'
+import { readCsrfToken } from '@stacksjs/browser/composables/csrf'
 
 const supportHost = useRef('supportHost')
 let mountedSupport: NativeSupportMount | undefined
 onMount(() => {
   const auth = useAuth()
-  mountedSupport = mountNativeSupport(supportHost.current as HTMLElement, { getToken: auth.getToken, fetch: auth.authFetch })
+  mountedSupport = mountNativeSupport(supportHost.current as HTMLElement, {
+    getToken: auth.getToken,
+    getCsrfToken: readCsrfToken,
+    fetch: auth.authFetch,
+  })
   void mountedSupport.refresh()
 })
 onDestroy(() => mountedSupport?.shutdown())

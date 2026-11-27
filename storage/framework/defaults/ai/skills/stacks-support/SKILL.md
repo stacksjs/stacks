@@ -71,7 +71,9 @@ fields explicitly with `config.services.supporthq.expose`. A custom tenant-aware
 session action may pass the helper an authorized `resolveTenant` callback.
 
 The stx component uses `mountNativeSupport` from the browser subpath and native
-`authFetch`, so access-token refresh remains native. Navigation, page removal,
+`authFetch`, so access-token refresh remains native. It passes `readCsrfToken`
+so the bridge uses the native double-submit cookie from the current page.
+Navigation, page removal,
 logout, sign-in and cross-tab auth changes clear the old messenger before any
 new customer session is booted. Customer credentials remain element properties.
 No framework upgrade enables this integration or sends customer data by itself.
