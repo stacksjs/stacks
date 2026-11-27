@@ -45,8 +45,10 @@ project on the machine. Each invocation first settles two things in
 2. **Whose code runs it.** A project that has its own `buddy` installed gets
    the command handed to it (the process is replaced, not wrapped), so it runs
    on the framework version that project pins. A project with nothing
-   installed runs `buddy install` and nothing else: its code imports packages
-   that are not there.
+   installed can run `buddy install` or `buddy support:install --sdk-only`.
+   The SDK-only command uses the invoking Buddy and can select a published SDK
+   before the app has a Buddy of its own. Full Support connection uses the
+   app's installed Buddy.
 
 The process that does the work always starts in the project root, because Bun
 reads `bunfig.toml` and its preloads from the directory it starts in. The

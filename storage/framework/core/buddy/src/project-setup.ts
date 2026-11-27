@@ -69,6 +69,13 @@ const APP_KEY_OPTIONAL_COMMANDS = [
   'scaffold:crud',
 ]
 
+export function isSdkOnlySupportInstall(args: readonly string[]): boolean {
+  if (args[0] !== 'support:install') return false
+  const separator = args.indexOf('--')
+  const flags = separator === -1 ? args : args.slice(0, separator)
+  return flags.includes('--sdk-only') && !flags.includes('--no-sdk-only') && !flags.includes('--sdk-only=false')
+}
+
 export function shouldSkipAppKeyCheck(
   requestedCommand: string,
   mode: { isHelpFlag?: boolean, isHelpMode?: boolean, args?: readonly string[] } = {},
@@ -76,7 +83,7 @@ export function shouldSkipAppKeyCheck(
   return Boolean(
     mode.isHelpFlag
     || mode.isHelpMode
-    || (requestedCommand === 'support:install' && mode.args?.includes('--sdk-only'))
+    || (requestedCommand === 'support:install' && mode.args && isSdkOnlySupportInstall(mode.args))
     // Enabling a feature changes project configuration, not application data.
     || FEATURE_NAMES.some(feature => requestedCommand === `${feature}:install` || requestedCommand === `${feature}:uninstall`)
     || APP_KEY_OPTIONAL_COMMANDS.some(command => requestedCommand === command || requestedCommand.startsWith(`${command}:`)),
