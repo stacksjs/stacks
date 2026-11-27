@@ -374,27 +374,9 @@ async function startDefaultServer() {
 
       return null
     },
-    // Three response-time concerns, in order:
-    //   1. Server-rendered pages carry the same security headers the API
-    //      already sent (stacksjs/stacks#2325). First, because it applies to
-    //      every response including the 404 below.
-    //   2. A 404 from stx-serve gives the CMS page tree its chance — coded
-    //      views win by construction because they never 404. Failure here
-    //      must degrade to the original 404, never become a 500.
-    //   3. API requests are CSRF-protected by default. Seed the matching
-    //      double-submit cookie on the HTML page response so a first visit
-    //      to /login or /register can immediately submit to the API.
-    // Production applies all three.
     onResponse: async (req: Request, response: Response) => {
       const live = hmrWorker && (frontendHmrResponse(req, response, hmrWorker, hmrRetirement?.signal) ?? retainFrontendPageState(response))
-      const securityResponse = applyViewSecurityHeaders(req, live || response, embeddableRules) ?? (live || undefined)
-      const secured = applyResponseHeaders(req, securityResponse ?? response, config.server?.headers) ?? securityResponse
-
-      // `baseline` is what to return when nothing further changes: the rebuilt
-      // response when the headers could not be set in place, else the
-      // original, which already carries them.
-      const baseline = secured ?? response
-      let current = baseline
+      let current = live || response
       // Only where the CMS tree can exist: `sites` on and the cms bundle on.
       // The cms migrations are gated on the feature, so with it off there is
       // no `pages` table, and every 404 queried one anyway.
@@ -410,10 +392,14 @@ async function startDefaultServer() {
         }
       }
 
-      const seeded = await seedCsrfPageResponse(req, current)
+      // Apply headers to the response the browser will actually receive.
+      const securityResponse = applyViewSecurityHeaders(req, current, embeddableRules)
+      const secured = applyResponseHeaders(req, securityResponse ?? current, config.server?.headers)
+        ?? securityResponse ?? (current === response ? undefined : current)
+      const seeded = await seedCsrfPageResponse(req, secured ?? response)
       // A page that showed a refused form's messages has shown them: the
       // cookie that carried them goes with this response (`form-flash.ts`).
-      const answered = seeded ?? (current === baseline ? secured : current)
+      const answered = seeded ?? secured
       const shown = clearShownFormFlash(req, answered ?? response, config.app?.key)
       finishRequestCapture(req, shown)
       return shown === (answered ?? response) ? answered : shown

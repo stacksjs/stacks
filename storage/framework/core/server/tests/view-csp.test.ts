@@ -50,9 +50,12 @@ describe('the page CSP', () => {
   })
 
   test('report-only sends the report-only header, with a report URI when given', async () => {
-    const { res } = await served(resolveViewSecurityRules({ csp: { reportOnly: true, reportUri: '/csp-report' } }, undefined))
+    const response = page()
+    response.headers.set('Cache-Control', 'public, max-age=60')
+    const { res } = await served(resolveViewSecurityRules({ csp: { reportOnly: true, reportUri: '/csp-report' } }, undefined), response)
     expect(res.headers.get('Content-Security-Policy')).toBeNull()
     expect(res.headers.get('Content-Security-Policy-Report-Only')).toContain('report-uri /csp-report')
+    expect(res.headers.get('Cache-Control')).toBe('private, no-store')
   })
 
   test('leaves non-HTML responses and a page that set its own policy alone', async () => {

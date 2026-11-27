@@ -389,8 +389,7 @@ consult it.
 
 ### Security headers on pages
 
-Every response the views server renders carries the same three headers the API
-already sent:
+The views server applies these headers to the selected response, including published CMS pages.
 
 ```
 X-Frame-Options: SAMEORIGIN
@@ -398,12 +397,16 @@ X-Content-Type-Options: nosniff
 Referrer-Policy: strict-origin-when-cross-origin
 ```
 
-None of them can be set from a template. `X-Frame-Options` is an HTTP header
-with no `<meta>` equivalent, and CSP `frame-ancestors` is ignored when set
-through `<meta http-equiv>`, so this has to come from the server.
+Pages also get `Cross-Origin-Opener-Policy: same-origin-allow-popups` and a
+`Permissions-Policy` that disables browsing topics, USB, serial, HID,
+Bluetooth, and MIDI. `Strict-Transport-Security` defaults on when `APP_URL`
+is HTTPS on a public host. Localhost, loopback, and `.test` hosts are excluded.
+Set `crossOriginOpenerPolicy`, `permissionsPolicy`, or `hsts` under
+`config.server.security` to customize the defaults. Set a field to `false`
+to omit its header.
 
-An app that serves a deliberately embeddable page names it, and only
-`X-Frame-Options` is dropped for those paths:
+List pages that another origin can frame under `embeddable`. Stacks omits
+`X-Frame-Options` and the default CSP `frame-ancestors` for those paths.
 
 ```typescript
 export default {
@@ -417,15 +420,18 @@ export default {
 Both `buddy dev` and `buddy serve` print the list at boot, because a page
 another origin can frame is a deliberate exception worth seeing.
 
-Two headers are deliberately not sent on pages:
+Enable page CSP with `config.server.security.csp`. Start with
+`'report-only'` to observe violations while the page runs. Use
+`{ reportOnly: true, reportUri: '/api/csp-report' }` to send reports to a
+receiver implemented by your application. For an enforcing policy, set
+`csp: true` or omit `reportOnly` from the policy object. The `directives`
+field customizes the defaults. `STACKS_CSP` configures the API policy.
 
-- **`Content-Security-Policy`.** `STACKS_CSP` has only ever reached JSON API
-  responses, and a blanket policy breaks inline stx script bootstrapping,
-  Stripe iframes and OAuth popups. A page policy is worth having, but it needs
-  its own testing rather than arriving as a side effect.
-- **`Strict-Transport-Security`.** `buddy serve` treats itself as production
-  even on a laptop, and HSTS on `localhost` commits your browser to HTTPS for
-  that host for a year. Terminate TLS at a proxy and set it there.
+Stacks assigns a fresh nonce to the HTML scripts and excludes the resulting
+response from shared document caching. Before enabling enforcement, verify
+reactive controls, forms, and third-party assets in a browser. The installed
+stx page runtime can compile template expressions at hydration time. The
+default enforcing policy blocks that operation and inline event attributes.
 
 `STACKS_SECURITY_HEADERS_DISABLE=true` turns the whole set off, on both the API
 and the views server, for a deployment behind a proxy that injects its own.

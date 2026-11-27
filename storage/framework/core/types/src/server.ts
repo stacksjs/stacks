@@ -375,8 +375,8 @@ export interface ServerSecurityOptions {
    * page carries gets a fresh per-response nonce, and `script-src` allows it.
    * `directives` merge over the defaults (`default-src 'self'`, inline styles
    * allowed, `object-src 'none'`, `base-uri`/`form-action`/`frame-ancestors
-   * 'self'`); `false` drops one. Inline `on*=` attributes are not scripts and
-   * are blocked by an enforced policy.
+   * 'self'`); `false` drops one. By default, enforcement blocks inline
+   * event attributes and runtime evaluation of stx template expressions.
    */
   csp?: boolean | 'report-only' | {
     reportOnly?: boolean

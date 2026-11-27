@@ -606,32 +606,13 @@ export async function startProductionServer(options?: { port?: string | number, 
         // impossible for anyone whose first request wasn't an API GET. The
         // token has to ride the HTML that carries the form.
         onResponse: async (req: Request, response: Response) => {
-          // ABOVE the verb guard on purpose (stacksjs/stacks#2325). Everything
-          // below this point is GET/HEAD-only page work, but the security
-          // headers belong on every response this server makes - a 405 or an
-          // error page is still a document a browser will render.
-          const securityResponse = applyViewSecurityHeaders(req, response, embeddableRules)
-          const secured = applyResponseHeaders(req, securityResponse ?? response, config.server?.headers) ?? securityResponse
-
           const method = req.method.toUpperCase()
-          if (method !== 'GET' && method !== 'HEAD') {
-            finishRequestCapture(req, secured ?? response)
-            return secured
-          }
-
-          // A 404 from stx-serve gives the CMS page tree its chance — coded
-          // views win by construction because they never 404. Mirrors the dev
-          // views server; failure degrades to the original 404, never a 500.
-          //
-          // `baseline` is what to return when nothing further changes: the
-          // rebuilt response when the headers could not be set in place, and
-          // otherwise the original, which already carries them.
-          const baseline = secured ?? response
-          let current = baseline
+          const safeMethod = method === 'GET' || method === 'HEAD'
+          let current = response
           // Only where the CMS tree can exist: `sites` on and the cms bundle on.
           // The cms migrations are gated on the feature, so with it off there
           // is no `pages` table, and every 404 queried one anyway.
-          if (current.status === 404 && (config as { sites?: { enabled?: boolean } }).sites?.enabled && feature('cms')) {
+          if (current.status === 404 && safeMethod && (config as { sites?: { enabled?: boolean } }).sites?.enabled && feature('cms')) {
             try {
               const { cmsNotFoundFallback } = await import('@stacksjs/cms')
               const cmsResponse = await cmsNotFoundFallback(req)
@@ -643,16 +624,25 @@ export async function startProductionServer(options?: { port?: string | number, 
             }
           }
 
+          // Stamp the selected response, including CMS replacements and errors.
+          const securityResponse = applyViewSecurityHeaders(req, current, embeddableRules)
+          const secured = applyResponseHeaders(req, securityResponse ?? current, config.server?.headers)
+            ?? securityResponse ?? (current === response ? undefined : current)
+          if (!safeMethod) {
+            finishRequestCapture(req, secured ?? response)
+            return secured
+          }
+
           let finished: Response | undefined
           try {
             const { seedCsrfCookieIfMissing } = await import(resolveCsrfMiddlewarePath())
-            finished = (await seedCsrfCookieIfMissing(req, current)) ?? (current === baseline ? secured : current)
+            finished = (await seedCsrfCookieIfMissing(req, secured ?? response)) ?? secured
           }
           catch (error) {
             // Never fail a page render over a cookie — the CSRF middleware
             // still rejects unsafe requests, so this is fail-closed.
             log.debug(`CSRF cookie seeding skipped: ${(error as Error).message}`)
-            finished = current === baseline ? secured : current
+            finished = secured
           }
 
           // A page that showed a refused form's messages has shown them: the
@@ -845,6 +835,11 @@ export function applyDocumentCacheControl(
 
   const contentType = response.headers.get('content-type') || ''
   if (response.status !== 200 || !contentType.startsWith('text/html'))
+    return response
+
+  // Each visitor needs a fresh document nonce.
+  if (response.headers.get('content-security-policy')?.includes("'nonce-")
+    || response.headers.get('content-security-policy-report-only')?.includes("'nonce-"))
     return response
 
   // A fragment is not a document. It is 200 and text/html exactly like a page,
