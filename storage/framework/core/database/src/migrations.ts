@@ -1329,6 +1329,7 @@ export async function featureGateForLedger(dir: string = migrationDirectory(getD
   return {
     exclude: new Set(gated.map(entry => entry.file)),
     rewrite: sql => tables.size > 0 ? withoutGatedStatements(sql, tables) : sql,
+    frameworkRenames: frameworkRenamesForThisApp(),
   }
 }
 

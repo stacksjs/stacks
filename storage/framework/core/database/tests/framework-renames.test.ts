@@ -30,6 +30,7 @@ import {
   replaceIndexName,
   sqliteLiteralIndexColumns,
 } from '../src/framework-renames'
+import { auditMigrationLedger } from '../src/migration-ledger'
 
 const COMMITTED_SNAPSHOT = join(import.meta.dir, '../../../database/model-snapshot.sqlite.json')
 
@@ -218,6 +219,39 @@ describe('database catch-up (sqlite)', () => {
     const again = await applyFrameworkRenamesToDatabase(runnerFor(db), 'sqlite')
     expect(again).toEqual({ applied: [], skipped: [] })
     expect(db.query(`SELECT type, name, sql FROM sqlite_master ORDER BY name`).all()).toEqual(schema)
+  })
+
+  it('recognises a recorded migration after the table, column and index are renamed', async () => {
+    const db = preRenameDatabase()
+    const dir = mkdtempSync(join(tmpdir(), 'ledger-framework-rename-'))
+    const file = '0000000001-create-drivers-table.sql'
+    try {
+      writeFileSync(join(dir, file), `
+        CREATE TABLE drivers (id INTEGER PRIMARY KEY, uuid TEXT);
+        CREATE UNIQUE INDEX drivers_uuid_unique ON drivers (uuid);
+        ALTER TABLE delivery_routes ADD COLUMN driver TEXT;
+      `)
+      db.run('CREATE TABLE migrations (migration TEXT NOT NULL UNIQUE)')
+      db.run('INSERT INTO migrations VALUES (?)', [file])
+      await applyFrameworkRenamesToDatabase(runnerFor(db), 'sqlite')
+      const audit = () => auditMigrationLedger({
+        dir,
+        dialect: 'sqlite',
+        run: runnerFor(db),
+        gate: { exclude: new Set(), rewrite: sql => sql, frameworkRenames: FRAMEWORK_RENAMES },
+      })
+
+      expect((await audit()).entries[0]).toMatchObject({ status: 'applied', absent: [] })
+      db.run('DROP INDEX couriers_uuid_unique')
+      expect((await audit()).entries[0]).toMatchObject({
+        status: 'reverted',
+        absent: [{ kind: 'index', name: 'drivers_uuid_unique' }],
+      })
+    }
+    finally {
+      db.close()
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 
   it('does nothing to a fresh database', async () => {
