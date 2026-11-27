@@ -979,21 +979,33 @@ jobs:
       - name: Build
         run: bun run build
 
-      - name: Build and check the HQ Support SDK preview
-        working-directory: storage/framework/core/support
+      - name: Build and check the Support and Auth package previews
         run: |
-          bun run build
-          archive=$(bun pm pack --ignore-scripts --quiet --destination "$RUNNER_TEMP")
-          tar -tzf "$RUNNER_TEMP/$(basename "$archive")" > "$RUNNER_TEMP/support-preview-files"
-          bun --no-env-file -e '
-            const manifest = await Bun.file("package.json").json()
-            const files = new Set((await Bun.file(process.env.RUNNER_TEMP + "/support-preview-files").text()).split("\n"))
-            const exports = new Set(Object.values(manifest.exports).flatMap(entry => Object.values(entry)))
-            for (const path of exports) {
-              const archivePath = "package/" + path.replace(/^\.\//, "")
-              if (!files.has(archivePath)) throw new Error("Missing SDK export in the preview archive: " + path)
-            }
-          '
+          for preview in support auth; do
+            (
+              cd "storage/framework/core/$preview"
+              bun run build
+              archive=$(bun pm pack --ignore-scripts --quiet --destination "$RUNNER_TEMP")
+              tar -tzf "$RUNNER_TEMP/$(basename "$archive")" > "$RUNNER_TEMP/preview-files"
+              bun --no-env-file -e '
+                const manifest = await Bun.file("package.json").json()
+                const files = (await Bun.file(process.env.RUNNER_TEMP + "/preview-files").text()).split("\n")
+                const targets = new Set(Object.values(manifest.exports).flatMap(entry => Object.values(entry)))
+                // Auth exposes these subpaths through a wildcard. An unrelated
+                // file can satisfy the wildcard while an enterprise import fails.
+                if (manifest.name === "@stacksjs/auth") {
+                  for (const entry of ["enterprise-oidc", "enterprise-saml"]) {
+                    targets.add("./dist/" + entry + ".js")
+                    targets.add("./dist/" + entry + ".d.ts")
+                  }
+                }
+                for (const path of targets) {
+                  const glob = new Bun.Glob("package/" + path.replace(/^\.\//, ""))
+                  if (!files.some(file => glob.match(file))) throw new Error(manifest.name + " preview archive is missing " + path)
+                }
+              '
+            )
+          done
 
       - name: Publish Commit
         run: ./storage/framework/scripts/publish-commit
