@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.702...v0.75.703)
+
+## ✨ Features
+
+- **chat**: send Discord file attachments (#3433) ([3cccc0b](https://github.com/stacksjs/stacks/commit/3cccc0b)) _(by Chris)_ ([#3433](https://github.com/stacksjs/stacks/issues/3433))
+
+## 🐛 Bug Fixes
+
+- **router**: integrate SCIM error protocol handling (#3432) ([5f4c77b](https://github.com/stacksjs/stacks/commit/5f4c77b)) _(by Chris)_ ([#3432](https://github.com/stacksjs/stacks/issues/3432))
+- **router**: preserve SCIM error envelopes ([0604fb7](https://github.com/stacksjs/stacks/commit/0604fb7)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.701...v0.75.702)
 
 ## ✨ Features
