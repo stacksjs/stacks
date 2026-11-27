@@ -2,6 +2,7 @@ import type { SocialApiErrorOptions } from '../errors'
 import type {
   AuthoredPostPage,
   PostMetrics,
+  PostVideo,
   PublishedPost,
   PublishPostInput,
   RemotePostRef,
@@ -12,7 +13,7 @@ import type {
   TimelineQuery,
   TimelineResult,
 } from '../types'
-import { fetchPostImage, resolvePostImage } from '../media'
+import { fetchPostImage, resolvePostImage, validatePostVideo } from '../media'
 import { exceedsLimit, graphemes } from '../text'
 import { apiFailure, SocialApiError } from '../errors'
 
@@ -90,6 +91,8 @@ export interface MastodonLimits {
   /** What a link counts as, whatever its real length. */
   charactersPerUrl: number
   mediaAttachments: number
+  videoSizeLimit?: number
+  supportsMp4?: boolean
   poll?: MastodonPollLimits
   /** The instance advertises the API used to create quote posts. */
   quotePosts?: true
@@ -101,6 +104,13 @@ export const MASTODON_DEFAULT_LIMITS: MastodonLimits = { characters: 500, charac
 const LIMITS_TTL_MS = 60 * 60 * 1000
 /** How soon an instance that could not be asked is asked again. */
 const LIMITS_RETRY_MS = 60 * 1000
+const VIDEO_PROCESSING_TIMEOUT_MS = 60_000
+
+interface MastodonMediaAttachment {
+  id: string
+  type?: string
+  url?: string | null
+}
 
 function pollLimits(polls: Record<string, unknown> | undefined): MastodonPollLimits | null {
   if (!polls) return null
@@ -190,16 +200,22 @@ export class MastodonPublishingDriver implements SocialPublishingDriver, SocialD
       const response = await fetch(`${instance}/api/v2/instance`, { signal: AbortSignal.timeout(5_000) })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const json = await response.json() as {
-        configuration?: { statuses?: Record<string, unknown>, polls?: Record<string, unknown> }
+        configuration?: { statuses?: Record<string, unknown>, polls?: Record<string, unknown>, media_attachments?: Record<string, unknown> }
         api_versions?: { mastodon?: number }
       }
       const statuses = json.configuration?.statuses ?? {}
       const positive = (raw: unknown, fallback: number): number => Number(raw) > 0 ? Math.floor(Number(raw)) : fallback
       const poll = pollLimits(json.configuration?.polls)
+      const media = json.configuration?.media_attachments
+      const videoSizeLimit = Number(media?.video_size_limit)
+      const hasVideoSizeLimit = Number.isSafeInteger(videoSizeLimit) && videoSizeLimit > 0
+      const mimeTypes = media?.supported_mime_types
       const quotePosts = Number(json.api_versions?.mastodon) >= 7
       const value: MastodonLimits = {
         ...(poll && { poll }),
         ...(quotePosts && { quotePosts: true }),
+        ...(hasVideoSizeLimit && { videoSizeLimit }),
+        ...(Array.isArray(mimeTypes) && { supportsMp4: mimeTypes.includes('video/mp4') }),
         characters: positive(statuses.max_characters, MASTODON_DEFAULT_LIMITS.characters),
         charactersPerUrl: positive(statuses.characters_reserved_per_url, MASTODON_DEFAULT_LIMITS.charactersPerUrl),
         mediaAttachments: positive(statuses.max_media_attachments, MASTODON_DEFAULT_LIMITS.mediaAttachments),
@@ -263,21 +279,52 @@ export class MastodonPublishingDriver implements SocialPublishingDriver, SocialD
     mimeType: string,
     altText?: string,
   ): Promise<string> {
+    const media = await this.createMediaAttachment(identity, bytes, mimeType, altText)
+    return media.id
+  }
+
+  private async createMediaAttachment(
+    identity: SocialIdentityCredentials,
+    bytes: Uint8Array,
+    mimeType: string,
+    altText?: string,
+    signal?: AbortSignal,
+  ): Promise<MastodonMediaAttachment> {
     const form = new FormData()
-    form.set('file', new Blob([new Uint8Array(bytes)], { type: mimeType || 'image/jpeg' }), 'upload')
+    const filename = mimeType === 'video/mp4' ? 'upload.mp4' : 'upload'
+    form.set('file', new Blob([new Uint8Array(bytes)], { type: mimeType || 'image/jpeg' }), filename)
     // Mastodon keeps up to 1,500 characters of description.
     if (altText?.trim()) form.set('description', altText.trim().slice(0, 1500))
 
-    const media = await this.request<{ id: string }>(
+    return await this.request<MastodonMediaAttachment>(
       `${this.instanceOf(identity)}/api/v2/media`,
-      { method: 'POST', headers: { authorization: `Bearer ${this.tokenOf(identity)}` }, body: form },
+      { method: 'POST', headers: { authorization: `Bearer ${this.tokenOf(identity)}` }, body: form, redirect: 'error', signal },
     )
-    return media.id
+  }
+
+  private async uploadVideo(identity: SocialIdentityCredentials, video: PostVideo): Promise<string> {
+    const uploaded = await this.createMediaAttachment(identity, video.bytes, video.mimeType, video.altText, AbortSignal.timeout(60_000))
+    if (typeof uploaded.id !== 'string' || !/^[a-z0-9_-]{1,128}$/i.test(uploaded.id))
+      throw new Error('Mastodon did not return a valid video attachment ID.')
+
+    const statusUrl = `${this.instanceOf(identity)}/api/v1/media/${uploaded.id}`
+    const headers = { authorization: `Bearer ${this.tokenOf(identity)}` }
+    const signal = AbortSignal.timeout(VIDEO_PROCESSING_TIMEOUT_MS)
+    let attachment = uploaded
+    while (!attachment.url) {
+      if (signal.aborted)
+        throw new MastodonApiError('Mastodon took too long to process the attachment.', 503, '')
+      attachment = await this.request<MastodonMediaAttachment>(statusUrl, { headers, signal, redirect: 'error' })
+      if (!attachment.url) await Bun.sleep(1000)
+    }
+    if (attachment.id !== uploaded.id || typeof attachment.url !== 'string' || (attachment.type !== 'video' && attachment.type !== 'gifv'))
+      throw new Error('Mastodon did not return a processed video attachment.')
+    return uploaded.id
   }
 
   /**
    * Post a status, measured against the instance's own limits, with as many
-   * images as the instance takes (each with its alt text), and the
+   * images as the instance takes (each with its alt text) or one video, and the
    * Mastodon-only options in {@link MastodonPublishOptions}.
    */
   async publish(
@@ -293,6 +340,15 @@ export class MastodonPublishingDriver implements SocialPublishingDriver, SocialD
 
     if ((options.poll || options.quotedStatusId !== undefined) && post.media?.length)
       throw new Error('Mastodon does not allow images with a poll or a quote.')
+    if (post.video) {
+      validatePostVideo(post.video, post.media)
+      if (options.poll || options.quotedStatusId !== undefined)
+        throw new Error('Mastodon does not allow a video with a poll or a quote.')
+      if (limits.supportsMp4 === false)
+        throw new Error('This Mastodon instance does not accept MP4 video.')
+      if (limits.videoSizeLimit && post.video.bytes.length > limits.videoSizeLimit)
+        throw new Error(`Video exceeds this Mastodon instance’s ${limits.videoSizeLimit}-byte limit.`)
+    }
     if (options.poll && options.quotedStatusId !== undefined)
       throw new Error('Choose a poll or a quoted post on Mastodon.')
     if (options.quotedStatusId !== undefined) {
@@ -302,6 +358,7 @@ export class MastodonPublishingDriver implements SocialPublishingDriver, SocialD
     const poll = options.poll ? pollPayload(options.poll, limits.poll) : undefined
 
     const mediaIds: string[] = []
+    if (post.video) mediaIds.push(await this.uploadVideo(identity, post.video))
     for (const item of (post.media || []).slice(0, limits.mediaAttachments)) {
       const image = await resolvePostImage(item, url => this.fetchImage(url))
       if (image)

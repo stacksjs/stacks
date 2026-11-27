@@ -21,7 +21,7 @@ import { fetcher } from '@stacksjs/api'
 import { config } from '@stacksjs/config'
 import { AbstractProvider } from '../abstract'
 import { ConfigException } from '../exceptions'
-import { fetchPostImage, resolvePostImage } from '../media'
+import { fetchPostImage, rejectPostVideo, resolvePostImage } from '../media'
 import { exceedsLimit } from '../text'
 import { apiFailure, SocialApiError } from '../errors'
 
@@ -325,6 +325,7 @@ export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDe
    * going out without it.
    */
   async publish(identity: SocialIdentityCredentials, post: PublishPostInput): Promise<PublishedPost> {
+    rejectPostVideo(post, 'X')
     if (!identity.accessToken) throw new Error('Twitter access token is missing for this identity.')
     if (exceedsLimit('twitter', post.text, this.characterLimit)) {
       throw new Error(`Twitter posts must be ${this.characterLimit} characters or fewer.`)
