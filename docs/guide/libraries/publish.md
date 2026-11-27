@@ -84,6 +84,12 @@ retained data or receipts. An overridden registry requires an explicitly bound
 `readAuth: { registry, token }` input through the native API, and credentials are
 never sent across origins or redirects.
 
+After a publisher attempt, Buddy waits within the configured deadline for the
+registry to expose the retained archive. The publisher may report an error
+after the registry accepts the upload. If readback times out, keep the original
+candidate and run `buddy release:readback` on it before attempting publication
+again.
+
 The default CI runs jobs named `Lint`, `Typecheck` and `Test`. Test waits for the
 first two, prepares the native libraries before tests which consume their built
 assets, then uploads the candidate only after the suite succeeds on the configured source
