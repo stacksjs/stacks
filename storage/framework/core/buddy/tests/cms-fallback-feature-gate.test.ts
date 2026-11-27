@@ -33,6 +33,14 @@ describe('the CMS not-found fallback', () => {
       expect(guard.includes('feature(\'cms\')')).toBe(true)
     })
 
+    test(`${name} selects the CMS replacement before applying view headers`, () => {
+      const responseHook = source.indexOf('onResponse: async (req: Request, response: Response)')
+      const selected = source.indexOf('current = cmsResponse', responseHook)
+      const headers = source.indexOf('applyViewSecurityHeaders(req, current,', responseHook)
+      expect(selected).toBeGreaterThan(call)
+      expect(headers).toBeGreaterThan(selected)
+    })
+
     test(`${name} imports feature from the config package`, () => {
       expect(/import \{[^}]*\bfeature\b[^}]*\} from '@stacksjs\/config'/.test(source)).toBe(true)
     })

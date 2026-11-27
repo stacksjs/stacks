@@ -1,47 +1,10 @@
 /**
- * Security response headers for the VIEWS server (stacksjs/stacks#2325).
+ * Security headers for responses from the views server.
  *
- * `applySecurityHeaders` in `@stacksjs/router` stamps these onto responses
- * bun-router produces, so `/api/**` carried them and every server-rendered
- * page carried none. The exposure was the wrong way round: the API is not
- * what a browser renders or a person clicks, and the sign-in page is.
- *
- * It cannot be fixed from userland either. `X-Frame-Options` is an HTTP
- * header with no `<meta>` equivalent, and CSP `frame-ancestors` is
- * explicitly ignored when set through `<meta http-equiv>`, so a template
- * has no way to ask for this.
- *
- * ## Why this is a separate function and not the router's
- *
- * The router's version also emits two headers that must NOT follow a page:
- *
- * - **`Content-Security-Policy`** (from `STACKS_CSP`). The router module's
- *   own docstring explains that a blanket policy "breaks inline STX
- *   `<script>`/signal bootstrapping, Stripe iframes, and OAuth popups",
- *   which is exactly why it is opt-in. Today that variable only ever
- *   reaches JSON API responses. Emitting it here would put a policy an app
- *   tested against JSON onto every rendered page, and break the app on
- *   upgrade. A page CSP is worth having, but it is its own decision with
- *   its own testing, not a side effect of this fix.
- *
- * - **`Strict-Transport-Security`**. `startProductionServer` sets
- *   `APP_ENV = process.env.APP_ENV || 'production'`, so `buddy serve` run on
- *   a laptop looks like production from in here. HSTS on `http://localhost`
- *   commits the browser to HTTPS-only for that host for a year, which is
- *   precisely what the router's docstring says it avoids. We cannot tell a
- *   real deployment from a local `buddy serve`, so we do not guess.
- *
- * What is left is the three headers the report asked for, all of which are
- * safe on an HTML response.
- *
- * ## Since stacksjs/stacks#3358
- *
- * `resolveViewSecurityRules()` adds what can be sent safely after all:
- * HSTS once `APP_URL` says the app is https on a real host (the laptop case
- * above has a local host, or no https), `Cross-Origin-Opener-Policy:
- * same-origin-allow-popups`, and a `Permissions-Policy` that turns off only
- * features no stx composable uses. Each is configurable in
- * `config.server.security`. The API's `STACKS_CSP` still never reaches a page.
+ * The default rules provide frame, referrer, MIME, opener, and permissions
+ * policies. HSTS defaults on for a public HTTPS `APP_URL`. Page CSP is opt-in
+ * through `config.server.security.csp`. The router handles the API policy
+ * configured by `STACKS_CSP`.
  */
 
 import process from 'node:process'
@@ -218,6 +181,7 @@ function withPageCsp(response: Response, csp: ResolvedPageCsp, embeddable: boole
     .transform(response)
   const headers = new Headers(rewritten.headers)
   headers.set(header, pageContentSecurityPolicy(csp.directives, nonce, embeddable, csp.reportUri))
+  headers.set('Cache-Control', 'private, no-store')
   // The body changed length; let the server count it again.
   headers.delete('Content-Length')
   return new Response(rewritten.body, { status: response.status, statusText: response.statusText, headers })
@@ -291,9 +255,8 @@ export function isEmbeddablePath(pathname: string, rules: EmbeddableRules): bool
  * cannot be mutated, so it is rebuilt and returned - the same shape
  * `stacks-router.ts` already uses for this case.
  *
- * Never overwrites a header that is already set: an app that set its own
- * `X-Frame-Options` in a template or a proxy has said something more
- * specific.
+ * Existing security headers take precedence. A generated document nonce
+ * makes the HTML response private and uncacheable.
  */
 export function applyViewSecurityHeaders(
   req: Request,

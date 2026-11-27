@@ -39,6 +39,21 @@ describe('applyDocumentCacheControl', () => {
     expect(applyDocumentCacheControl(anon(), html(), header).headers.get('cache-control')).toBe(header)
   })
 
+  it('keeps a nonce-bearing page out of the shared cache in both CSP modes', () => {
+    for (const policy of ['content-security-policy', 'content-security-policy-report-only']) {
+      const response = html()
+      response.headers.set(policy, "script-src 'self' 'nonce-fixture'")
+      response.headers.set('cache-control', 'private, no-store')
+      expect(applyDocumentCacheControl(anon(), response, header).headers.get('cache-control')).toBe('private, no-store')
+    }
+  })
+
+  it('keeps shared caching available for pages with a static CSP', () => {
+    const response = html()
+    response.headers.set('content-security-policy', "script-src 'self'")
+    expect(applyDocumentCacheControl(anon(), response, header).headers.get('cache-control')).toBe(header)
+  })
+
   it('REFUSES a document that sets a cookie', () => {
     // The safety of the whole feature. A response with Set-Cookie is about one
     // visitor; a shared cache told to reuse it serves their page, session
