@@ -761,9 +761,6 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     }
   }
 
-  if (!options.dryRun && manifestChanges.length > 0)
-    reconcileVendoredManifests(projectRoot, target, { context: manifestContext })
-
   if (projectManifestChanges.length > 0)
     console.log(`  Project manifest migrations: ${projectManifestChanges.length}\n`)
 
@@ -786,6 +783,31 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     return
   }
 
+  // Bun's lockfile-only and install commands can fail after modifying the
+  // manifest and lockfiles. Keep a byte-for-byte recovery point for the
+  // dependency inputs until both commands have succeeded.
+  const originalInputs = options.noPostinstall ? [] : [
+    ...new Set([pkgPath, ...manifestChanges.map(change => join(projectRoot, change.file)),
+      join(projectRoot, 'bun.lock'), join(projectRoot, 'bun.lockb')]),
+  ].map(path => ({ path, contents: existsSync(path) ? readFileSync(path) : null }))
+
+  function failInstall(message: string): never {
+    const failedRestores: string[] = []
+    for (const { path, contents } of originalInputs) {
+      try {
+        if (contents === null) rmSync(path, { force: true })
+        else if (!existsSync(path) || !readFileSync(path).equals(contents)) writeFileSync(path, contents)
+      }
+      catch { failedRestores.push(relative(projectRoot, path)) }
+    }
+    const recovery = failedRestores.length
+      ? `Could not restore: ${failedRestores.join(', ')}. Restore these files before reinstalling.`
+      : 'Restored the package manifests and Bun lockfiles.'
+    console.error(`\n✗ ${message} ${recovery} Run \`bun install --frozen-lockfile\` to reconcile installed packages, then retry the upgrade after resolving the install error.\n`)
+    process.exit(1)
+  }
+
+  if (manifestChanges.length > 0) reconcileVendoredManifests(projectRoot, target, { context: manifestContext })
   if (changes.length > 0 || projectManifestChanges.length > 0) {
     // Preserve trailing newline convention of the original file.
     const trailing = raw.endsWith('\n') ? '\n' : ''
@@ -813,21 +835,14 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     if (lockBefore !== null) {
       for (const command of lockfileOnlyAddCommands(pkg, changes.filter(change => !change.field && !lockstep.has(change.name)).map(change => change.name))) {
         const added = await runCommand(command, { cwd: projectRoot })
-        if (added.isErr) {
-          console.error(`\n✗ \`${command}\` failed. Your package.json was updated - resolve the error and re-run \`buddy upgrade --version ${target}\`.\n`)
-          process.exit(1)
-        }
+        if (added.isErr) failInstall(`\`${command}\` failed.`)
       }
     }
     const result = await runCommand(frameworkPackageUpdateCommand(target, options.force), { cwd: projectRoot })
+    if (result.isErr) failInstall('The install step failed.')
     const lockAfter = lockfileVersion(projectRoot)
     if (lockBefore !== null && lockAfter !== null && lockAfter !== lockBefore)
       console.warn(`  bun.lock moved from lockfileVersion ${lockBefore} to ${lockAfter}. If CI or the server runs an older Bun, restore it (\`git checkout bun.lock\`) and re-resolve only the changed packages with \`bun add --exact --lockfile-only <package>@<version>\`.`)
-
-    if (result.isErr) {
-      console.error(`\n✗ The install step failed. Your package.json was updated - resolve the error and re-run \`buddy upgrade --version ${target}\`.\n`)
-      process.exit(1)
-    }
   }
 
   const installed = installedStacksVersion(projectRoot)
