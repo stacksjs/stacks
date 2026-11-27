@@ -22,9 +22,10 @@
  * needed listing.
  */
 import { describe, expect, it } from 'bun:test'
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
+import { withCommitPreviewManifests } from '../../../scripts/publish-commit.ts'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('../../../../../', import.meta.url))
@@ -199,9 +200,46 @@ describe('subpath imports', () => {
     const preparation = steps.findIndex(step => step.run?.includes('bun .github/scripts/subpath-packages.ts --runtime'))
     const inspection = steps.findIndex(step => step.run?.includes('bun pm pack --ignore-scripts'))
     const upload = steps.findIndex(step => step.run?.includes('storage/framework/scripts/publish-commit'))
+    const consumer = steps.findIndex(step => step.run?.includes('.github/scripts/verify-commit-previews.ts'))
     expect(preparation).toBeGreaterThanOrEqual(0)
     expect(inspection).toBeGreaterThan(preparation)
     expect(upload).toBeGreaterThan(inspection)
+    expect(consumer).toBeGreaterThan(upload)
+  })
+
+  it('links required workspace peers to the preview and restores the source manifests', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'stacks-preview-peers-'))
+    const manifest = {
+      name: '@fixture/consumer',
+      dependencies: { '@fixture/direct': 'workspace:*' },
+      peerDependencies: {
+        '@fixture/required': 'workspace:*',
+        '@fixture/direct': 'workspace:*',
+        '@fixture/optional': 'workspace:*',
+        '@fixture/unpublished': 'workspace:*',
+        'external-peer': '^1.0.0',
+      },
+      peerDependenciesMeta: { '@fixture/optional': { optional: true } },
+    }
+    const packages = [manifest, ...['required', 'direct', 'optional'].map(name => ({ name: `@fixture/${name}` }))]
+      .map((manifest, index) => {
+        const path = join(directory, `${index}.json`)
+        const original = JSON.stringify(manifest)
+        writeFileSync(path, original)
+        return { directory, path, original, manifest }
+      })
+    try {
+      const consumer = packages[0]!
+      expect(() => withCommitPreviewManifests(packages, () => {
+        const prepared = JSON.parse(readFileSync(consumer.path, 'utf8'))
+        expect(prepared.dependencies).toEqual({ '@fixture/direct': 'workspace:*', '@fixture/required': 'workspace:*' })
+        expect(prepared.peerDependencies).toEqual(manifest.peerDependencies)
+        expect(prepared.peerDependenciesMeta).toEqual(manifest.peerDependenciesMeta)
+        throw new Error('publish interruption')
+      })).toThrow('publish interruption')
+      for (const { path, original } of packages) expect(readFileSync(path, 'utf8')).toBe(original)
+    }
+    finally { rmSync(directory, { recursive: true, force: true }) }
   })
 
   /**

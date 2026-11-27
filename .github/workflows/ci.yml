@@ -1014,3 +1014,8 @@ jobs:
 
       - name: Publish Commit
         run: ./storage/framework/scripts/publish-commit
+
+      - name: Install and load the public Auth and Support previews
+        env:
+          STACKS_PREVIEW_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bun --no-env-file .github/scripts/verify-commit-previews.ts
