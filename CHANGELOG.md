@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.703...v0.75.704)
+
+## ✅ Tests
+
+- **dashboard**: cover inbox settings availability ([7794933](https://github.com/stacksjs/stacks/commit/7794933)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.702...v0.75.703)
 
 ## ✨ Features
