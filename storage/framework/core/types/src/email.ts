@@ -37,8 +37,11 @@ export interface MailboxConfig {
    */
   password?: string
   /** Initial credentials preserve user password changes on redeploy. Managed
-   * credentials are reconciled with the configured value on every deploy. */
-  passwordPolicy?: 'initial' | 'managed'
+   * credentials are reconciled with the configured value on every deploy.
+   * `initial-change` additionally requires first-time password setup in webmail.
+   * It applies when Mail creates a new account and preserves later user changes.
+   */
+  passwordPolicy?: 'initial' | 'initial-change' | 'managed'
   /**
    * Recovery address: where the mail server's webmail "Forgot password?"
    * sends a single-use reset link for this mailbox. It must be outside the

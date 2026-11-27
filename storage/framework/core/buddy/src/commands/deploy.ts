@@ -3437,7 +3437,7 @@ interface ResolvedMailbox {
   /** True when the password was generated here (so the caller reports it). */
   generated: boolean
   /** User passwords are initial; service credentials may opt into management. */
-  passwordPolicy: 'initial' | 'managed'
+  passwordPolicy: 'initial' | 'initial-change' | 'managed'
 }
 
 /**
@@ -3481,13 +3481,14 @@ export function resolveMailboxesWithSkipped(mailboxes: unknown, domain: string, 
   for (const entry of mailboxes) {
     let raw: string | undefined
     let explicitPw: string | undefined
-    let passwordPolicy: 'initial' | 'managed' = 'initial'
+    let passwordPolicy: 'initial' | 'initial-change' | 'managed' = 'initial'
     if (typeof entry === 'string')
       raw = entry
     else if (entry && typeof entry === 'object') {
       raw = (entry).email ?? (entry).username
       explicitPw = (entry).password
-      if ((entry).passwordPolicy === 'managed') passwordPolicy = 'managed'
+      if (entry.passwordPolicy === 'managed' || entry.passwordPolicy === 'initial-change')
+        passwordPolicy = entry.passwordPolicy
       if ((entry).generate === true)
         generatePassword = true
     }
@@ -4462,9 +4463,11 @@ if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
           set_managed_password "$addr" "$pw"
         fi
       else
-        # The CLI action historically returned zero even when an internal
-        # create failed. Pin the live DB for both calls and verify the row.
-        SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local create "$addr" "$pw" "$addr" >/dev/null 2>&1 || true
+        # Keep the credential on stdin. If the daemon predates first-login
+        # setup, never fall back to creating an account without the protection.
+        create_args=(user:local create "$addr" --password-stdin --email "$addr")
+        if [ "$password_policy" = initial-change ]; then create_args+=(--require-password-change); fi
+        printf '%s\\n' "$pw" | SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" "\${create_args[@]}" >/dev/null 2>&1 || true
       fi
       if SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local info "$addr" 2>&1 | grep -qi 'not found'; then
         echo "FAIL:$addr"
@@ -4480,7 +4483,7 @@ if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
     elif [ "$password_policy" != managed ]; then
       # A user's password change must survive the next application deploy.
       echo "EXISTS:$addr"
-    elif SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local verify "$addr" "$pw" 2>&1 | grep -q '^Credentials valid'; then
+    elif printf '%s\\n' "$pw" | SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local verify "$addr" --password-stdin 2>&1 | grep -q '^Credentials valid'; then
       echo "EXISTS:$addr"
     else
       # The declared password is authoritative. Without this, rotating
@@ -4488,7 +4491,7 @@ if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
       # mailbox kept the old (possibly leaked) password and the deploy called
       # it current. stdin, so the new password is not in the process list.
       set_managed_password "$addr" "$pw"
-      if SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local verify "$addr" "$pw" 2>&1 | grep -q '^Credentials valid'; then
+      if printf '%s\\n' "$pw" | SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local verify "$addr" --password-stdin 2>&1 | grep -q '^Credentials valid'; then
         echo "UPDATED:$addr"
       else
         echo "UPDATEFAIL:$addr"

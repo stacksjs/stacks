@@ -163,10 +163,15 @@ case "$cmd" in
     if [ -f "$f" ]; then echo "User Information:" >&2; echo "  Username: $user" >&2; echo "  Enabled: $(sed -n 2p "$f")" >&2
     else echo "User '$user' not found" >&2; fi ;;
   verify)
-    if [ -f "$f" ] && [ "$(sed -n 2p "$f")" = true ] && [ "$(sed -n 1p "$f")" = "$4" ]; then echo "Credentials valid" >&2
+    [ "$4" = "--password-stdin" ] || exit 3
+    IFS= read -r pw
+    if [ -f "$f" ] && [ "$(sed -n 2p "$f")" = true ] && [ "$(sed -n 1p "$f")" = "$pw" ]; then echo "Credentials valid" >&2
     else echo "Credentials invalid" >&2; fi ;;
   create)
-    printf '%s\\ntrue\\n' "$4" > "$f" ;;
+    [ "$4" = "--password-stdin" ] && [ "$5" = "--email" ] && [ "$6" = "$user" ] || exit 3
+    if [ "$7" = "--require-password-change" ] && [ -f "$DB/old-server" ]; then exit 2; fi
+    IFS= read -r pw
+    printf '%s\\ntrue\\n' "$pw" > "$f" ;;
   change-password)
     [ "$4" = "--password-stdin" ] || exit 3
     # A server from before --force rejects the option; a current one refuses
@@ -191,7 +196,7 @@ exit 0
 
 interface Seed { password: string, enabled?: boolean }
 
-function runMailboxes(seed: Record<string, Seed>, declared: Record<string, string>, policy: 'initial' | 'managed' = 'initial', options: { oldServer?: boolean } = {}) {
+function runMailboxes(seed: Record<string, Seed>, declared: Record<string, string>, policy: 'initial' | 'initial-change' | 'managed' = 'initial', options: { oldServer?: boolean } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stacks-mailboxes-'))
   try {
     fs.mkdirSync(path.join(dir, 'users'))
@@ -227,6 +232,23 @@ function runMailboxes(seed: Record<string, Seed>, declared: Record<string, strin
 }
 
 describe('the mailbox reconcile on the server', () => {
+  it('creates an initial-change mailbox with the native password policy and keeps the password off argv', () => {
+    const address = 'owner@example.com'
+    const password = 'private-temporary-password'
+    const run = runMailboxes({}, { [address]: password }, 'initial-change')
+    expect(run.stdout).toContain(`MADE:${address}`)
+    expect(run.argv).toContain(`user:local create ${address} --password-stdin --email ${address} --require-password-change`)
+    expect(run.argv).not.toContain(password)
+    expect(run.passwordOf(address)).toBe(password)
+  })
+
+  it('refuses to create an unprotected fallback mailbox on an older mail server', () => {
+    const address = 'owner@example.com'
+    const run = runMailboxes({}, { [address]: 'private-temporary-password' }, 'initial-change', { oldServer: true })
+    expect(run.stdout).toContain(`FAIL:${address}`)
+    expect(run.passwordOf(address)).toBeUndefined()
+  })
+
   it('preserves a user password change despite a different configured initial password', () => {
     const run = runMailboxes({ 'pawel@example.com': { password: 'user-changed-password' } }, { 'pawel@example.com': 'initial-password' })
     expect(run.stdout).toContain('EXISTS:pawel@example.com')
@@ -285,12 +307,12 @@ describe('resolveMailboxesWithSkipped', () => {
     const { boxes } = resolveMailboxesWithSkipped([
       { email: 'user@example.com', password: 'user-initial' },
       { email: 'service@example.com', password: 'service-secret', passwordPolicy: 'managed' },
-      { email: 'generated@example.com', generate: true },
+      { email: 'generated@example.com', generate: true, passwordPolicy: 'initial-change' },
     ], 'example.com')
     expect(boxes.map(box => [box.address, box.passwordPolicy])).toEqual([
       ['user@example.com', 'initial'],
       ['service@example.com', 'managed'],
-      ['generated@example.com', 'initial'],
+      ['generated@example.com', 'initial-change'],
     ])
   })
 

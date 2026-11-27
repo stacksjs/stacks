@@ -723,10 +723,12 @@ export function mailCommands(buddy: CLI): void {
       // mailboxes, publish DNS. Against a shared mail server that is the one
       // flag that has to mean what it says. Report the plan and stop.
       if (options.dryRun) {
-        const mailboxes = ((emailConfig as { mailboxes?: Array<string | { email?: string, username?: string }> })?.mailboxes ?? [])
-          .map(box => typeof box === 'string' ? box : box.email ?? box.username)
-          .filter((name): name is string => !!name)
-          .map(name => `${name.split('@')[0]}@${domain}`)
+        const mailboxes = ((emailConfig as { mailboxes?: Array<string | { email?: string, username?: string, passwordPolicy?: string }> })?.mailboxes ?? [])
+          .flatMap((box) => {
+            const name = typeof box === 'string' ? box : box.email ?? box.username
+            if (!name) return []
+            return [{ address: `${name.split('@')[0]}@${domain}`, requireChange: typeof box !== 'string' && box.passwordPolicy === 'initial-change' }]
+          })
         log.info(`Dry run: nothing is written to ${ip}.`)
         if (!serverEnabled) {
           log.warn('config/email.ts sets server.enabled: false, so a real run would provision nothing.')
@@ -735,8 +737,8 @@ export function mailCommands(buddy: CLI): void {
           log.info(`Would register ${domain} as a local domain and make sure it has a DKIM key.`)
           if (server?.exactMailboxes)
             log.info(`Would require full-address mailboxes for ${domain}.`)
-          for (const address of mailboxes)
-            log.info(`Would create or update mailbox ${address} (needs MAIL_PASSWORD_${address.split('@')[0]?.toUpperCase().replace(/[^A-Z0-9]/g, '_')})`)
+          for (const { address, requireChange } of mailboxes)
+            log.info(`Would create or update mailbox ${address} (needs MAIL_PASSWORD_${address.split('@')[0]?.toUpperCase().replace(/[^A-Z0-9]/g, '_')})${requireChange ? ' with first-login password setup on creation' : ''}`)
           log.info(`Would reconcile ${domain}'s MX, SPF, DKIM and DMARC records.`)
         }
         await log.flush()
