@@ -152,13 +152,24 @@ function connectCommand(supportOnly = false) {
         process.exitCode = 1
         return
       }
-      const installSdk = async (directory: string, signal?: AbortSignal) => installSupportSdk(directory, frameworkVersion, {
-        print: line => console.log(line),
-        install: async (cwd, args) => {
-          const child = Bun.spawn([process.execPath, ...args], { cwd, stdin: 'ignore', stdout: 'ignore', stderr: 'ignore', signal })
+      const installSdk = async (directory: string, signal?: AbortSignal) => {
+        const pantry = existsSync(join(directory, 'pantry.lock'))
+          ? Bun.which(join(directory, 'pantry/.bin/pantry')) ?? Bun.which('pantry')
+          : null
+        const runInstall = async (cwd: string, args: string[]) => {
+          const child = Bun.spawn(args, { cwd, stdin: 'ignore', stdout: 'ignore', stderr: 'ignore', signal })
           return await child.exited === 0
-        },
-      }, sdkVersion)
+        }
+        return installSupportSdk(directory, frameworkVersion, {
+          print: line => console.log(line),
+          install: (cwd, args) => runInstall(cwd, [process.execPath, ...args]),
+          installPantry: pantry ? async (cwd) => {
+            const { chooseInstaller } = await import('../unvendor-rewrite')
+            const [, ...args] = chooseInstaller(cwd, 'pantry')
+            return runInstall(cwd, [pantry, ...args, '--ignore-scripts'])
+          } : undefined,
+        }, sdkVersion)
+      }
       if (sdkOnly) {
         const { projectPath } = await import('@stacksjs/path')
         process.exitCode = await installSdk(projectPath()) ? 0 : 1

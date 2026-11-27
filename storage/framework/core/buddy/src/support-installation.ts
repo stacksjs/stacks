@@ -5,9 +5,22 @@ import { dirname, relative, resolve } from 'node:path'
 
 const supportPackage = '@stacksjs/support'
 
+async function readPackageLocks(directory: string): Promise<(Buffer | null)[]> {
+  return Promise.all(['bun.lock', 'bun.lockb', 'pantry.lock'].map(async (name) => {
+    try {
+      return await readFile(resolve(directory, name))
+    }
+    catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null
+      throw error
+    }
+  }))
+}
+
 /** Keep the opt-in SDK available to apps with isolated dependency linking. */
 export async function installSupportSdk(directory: string, frameworkVersion: string, deps: {
   install: (directory: string, args: string[]) => Promise<boolean>
+  installPantry?: (directory: string) => Promise<boolean>
   print: (line: string) => void
 }, requestedVersion?: string): Promise<boolean> {
   const path = resolve(directory, 'package.json')
@@ -31,24 +44,49 @@ export async function installSupportSdk(directory: string, frameworkVersion: str
     const devVersion = development?.[supportPackage]
     const version = requestedVersion ?? (runtimeVersion || devVersion || frameworkVersion)
     const spec = `${supportPackage}@${version}`
-    if (runtimeVersion === version) {
-      if (!await deps.install(directory, ['install'])) throw new Error('SDK install failed')
+    const usesPantry = existsSync(resolve(directory, 'pantry.lock'))
+    if (usesPantry && !deps.installPantry) {
+      deps.print('This app has a pantry.lock. Make Pantry available and retry `buddy support:install --sdk-only`.')
+      return false
     }
-    else if (!runtimeVersion && development && devVersion) {
-      // Bun add keeps an existing development dependency in that section.
+    const pantryInstall = usesPantry ? deps.installPantry : undefined
+    const install = async () => {
+      if (!pantryInstall) {
+        if (!await deps.install(directory, ['install'])) throw new Error('SDK install failed')
+        return true
+      }
+      const ok = await pantryInstall(directory).catch(() => false)
+      if (!ok) deps.print('Pantry could not finish the SDK install. Resolve the Pantry install error and retry `buddy support:install --sdk-only`.')
+      return ok
+    }
+    if (runtimeVersion === version) {
+      if (!await install()) return false
+    }
+    else if (pantryInstall || (!runtimeVersion && development && devVersion)) {
+      // Pantry generates both locks from the edited manifest. Bun add keeps an
+      // existing development dependency in that section, so promote it here.
+      const previousLocks = pantryInstall ? await readPackageLocks(directory) : null
       manifest.dependencies = { ...manifest.dependencies, [supportPackage]: version }
-      delete development[supportPackage]
+      if (development) delete development[supportPackage]
       const indent = original.match(/\n([ \t]+)"/)?.[1] ?? '  '
       const updated = `${JSON.stringify(manifest, null, indent)}\n`
       await writeFile(path, updated)
       let installed = false
       try {
-        installed = await deps.install(directory, ['install'])
+        installed = await install()
       }
       finally {
-        if (!installed && await readFile(path, 'utf8') === updated) await writeFile(path, original)
+        if (!installed) {
+          // Keep a partially committed pin aligned with the lock the installer
+          // wrote. A later run can finish refreshing the remaining lock.
+          const unchanged = !previousLocks || (await readPackageLocks(directory)).every((value, index) => {
+            const previous = previousLocks[index]
+            return value === previous || (value !== null && previous != null && value.equals(previous))
+          })
+          if (unchanged && await readFile(path, 'utf8') === updated) await writeFile(path, original)
+        }
       }
-      if (!installed) throw new Error('SDK install failed')
+      if (!installed) return false
     }
     else {
       if (!await deps.install(directory, ['add', '--exact', spec])) throw new Error('SDK install failed')

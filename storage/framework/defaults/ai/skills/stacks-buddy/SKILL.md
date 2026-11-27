@@ -48,7 +48,8 @@ project on the machine. Each invocation first settles two things in
    installed can run `buddy install` or `buddy support:install --sdk-only`.
    The SDK-only command uses the invoking Buddy and can select a published SDK
    before the app has a Buddy of its own. Full Support connection uses the
-   app's installed Buddy.
+   app's installed Buddy. In a project with `pantry.lock`, Buddy uses Pantry
+   to install the SDK and refresh the dependency locks.
 
 The process that does the work always starts in the project root, because Bun
 reads `bunfig.toml` and its preloads from the directory it starts in. The
