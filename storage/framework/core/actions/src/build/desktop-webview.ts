@@ -78,7 +78,7 @@ const appFiles = config.agent.appRoutes ? await appBundleFiles(root, agentEntry 
 if (appFiles) await log.info(`Bundling ${appFiles.routes.length} route file(s), ${Object.keys(appFiles.actions).length} action(s) and ${Object.keys(appFiles.middleware).length} middleware into the agent`)
 // The migrations buddy migrate applies, compiled in and applied at launch (stacksjs/stacks#3368).
 const migrationFiles = config.agent.database ? await appMigrationFiles(root) : undefined
-const databaseFilename = config.agent.database && typeof config.agent.database === 'object' ? config.agent.database.filename : undefined
+const databaseOptions = typeof config.agent.database === 'object' ? config.agent.database : undefined
 if (migrationFiles) await log.info(`Bundling ${Object.keys(migrationFiles).length} migration(s) for the app's own database`)
 // The project's config/*.ts, named so the bundler carries them (stacksjs/stacks#3368).
 const configFiles = config.agent.config ? appConfigFiles(root) : undefined
@@ -134,7 +134,8 @@ if (process.env.STACKS_DESKTOP_LAUNCH === '1') {
     manifest: webviewManifest(config, { runtime: devRuntime, runtimeFlags: probeCraftFlags(devRuntime), development: true }),
     agentEntry,
     prepareEntry,
-    databaseFilename,
+    databaseFilename: databaseOptions?.filename,
+    databaseAuth: databaseOptions?.auth,
     ...appFiles,
     ...(migrationFiles ? { migrations: migrationFiles } : {}),
     ...(configFiles ? { configFiles } : {}),
@@ -267,7 +268,8 @@ for (const target of targets) {
     manifest: webviewManifest(config, { runtime: embedded ? 'embedded' : 'beside', runtimeFlags: probeCraftFlags(runtime), sourceRevision }),
     agentEntry,
     prepareEntry,
-    databaseFilename,
+    databaseFilename: databaseOptions?.filename,
+    databaseAuth: databaseOptions?.auth,
     ...appFiles,
     ...(migrationFiles ? { migrations: migrationFiles } : {}),
     ...(configFiles ? { configFiles } : {}),
