@@ -24,6 +24,7 @@ it('reads one paid X message page and forwards the opaque cursor', async () => {
   const url = new URL(String(input))
   expect(url.pathname).toBe('/2/dm_events')
   expect(url.searchParams.get('event_types')).toBe('MessageCreate')
+  expect(url.searchParams.get('dm_event.fields')?.split(',')).toContain('sender_id')
   expect(url.searchParams.get('expansions')).toBe('sender_id')
   expect(url.searchParams.get('pagination_token')).toBe('previous-page')
   expect(url.searchParams.get('max_results')).toBe('20')
