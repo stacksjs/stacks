@@ -52,7 +52,7 @@
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/ts-i18n": "^0.1.11",
-    "@stacksjs/stx": "^0.2.957"
+    "@stacksjs/stx": "^0.2.958"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

@@ -72,7 +72,7 @@
     "@stacksjs/clapp": "^0.2.17",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/stx": "^0.2.957",
+    "@stacksjs/stx": "^0.2.958",
     "@stacksjs/ts-validation": "^0.5.7",
     "bun-query-builder": "^0.6.4",
     "meilisearch": "^0.62.0",
