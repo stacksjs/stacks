@@ -26,9 +26,10 @@ describe('release registries', () => {
   it('gates every npm-only step of the Releaser on the npm output', () => {
     const workflow = Bun.YAML.parse(readFileSync(new URL('../workflows/release.yml', import.meta.url), 'utf8')) as any
     const steps = workflow.jobs.publish.steps as { name: string, if?: string, run?: string, env?: Record<string, string> }[]
-    const npmOnly = steps.filter(step => /--npm|npm dist-tag|promote-latest|resume-npm-publication|publish-dummy-libs|bun add --no-cache/.test(step.run ?? ''))
+    const npmOnly = steps.filter(step => /--npm|npm dist-tag|promote-latest|resume-npm-publication|npm-release-channel|publish-dummy-libs|bun add --no-cache/.test(step.run ?? ''))
     expect(npmOnly.map(step => step.name)).toEqual([
       'Verify original npm publications before resuming',
+      'Resolve npm release channel',
       'Publish Framework to npm',
       'Verify published framework install from npm',
       'Publish Dummy Libraries',
@@ -39,6 +40,12 @@ describe('release registries', () => {
     const node = steps.find(step => step.name === 'Setup Node for trusted sample publishing')!
     expect(node.if).toBe(sample.if)
     expect(sample.env?.STACKS_NPM_RESUME_RECEIPTS).toBe(resume.env?.STACKS_NPM_RESUME_RECEIPTS)
+    expect(sample.env?.STACKS_NPM_RELEASE_TAG).toBe('${{ steps.npm_channel.outputs.tag }}')
+    const publisher = steps.find(step => step.name === 'Publish Framework to npm')!
+    expect(publisher.env?.RELEASE_TAG).toBe(sample.env?.STACKS_NPM_RELEASE_TAG)
+    expect(publisher.run).toContain('if [ "$RELEASE_TAG" = latest ]; then')
+    expect(publisher.run).toContain("--check-latest 'storage/framework/core'")
+    expect(publisher.run).toContain('pantry publish --npm --access public --tag "$RELEASE_TAG"')
     expect(JSON.stringify(sample.env)).not.toContain('secrets.NPM_TOKEN')
 
     const pantry = steps.filter(step => step.if?.includes('steps.registries.outputs.pantry'))

@@ -20,7 +20,18 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 attempts=${PUBLISH_ATTEMPTS:-16}
 wait_seconds=${PUBLISH_VISIBLE_WAIT_SECONDS:-1200}
 
+publication_tag=latest
+for (( index=1; index<$#; index++ )); do
+  if [ "${!index}" = --tag ]; then
+    value_index=$((index + 1))
+    publication_tag="${!value_index}"
+  fi
+done
+
 for attempt in $(seq 1 "$attempts"); do
+  if [ "$publication_tag" = latest ]; then
+    bun --config=/dev/null "$script_dir/npm-release-channel.ts" --check-latest "${@: -1}" || exit 1
+  fi
   log=$(mktemp)
   pantry publish "$@" 2>&1 | tee "$log"
   status=${PIPESTATUS[0]}

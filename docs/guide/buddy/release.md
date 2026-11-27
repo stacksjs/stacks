@@ -148,6 +148,15 @@ downloads and verifies the complete original tarball before resuming the
 normal publisher. HTTP requests and the overall verification wait are bounded.
 An incomplete receipt or an unverified archive ends the job.
 
+The npm release checks the current `latest` tags for the framework and the
+sample packages before uploading to npm. When a newer release already owns
+one of those tags, the job uses `backfill-<version>` for any missing archive
+and skips `latest` promotion, VS Code marketplace publication, and the Homebrew
+formula update. The same exact-version npm install still has to pass. A
+normal release checks `latest` again before each upload or promotion that
+could replace it. This protection applies to tags created after the workflow
+change. Rerunning an older tag still uses the workflow stored at that tag.
+
 For other failures, resolve the failing command's cause and keep its evidence.
 Do not repeat a version bump over partially generated release metadata.
 

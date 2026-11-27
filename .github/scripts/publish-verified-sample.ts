@@ -2,7 +2,7 @@ import type { AcceptedPublication } from './npm-publication'
 import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { publicationMatchesOriginal, verifyAcceptedPublications } from './npm-publication'
+import { assertNpmLatestMayAdvance, publicationMatchesOriginal, verifyAcceptedPublications } from './npm-publication'
 
 const registry = 'https://registry.npmjs.org'
 type Identity = Pick<AcceptedPublication, 'name' | 'version'>
@@ -23,10 +23,11 @@ export async function sampleLibraryNames(root: string): Promise<string[]> {
   return names
 }
 
-async function uploadWithNpm(archive: string, dryRun: boolean): ReturnType<Upload> {
+async function uploadWithNpm(archive: string, dryRun: boolean, identity: Identity, tag: string): ReturnType<Upload> {
+  if (!dryRun && tag === 'latest') await assertNpmLatestMayAdvance(identity)
   const result = Bun.spawnSync([
     'npm', 'publish', archive, '--access', 'public', '--ignore-scripts',
-    '--registry', registry, '--fetch-retries=0', '--json', ...(dryRun ? ['--dry-run'] : []),
+    '--registry', registry, '--tag', tag, '--fetch-retries=0', '--json', ...(dryRun ? ['--dry-run'] : []),
   ], { stdout: 'pipe', stderr: 'pipe', timeout: 120_000 })
   if (result.exitCode === 0) return { ok: true }
   const code = /npm (?:error|ERR!) code (E[A-Z0-9_]+)/.exec(result.stderr.toString())?.[1]
@@ -35,6 +36,7 @@ async function uploadWithNpm(archive: string, dryRun: boolean): ReturnType<Uploa
 
 export async function publishVerifiedSample(archive: string, identity: Identity, options: {
   dryRun?: boolean
+  tag?: string
   prior?: readonly AcceptedPublication[]
   read?: ReadRegistry
   upload?: Upload
@@ -46,7 +48,9 @@ export async function publishVerifiedSample(archive: string, identity: Identity,
     throw new Error('Expected a scoped Stacks sample and its exact version')
   const label = `${name}@${version}`
   const read = options.read ?? fetch
-  const upload = options.upload ?? uploadWithNpm
+  const tag = options.tag ?? 'latest'
+  if (tag !== 'latest' && tag !== `backfill-${version}`) throw new Error(`Invalid npm release tag for ${label}`)
+  const upload = options.upload ?? ((path, dryRun) => uploadWithNpm(path, dryRun, identity, tag))
   if (options.dryRun) {
     if (!(await upload(archive, true)).ok) throw new Error(`npm dry-run failed for ${label}`)
     return
@@ -94,5 +98,5 @@ if (import.meta.main) {
     throw new Error('The verified archive does not match the sample package identity')
   const path = process.env.STACKS_NPM_RESUME_RECEIPTS
   const prior = path ? await Bun.file(path).json() as AcceptedPublication[] : []
-  await publishVerifiedSample(archive, { name, version }, { prior, dryRun: process.env.PUBLISH_DRY_RUN === '1' })
+  await publishVerifiedSample(archive, { name, version }, { prior, tag: process.env.STACKS_NPM_RELEASE_TAG, dryRun: process.env.PUBLISH_DRY_RUN === '1' })
 }

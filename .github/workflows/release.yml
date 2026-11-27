@@ -199,6 +199,7 @@ jobs:
     timeout-minutes: 180  # the npm publish waits out propagation, layer by layer
     outputs:
       version: ${{ steps.get_version.outputs.version }}
+      npm-tag: ${{ steps.npm_channel.outputs.tag }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
@@ -314,7 +315,7 @@ jobs:
 
       # Publish the framework to npm through pantry. Scoped core/* packages use a
       # holding tag and are promoted as one set. The unscoped `stacks`
-      # meta-package is then published directly to latest through OIDC with its own publisher. pantry resolves
+      # meta-package is then published through OIDC with its own publisher. Pantry resolves
       # workspace:* → concrete versions, topo-orders, skips already-published
       # versions, and falls back to NPM_TOKEN outside OIDC.
       #
@@ -343,36 +344,51 @@ jobs:
           STACKS_NPM_RESUME_RECEIPTS: ${{ runner.temp }}/stacks-npm-resume.json
         run: bun .github/scripts/resume-npm-publication.ts
 
+      - name: Resolve npm release channel
+        id: npm_channel
+        if: steps.registries.outputs.npm == 'true'
+        run: |
+          tag="$(bun --config=/dev/null .github/scripts/npm-release-channel.ts)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "npm release channel is $tag"
+
       - name: Publish Framework to npm
         if: steps.registries.outputs.npm == 'true'
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          RELEASE_TAG: ${{ steps.npm_channel.outputs.tag }}
         run: |
           set -euo pipefail
           bun .github/scripts/check-pantry-version.ts
 
-          publication_tag="$(bun --config=/dev/null .github/scripts/promote-latest.ts --publication-tag)"
+          publication_tag="$RELEASE_TAG"
+          if [ "$RELEASE_TAG" = latest ]; then
+            publication_tag="$(bun --config=/dev/null .github/scripts/promote-latest.ts --publication-tag)"
+          fi
           # Publish a dependency layer at a time. Registry readback is
           # performed across the full scoped set before publishing stacks.
           if [ "$publication_tag" = staging ]; then
             bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag staging --no-readback
             bun .github/scripts/promote-latest.ts
           else
-            echo "No active npm promotion credential. Using trusted publishing for latest."
+            echo "Using trusted publishing for $publication_tag."
             unset NPM_TOKEN
-            bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag latest --no-readback
+            bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag "$publication_tag" --no-readback
             bun .github/scripts/promote-latest.ts --verify-only
           fi
 
           # The unscoped meta-package has trusted publishing configured, but
           # the legacy token cannot mutate its dist-tags. Publish it through
           # OIDC only after the scoped set is readable; this final write
-          # is the release commit point for `buddy upgrade` consumers.
+          # is the release commit point for `buddy upgrade` consumers when using latest.
           # --no-readback: the next step asks the registry for this exact
           # version before it installs, so pantry's own minute-long poll for it
           # only delayed that.
           rm -f ~/.npmrc
-          pantry publish --npm --access public --no-readback --ignore-scripts 'storage/framework/core'
+          if [ "$RELEASE_TAG" = latest ]; then
+            bun --config=/dev/null .github/scripts/npm-release-channel.ts --check-latest 'storage/framework/core'
+          fi
+          pantry publish --npm --access public --tag "$RELEASE_TAG" --no-readback --ignore-scripts 'storage/framework/core'
 
       # Publishing succeeded is not enough: registry manifests can still carry
       # monorepo-only protocols that make the package impossible to install.
@@ -488,6 +504,7 @@ jobs:
         run: ./storage/framework/scripts/publish-dummy-libs
         env:
           STACKS_NPM_RESUME_RECEIPTS: ${{ runner.temp }}/stacks-npm-resume.json
+          STACKS_NPM_RELEASE_TAG: ${{ steps.npm_channel.outputs.tag }}
 
       # The extension's tests include a build that must load as CommonJS on
       # Node, the way VS Code loads it, so a bundle VS Code would refuse is
@@ -495,6 +512,7 @@ jobs:
       # then adds the stx TypeScript plugin's node_modules entry, which vsce
       # leaves out, before publishing that VSIX (scripts/package.ts).
       - name: Publish VS Code Extension
+        if: "!startsWith(steps.npm_channel.outputs.tag, 'backfill-')"
         continue-on-error: true
         run: |
           cd storage/framework/defaults/ide/vscode
@@ -536,6 +554,7 @@ jobs:
 
   homebrew:
     needs: publish
+    if: "!startsWith(needs.publish.outputs.npm-tag, 'backfill-')"
     # Hashing release archives and updating a formula does not execute binaries.
     runs-on: ubuntu-latest
     steps:

@@ -21,6 +21,7 @@
  */
 import { existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { assertNpmLatestMayAdvance } from './npm-publication'
 
 export interface Publishable {
   name: string
@@ -180,15 +181,20 @@ export async function promoteTags(packages: Publishable[], options: {
       const remaining = Math.floor(deadline - performance.now())
       if (remaining <= 0) return `${pkg.name}@${pkg.version}: promotion deadline exceeded`
       if (resumeAt >= deadline) return `${pkg.name}@${pkg.version}: registry cooldown exceeds promotion deadline`
+      try {
+        await assertNpmLatestMayAdvance(pkg, registry.href, undefined, Math.min(20_000, remaining))
+      }
+      catch (error) {
+        return `${pkg.name}@${pkg.version}: tag safety check failed (${error instanceof Error ? error.message : 'registry request failed'})`
+      }
+      const writeBudget = Math.min(20_000, Math.floor(deadline - performance.now()))
+      if (writeBudget <= 0) return `${pkg.name}@${pkg.version}: promotion deadline exceeded`
       let delay = attempt * 3000
       try {
-        // npm's dist-tag CLI first reads every tag. A release already knows
-        // the exact desired version: write that single tag through the same
-        // registry endpoint without doubling the registry request count.
         const response = await fetch(new URL(`/-/package/${encodeURIComponent(pkg.name)}/dist-tags/latest`, registry), {
           method: 'PUT', redirect: 'error',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${options.token}` },
-          body: JSON.stringify(pkg.version), signal: AbortSignal.timeout(Math.min(20_000, remaining)),
+          body: JSON.stringify(pkg.version), signal: AbortSignal.timeout(writeBudget),
         })
         await response.body?.cancel()
         if (response.ok) return null
@@ -258,7 +264,7 @@ async function main(): Promise<void> {
       console.error(`  ✗ ${failure}`)
 
     console.error('\n' + promotionFailureSummary(promoted, packages.length))
-    console.error('Re-run this job, or finish by hand with `npm dist-tag add <pkg>@<version> latest`.\n')
+    console.error('Rerun the release so the existing archives and current tags are checked before more writes.\n')
     process.exit(1)
   }
 
