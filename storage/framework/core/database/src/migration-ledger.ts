@@ -30,9 +30,11 @@
  * cannot prove.
  */
 
+import type { FrameworkRename } from './framework-renames'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { resolvedDatabaseDriver } from './dialect'
+import { renameIdentifierPart } from './framework-renames'
 import { comparableIndexKey, postgresIndexStatement } from './index-shape'
 import { resolveMigrationDirectory } from './migration-path'
 import { guardedBlockStatements, sqlStatementsOf } from './sql-statements'
@@ -676,6 +678,42 @@ export function effectPresent(effect: MigrationEffect, schema: LiveSchema): bool
 }
 
 /**
+ * A recorded migration can still be present under the framework's current
+ * names. Follow the same rename rules as the runner and verify the effect
+ * there. When the old owner still exists, its own effects must still exist.
+ */
+function renamedEffectPresent(
+  effect: MigrationEffect,
+  schema: LiveSchema,
+  renames: readonly FrameworkRename[],
+): boolean {
+  const { kind } = effect
+  let name = effect.name.toLowerCase()
+  let table = (kind === 'table' ? name : effect.table)?.toLowerCase()
+  if (!table) return false
+  let renamed = false
+
+  for (const group of renames) {
+    for (const { from, to } of group.tables) {
+      if (table !== from || schema.tables.has(from)) continue
+      table = to
+      if (kind === 'table') name = to
+      if (kind === 'index') name = renameIdentifierPart(name, from, to)
+      renamed = true
+    }
+    if (kind === 'column') {
+      for (const { table: owner, from, to } of group.columns) {
+        if (table !== owner || name !== from || schema.columns.get(owner)?.has(from)) continue
+        name = to
+        renamed = true
+      }
+    }
+  }
+
+  return renamed && schema.tables.has(table) && effectPresent({ kind, name, table }, schema)
+}
+
+/**
  * Decide what a single migration file's state actually is.
  *
  * Pure, so the interesting cases are testable without a database. The order
@@ -949,6 +987,7 @@ export async function auditMigrationLedger(options: {
     const sql = sources.get(file)!
 
     const effects = verifiableEffects(migrationEffects(sql), dialect)
+    const isRecorded = recorded.has(file)
     const dropped = removedLater.get(file) ?? new Set<string>()
     /*
      * An effect a LATER migration explicitly drops counts as present.
@@ -976,11 +1015,11 @@ export async function auditMigrationLedger(options: {
      */
     const survives = (effect: MigrationEffect): boolean =>
       effectPresent(effect, schema)
+      || (isRecorded && renamedEffectPresent(effect, schema, gate?.frameworkRenames ?? []))
       || dropped.has(removalKey(effect))
       || (effect.table !== undefined && droppedTables.has(effect.table.toLowerCase()))
     const present = effects.filter(survives)
     const absent = effects.filter(effect => !survives(effect))
-    const isRecorded = recorded.has(file)
     const status = classifyMigration(isRecorded, present, absent)
     counts[status] += 1
     entries.push({ file, logical: logicalName(file), recorded: isRecorded, status, effects, present, absent })
@@ -1178,6 +1217,8 @@ function requeueStatements(sql: string): string[] {
 export interface CorpusGate {
   exclude: ReadonlySet<string>
   rewrite: (sql: string) => string
+  /** Framework renames the migration runner applies to this app's schema. */
+  frameworkRenames?: readonly FrameworkRename[]
 }
 
 /**
