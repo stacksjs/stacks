@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.700...v0.75.701)
+
+## ✨ Features
+
+- **auth**: approve explicit enterprise OIDC endpoints (#3421) ([60c09f8](https://github.com/stacksjs/stacks/commit/60c09f8)) _(by Chris)_ ([#3417](https://github.com/stacksjs/stacks/issues/3417), [#3421](https://github.com/stacksjs/stacks/issues/3421), [stacksjs/hq.support#8](https://github.com/stacksjs/hq.support/issues/8))
+
+## 🐛 Bug Fixes
+
+- **server**: integrate CMS page security headers (#3423) ([abe001e](https://github.com/stacksjs/stacks/commit/abe001e)) _(by Chris)_ ([#3423](https://github.com/stacksjs/stacks/issues/3423))
+- **server**: secure the final CMS page response ([73c7190](https://github.com/stacksjs/stacks/commit/73c7190)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.699...v0.75.700)
 
 ## ✨ Features
