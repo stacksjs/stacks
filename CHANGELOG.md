@@ -1,5 +1,44 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.699...v0.75.700)
+
+## ✨ Features
+
+- **socials**: read public engagement for X posts ([43d7061](https://github.com/stacksjs/stacks/commit/43d7061)) _(by Chris Breuer)_ ([#3420](https://github.com/stacksjs/stacks/issues/3420), [stacksjs/postline#123](https://github.com/stacksjs/postline/issues/123), [stacksjs/postline#135](https://github.com/stacksjs/postline/issues/135))
+
+## 🐛 Bug Fixes
+
+- **database**: audit recorded framework renames in the migration ledger ([ec8db92](https://github.com/stacksjs/stacks/commit/ec8db92)) _(by Chris Breuer)_ ([#3418](https://github.com/stacksjs/stacks/issues/3418))
+- **ci**: package the HQ Support SDK before preview publication ([51fc5b0](https://github.com/stacksjs/stacks/commit/51fc5b0)) _(by Chris)_
+- **buddy**: update the generated Pantry workspace lock ([bcbfba6](https://github.com/stacksjs/stacks/commit/bcbfba6)) _(by Chris)_
+- **buddy**: show held DNS in SSH deployment previews ([bc0621f](https://github.com/stacksjs/stacks/commit/bc0621f)) _(by Chris)_
+- **buddy**: install the pinned support SDK without an app key ([f6ad20c](https://github.com/stacksjs/stacks/commit/f6ad20c)) _(by Chris)_
+- **buddy**: repair the GitHub workflow release checks ([93d0635](https://github.com/stacksjs/stacks/commit/93d0635)) _(by Chris)_
+- **support**: use native CSRF tokens for customer sessions ([9ff03c4](https://github.com/stacksjs/stacks/commit/9ff03c4)) _(by Chris)_
+- **buddy**: install the HQ Support runtime SDK ([920032b](https://github.com/stacksjs/stacks/commit/920032b)) _(by Chris)_
+
+## 📝 Documentation
+
+- refresh Buddy test coverage in the native skill catalog ([e35a975](https://github.com/stacksjs/stacks/commit/e35a975)) _(by Chris)_
+
+## 🔧 Chores
+
+- integrate Stacks v0.75.699 into the Support SDK candidate ([a8e0d1b](https://github.com/stacksjs/stacks/commit/a8e0d1b)) _(by Chris)_
+- integrate current main with the HQ Support SDK fixes ([e110a24](https://github.com/stacksjs/stacks/commit/e110a24)) _(by Chris)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/buddy-held-preview-refresh ([9c84c65](https://github.com/stacksjs/stacks/commit/9c84c65)) _(by Chris)_
+- Merge remote-tracking branch 'origin/main' into codex/buddy-held-preview-refresh ([533c627](https://github.com/stacksjs/stacks/commit/533c627)) _(by Chris)_
+- Merge remote-tracking branch 'origin/main' into codex/native-hq-support-release ([b6f1c06](https://github.com/stacksjs/stacks/commit/b6f1c06)) _(by Chris)_
+- Merge commit '9ff03c4801333d6ff2dbf2370c2dc1cacd5ba497' into codex/native-hq-support-release ([45278af](https://github.com/stacksjs/stacks/commit/45278af)) _(by Chris)_
+- Merge commit 'e35a9758dd8b4afd07945924fdc3250695606e26' into codex/native-hq-support-release ([341c89e](https://github.com/stacksjs/stacks/commit/341c89e)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.698...v0.75.699)
 
 ## 🐛 Bug Fixes
