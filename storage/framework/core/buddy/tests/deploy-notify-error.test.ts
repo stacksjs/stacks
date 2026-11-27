@@ -16,6 +16,7 @@
  */
 import { describe, expect, it } from 'bun:test'
 import fs from 'node:fs'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
 
 const SOURCE = path.resolve(import.meta.dir, '../src/deploy-notify.ts')
@@ -61,6 +62,86 @@ describe('a deploy that throws', () => {
   it('keeps the stack available behind --verbose', () => {
     expect(failureBranch()).toContain('log.debug(stack)')
   })
+
+  it('reports the actual Buddy CLI target in failures and notifications', () => {
+    const checkout = path.resolve(import.meta.dir, '../../../../..')
+    const workspace = fs.mkdtempSync(path.join(tmpdir(), 'buddy-deploy-notification-'))
+    try {
+      for (const directory of ['cloud', 'config', 'storage/framework/core'])
+        fs.mkdirSync(path.join(workspace, directory), { recursive: true })
+      fs.symlinkSync(path.join(checkout, 'node_modules'), path.join(workspace, 'node_modules'), 'dir')
+      fs.symlinkSync(path.join(checkout, 'storage/framework/core/buddy'), path.join(workspace, 'storage/framework/core/buddy'), 'dir')
+      fs.writeFileSync(path.join(workspace, 'package.json'), '{"name":"deploy-notification-fixture","private":true}')
+      fs.writeFileSync(path.join(workspace, 'bunfig.toml'), 'preload = []')
+      fs.writeFileSync(path.join(workspace, 'target.env'), 'APP_KEY=fixture-only-key\n')
+      fs.writeFileSync(path.join(workspace, 'config/cloud.ts'), `export const tsCloud = {
+        project: { slug: 'deploy-notification-fixture' },
+        cloud: { provider: 'ssh' },
+        ssh: { hosts: [{ host: '127.0.0.1', user: 'fixture' }] },
+        sites: { web: { domain: 'web.example.test', start: 'bun serve.ts' } },
+      }`)
+      fs.writeFileSync(path.join(workspace, 'cloud/deploy-script.ts'), `
+        export function beforeDeploy({ environment }: { environment: string }) {
+          throw new Error('fixture hook reached for ' + environment)
+        }
+      `)
+      const preload = path.join(workspace, 'preload.ts')
+      const webhook = 'http://127.0.0.1:1/fixture-deploy-webhook'
+      const capturePrefix = 'FIXTURE_DEPLOY_MESSAGE='
+      fs.writeFileSync(preload, `
+        import { awaitConfig } from ${JSON.stringify(path.join(checkout, 'storage/framework/core/config/src/index.ts'))}
+        await awaitConfig()
+        globalThis.fetch = async (input, init) => {
+          if (String(input) !== ${JSON.stringify(webhook)} || init?.method !== 'POST')
+            throw new Error('unexpected fixture request')
+          console.log(${JSON.stringify(capturePrefix)} + JSON.stringify(await new Response(init.body).json()))
+          return new Response('ok')
+        }
+      `)
+      const run = (args: string[]) => {
+        const child = Bun.spawnSync([
+          process.execPath, '--no-env-file', '--preload', preload,
+          path.join(checkout, 'storage/framework/core/buddy/src/cli.ts'),
+          'deploy', ...args, '--env-file', 'target.env', '--yes',
+        ], {
+          cwd: workspace,
+          env: {
+            PATH: process.env.PATH, STACKS_BUDDY_ROOT: workspace, NODE_ENV: 'development', APP_ENV: 'development',
+            DEPLOY_WEBHOOK_URL: webhook, DEPLOY_WEBHOOK_DRIVER: 'slack', DEPLOY_WEBHOOK_NOTIFY: 'all',
+          },
+          stdout: 'pipe', stderr: 'pipe',
+        })
+        return { exitCode: child.exitCode, output: child.stdout.toString() + child.stderr.toString() }
+      }
+
+      for (const { args, expected } of [
+        { args: ['--staging'], expected: 'staging' },
+        { args: ['staging'], expected: 'staging' },
+        { args: ['--dev'], expected: 'development' },
+        { args: ['dev', '--staging'], expected: 'development' },
+        { args: ['--prod'], expected: 'production' },
+        { args: [], expected: 'production' },
+      ]) {
+        const { exitCode, output } = run(args)
+        expect(exitCode).not.toBe(0)
+        expect(output).toContain(`Deploy to ${expected} failed: fixture hook reached for ${expected}`)
+        const messages = output.split('\n').filter(line => line.startsWith(capturePrefix))
+        expect(messages).toHaveLength(1)
+        const payload = JSON.parse(messages[0]!.slice(capturePrefix.length)) as { text: string }
+        expect(payload.text.split('\n')[0]).toEndWith(expected)
+        expect(payload.text).toContain(`fixture hook reached for ${expected}`)
+      }
+
+      const preview = run(['--staging', '--dry-run', '--json'])
+      expect(preview.exitCode, preview.output).toBe(0)
+      expect(preview.output).toContain('"environment":"staging"')
+      expect(preview.output).not.toContain('fixture hook reached')
+      expect(preview.output).not.toContain(capturePrefix)
+    }
+    finally {
+      fs.rmSync(workspace, { recursive: true, force: true })
+    }
+  }, 30_000)
 })
 
 describe('the message builder', () => {
