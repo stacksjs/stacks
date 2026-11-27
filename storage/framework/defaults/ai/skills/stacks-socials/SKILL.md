@@ -133,6 +133,21 @@ card out with a warning, since a post holds one attachment. A Bluesky account on
 its own PDS signs in there: when no service is configured and bsky.social refuses
 the password, createSession looks the account's PDS up from its DID document
 (resolveBlueskyService), and the session's service is where its posts go.
+
+For Mastodon polls, read the instance's advertised `instanceLimits().poll`
+and supply `publish(..., { poll: { options, expiresIn, multiple?, hideTotals? } })`.
+Duration is in seconds. Mastodon quote posts require the advertised
+`instanceLimits().quotePosts` capability. `resolvePostId(identity, permalink)`
+uses the account's instance and `read:search` to obtain its local ID. Pass
+that ID as `quotedStatusId` and keep the reference with the publishing
+target. A poll, a quote, and attached images are mutually exclusive on Mastodon.
+
+For Bluesky, `resolveQuote(identity, permalinkOrAtUri)` checks the
+viewer's quote permission and returns the post's URI and CID. Keep that
+reference with the post, then pass it as `quote` in the driver's third
+argument. A quote can accompany images or an external card. Supply
+`selfLabels` in the same argument to attach the author's content labels.
+
 Instagram waits for
 each media container to be FINISHED before publishing it (containerTimeoutMs,
 five minutes by default), sends alt text on images and carousel items, refuses an

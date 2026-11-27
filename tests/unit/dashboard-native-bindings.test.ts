@@ -787,6 +787,13 @@ describe('dashboard native STX bindings', () => {
     expect(sharedModal).toContain('<dialog')
     expect(sharedModal).toContain('@cancel="handleCancel"')
     expect(sharedModal).toContain('.dashboard-modal-dialog::backdrop')
+    // Opening fades the backdrop in and lifts the panel into place, and both
+    // stand still for a visitor who asked for reduced motion.
+    expect(sharedModal).toMatch(/\.dashboard-modal-dialog\[open\]::backdrop \{\s*animation: dashboard-modal-backdrop-in /)
+    expect(sharedModal).toMatch(/\.dashboard-modal-dialog\[open\] \[data-dashboard-overlay="modal"\] \{\s*animation: dashboard-modal-panel-in /)
+    expect(sharedModal).toContain('@keyframes dashboard-modal-backdrop-in')
+    expect(sharedModal).toContain('@keyframes dashboard-modal-panel-in')
+    expect(sharedModal).toMatch(/@media \(prefers-reduced-motion: reduce\) \{[^@]*animation: none;/)
 
     const sharedDrawer = componentSource('UI/Drawer.stx')
     expect(sharedDrawer).toContain("const dialog = useRef<HTMLDialogElement>('dashboardDrawerDialog')")

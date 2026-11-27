@@ -223,6 +223,49 @@ export async function resolveBlueskyService(
   }
 }
 
+export interface BlueskyPostReference {
+  uri: string
+  cid: string
+}
+
+const BLUESKY_DID = /^did:[a-z]+:[A-Za-z0-9._:%-]+$/
+const RECORD_KEY = /^[A-Za-z0-9._:~-]{1,512}$/
+const CID = /^[A-Za-z0-9]{1,256}$/
+
+function postParts(address: string): { repo: string, rkey: string } {
+  let repo: string | undefined
+  let rkey: string | undefined
+  if (address.startsWith('at://')) {
+    const parsed = parseAtUri(address)
+    if (parsed.collection === POST_COLLECTION) ({ repo, rkey } = parsed)
+  }
+  else {
+    const url = URL.parse(address)
+    if (url?.origin === 'https://bsky.app' && !url.username && !url.password) {
+      const [, actor, key] = /^\/profile\/([^/]+)\/post\/([^/]+)\/?$/.exec(url.pathname) ?? []
+      try {
+        if (actor && key) {
+          repo = decodeURIComponent(actor)
+          rkey = decodeURIComponent(key)
+        }
+      }
+      catch {}
+    }
+  }
+  if (!repo || (!BLUESKY_DID.test(repo) && !/^(?:[A-Za-z0-9-]+\.)+[A-Za-z]+$/.test(repo))
+    || !rkey || !RECORD_KEY.test(rkey) || rkey === '.' || rkey === '..')
+    throw new Error('Choose a valid Bluesky post link.')
+  return { repo, rkey }
+}
+
+function selfLabelValues(labels: readonly string[]) {
+  if (!Array.isArray(labels) || labels.some(label => typeof label !== 'string' || label.length > 128 || !/^!?[a-z]+(?:-[a-z]+)*$/.test(label)))
+    throw new Error('Bluesky content labels must be lowercase label names.')
+  const values = [...new Set(labels)].map(val => ({ val }))
+  if (values.length > 10) throw new Error('Bluesky supports up to 10 self-labels per post.')
+  return values
+}
+
 /** What only Bluesky takes, as the third argument to `publish`. */
 export interface BlueskyPublishOptions {
   /**
@@ -233,6 +276,10 @@ export interface BlueskyPublishOptions {
    * new one when the text changes, as with Mastodon's `idempotencyKey`.
    */
   rkey?: string
+  /** A quoted post's AT URI and CID. Resolve a permalink with resolveQuote. */
+  quote?: BlueskyPostReference
+  /** Content labels the author wants attached to the record. */
+  selfLabels?: readonly string[]
 }
 
 const TID_ALPHABET = '234567abcdefghijklmnopqrstuvwxyz'
@@ -334,6 +381,27 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
     }
   }
 
+  /** Resolve a quotable post through the account's Bluesky service. */
+  async resolveQuote(identity: SocialIdentityCredentials, address: string): Promise<BlueskyPostReference> {
+    if (!identity.accessToken) throw new Error('Bluesky access token is missing for this identity.')
+    const { repo, rkey } = postParts(address.trim())
+    const did = BLUESKY_DID.test(repo) ? repo : await this.resolveHandle(repo)
+    if (!did || !BLUESKY_DID.test(did)) throw new Error('Could not resolve the author of this Bluesky post.')
+    const uri = `at://${did}/${POST_COLLECTION}/${rkey}`
+    const url = new URL(`${this.service}/xrpc/app.bsky.feed.getPosts`)
+    url.searchParams.set('uris', uri)
+    const data = await this.request<{ posts?: Array<BlueskyPostReference & { viewer?: { embeddingDisabled?: boolean } }> }>(url, {
+      headers: { authorization: `Bearer ${identity.accessToken}` },
+      redirect: 'error',
+      signal: AbortSignal.timeout(15_000),
+    })
+    const post = data.posts?.find(post => post.uri === uri)
+    if (!post || typeof post.cid !== 'string' || !CID.test(post.cid))
+      throw new Error('Could not find the Bluesky post at this link.')
+    if (post.viewer?.embeddingDisabled) throw new Error('The author has disabled quoting this Bluesky post.')
+    return { uri, cid: post.cid }
+  }
+
   async publish(identity: SocialIdentityCredentials, post: PublishPostInput, options: BlueskyPublishOptions = {}): Promise<PublishedPost> {
     const repo = identity.did || identity.handle
     if (!identity.accessToken) throw new Error('Bluesky access token is missing for this identity.')
@@ -343,6 +411,15 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
       throw new Error(`Bluesky posts must be ${this.characterLimit} characters or fewer.`)
     }
 
+    const quote = options.quote
+    if (quote) {
+      const target = postParts(quote.uri)
+      if (quote.uri !== `at://${target.repo}/${POST_COLLECTION}/${target.rkey}` || !BLUESKY_DID.test(target.repo)
+        || typeof quote.cid !== 'string' || !CID.test(quote.cid))
+        throw new Error('Resolve the Bluesky post before quoting it.')
+    }
+    const labels = options.selfLabels === undefined ? [] : selfLabelValues(options.selfLabels)
+
     const record: Record<string, unknown> = {
       $type: 'app.bsky.feed.post',
       text: post.text,
@@ -351,6 +428,7 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
 
     if (post.langs?.length) record.langs = post.langs.slice(0, BLUESKY_MAX_LANGS)
     if (post.reply) record.reply = post.reply
+    if (labels.length) record.labels = { $type: 'com.atproto.label.defs#selfLabels', values: labels }
 
     const facets = post.facets ?? await this.buildFacets(post.text)
     if (facets.length) record.facets = facets
@@ -394,6 +472,11 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDe
         }
       }
       record.embed = { $type: 'app.bsky.embed.external', external }
+    }
+
+    if (quote) {
+      const embedded = { $type: 'app.bsky.embed.record', record: { uri: quote.uri, cid: quote.cid } }
+      record.embed = record.embed ? { $type: 'app.bsky.embed.recordWithMedia', record: embedded, media: record.embed } : embedded
     }
 
     const payload = await this.createPostRecord(identity, repo, record, options.rkey)

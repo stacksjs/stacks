@@ -13,7 +13,7 @@ import type {
   TimelineResult,
 } from '../types'
 import { fetchPostImage, resolvePostImage } from '../media'
-import { exceedsLimit } from '../text'
+import { exceedsLimit, graphemes } from '../text'
 import { apiFailure, SocialApiError } from '../errors'
 
 /** The counts on a Mastodon status entity. */
@@ -49,6 +49,21 @@ export interface MastodonAccount {
 
 export type MastodonVisibility = 'public' | 'unlisted' | 'private' | 'direct'
 
+export interface MastodonPoll {
+  options: readonly string[]
+  /** How long voting stays open, in seconds after publication. */
+  expiresIn: number
+  multiple?: boolean
+  hideTotals?: boolean
+}
+
+export interface MastodonPollLimits {
+  maxOptions: number
+  maxCharactersPerOption: number
+  minExpiration: number
+  maxExpiration: number
+}
+
 /** What only Mastodon takes, as the third argument to `publish`. */
 export interface MastodonPublishOptions {
   /**
@@ -64,6 +79,9 @@ export interface MastodonPublishOptions {
   spoilerText?: string
   /** An ISO 639 code, such as `en`. Defaults to the post's first `langs` entry. */
   language?: string
+  poll?: MastodonPoll
+  /** Instance-local ID of the quoted status. Resolve a permalink with resolvePostId. */
+  quotedStatusId?: string
 }
 
 /** One instance's posting limits, from `/api/v2/instance`. */
@@ -72,6 +90,9 @@ export interface MastodonLimits {
   /** What a link counts as, whatever its real length. */
   charactersPerUrl: number
   mediaAttachments: number
+  poll?: MastodonPollLimits
+  /** The instance advertises the API used to create quote posts. */
+  quotePosts?: true
 }
 
 /** Mastodon's own defaults, for an instance that does not say. */
@@ -80,6 +101,39 @@ export const MASTODON_DEFAULT_LIMITS: MastodonLimits = { characters: 500, charac
 const LIMITS_TTL_MS = 60 * 60 * 1000
 /** How soon an instance that could not be asked is asked again. */
 const LIMITS_RETRY_MS = 60 * 1000
+
+function pollLimits(polls: Record<string, unknown> | undefined): MastodonPollLimits | null {
+  if (!polls) return null
+  const maxOptions = Number(polls.max_options)
+  const maxCharactersPerOption = Number(polls.max_characters_per_option)
+  const minExpiration = Number(polls.min_expiration)
+  const maxExpiration = Number(polls.max_expiration)
+  if (![maxOptions, maxCharactersPerOption, minExpiration, maxExpiration].every(value => Number.isSafeInteger(value) && value > 0)
+    || maxOptions < 2 || maxExpiration < minExpiration) return null
+  return { maxOptions, maxCharactersPerOption, minExpiration, maxExpiration }
+}
+
+function pollPayload(poll: MastodonPoll, limits: MastodonPollLimits | undefined) {
+  if (!limits) throw new Error('The Mastodon instance did not report its poll limits.')
+  if (!Array.isArray(poll.options) || poll.options.some(option => typeof option !== 'string' || !option.trim()))
+    throw new Error('Each poll option needs text.')
+  const options = poll.options.map(option => option.trim())
+  if (options.length < 2 || options.length > limits.maxOptions)
+    throw new Error(`This Mastodon instance allows between 2 and ${limits.maxOptions} poll options.`)
+  if (options.some(option => graphemes(option) > limits.maxCharactersPerOption))
+    throw new Error(`Each poll option can have up to ${limits.maxCharactersPerOption} characters.`)
+  if (new Set(options).size !== options.length) throw new Error('Poll options must be distinct.')
+  if (!Number.isSafeInteger(poll.expiresIn) || poll.expiresIn < limits.minExpiration || poll.expiresIn > limits.maxExpiration)
+    throw new Error(`This Mastodon instance allows poll durations between ${limits.minExpiration} and ${limits.maxExpiration} seconds.`)
+  return { options, expires_in: poll.expiresIn, multiple: poll.multiple === true, hide_totals: poll.hideTotals === true }
+}
+
+function statusAddress(value: string | null | undefined): string | null {
+  const url = typeof value === 'string' ? URL.parse(value) : null
+  if (!url || url.protocol !== 'https:' || url.username || url.password) return null
+  url.hash = ''
+  return url.href
+}
 
 /** Normalize "mastodon.social" / "https://mastodon.social/" → "https://mastodon.social". */
 export function normalizeInstance(value: string): string {
@@ -135,10 +189,17 @@ export class MastodonPublishingDriver implements SocialPublishingDriver, SocialD
     try {
       const response = await fetch(`${instance}/api/v2/instance`, { signal: AbortSignal.timeout(5_000) })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const json = await response.json() as { configuration?: { statuses?: Record<string, unknown> } }
+      const json = await response.json() as {
+        configuration?: { statuses?: Record<string, unknown>, polls?: Record<string, unknown> }
+        api_versions?: { mastodon?: number }
+      }
       const statuses = json.configuration?.statuses ?? {}
       const positive = (raw: unknown, fallback: number): number => Number(raw) > 0 ? Math.floor(Number(raw)) : fallback
-      const value = {
+      const poll = pollLimits(json.configuration?.polls)
+      const quotePosts = Number(json.api_versions?.mastodon) >= 7
+      const value: MastodonLimits = {
+        ...(poll && { poll }),
+        ...(quotePosts && { quotePosts: true }),
         characters: positive(statuses.max_characters, MASTODON_DEFAULT_LIMITS.characters),
         charactersPerUrl: positive(statuses.characters_reserved_per_url, MASTODON_DEFAULT_LIMITS.charactersPerUrl),
         mediaAttachments: positive(statuses.max_media_attachments, MASTODON_DEFAULT_LIMITS.mediaAttachments),
@@ -178,6 +239,23 @@ export class MastodonPublishingDriver implements SocialPublishingDriver, SocialD
     }
   }
 
+  /** Resolve a local or federated status permalink to the ID on this account's instance. */
+  async resolvePostId(identity: SocialIdentityCredentials, permalink: string): Promise<string> {
+    const address = statusAddress(permalink)
+    if (!address) throw new Error('Enter an HTTPS link to a Mastodon post.')
+    const search = new URL('/api/v2/search', this.instanceOf(identity))
+    search.search = new URLSearchParams({ q: address, type: 'statuses', resolve: 'true', limit: '1' }).toString()
+    const result = await this.request<{ statuses?: Array<{ id: string, url?: string | null, uri?: string }> }>(search.href, {
+      headers: { authorization: `Bearer ${this.tokenOf(identity)}` },
+      redirect: 'error',
+      signal: AbortSignal.timeout(15_000),
+    })
+    const found = result.statuses?.find(status => statusAddress(status.url) === address || statusAddress(status.uri) === address)
+    if (!found || !/^[0-9]{1,32}$/.test(found.id))
+      throw new Error('The Mastodon instance could not find the post at this link.')
+    return found.id
+  }
+
   /** Upload one image and return its media id for attachment. */
   async uploadMedia(
     identity: SocialIdentityCredentials,
@@ -213,6 +291,16 @@ export class MastodonPublishingDriver implements SocialPublishingDriver, SocialD
     if (exceedsLimit('mastodon', post.text, limits.characters, { linkLength: limits.charactersPerUrl }))
       throw new Error(`Mastodon posts on this instance must be ${limits.characters} characters or fewer.`)
 
+    if ((options.poll || options.quotedStatusId !== undefined) && post.media?.length)
+      throw new Error('Mastodon does not allow images with a poll or a quote.')
+    if (options.poll && options.quotedStatusId !== undefined)
+      throw new Error('Choose a poll or a quoted post on Mastodon.')
+    if (options.quotedStatusId !== undefined) {
+      if (!limits.quotePosts) throw new Error('This Mastodon instance does not advertise quote posts.')
+      if (!/^[0-9]{1,32}$/.test(options.quotedStatusId)) throw new Error('Choose a valid Mastodon status to quote.')
+    }
+    const poll = options.poll ? pollPayload(options.poll, limits.poll) : undefined
+
     const mediaIds: string[] = []
     for (const item of (post.media || []).slice(0, limits.mediaAttachments)) {
       const image = await resolvePostImage(item, url => this.fetchImage(url))
@@ -222,6 +310,8 @@ export class MastodonPublishingDriver implements SocialPublishingDriver, SocialD
 
     const body: Record<string, unknown> = { status: post.text, visibility: options.visibility ?? 'public' }
     if (mediaIds.length) body.media_ids = mediaIds
+    if (poll) body.poll = poll
+    if (options.quotedStatusId !== undefined) body.quoted_status_id = options.quotedStatusId
     // Mastodon threads via the parent status id, carried in reply.parent.uri.
     if (post.reply?.parent?.uri) body.in_reply_to_id = post.reply.parent.uri
     if (options.spoilerText?.trim()) body.spoiler_text = options.spoilerText.trim()
