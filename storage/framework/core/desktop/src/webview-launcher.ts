@@ -321,6 +321,8 @@ export interface WebviewDatabase {
   /** Every migration the build applied, by file name, as SQL. */
   migrations: Record<string, string>
   migrate: (options: { databasePath: string, migrations: Record<string, string> }) => { applied: string[] }
+  /** Apply the optional framework-managed auth schema to the same database. */
+  migrateAuth?: (databasePath: string) => Promise<{ success: boolean, error?: string }>
 }
 
 export type WebviewAgentPreparation = (context: WebviewAgentContext & { databasePath?: string }) => void | Promise<void>
@@ -407,6 +409,11 @@ export async function runWebviewApp(options: RunWebviewAppOptions): Promise<numb
       }
       // After the database: config reads DB_DATABASE_PATH as it loads.
       if (options.config) await loadBundledConfig(options.config)
+      if (databasePath && options.database?.migrateAuth) {
+        const result = await options.database.migrateAuth(databasePath)
+        if (!result.success)
+          throw new Error(result.error ?? 'Failed to initialize the managed auth schema.')
+      }
       module = options.module ? agentModuleOf(await options.module()) : {}
       if (manifest.updates) {
         updater = createDesktopUpdater({
@@ -630,6 +637,8 @@ export function renderWebviewEntry(options: {
   /** Migrations to apply at launch: file name to its file on the build machine (`agent.database`). */
   migrations?: Record<string, string>
   databaseFilename?: string
+  /** Initialize managed auth tables as part of startup (`agent.database.auth`). */
+  databaseAuth?: boolean
   /** Where `migrateCompiledDatabase` comes from. Default `@stacksjs/database/compiled-migrations`. */
   migrationRunner?: string
   /** The project's config files to compile in: name (`app`) to its file on the build machine (`agent.config`). */
@@ -644,8 +653,19 @@ export function renderWebviewEntry(options: {
     imports.push(`import { migrateCompiledDatabase } from ${JSON.stringify(options.migrationRunner ?? '@stacksjs/database/compiled-migrations')}`)
     migrations.forEach(([, file], index) => imports.push(`import migration${index} from ${JSON.stringify(file)} with { type: 'text' }`))
   }
+  const migrateAuth = options.databaseAuth === true
+    ? `
+    migrateAuth: async (databasePath) => {
+      const { ensureDatabaseConfigLoaded, migrateAuthTables, resolvedDatabaseConfig } = await import('@stacksjs/database')
+      await ensureDatabaseConfigLoaded()
+      const { driver, connections } = resolvedDatabaseConfig()
+      if (driver !== 'sqlite' || connections.sqlite.database !== databasePath)
+        throw new Error('The managed auth schema requires the webview SQLite database.')
+      return migrateAuthTables()
+    },`
+    : ''
   const database = migrations
-    ? `\n  database: {${options.databaseFilename ? `\n    filename: ${JSON.stringify(options.databaseFilename)},` : ''}\n    migrations: {\n${migrations.map(([name], index) => `      ${JSON.stringify(name)}: migration${index},`).join('\n')}\n    },\n    migrate: migrateCompiledDatabase,\n  },`
+    ? `\n  database: {${options.databaseFilename ? `\n    filename: ${JSON.stringify(options.databaseFilename)},` : ''}\n    migrations: {\n${migrations.map(([name], index) => `      ${JSON.stringify(name)}: migration${index},`).join('\n')}\n    },\n    migrate: migrateCompiledDatabase,${migrateAuth}\n  },`
     : ''
   const prepare = options.prepareEntry
     ? `\n  prepare: async context => (await import(${JSON.stringify(options.prepareEntry)})).default(context),`
