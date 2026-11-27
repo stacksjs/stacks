@@ -2,6 +2,28 @@ import { expect, test } from 'bun:test'
 import { mountNativeSupport } from '../src/browser'
 import type { BrowserBootOptions } from '../src/browser'
 
+test('native layouts use their existing CSRF cookie without a token endpoint', async () => {
+  const requests: string[] = []
+  const boots: BrowserBootOptions[] = []
+  const mount = mountNativeSupport({} as HTMLElement, {
+    getCsrfToken: () => 'native-csrf-cookie',
+    fetch: async (input, init) => {
+      requests.push(input)
+      if (input === '/api/support/config') return Response.json({ enabled: true, project: 'project', endpoint: 'https://hq.support', loaderUrl: 'https://hq.support/support.js', sessionEndpoint: '/api/support/session' })
+      expect(input).toBe('/api/support/session')
+      expect(init?.method).toBe('POST')
+      expect(init?.credentials).toBe('same-origin')
+      expect(new Headers(init?.headers).get('x-csrf-token')).toBe('native-csrf-cookie')
+      return Response.json({ token: 'account-scoped-support-token' })
+    },
+    load: async () => ({ createSupport: () => ({ async boot(value) { boots.push(value) }, open() {}, close() {}, async update() {}, async track() {}, shutdown() {} }) }),
+  })
+  await mount.refresh()
+  expect(requests).toEqual(['/api/support/config', '/api/support/session'])
+  expect(boots[0]?.sessionToken).toBe('account-scoped-support-token')
+  mount.shutdown()
+})
+
 test('native layout bridge authenticates server-side, clears identity before switches and ignores late results', async () => {
   const events = new EventTarget(), boots: BrowserBootOptions[] = []
   let shutdowns = 0, requests = 0, authenticated = true, release: (() => void) | undefined, wait = false
