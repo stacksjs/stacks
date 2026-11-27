@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -11,6 +11,11 @@ async function verify(mode: string, registryStatus = '200') {
   const step = workflow.jobs.publish.steps.find((entry: any) => entry.name === 'Verify published framework install from npm')
   const commands = {
     bun: `#!/bin/bash
+if [ "$3" = --verify-umbrella ]; then
+  [ "$REGISTRY_STATUS" = 200 ] && exit 0
+  echo 'Registry did not confirm latest for stacks@0.75.290' >&2
+  exit 1
+fi
 if [ "$1" != add ]; then
   [ "$INSTALL_MODE" != cli-failure ]
   exit $?
@@ -27,7 +32,6 @@ esac
 echo 'error: No version matching "0.75.290" for specifier "@stacksjs/actions"' >&2
 exit 1
 `,
-    curl: '#!/bin/bash\necho "$REGISTRY_STATUS"\n',
     timeout: '#!/bin/bash\nshift\nexec "$@"\n',
     sleep: '#!/bin/bash\nexit 0\n',
   }
@@ -42,7 +46,8 @@ exit 1
       stderr: 'pipe',
     })
     const [exitCode, output, errors] = await Promise.all([process.exited, new Response(process.stdout).text(), new Response(process.stderr).text()])
-    return { exitCode, output: output + errors, attempts: Number(readFileSync(join(directory, 'calls'), 'utf8')) }
+    const calls = join(directory, 'calls')
+    return { exitCode, output: output + errors, attempts: existsSync(calls) ? Number(readFileSync(calls, 'utf8')) : 0 }
   }
   finally {
     rmSync(directory, { recursive: true, force: true })
@@ -58,7 +63,10 @@ test('registry metadata cannot substitute for a successful clean install', async
 })
 
 test('a missing publication and an invalid workspace manifest both fail', async () => {
-  expect((await verify('unavailable', '404')).exitCode).not.toBe(0)
+  const missing = await verify('success', '404')
+  expect(missing.exitCode).not.toBe(0)
+  expect(missing.attempts).toBe(0)
+  expect(missing.output).toContain('Registry did not confirm latest for stacks@0.75.290')
   const invalid = await verify('workspace')
   expect(invalid.exitCode).not.toBe(0)
   expect(invalid.attempts).toBe(1)

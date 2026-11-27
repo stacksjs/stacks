@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { publishables } from './promote-latest'
 import { inBatches, publishLayers, publishOne } from './publish-layers'
@@ -37,6 +37,36 @@ describe('publish layers', () => {
   it('is what the release workflow publishes with', () => {
     const workflow = readFileSync(`${root}.github/workflows/release.yml`, 'utf8')
     expect(workflow).toContain('bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag staging --no-readback')
+  })
+
+  it('resumes an accepted cohort without invoking Pantry for its original archives', () => {
+    const fake = mkdtempSync(join(tmpdir(), 'publish-resume-test-'))
+    try {
+      const scripts = ['npm-oidc-promotion.ts', 'npm-publication.ts', 'publish-layers.ts', 'promote-latest.ts'].map(file => `.github/scripts/${file}`)
+      for (const path of [...scripts, 'storage/framework/core/build/src/dependency-layers.ts']) {
+        mkdirSync(dirname(join(fake, path)), { recursive: true })
+        copyFileSync(join(root, path), join(fake, path))
+      }
+      for (const name of ['buddy', 'support']) {
+        const path = join(fake, `storage/framework/core/${name}/package.json`)
+        mkdirSync(dirname(path), { recursive: true })
+        writeFileSync(path, JSON.stringify({ name: `@stacksjs/${name}`, version: '0.75.242' }))
+      }
+      const publish = join(fake, '.github/scripts/publish-npm.sh')
+      writeFileSync(publish, '#!/bin/sh\nprintf "invoked %s\\n" "$*"\n', { mode: 0o755 })
+      const receipts = join(fake, 'verified-original.json')
+      const run = (script: string, ...args: string[]) => Bun.spawnSync([process.execPath, '--config=/dev/null', `.github/scripts/${script}`, ...args], {
+        cwd: fake, env: { ...process.env, STACKS_NPM_RESUME_RECEIPTS: receipts }, stdout: 'pipe', stderr: 'pipe',
+      })
+      writeFileSync(receipts, JSON.stringify(['@stacksjs/buddy', 'stacks'].map(name => ({ name, version: '0.75.242' }))))
+      const result = run('publish-layers.ts', '--tag', 'staging')
+      expect(result.exitCode, result.stderr.toString()).toBe(0)
+      expect(result.stdout.toString()).toContain('Verified original @stacksjs/buddy@0.75.242; skipping upload')
+      expect(result.stdout.toString().match(/invoked [^\n]+/g)).toEqual(['invoked --tag staging storage/framework/core/support'])
+      expect(run('npm-publication.ts', '--has-resumed-upload', 'stacks', '0.75.242').stdout.toString().trim()).toBe('true')
+      expect(run('npm-publication.ts', '--has-resumed-upload', 'stacks', '0.75.243').stdout.toString().trim()).toBe('false')
+    }
+    finally { rmSync(fake, { recursive: true, force: true }) }
   })
 })
 

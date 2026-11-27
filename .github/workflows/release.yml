@@ -330,10 +330,10 @@ jobs:
       # is limited to the tag writes. A failed promotion may leave a partial
       # set: fail honestly and resume it before declaring the release complete.
       #
-      # Check credentials before choosing the initial tag. An absent or
-      # rejected promotion token uses trusted publishing directly to latest.
-      # In both modes, the umbrella is held until the scoped versions can
-      # all be read from the registry.
+      # Check the package-specific permission audit and OIDC exchanges before
+      # using staged trusted publishing. Without the audit, keep the existing
+      # legacy credential and direct trusted publishing paths. In every mode,
+      # verify all scoped latest tags before publishing the umbrella.
       # A failed sibling does not undo npm's accepted uploads. A job rerun must
       # verify their original bytes before pantry can repack and try any upload.
       - name: Verify original npm publications before resuming
@@ -347,6 +347,8 @@ jobs:
         if: steps.registries.outputs.npm == 'true'
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          RELEASE_NPM_OIDC_PERMISSIONS: ${{ vars.RELEASE_NPM_OIDC_PERMISSIONS }}
+          STACKS_NPM_RESUME_RECEIPTS: ${{ runner.temp }}/stacks-npm-resume.json
         run: |
           set -euo pipefail
           bun .github/scripts/check-pantry-version.ts
@@ -354,25 +356,39 @@ jobs:
           publication_tag="$(bun --config=/dev/null .github/scripts/promote-latest.ts --publication-tag)"
           # Publish a dependency layer at a time. Registry readback is
           # performed across the full scoped set before publishing stacks.
-          if [ "$publication_tag" = staging ]; then
+          if [ "$publication_tag" = staging ] || [ "$publication_tag" = staging-oidc ]; then
+            promotion_args=()
+            if [ "$publication_tag" = staging-oidc ]; then
+              unset NPM_TOKEN
+              promotion_args+=(--oidc)
+            fi
             bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag staging --no-readback
-            bun .github/scripts/promote-latest.ts
-          else
+            bun .github/scripts/promote-latest.ts "${promotion_args[@]}"
+          elif [ "$publication_tag" = latest ]; then
             echo "No active npm promotion credential. Using trusted publishing for latest."
             unset NPM_TOKEN
             bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag latest --no-readback
             bun .github/scripts/promote-latest.ts --verify-only
+          else
+            echo "::error::Unknown npm publication mode"
+            exit 1
           fi
 
           # The unscoped meta-package has trusted publishing configured, but
           # the legacy token cannot mutate its dist-tags. Publish it through
-          # OIDC only after the scoped set is readable; this final write
+          # OIDC only after the scoped latest tags are confirmed; this final write
           # is the release commit point for `buddy upgrade` consumers.
           # --no-readback: the next step asks the registry for this exact
           # version before it installs, so pantry's own minute-long poll for it
           # only delayed that.
           rm -f ~/.npmrc
-          pantry publish --npm --access public --no-readback --ignore-scripts 'storage/framework/core'
+          version="${GITHUB_REF#refs/tags/v}"
+          resumed="$(bun --config=/dev/null .github/scripts/npm-publication.ts --has-resumed-upload stacks "$version")"
+          if [ "$resumed" = true ]; then
+            echo "Verified original stacks@$version; skipping upload"
+          else
+            pantry publish --npm --access public --no-readback --ignore-scripts 'storage/framework/core'
+          fi
 
       # Publishing succeeded is not enough: registry manifests can still carry
       # monorepo-only protocols that make the package impossible to install.
@@ -402,6 +418,8 @@ jobs:
       - name: Verify published framework install from npm
         if: steps.registries.outputs.npm == 'true'
         run: |
+          set -euo pipefail
+          bun --config=/dev/null .github/scripts/promote-latest.ts --verify-umbrella
           version="${GITHUB_REF#refs/tags/v}"
           smoke_dir="$(mktemp -d)"
           trap 'rm -rf "$smoke_dir"' EXIT

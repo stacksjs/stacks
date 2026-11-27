@@ -17,10 +17,11 @@
  * loudly with the exact remaining set, so the release can resume without
  * uploading an accepted package again.
  *
- * Run: `bun .github/scripts/promote-latest.ts [--dry-run] [--tag <holding>]`
+ * Run: `bun .github/scripts/promote-latest.ts [--dry-run] [--oidc]`
  */
 import { existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { exchangePromotionToken, recordPromotionPermissions, validatePromotionPermissions } from './npm-oidc-promotion'
 
 export interface Publishable {
   name: string
@@ -55,13 +56,15 @@ export async function confirmPublications(
   registry = 'https://registry.npmjs.org',
   attempts = 180,
   retryDelayMs = 10_000,
+  selection: 'version' | 'latest' = 'version',
 ): Promise<void> {
   if (!Number.isInteger(attempts) || attempts < 1) throw new Error('Publication confirmation requires at least one attempt')
   let pending = packages
   for (let attempt = 1; attempt <= attempts; attempt++) {
     const results = await Promise.all(pending.map(async (pkg) => {
       try {
-        const result = await fetch(`${registry.replace(/\/$/, '')}/${encodeURIComponent(pkg.name)}/${encodeURIComponent(pkg.version)}`, { signal: AbortSignal.timeout(20_000), cache: 'no-store' })
+        const target = selection === 'latest' ? 'latest' : pkg.version
+        const result = await fetch(`${registry.replace(/\/$/, '')}/${encodeURIComponent(pkg.name)}/${encodeURIComponent(target)}`, { signal: AbortSignal.timeout(20_000), cache: 'no-store' })
         if (!result.ok) return pkg
         const manifest = await result.json() as { name?: string, version?: string, dist?: { tarball?: string } }
         return manifest.name === pkg.name && manifest.version === pkg.version && typeof manifest.dist?.tarball === 'string' ? null : pkg
@@ -72,7 +75,9 @@ export async function confirmPublications(
     if (!pending.length) return
     if (attempt < attempts) await Bun.sleep(retryDelayMs)
   }
-  throw new Error(`Registry did not confirm publication of ${pending.map(pkg => `${pkg.name}@${pkg.version}`).join(', ')}. Accepted uploads may still be awaiting npm automated review.`)
+  const unconfirmed = pending.map(pkg => `${pkg.name}@${pkg.version}`).join(', ')
+  if (selection === 'latest') throw new Error(`Registry did not confirm latest for ${unconfirmed}`)
+  throw new Error(`Registry did not confirm publication of ${unconfirmed}. Accepted uploads may still be awaiting npm automated review.`)
 }
 
 /**
@@ -154,13 +159,19 @@ export async function inParallel<T, R>(items: readonly T[], limit: number, task:
 
 /** Promote exact versions with one shared cooldown for the registry. */
 export async function promoteTags(packages: Publishable[], options: {
-  token: string
+  token: string | ReadonlyMap<string, string>
   registry?: string
   attempts?: number
   concurrency?: number
   budgetMs?: number
 }): Promise<string[]> {
-  if (!options.token.trim()) throw new Error('Tag promotion requires NPM_TOKEN')
+  const credentials = options.token
+  if (typeof credentials === 'string' && !credentials.trim()) throw new Error('Tag promotion requires NPM_TOKEN')
+  const authorized = packages.map((pkg) => {
+    const token = typeof credentials === 'string' ? credentials : credentials.get(pkg.name)
+    if (!token?.trim()) throw new Error(`Missing npm promotion token for ${pkg.name}`)
+    return { pkg, token }
+  })
   const registry = new URL(options.registry ?? 'https://registry.npmjs.org')
   const loopback = registry.protocol === 'http:' && registry.hostname === '127.0.0.1'
   if ((!loopback && registry.origin !== 'https://registry.npmjs.org') || registry.username || registry.password || registry.pathname !== '/' || registry.search || registry.hash)
@@ -172,7 +183,7 @@ export async function promoteTags(packages: Publishable[], options: {
     throw new Error('Tag promotion requires positive integer limits')
   const deadline = performance.now() + budgetMs
   let resumeAt = 0
-  const results = await inParallel(packages, concurrency, async (pkg) => {
+  const results = await inParallel(authorized, concurrency, async ({ pkg, token }) => {
     let last = 'registry request failed'
     for (let attempt = 1; attempt <= attempts; attempt++) {
       while (resumeAt > performance.now() && resumeAt < deadline)
@@ -187,7 +198,7 @@ export async function promoteTags(packages: Publishable[], options: {
         // registry endpoint without doubling the registry request count.
         const response = await fetch(new URL(`/-/package/${encodeURIComponent(pkg.name)}/dist-tags/latest`, registry), {
           method: 'PUT', redirect: 'error',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${options.token}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify(pkg.version), signal: AbortSignal.timeout(Math.min(20_000, remaining)),
         })
         await response.body?.cancel()
@@ -217,21 +228,65 @@ export function promotionFailureSummary(acknowledged: number, total: number): st
 }
 
 async function main(): Promise<void> {
-  if (process.argv.includes('--publication-tag')) {
-    console.log(await npmPublicationTag(process.env.NPM_TOKEN ?? ''))
+  const args = process.argv.slice(2)
+  const dryRun = args.includes('--dry-run')
+  const verifyOnly = args.includes('--verify-only')
+  const root = process.cwd()
+  const permissions = process.env.RELEASE_NPM_OIDC_PERMISSIONS?.trim()
+  if (args.includes('--publication-tag') && !permissions) {
+    process.stdout.write(`${await npmPublicationTag(process.env.NPM_TOKEN ?? '')}\n`)
     return
   }
 
-  const dryRun = process.argv.includes('--dry-run')
-  const verifyOnly = process.argv.includes('--verify-only')
-  const root = process.cwd()
+  const umbrella = await Bun.file(join(root, 'storage/framework/core/package.json')).json() as { name: string, version: string }
+  if (args.includes('--verify-umbrella')) {
+    await confirmPublications([{ ...umbrella, dir: 'storage/framework/core' }], undefined, undefined, undefined, 'latest')
+    console.log(`  registry confirmed latest for ${umbrella.name}@${umbrella.version}`)
+    return
+  }
+
   const packages = await publishables(root)
+  if (args[0] === '--record-oidc-permissions') {
+    const [, directory, version] = args
+    if (!directory || !version) throw new Error('Usage: --record-oidc-permissions <npm trust response directory> <release version>')
+    const receipt = await recordPromotionPermissions(packages, version, async (name) => {
+      try { return await Bun.file(join(directory, `${encodeURIComponent(name)}.json`)).json() }
+      catch { throw new Error(`Could not read the npm trust response for ${name}`) }
+    })
+    process.stdout.write(`${JSON.stringify(receipt)}\n`)
+    return
+  }
+
+  const oidc = args.includes('--oidc') || (args.includes('--publication-tag') && Boolean(permissions))
+  const oidcTokens = async (): Promise<Map<string, string>> => {
+    validatePromotionPermissions(permissions ?? '', packages, umbrella.version)
+    const url = process.env.ACTIONS_ID_TOKEN_REQUEST_URL
+    const identityCredential = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN
+    if (!url || !identityCredential) throw new Error('GitHub Actions OIDC is unavailable to the npm promotion job')
+    let identityUrl: URL
+    try { identityUrl = new URL(url) }
+    catch { throw new Error('Invalid GitHub Actions identity endpoint') }
+    const entries = await inParallel(packages, 8, async pkg => [pkg.name, await exchangePromotionToken(pkg.name, identityUrl, identityCredential)] as const)
+    return new Map(entries)
+  }
+
+  if (args.includes('--publication-tag')) {
+    await oidcTokens()
+    process.stdout.write('staging-oidc\n')
+    return
+  }
 
   console.log(`${verifyOnly ? 'verifying' : 'promoting'} ${packages.length} package(s)`)
 
   if (dryRun) {
     for (const pkg of packages)
       console.log(`  would promote ${pkg.name}@${pkg.version}`)
+    return
+  }
+
+  if (verifyOnly) {
+    await confirmPublications(packages, undefined, undefined, undefined, 'latest')
+    console.log(`  registry confirmed latest for all ${packages.length} scoped packages`)
     return
   }
 
@@ -242,13 +297,12 @@ async function main(): Promise<void> {
   await confirmPublications(packages)
   console.log(`  registry confirmed all ${packages.length} in ${Math.round((performance.now() - started) / 1000)}s`)
 
-  if (verifyOnly) return
-
   // Several tag writes at once. One at a time took minutes for 85 packages
   // (v0.75.236: 11 minutes with the confirmation above), and for all of that
   // time `latest` spanned two releases: the window this script exists to close.
   started = performance.now()
-  const failures = await promoteTags(packages, { token: process.env.NPM_TOKEN ?? '' })
+  const token = oidc ? await oidcTokens() : process.env.NPM_TOKEN ?? ''
+  const failures = await promoteTags(packages, { token })
   const promoted = packages.length - failures.length
   console.log(`  acknowledged ${promoted} tag write(s) in ${Math.round((performance.now() - started) / 1000)}s`)
 
@@ -257,11 +311,12 @@ async function main(): Promise<void> {
     for (const failure of failures)
       console.error(`  ✗ ${failure}`)
 
-    console.error('\n' + promotionFailureSummary(promoted, packages.length))
+    console.error(`\n${promotionFailureSummary(promoted, packages.length)}`)
     console.error('Re-run this job, or finish by hand with `npm dist-tag add <pkg>@<version> latest`.\n')
     process.exit(1)
   }
 
+  await confirmPublications(packages, undefined, undefined, undefined, 'latest')
   console.log(`✓ latest now points at this release for all ${packages.length} package(s)`)
 }
 
