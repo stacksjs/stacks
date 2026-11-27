@@ -82,7 +82,7 @@ describe('opening a project\'s dashboard', () => {
     expect(launches).toEqual([{
       root: '/code/shop',
       port: 3900,
-      env: { PORT_ADMIN: '3900', STACKS_NO_NATIVE: '1', STACKS_DASHBOARD_BACKGROUND: '1', STACKS_DASHBOARD_IDLE_EXIT_MS: '900000' },
+      env: { PORT_ADMIN: '3900', STACKS_NO_NATIVE: '1', STACKS_DASHBOARD_IDLE_EXIT_MS: '900000' },
     }])
     expect(supervisor.list()).toMatchObject([{ name: 'shop', path: '/code/shop', url: 'http://localhost:3900', state: 'ready' }])
   })

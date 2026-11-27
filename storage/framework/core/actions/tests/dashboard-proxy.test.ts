@@ -52,17 +52,16 @@ describe('dashboard proxy strategy', () => {
     expect(await resolveDashboardProxyStrategy(null, probes())).toBe('origin-only')
   })
 
-  it('leaves the proxy to `buddy dev` when it is the parent', async () => {
+  it('leaves the proxy to `buddy dev` without probing when it is the parent', async () => {
+    const unexpected = async (): Promise<boolean> => { throw new Error('must not probe the system') }
     const strategy = await resolveDashboardProxyStrategy('dashboard.stacks.localhost', probes({
       proxyManagedExternally: true,
-      isDaemonRunning: async () => true,
-      httpsPortAnswers: async () => true,
+      isDaemonRunning: unexpected,
+      httpsPortAnswers: unexpected,
     }))
     expect(strategy).toBe('parent-managed')
   })
 
-  // The in-process proxy cannot take :443 off a daemon that already holds it;
-  // rpx would fall back to a high port the pretty URL never reaches.
   it('publishes a route when a daemon is already serving :443', async () => {
     const strategy = await resolveDashboardProxyStrategy('dashboard.stacks.localhost', probes({
       isDaemonRunning: async () => true,
@@ -72,16 +71,17 @@ describe('dashboard proxy strategy', () => {
   })
 
   // A pid file outlives a daemon that never managed to elevate and bind :443.
-  it('runs its own proxy when the daemon pid is live but :443 is silent', async () => {
+  it('keeps the origin available when the daemon pid is live but :443 is silent', async () => {
     const strategy = await resolveDashboardProxyStrategy('dashboard.stacks.localhost', probes({
       isDaemonRunning: async () => true,
       httpsPortAnswers: async () => false,
     }))
-    expect(strategy).toBe('own-proxy')
+    expect(strategy).toBe('origin-only')
   })
 
-  it('runs its own proxy when no daemon is running', async () => {
-    const strategy = await resolveDashboardProxyStrategy('dashboard.stacks.localhost', probes())
-    expect(strategy).toBe('own-proxy')
+  it('leaves privileged setup to `buddy setup:ssl` when no daemon is running', async () => {
+    const unexpected = async (): Promise<boolean> => { throw new Error('must not probe HTTPS without a daemon') }
+    const strategy = await resolveDashboardProxyStrategy('dashboard.stacks.localhost', probes({ httpsPortAnswers: unexpected }))
+    expect(strategy).toBe('origin-only')
   })
 })

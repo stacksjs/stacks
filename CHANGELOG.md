@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.705...v0.75.706)
+
+## ✨ Features
+
+- **buddy**: select a published Support SDK version ([435214f](https://github.com/stacksjs/stacks/commit/435214f)) _(by Chris)_
+
+## 🐛 Bug Fixes
+
+- **dashboard**: keep native startup independent of HTTPS setup ([2ba8fc7](https://github.com/stacksjs/stacks/commit/2ba8fc7)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **buddy**: integrate the current Mail settings fix ([7f52de5](https://github.com/stacksjs/stacks/commit/7f52de5)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.704...v0.75.705)
 
 ## 🐛 Bug Fixes
