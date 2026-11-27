@@ -238,6 +238,8 @@ export type MailboxUserBackend = { driver: 'external' } | {
 export interface EmailServerConfig {
   enabled: boolean
   scan?: boolean // spam/virus scanning
+  /** Require full-address mailboxes for this domain on the shared native Mail server. */
+  exactMailboxes?: boolean
   /** Explicit backend for mail:user:* commands. Missing/external refuses AWS access. */
   mailboxUsers?: MailboxUserBackend
 

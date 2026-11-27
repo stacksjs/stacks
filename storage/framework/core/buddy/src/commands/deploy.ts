@@ -4187,6 +4187,7 @@ DOMAIN=${domain ? `'${domain}'` : "''"}
 FWD_B64='${forwardsB64}'
 README_B64='${readmeB64}'
 BOXES_B64='${boxesB64}'
+EXACT_MAILBOXES='${cfg.server?.exactMailboxes === true ? 'yes' : 'no'}'
 RELAY_ACCOUNT='${relay.account ?? ''}'
 RECOVERY_B64='${recoveriesB64}'
 ENVF=/etc/mail/mail.env
@@ -4277,6 +4278,20 @@ if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
         sed -i "s|^SMTP_LOCAL_DOMAINS=.*|SMTP_LOCAL_DOMAINS=\${cur:+$cur,}$DOMAIN|" "$ENVF"
       else
         echo "SMTP_LOCAL_DOMAINS=$DOMAIN" >> "$ENVF"
+      fi
+      ENV_CHANGED=1 ;;
+  esac
+fi
+# Exact-address routing is an opt-in on shared hosts. Merge it with the
+# local-domain registration so native Mail validates and activates both together.
+if [ "$EXACT_MAILBOXES" = yes ] && [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
+  exact=$(grep -E '^SMTP_EXACT_MAILBOX_DOMAINS=' "$ENVF" | head -1 | cut -d= -f2- || true)
+  case ",$exact," in
+    *",$DOMAIN,"*) : ;;
+    *) if grep -qE '^SMTP_EXACT_MAILBOX_DOMAINS=' "$ENVF"; then
+        sed -i "s|^SMTP_EXACT_MAILBOX_DOMAINS=.*|SMTP_EXACT_MAILBOX_DOMAINS=\${exact:+$exact,}$DOMAIN|" "$ENVF"
+      else
+        echo "SMTP_EXACT_MAILBOX_DOMAINS=$DOMAIN" >> "$ENVF"
       fi
       ENV_CHANGED=1 ;;
   esac

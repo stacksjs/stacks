@@ -750,6 +750,12 @@ export function mailCommands(buddy: CLI): void {
         process.exit(ExitCode.Success)
       }
       await reconcileMailDns(res, ip!, log)
+      if (res.certificateFailed) {
+        log.info(`Mail: asking for the mail.${res.domain} certificate after DNS reconciliation`)
+        const retried = await provisionMailTenant(ip!, log)
+        if (!retried || retried.certificateFailed)
+          log.warn(`Mail: verify DNS propagation and retry the certificate for mail.${res.domain}`)
+      }
       log.success(`Mail provisioned for ${domain}. Add MAIL_PASSWORD_<LOCALPART> env vars to pin mailbox passwords.`)
       await log.flush()
       process.exit(ExitCode.Success)
