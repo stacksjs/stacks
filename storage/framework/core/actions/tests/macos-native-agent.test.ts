@@ -253,6 +253,52 @@ describe('appClientScripts', () => {
     }
   })
 
+  test('keeps deferred TypeScript modules at their browser URLs, including nested and cyclic references', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-client-scripts-'))
+    try {
+      const put = (path: string, contents: string) => {
+        const file = join(root, 'resources', path)
+        mkdirSync(dirname(file), { recursive: true })
+        writeFileSync(file, contents)
+      }
+      put('views/home.stx', '<script type="module" src="/assets/scripts/main.ts"></script>')
+      put('assets/scripts/main.ts', `
+        import { editor } from './helper'
+        document.addEventListener('click', () => {
+          void import(editor.href)
+          void import('/assets/scripts/direct.ts')
+        })
+      `)
+      put('assets/scripts/helper.ts', `
+        export const editor = new URL('/assets/scripts/nested/editor.ts', import.meta.url)
+      `)
+      put('assets/scripts/direct.ts', `export const label: string = 'deferred browser module'`)
+      put('assets/scripts/nested/editor.ts', `
+        export const again = () => import('/assets/scripts/main.ts')
+        export const controls = () => import('/assets/scripts/nested/controls.ts')
+      `)
+      put('assets/scripts/nested/controls.ts', 'export const limit: number = 3')
+      put('assets/scripts/unused.ts', 'throw new Error("Unreferenced script")')
+
+      const scripts = await appClientScripts(root, join(root, 'out'))
+      expect(Object.keys(scripts).sort()).toEqual([
+        '/assets/scripts/direct.ts',
+        '/assets/scripts/main.ts',
+        '/assets/scripts/nested/controls.ts',
+        '/assets/scripts/nested/editor.ts',
+      ])
+      const main = readFileSync(scripts['/assets/scripts/main.ts']!, 'utf8')
+      expect(main).toContain('/assets/scripts/nested/editor.ts')
+      expect(main).toContain('/assets/scripts/direct.ts')
+      expect(main).not.toContain('deferred browser module')
+      expect(readFileSync(scripts['/assets/scripts/direct.ts']!, 'utf8')).toContain('deferred browser module')
+      expect(readFileSync(scripts['/assets/scripts/nested/controls.ts']!, 'utf8')).not.toContain(': number')
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
   test('fails the build when a page names a script that is not there', async () => {
     const root = mkdtempSync(join(tmpdir(), 'stacks-client-scripts-'))
     try {

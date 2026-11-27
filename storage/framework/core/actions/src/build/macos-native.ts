@@ -6,6 +6,8 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
+import { parse } from '@babel/parser'
+import { isExportAllDeclaration, isExportNamedDeclaration, isIdentifier, isImportDeclaration, isImportExpression, isMemberExpression, isMetaProperty, isNewExpression, isStringLiteral, traverseFast } from '@babel/types'
 import { log } from '@stacksjs/cli'
 import { userConfigFileNames } from '@stacksjs/config/sources'
 import { AGENT_MANIFEST, agentHostArguments, desktopLauncherCompileArgs, macosOutputDirectory, macosScreens, macosSelfUpdates, renderAgentEntry, validateMacosDesktop } from '@stacksjs/desktop-build'
@@ -308,6 +310,27 @@ export async function appBundleFiles(root: string, extraSources: string[] = []):
 /** A page's `src` for one of the project's own scripts: `/assets/scripts/app.ts`. */
 const CLIENT_SCRIPT_SRC = /\bsrc\s*=\s*["'](\/assets\/[\w./-]+\.(?:ts|tsx|mts))["']/g
 
+const CLIENT_SCRIPT_URL = /^\/assets\/[\w./-]+\.(?:ts|tsx|mts)$/
+const CLIENT_SCRIPT_EXTERNALS = ['/assets/*.ts', '/assets/*.tsx', '/assets/*.mts']
+
+function clientAssetReferences(code: string): Set<string> {
+  const paths = new Set<string>()
+  const program = parse(code, { sourceType: 'module', createImportExpressions: true }).program
+  traverseFast(program, (node) => {
+    if (isImportExpression(node) || isImportDeclaration(node) || isExportNamedDeclaration(node) || isExportAllDeclaration(node)) {
+      if (isStringLiteral(node.source) && CLIENT_SCRIPT_URL.test(node.source.value)) paths.add(node.source.value)
+    }
+    else if (isNewExpression(node) && isIdentifier(node.callee, { name: 'URL' })) {
+      const [asset, base] = node.arguments
+      if (isStringLiteral(asset) && CLIENT_SCRIPT_URL.test(asset.value)
+        && isMemberExpression(base) && !base.computed && isIdentifier(base.property, { name: 'url' })
+        && isMetaProperty(base.object) && isIdentifier(base.object.meta, { name: 'import' }) && isIdentifier(base.object.property, { name: 'meta' }))
+        paths.add(asset.value)
+    }
+  })
+  return paths
+}
+
 /**
  * The scripts the project's pages load from `resources/assets`, bundled for
  * the browser, by the URL a page asks for: `/assets/scripts/app.ts` to the
@@ -315,8 +338,9 @@ const CLIENT_SCRIPT_SRC = /\bsrc\s*=\s*["'](\/assets\/[\w./-]+\.(?:ts|tsx|mts))[
  *
  * The dev server transpiles a `.ts` asset as it serves it; a built app has no
  * such server. Every `.stx` under `resources/` is read for those `src`
- * attributes, and only the scripts a page names are built, each with what it
- * imports. A page naming a script that is not there fails the build.
+ * attributes. Each entry is bundled with its local imports. Literal browser
+ * module URLs remain separate and are collected from the emitted JavaScript,
+ * including references in bundled dependencies. A missing script fails the build.
  */
 export async function appClientScripts(root: string, outDir: string): Promise<Record<string, string>> {
   const referenced = new Set<string>()
@@ -329,16 +353,24 @@ export async function appClientScripts(root: string, outDir: string): Promise<Re
   }
 
   const scripts: Record<string, string> = {}
-  for (const url of [...referenced].sort()) {
+  const pending = new Set([...referenced].sort())
+  for (const url of pending) {
+    if (url.split('/').some(segment => segment === '.' || segment === '..'))
+      throw new Error(`Browser asset URLs must use a canonical path: ${url}`)
     const source = join(resources, url)
     if (!existsSync(source))
       throw new Error(`A page loads ${url}, but resources${url} does not exist.`)
-    const built = await Bun.build({ entrypoints: [source], target: 'browser', format: 'esm', minify: true })
+    const built = await Bun.build({
+      entrypoints: [source], target: 'browser', format: 'esm', minify: true, external: CLIENT_SCRIPT_EXTERNALS,
+    })
     if (!built.success || built.outputs.length !== 1)
       throw new Error(`Could not bundle resources${url} for the browser:\n${built.logs.map(entry => String(entry)).join('\n')}`)
-    const target = join(outDir, `${url.replace(/\.(?:ts|tsx|mts)$/, '')}.js`)
+    const code = await built.outputs[0]!.text()
+    for (const asset of clientAssetReferences(code)) pending.add(asset)
+
+    const target = join(outDir, `${url}.js`)
     mkdirSync(dirname(target), { recursive: true })
-    writeFileSync(target, await built.outputs[0]!.text())
+    writeFileSync(target, code)
     scripts[url] = target
   }
   return scripts
