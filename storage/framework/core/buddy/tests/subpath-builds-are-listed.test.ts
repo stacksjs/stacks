@@ -177,7 +177,7 @@ describe('subpath imports', () => {
     const child = Bun.spawnSync({ cmd: [process.execPath, join(root, '.github/scripts/subpath-packages.ts'), '--runtime'], cwd: root, stdout: 'pipe', stderr: 'pipe' })
     expect(child.exitCode, child.stderr.toString()).toBe(0)
     const built = new Set(child.stdout.toString().trim().split('\n'))
-    for (const name of ['strings', 'model-meta', 'validation', 'cloud', 'orm', 'desktop']) expect(built.has(name)).toBe(true)
+    for (const name of ['strings', 'model-meta', 'validation', 'cloud', 'orm', 'desktop', 'auth', 'database', 'support']) expect(built.has(name)).toBe(true)
   })
 
   it('builds package roots before bundling standalone commands on a clean runner', () => {
@@ -189,6 +189,19 @@ describe('subpath imports', () => {
     const compilation = steps.findIndex(step => step.run?.includes('bun run compile:linux-x64'))
     expect(preparation).toBeGreaterThanOrEqual(0)
     expect(compilation).toBeGreaterThan(preparation)
+  })
+
+  it('builds the runtime dependency graph before checking and publishing previews', () => {
+    const workflow = Bun.YAML.parse(readFileSync(join(root, '.github/workflows/ci.yml'), 'utf-8')) as {
+      jobs: Record<string, { steps: Array<{ name?: string, run?: string }> }>
+    }
+    const steps = workflow.jobs['publish-commit']!.steps
+    const preparation = steps.findIndex(step => step.run?.includes('bun .github/scripts/subpath-packages.ts --runtime'))
+    const inspection = steps.findIndex(step => step.run?.includes('bun pm pack --ignore-scripts'))
+    const upload = steps.findIndex(step => step.run?.includes('storage/framework/scripts/publish-commit'))
+    expect(preparation).toBeGreaterThanOrEqual(0)
+    expect(inspection).toBeGreaterThan(preparation)
+    expect(upload).toBeGreaterThan(inspection)
   })
 
   /**
@@ -223,7 +236,6 @@ describe('subpath imports', () => {
       // tsconfig for what the running server loads. Both are pinned by the
       // tests below, and each has broken the box once.
       'deploy': 'it ships source, and the box resolves subpaths through tsconfig paths, checked below',
-      'publish-commit': 'it runs the full `bun run build` before publishing',
     }
 
     const builds = (step: { run?: string }): boolean => String(step.run ?? '').includes('bun .github/scripts/subpath-packages.ts')
