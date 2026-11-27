@@ -8,6 +8,13 @@ export interface AcceptedPublication {
   shasum: string
 }
 
+/** The current workflow's resume step verifies these archives before writing this file. */
+export async function resumedPublications(path = process.env.STACKS_NPM_RESUME_RECEIPTS): Promise<ReadonlySet<string>> {
+  if (!path) return new Set()
+  const receipts = await Bun.file(path).json() as AcceptedPublication[]
+  return new Set(receipts.map(receipt => `${receipt.name}@${receipt.version}`))
+}
+
 /** Preserve archive identity when an upload may already have been staged. */
 export function acceptedPublications(log: string): AcceptedPublication[] {
   const accepted = new Map<string, AcceptedPublication>()
@@ -106,7 +113,12 @@ export async function verifyAcceptedPublications(
   }
 }
 
-if (import.meta.main) {
+if (import.meta.main && process.argv[2] === '--has-resumed-upload') {
+  const [name, version] = process.argv.slice(3)
+  if (!name || !version) throw new Error('Expected a package name and exact version')
+  console.log((await resumedPublications()).has(`${name}@${version}`))
+}
+else if (import.meta.main) {
   const [file, seconds = '1200'] = process.argv.slice(2)
   const budgetMs = Number(seconds) * 1000
   if (!file) throw new Error('Expected a publish log and a positive wait budget')

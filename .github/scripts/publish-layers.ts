@@ -35,6 +35,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { dependencyLayers } from '../../storage/framework/core/build/src/dependency-layers'
+import { resumedPublications } from './npm-publication'
 import { publishables } from './promote-latest'
 
 export interface LayeredPackage {
@@ -83,8 +84,14 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2)
   const root = new URL('../../', import.meta.url).pathname.replace(/\/$/, '')
   const concurrency = Math.max(1, Number(process.env.PUBLISH_CONCURRENCY) || 8)
+  const resumed = await resumedPublications()
   const packages: LayeredPackage[] = []
   for (const found of await publishables(root)) {
+    const key = `${found.name}@${found.version}`
+    if (resumed.has(key)) {
+      console.log(`Verified original ${key}; skipping upload`)
+      continue
+    }
     const manifest = await Bun.file(join(root, found.dir, 'package.json')).json()
     packages.push({ name: found.name, dir: found.dir, dependencies: Object.keys(manifest.dependencies ?? {}) })
   }

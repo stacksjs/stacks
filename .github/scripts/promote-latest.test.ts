@@ -8,6 +8,7 @@
  */
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
+import { exchangePromotionToken, recordPromotionPermissions, validatePromotionPermissions } from './npm-oidc-promotion'
 import { confirmPublications, inParallel, meaningfulNpmError, npmPublicationTag, promotionFailureSummary, promoteTags, publishables } from './promote-latest'
 
 const root = new URL('../../', import.meta.url).pathname
@@ -36,6 +37,122 @@ describe('registry publication confirmation', () => {
       await expect(confirmPublications([{ name: 'missing', version: '1.0.0', dir: '' }, { name: '@stacksjs/buddy', version: '0.75.115', dir: '' }], server.url.href, 1, 0)).rejects.toThrow('missing@1.0.0, @stacksjs/buddy@0.75.115. Accepted uploads may still be awaiting')
     }
     finally { server.stop(true) }
+  })
+
+  it('checks latest separately from archive availability', async () => {
+    const pkg = { name: '@stacksjs/buddy', version: '0.75.242', dir: '' }
+    const requested: string[] = []
+    const server = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch(request) {
+      const path = new URL(request.url).pathname
+      requested.push(path)
+      const version = path.endsWith('/latest') ? '0.75.241' : pkg.version
+      return Response.json({ name: pkg.name, version, dist: { tarball: 'https://registry.npmjs.org/buddy.tgz' } })
+    } })
+    try {
+      await confirmPublications([pkg], server.url.href, 1, 0)
+      await expect(confirmPublications([pkg], server.url.href, 1, 0, 'latest')).rejects.toThrow('latest for @stacksjs/buddy@0.75.242')
+      expect(requested).toEqual(['/%40stacksjs%2Fbuddy/0.75.242', '/%40stacksjs%2Fbuddy/latest'])
+    }
+    finally { server.stop(true) }
+  })
+})
+
+describe('trusted publishing promotion', () => {
+  const packages = ['@stacksjs/buddy', '@stacksjs/support'].map(name => ({ name, version: '0.75.242', dir: '' }))
+  const registration = {
+    type: 'github',
+    claims: { repository: 'stacksjs/stacks', workflow_ref: { file: 'release.yml' } },
+    permissions: ['createPackage', 'manageDistTags'],
+  }
+
+  it('requires both permissions on the matching registration for every package', async () => {
+    for (const wrong of [
+      { ...registration, permissions: ['createPackage'] },
+      { ...registration, permissions: ['createStagedPackage', 'manageDistTags'] },
+      { ...registration, claims: { ...registration.claims, environment: 'production' } },
+      { ...registration, claims: { ...registration.claims, repository: 'stacksjs/stx' } },
+      { ...registration, claims: { ...registration.claims, workflow_ref: { file: 'ci.yml' } } },
+    ]) {
+      const read = async (name: string) => name === '@stacksjs/buddy' ? [registration] : [wrong]
+      await expect(recordPromotionPermissions(packages, '0.75.242', read)).rejects.toThrow('@stacksjs/support')
+    }
+  })
+
+  it('binds permission evidence to this release and the complete scoped cohort', async () => {
+    const receipt = await recordPromotionPermissions(packages, '0.75.242', async () => [registration])
+    validatePromotionPermissions(JSON.stringify(receipt), packages, '0.75.242')
+    expect(() => validatePromotionPermissions(JSON.stringify(receipt), packages, '0.75.243')).toThrow('0.75.243')
+    expect(() => validatePromotionPermissions(JSON.stringify(receipt), packages.slice(0, 1), '0.75.242')).toThrow('package set')
+    expect(() => validatePromotionPermissions(JSON.stringify({ ...receipt, packages: [packages[0]!.name, packages[0]!.name] }), packages, '0.75.242')).toThrow('package set')
+  })
+
+  it('rejects expired and redirected exchanges without exposing either credential', async () => {
+    let forwarded = 0
+    let redirected = false
+    const foreign = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch() { forwarded++; return new Response() } })
+    const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch(request) {
+      if (request.method === 'GET') return Response.json({ value: 'github-identity' })
+      if (redirected) return new Response(null, { status: 307, headers: { Location: foreign.url.href } })
+      return Response.json({ token_type: 'oidc', token: 'expired-credential', expires: '2025-01-01T00:00:00.000Z' }, { status: 201 })
+    } })
+    const exchange = () => exchangePromotionToken('@stacksjs/support', server.url, 'runner-token', server.url)
+    try {
+      await expect(exchange()).rejects.toThrow('npm OIDC exchange for @stacksjs/support returned an invalid or expired token')
+      redirected = true
+      await expect(exchange()).rejects.toThrow('npm OIDC exchange for @stacksjs/support request failed')
+      expect(forwarded).toBe(0)
+    }
+    finally { server.stop(true); foreign.stop(true) }
+  })
+
+  it('uses fresh package-scoped exchange tokens when retrying a partly promoted cohort', async () => {
+    const tagWrites: [string, string | null][] = []
+    const latest = new Map<string, string>()
+    let identityRequests = 0
+    let rejectSupport = true
+    let forwarded = 0
+    const foreign = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch() { forwarded++; return new Response() } })
+    const server = Bun.serve({ hostname: '127.0.0.1', port: 0, async fetch(request) {
+      const url = new URL(request.url)
+      const auth = request.headers.get('authorization')
+      if (url.pathname === '/identity') {
+        expect(auth).toBe('Bearer runner-token')
+        expect(url.searchParams.get('audience')).toBe('npm:registry.npmjs.org')
+        return Response.json({ value: `github-${++identityRequests}` })
+      }
+      if (url.pathname.startsWith('/-/npm/v1/oidc/token/exchange/package/')) {
+        expect(request.method).toBe('POST')
+        expect(auth).toMatch(/^Bearer github-\d+$/)
+        const token = `${decodeURIComponent(url.pathname.split('/').at(-1)!)}:${auth!.slice(7)}`
+        return Response.json({ token_type: 'oidc', token, expires: new Date(Date.now() + 60 * 60_000).toISOString() }, { status: 201 })
+      }
+      const name = decodeURIComponent(url.pathname.split('/')[request.method === 'PUT' ? 3 : 1]!)
+      if (request.method === 'PUT') {
+        tagWrites.push([name, auth])
+        expect(auth).toStartWith(`Bearer ${name}:github-`)
+        if (rejectSupport && name.endsWith('/support')) return new Response('private registry response', { status: 403 })
+        latest.set(name, await request.json() as string)
+        return new Response(null, { status: 204 })
+      }
+      return Response.json({ name, version: latest.get(name), dist: { tarball: `${url.origin}/original.tgz` } })
+    } })
+    const exchange = (name: string) => exchangePromotionToken(name, new URL('/identity?audience=old', server.url), 'runner-token', server.url)
+    const tokens = () => Promise.all(packages.map(async pkg => [pkg.name, await exchange(pkg.name)] as const)).then(entries => new Map(entries))
+    try {
+      await expect(exchangePromotionToken(packages[0]!.name, foreign.url, 'runner-token', server.url)).rejects.toThrow('GitHub Actions identity endpoint')
+      expect(forwarded).toBe(0)
+      const first = await tokens()
+      await expect(promoteTags(packages, { registry: server.url.href, token: new Map([Array.from(first)[0]!]) })).rejects.toThrow('@stacksjs/support')
+      expect(tagWrites).toHaveLength(0)
+      expect(await promoteTags(packages, { registry: server.url.href, token: first })).toEqual(['@stacksjs/support@0.75.242: registry HTTP 403'])
+      await expect(confirmPublications(packages, server.url.href, 1, 0, 'latest')).rejects.toThrow('@stacksjs/support')
+      rejectSupport = false
+      expect(await promoteTags(packages, { registry: server.url.href, token: await tokens() })).toEqual([])
+      await confirmPublications(packages, server.url.href, 1, 0, 'latest')
+      expect(identityRequests).toBe(4)
+      expect(new Set(tagWrites.map(([, auth]) => auth)).size).toBe(4)
+    }
+    finally { server.stop(true); foreign.stop(true) }
   })
 })
 
