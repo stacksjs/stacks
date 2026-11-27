@@ -71,7 +71,10 @@ describe('dashboard sidebar data', () => {
       },
     ])
     const dataItems = sections.find(([id]) => id === 'data')?.[2] ?? []
-    const auditItem = dataItems.find(item => item.id === 'models-more')?.children?.find(item => item.to === '/models/audit-log')
+    const modelRows = dataItems.filter(item => item.id === 'models' || item.id === 'models-more' || item.to === '/models')
+    expect(modelRows).toHaveLength(1)
+    expect(modelRows[0]).toMatchObject({ id: 'models', text: 'All Models', to: '/models', expanded: false })
+    const auditItem = modelRows[0]?.children?.find(item => item.to === '/models/audit-log')
 
     expect(auditItem).toEqual({
       to: '/models/audit-log',
@@ -92,15 +95,23 @@ describe('dashboard sidebar data', () => {
     ]
     const items = buildNavSections(models).find(([id]) => id === 'data')![2]
     expect(items.filter(item => item.to.startsWith('/models/')).map(item => item.to)).toEqual(['/models/z', '/models/a', '/models/c'])
-    const more = items.find(item => item.id === 'models-more')!
-    expect(more.expanded).toBe(false)
-    expect(more.children?.map(item => item.to)).toEqual(['/models/b'])
+    const modelsRow = items.find(item => item.id === 'models')!
+    expect(modelsRow.expanded).toBe(false)
+    expect(modelsRow.children?.map(item => item.to)).toEqual(['/models/b'])
     const allPinned = buildNavSections(models.filter(model => model.dashboard?.highlight)).find(([id]) => id === 'data')![2]
-    expect(allPinned.some(item => item.id === 'models-more')).toBe(false)
+    expect(allPinned.find(item => item.id === 'models')).toEqual({ id: 'models', to: '/models', icon: 'table', text: 'All Models' })
+  })
+
+  it('keeps model links in the disclosure when the registry is disabled', () => {
+    const toggles = { ...DEFAULT_TOGGLES, data: { ...DEFAULT_TOGGLES.data, allModels: false } }
+    const dataItems = (models: Parameters<typeof buildNavSections>[0]) => buildNavSections(models, toggles).find(([id]) => id === 'data')![2]
+    const item = dataItems([{ id: 'post', name: 'Post', category: 'userland' }]).find(row => row.id === 'models')
+    expect(item).toMatchObject({ text: 'All Models', to: '', expanded: false, children: [{ to: '/models/post' }] })
+    expect(dataItems([]).some(row => row.id === 'models')).toBe(false)
   })
 
   it('retains role gates on nested model rows', () => {
-    expect(webSidebarRoleMap([{ id: 'data', label: 'Data', items: [{ id: 'models-more', label: 'More models', icon: '', iconColor: '', children: [{ id: 'models-private', label: 'Restricted', icon: '', iconColor: '', roles: ['admin'] }] }] }]))
+    expect(webSidebarRoleMap([{ id: 'data', label: 'Data', items: [{ id: 'models', label: 'All Models', icon: '', iconColor: '', children: [{ id: 'models-private', label: 'Restricted', icon: '', iconColor: '', roles: ['admin'] }] }] }]))
       .toEqual({ 'models-private': ['admin'] })
   })
 
