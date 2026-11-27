@@ -39,7 +39,7 @@ let removed: string[]
 
 beforeAll(() => {
   app = mkdtempSync(join(tmpdir(), 'stacks-scaffold-site-'))
-  for (const dir of ['resources', 'public', 'docs', 'content', 'cloud/production', '.reviewos', APP_SITE_TEMPLATE])
+  for (const dir of ['app', 'resources', 'public', 'docs', 'content', 'cloud/production', '.reviewos', APP_SITE_TEMPLATE])
     cpSync(join(REPO, dir), join(app, dir), { recursive: true })
 
   removed = applyAppSiteTemplate(app)
@@ -93,6 +93,13 @@ describe('a scaffolded app does not inherit stacksjs.com', () => {
       .filter(file => /park-|topography|wood-sign|Taskbar|StartMenu|Desktop/.test(file))
 
     expect(leftovers).toEqual([])
+  })
+
+  test('keeps the app scheduler and routes without the sample console commands', () => {
+    expect(existsSync(join(app, 'app/Routes.ts'))).toBe(true)
+    expect(existsSync(join(app, 'app/Commands/Inspire.ts'))).toBe(false)
+    expect(existsSync(join(app, 'app/Listeners/Console.ts'))).toBe(false)
+    expect(readFileSync(join(app, 'app/Scheduler.ts'), 'utf8')).not.toContain('Inspire')
   })
 
   test('the starter names the app from its own config', () => {
