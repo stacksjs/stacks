@@ -61,3 +61,66 @@ test('native layout bridge authenticates server-side, clears identity before swi
   await Bun.sleep(1)
   expect(requests).toBe(before)
 })
+
+test('cached history restores recheck the current account after clearing the old widget', async () => {
+  const events = new EventTarget()
+  const boots: (string | undefined)[] = []
+  let token: string | undefined = 'first-account'
+  let sessionRequests = 0
+  let visibleToken: string | undefined
+  const mount = mountNativeSupport({} as HTMLElement, {
+    events,
+    getCsrfToken: () => 'csrf',
+    fetch: async (input) => {
+      if (input === '/api/support/config')
+        return Response.json({ enabled: true, project: 'project', endpoint: 'https://hq.support', loaderUrl: 'https://hq.support/support.js', sessionEndpoint: '/api/support/session' })
+      expect(input).toBe('/api/support/session')
+      sessionRequests++
+      return token ? Response.json({ token }) : Response.json({}, { status: 401 })
+    },
+    load: async () => ({
+      createSupport: () => ({
+        async boot(options) {
+          visibleToken = options.sessionToken
+          boots.push(visibleToken)
+        },
+        open() {},
+        close() {},
+        async update() {},
+        async track() {},
+        shutdown() { visibleToken = undefined },
+      }),
+    }),
+  })
+  const show = (persisted: boolean) => events.dispatchEvent(Object.assign(new Event('pageshow'), { persisted }))
+
+  try {
+    await mount.refresh()
+    show(false)
+    await Bun.sleep(0)
+    expect(sessionRequests).toBe(1)
+
+    events.dispatchEvent(new Event('pagehide'))
+    expect(visibleToken).toBeUndefined()
+    token = 'second-account'
+    show(true)
+    await Bun.sleep(0)
+    expect(sessionRequests).toBe(2)
+    expect(visibleToken).toBe('second-account')
+
+    events.dispatchEvent(new Event('pagehide'))
+    token = undefined
+    show(true)
+    await Bun.sleep(0)
+    expect(sessionRequests).toBe(3)
+    expect(visibleToken).toBeUndefined()
+    expect(boots).toEqual(['first-account', 'second-account'])
+  }
+  finally {
+    mount.shutdown()
+  }
+
+  show(true)
+  await Bun.sleep(0)
+  expect(sessionRequests).toBe(3)
+})
