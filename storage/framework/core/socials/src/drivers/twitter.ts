@@ -450,7 +450,7 @@ export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDe
     const limit = Number.isFinite(requested) ? Math.max(1, Math.min(100, Math.trunc(requested))) : 50
     url.searchParams.set('max_results', String(limit))
     url.searchParams.set('event_types', 'MessageCreate')
-    url.searchParams.set('dm_event.fields', 'attachments,created_at,dm_conversation_id,text')
+    url.searchParams.set('dm_event.fields', 'attachments,created_at,dm_conversation_id,sender_id,text')
     url.searchParams.set('expansions', 'sender_id')
     url.searchParams.set('user.fields', 'profile_image_url')
     if (query.cursor) url.searchParams.set('pagination_token', query.cursor)
@@ -460,7 +460,7 @@ export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDe
       includes?: { users?: TwitterDirectMessagePage['users'] }
       meta?: { next_token?: string }
       errors?: unknown[]
-    }>(url.toString(), { headers: { authorization: `Bearer ${identity.accessToken}` } })
+    }>(url.toString(), { headers: { authorization: `Bearer ${identity.accessToken}` }, signal: AbortSignal.timeout(15_000) })
 
     if (!payload.data?.length && payload.errors?.length)
       throw new TwitterApiError('X did not return the requested direct messages.', 502, JSON.stringify(payload))
@@ -483,6 +483,7 @@ export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDe
         method: 'POST',
         headers: { 'authorization': `Bearer ${identity.accessToken}`, 'content-type': 'application/json' },
         body: JSON.stringify({ text }),
+        signal: AbortSignal.timeout(15_000),
       },
     )
     const eventId = payload.data?.dm_event_id
