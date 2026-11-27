@@ -3632,22 +3632,22 @@ async function loadDeploymentMailConfig(environment: string): Promise<EmailConfi
   if (!hasExplicitEmailConfig())
     return undefined
 
-  const config = await awaitConfig()
   // The application config may have loaded before Buddy selected the target
   // dotenv. Use a query on the path, as loadTsCloudConfig does. Bun ignores
   // the query on a file: URL when it looks up a cached module.
   const file = p.projectPath('config/email.ts')
   try {
+    await awaitConfig()
     const { default: selectedEmail } = await import(`${file}?deploy-env=${encodeURIComponent(environment)}`)
     if (!selectedEmail || typeof selectedEmail !== 'object')
       throw new Error('Expected a default email configuration export')
-    config.email = selectedEmail
-    return config.email
+    stacksConfig.email = selectedEmail
+    return stacksConfig.email
   }
   catch {
     // Mail is best-effort. An invalid target config must neither stop the app
     // release nor fall back to a different tenant from the launch environment.
-    config.email = { server: { enabled: false } }
+    stacksConfig.email = { server: { enabled: false } }
     log.warn(`Mail: could not load config/email.ts for ${environment}. Skipping mail reconciliation.`)
     return undefined
   }
