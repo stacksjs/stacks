@@ -798,8 +798,12 @@ describe('dashboard native STX bindings', () => {
     // than its ::backdrop. The dialog still closes at once, so focus can go
     // back to the page; the copy, closed or not, is drawn while it leaves.
     expect(sharedModal).toContain('data-stx-if-transition="dashboard-modal"')
-    expect(sharedModal).toMatch(/\.dashboard-modal-leave-active \{\s*display: block;\s*transition: opacity /)
-    expect(sharedModal).toMatch(/\.dashboard-modal-leave-to \{\s*opacity: 0;/)
+    // Two classes on the dialog's own leave rules: the layout's
+    // `html .dashboard-modal-layer` sets the dialog's transition too, and
+    // outweighed one class, so the dim vanished in a frame.
+    expect(sharedModal).toMatch(/\n\.dashboard-modal-dialog\.dashboard-modal-leave-active \{\s*display: block;\s*transition: opacity /)
+    expect(sharedModal).toMatch(/\n\.dashboard-modal-dialog\.dashboard-modal-leave-to \{\s*opacity: 0;/)
+    expect(sharedModal).not.toMatch(/\n\.dashboard-modal-leave-(?:active|to) \{/)
     expect(sharedModal).toMatch(/\.dashboard-modal-dialog \{\s*background: rgb\(0 0 0 \/ 50%\);\s*backdrop-filter: blur\(4px\);/)
     expect(sharedModal).toContain('dialog.current.close()')
 
