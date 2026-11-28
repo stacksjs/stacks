@@ -256,16 +256,17 @@ const built: BuiltTarget[] = []
 for (const target of targets) {
   const { platform } = splitDesktopTarget(target)
   const directory = join(output, target)
-  rmSync(directory, { recursive: true, force: true })
-  mkdirSync(directory, { recursive: true })
   const runtime = await runtimeFor(target)
   // Copied verbatim into the app, so it has to be the native binary: a dev wrapper script points outside the bundle.
   if (readFileSync(runtime).subarray(0, 2).toString() === '#!') throw new Error(`The Craft runtime for ${target} is a script, not a native binary: ${runtime}`)
 
   const embedded = platform === 'linux'
+  const manifest = webviewManifest(config, { runtime: embedded ? 'embedded' : 'beside', runtimeFlags: probeCraftFlags(runtime), platform, sourceRevision })
+  rmSync(directory, { recursive: true, force: true })
+  mkdirSync(directory, { recursive: true })
   const entry = join(work, `entry-${target}.ts`)
   writeFileSync(entry, renderWebviewEntry({
-    manifest: webviewManifest(config, { runtime: embedded ? 'embedded' : 'beside', runtimeFlags: probeCraftFlags(runtime), sourceRevision }),
+    manifest,
     agentEntry,
     prepareEntry,
     databaseFilename: databaseOptions?.filename,

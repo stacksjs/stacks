@@ -96,6 +96,27 @@ describe('desktop.webview, resolved', () => {
     expect(development.updates).toBeUndefined()
     expect(development.window.devtools).toBe(true)
   })
+
+  test('only macOS gets the requested close behavior, after additional Craft arguments', () => {
+    const mac = { runtime: 'beside', platform: 'darwin' as const, runtimeFlags: ['--keep-running', '--quit-on-close'] }
+    const keep = resolveWebviewDesktop({ ...base, window: { keepRunning: true, arguments: ['--frame-autosave', 'main'] } })
+    const quit = resolveWebviewDesktop({ ...base, window: { keepRunning: false } })
+
+    expect(webviewManifest(keep, mac).window.arguments).toEqual(['--frame-autosave', 'main', '--keep-running'])
+    expect(webviewManifest(quit, mac).window.arguments).toEqual(['--quit-on-close'])
+    expect(webviewManifest(resolveWebviewDesktop(base), mac).window.arguments).toBeUndefined()
+    expect(webviewManifest(keep, { ...mac, platform: 'linux' }).window.arguments).toEqual(['--frame-autosave', 'main'])
+    expect(webviewManifest(quit, { ...mac, platform: 'win32' }).window.arguments).toBeUndefined()
+  })
+
+  test('a macOS runtime must implement the requested close behavior', () => {
+    const keep = resolveWebviewDesktop({ ...base, window: { keepRunning: true } })
+    const quit = resolveWebviewDesktop({ ...base, window: { keepRunning: false } })
+    const mac = { runtime: 'beside', platform: 'darwin' as const }
+
+    expect(() => webviewManifest(keep, mac)).toThrow('--keep-running')
+    expect(() => webviewManifest(quit, { ...mac, runtimeFlags: ['--keep-running'] })).toThrow('--quit-on-close')
+  })
 })
 
 describe('targets', () => {
@@ -138,9 +159,9 @@ describe('targets', () => {
     const directory = temporary()
     const newer = join(directory, 'craft-new')
     const older = join(directory, 'craft-old')
-    writeFileSync(newer, Buffer.concat([Buffer.from([0xCF, 0xFA, 0xED, 0xFE]), Buffer.from('\0--url\0--single-instance\0--deep-link\0--app-name\0')]))
+    writeFileSync(newer, Buffer.concat([Buffer.from([0xCF, 0xFA, 0xED, 0xFE]), Buffer.from('\0--url\0--single-instance\0--deep-link\0--app-name\0--keep-running\0--quit-on-close\0')]))
     writeFileSync(older, Buffer.concat([Buffer.from([0xCF, 0xFA, 0xED, 0xFE]), Buffer.from('\0--url\0--deep-link\0')]))
-    expect(probeCraftFlags(newer)).toEqual(['--single-instance', '--deep-link', '--app-name'])
+    expect(probeCraftFlags(newer)).toEqual(['--single-instance', '--deep-link', '--app-name', '--keep-running', '--quit-on-close'])
     expect(probeCraftFlags(older)).toEqual(['--deep-link'])
   })
 })

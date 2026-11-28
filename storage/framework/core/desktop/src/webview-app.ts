@@ -194,7 +194,14 @@ export function probeCraftFlags(runtime: string, flags: readonly string[] = OPTI
 }
 
 /** What the launcher reads, from the config. `runtime` says where the Craft binary will be. */
-export function webviewManifest(config: ResolvedWebviewDesktop, options: { runtime: string, runtimeFlags?: string[], development?: boolean, sourceRevision?: string }): WebviewAppManifest {
+export function webviewManifest(config: ResolvedWebviewDesktop, options: { runtime: string, runtimeFlags?: string[], platform?: NodeJS.Platform, development?: boolean, sourceRevision?: string }): WebviewAppManifest {
+  const windowArguments = [...(config.window.arguments ?? [])]
+  if ((options.platform ?? process.platform) === 'darwin' && config.window.keepRunning !== undefined) {
+    const flag = config.window.keepRunning ? '--keep-running' : '--quit-on-close'
+    if (!options.runtimeFlags?.includes(flag))
+      throw new Error(`webview.window.keepRunning requires a macOS Craft runtime that supports ${flag}. Update the runtime or remove the setting.`)
+    windowArguments.push(flag)
+  }
   return {
     appName: config.appName,
     appId: config.appId,
@@ -207,7 +214,7 @@ export function webviewManifest(config: ResolvedWebviewDesktop, options: { runti
       ...(config.window.darkMode !== undefined ? { darkMode: config.window.darkMode } : {}),
       ...(options.development || config.window.devtools ? { devtools: true } : {}),
       ...(config.window.titlebarHidden ? { titlebarHidden: true } : {}),
-      ...(config.window.arguments?.length ? { arguments: config.window.arguments } : {}),
+      ...(windowArguments.length ? { arguments: windowArguments } : {}),
     },
     ...(config.agent.port ? { port: config.agent.port } : {}),
     ...(config.agent.startPath ? { startPath: config.agent.startPath } : {}),
