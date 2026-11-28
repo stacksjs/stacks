@@ -31,7 +31,8 @@ describe('dashboard view componentization', () => {
       const scripts = [...source.matchAll(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/g)]
         .map(match => match[0])
 
-      if (lineCount > 20)
+      const maximumLines = route === 'settings/config/[section].stx' ? 22 : 20
+      if (lineCount > maximumLines)
         failures.push(`${route}: ${lineCount} lines`)
       if (!/<[A-Z][A-Za-z0-9]*\b/.test(source))
         failures.push(`${route}: no component mount`)
@@ -45,6 +46,14 @@ describe('dashboard view componentization', () => {
       else if (route === 'sections/[section].stx') {
         if (scripts.length !== 1 || !scripts[0].includes('params.section'))
           failures.push(`${route}: its script should only read the section param`)
+      }
+      else if (route === 'settings/config/[section].stx') {
+        if (scripts.length !== 1 || !scripts[0].includes('params.section') || !scripts[0].includes('setResponseStatus(404)'))
+          failures.push(`${route}: missing server-side section selection or not-found status`)
+      }
+      else if (route === 'github-issues.stx') {
+        if (scripts.length !== 1 || !scripts[0].includes('dashboardProjectIdentity().enabled'))
+          failures.push(`${route}: missing server-side local project gate`)
       }
       else if (scripts.length > 0) {
         failures.push(`${route}: owns route script`)

@@ -110,11 +110,18 @@ function hasLiveDomAccess(src: string): boolean {
  * `sections/[section].stx` reads its `section` route param on the server to
  * pick the hub it renders, and titles the page from it, so a section landing
  * and its not-found state are decided before the HTML is sent.
+ *
+ * `github-issues.stx` gates the local-project view on server project identity.
+ * `settings/config/[section].stx` resolves its section and sends the proper 404.
+ * `layouts/settings.stx` filters the available panes before rendering them.
  */
 const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set([
   'layouts/default.stx',
   '[...all].stx',
   'sections/[section].stx',
+  'github-issues.stx',
+  'settings/config/[section].stx',
+  'layouts/settings.stx',
 ])
 
 /**
