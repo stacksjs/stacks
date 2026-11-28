@@ -2164,14 +2164,20 @@ export function applyEnvironmentToSites(sites: Record<string, TsCloudSite | null
  *
  * The app is served directly on the server's public IP (no domain required).
  */
-async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: DeployOptions, envFile?: string): Promise<void> {
-  return withDeploymentIdentity(process.env.DEPLOY_SSH_KEY, identity => deployOverSshWithIdentity(deploymentIdentityConfig(tsCloudConfig, identity), deployEnv, options, envFile))
+async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: DeployOptions, holdPublicTls: boolean, envFile?: string): Promise<void> {
+  return withDeploymentIdentity(process.env.DEPLOY_SSH_KEY, identity => deployOverSshWithIdentity(deploymentIdentityConfig(tsCloudConfig, identity), deployEnv, options, holdPublicTls, envFile))
 }
 
-async function deployOverSshWithIdentity(tsCloudConfig: any, deployEnv: string, options: DeployOptions, envFile?: string): Promise<void> {
+async function deployOverSshWithIdentity(tsCloudConfig: any, deployEnv: string, options: DeployOptions, holdPublicTls: boolean, envFile?: string): Promise<void> {
   const verbose = options.verbose === true
   const environment = (deployEnv === 'prod' ? 'production' : deployEnv) as 'production' | 'staging' | 'development'
   const provider = resolveProvider(tsCloudConfig)
+
+  const cloudApi = await loadTsCloudDeployApi()
+  const { createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, shipsARelease, buildSiteDeployScript } = cloudApi
+  const supportsPublicTlsHold = cloudApi.RPX_PUBLIC_TLS_HOLD_VERSION === 1 && typeof cloudApi.renewRpxCertificates === 'function'
+  if (holdPublicTls && !supportsPublicTlsHold)
+    throw new Error('The selected @stacksjs/ts-cloud module does not support managed gateway TLS holds. Upgrade it before deploying with --hold-dns.')
 
   // Native providers bypass the AWS action, which otherwise owns this gate.
   // A rejected application hook must stop before any provider or host writes.
@@ -2221,8 +2227,6 @@ async function deployOverSshWithIdentity(tsCloudConfig: any, deployEnv: string, 
     }
   }
 
-  const { createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, shipsARelease, buildSiteDeployScript } = await loadTsCloudDeployApi()
-
   // Refuse rather than deploy a release that would place an empty database over
   // the live one. See tsCloudPersistentStateSupport — an older ts-cloud honours
   // the shared-path declaration without the adoption step, which is the one
@@ -2245,7 +2249,24 @@ async function deployOverSshWithIdentity(tsCloudConfig: any, deployEnv: string, 
     log.warn(`[deploy] ${unbackedDataMessage(unbacked)}`)
 
   try {
-    await runSshDeploy({ tsCloudConfig, environment, verbose, docker: (options).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, shipsARelease, onlySite: (options).site || undefined, persistedAttachBox, provider, sshTarget, envFile })
+    await runSshDeploy({
+      tsCloudConfig,
+      environment,
+      verbose,
+      docker: (options).docker === true,
+      createCloudDriver,
+      deployAllComputeSites,
+      ensureManagementDashboard,
+      resolveSiteKind,
+      shipsARelease,
+      holdPublicTls,
+      renewRpxCertificates: supportsPublicTlsHold ? cloudApi.renewRpxCertificates : undefined,
+      onlySite: (options).site || undefined,
+      persistedAttachBox,
+      provider,
+      sshTarget,
+      envFile,
+    })
   }
   catch (err) {
     log.error(`${deployTargetLabel(provider, sshTarget?.profile)} deploy failed:`)
@@ -2285,7 +2306,9 @@ export function resolveProjectTsCloudModule(projectRoot = process.cwd()): string
  * available for framework development; published apps otherwise use their
  * direct dependency before falling back to Buddy's declared dependency.
  */
-export async function loadTsCloudDeployApi(): Promise<typeof import('@stacksjs/ts-cloud')> {
+type TsCloudDeployApi = typeof import('@stacksjs/ts-cloud') & { RPX_PUBLIC_TLS_HOLD_VERSION?: number }
+
+export async function loadTsCloudDeployApi(): Promise<TsCloudDeployApi> {
   const requested = process.env.TS_CLOUD_MODULE?.trim()
   if (!requested) {
     const projectModule = resolveProjectTsCloudModule()
@@ -2660,6 +2683,8 @@ async function runSshDeploy(args: {
   docker: boolean
   createCloudDriver: any
   deployAllComputeSites: any
+  holdPublicTls: boolean
+  renewRpxCertificates?: TsCloudDeployApi['renewRpxCertificates']
   ensureManagementDashboard?: (config: any, options: any) => any
   resolveSiteKind: (site: any) => DeploymentSiteKind
   shipsARelease: typeof import('@stacksjs/ts-cloud').shipsARelease
@@ -2673,7 +2698,7 @@ async function runSshDeploy(args: {
   /** Where to connect for the ssh provider; absent for hetzner, which resolves an IP. */
   sshTarget?: SshTarget
 }): Promise<void> {
-  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, shipsARelease, onlySite, persistedAttachBox, provider, sshTarget } = args
+  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, holdPublicTls, renewRpxCertificates, ensureManagementDashboard, resolveSiteKind, shipsARelease, onlySite, persistedAttachBox, provider, sshTarget } = args
 
   const startTime = performance.now()
   const targetLabel = deployTargetLabel(provider, sshTarget?.profile)
@@ -2877,7 +2902,7 @@ async function runSshDeploy(args: {
     log.info(provider === 'ssh' ? `Adopting ${sshTarget?.host ?? 'host'} (preflight, then bootstrap if needed)...` : 'Provisioning Hetzner compute infrastructure...')
     // Provision with loopback-only site ports stripped so the firewall never
     // exposes them (#1950); the full config still drives deployAllComputeSites.
-    const outputs = await driver.provisionComputeInfrastructure({ config: scrubLoopbackSitePortsForFirewall(tsCloudConfig), environment })
+    const outputs = await driver.provisionComputeInfrastructure({ config: scrubLoopbackSitePortsForFirewall(tsCloudConfig), environment, holdPublicTls })
     ip = outputs.appPublicIp
     ipv6 = outputs.appPublicIpv6
     log.success(provider === 'ssh' ? 'Host ready' : 'Hetzner compute infrastructure ready')
@@ -3102,7 +3127,7 @@ async function runSshDeploy(args: {
   // exist) rather than inside ts-cloud itself.
   // Before the environment is read: a mailbox password generated later, by
   // the mail step, would be on the mail server and not in this release.
-  if (!dnsHeld())
+  if (!holdPublicTls)
     await ensureMailboxPasswords(log, args.envFile ?? (environment === 'staging' ? '.env.staging' : '.env.production'))
   const resolvedDeployEnv = await resolveDeployEnvValues(environment, tsCloudConfig, args.envFile)
   // Persistent-state paths are declared AFTER the env merge: which file (or
@@ -3202,8 +3227,17 @@ async function runSshDeploy(args: {
   const deployConfig = onlySite
     ? { ...tsCloudConfig, sites: { [onlySite]: sitesWithResolvedEnv[onlySite] } }
     : { ...tsCloudConfig, sites: sitesWithResolvedEnv }
+  const rpxConfig = { ...tsCloudConfig, sites: sitesWithResolvedEnv }
+  const deployLogger = {
+    info: (m: string) => log.info(m),
+    warn: (m: string) => log.warn(m),
+    error: (m: string) => log.error(m),
+    step: (m: string) => log.info(m),
+    success: (m: string) => log.success(m),
+  }
   const ok = await deployAllComputeSites({
     config: deployConfig,
+    holdPublicTls,
     // Full deploys let ts-cloud reconcile the one-dashboard-per-server
     // invariant. A narrowed --site deployment must not add or remove dashboard
     // state because it intentionally touches one application site only.
@@ -3212,7 +3246,7 @@ async function runSshDeploy(args: {
     // narrowed single-site `deployConfig`, so a `--site` deploy can never drop the
     // other sites' routes (the production-incident guard). Use the environment-
     // aware full model so staging/dev route their `<prefix>.<domain>` hosts.
-    rpxConfig: { ...tsCloudConfig, sites: sitesWithResolvedEnv },
+    rpxConfig,
     environment,
     driver,
     sha,
@@ -3223,13 +3257,7 @@ async function runSshDeploy(args: {
         throw new Error(`Missing tarball for site '${siteName}'`)
       return path
     },
-    logger: {
-      info: (m: string) => log.info(m),
-      warn: (m: string) => log.warn(m),
-      error: (m: string) => log.error(m),
-      step: (m: string) => log.info(m),
-      success: (m: string) => log.success(m),
-    },
+    logger: deployLogger,
   })
   removeReleaseDir()
 
@@ -3241,9 +3269,8 @@ async function runSshDeploy(args: {
   // every visitor's browser at whatever occupies that address on THEIR network.
   // ACME has the same problem from the other side, since a challenge cannot
   // reach a host the internet cannot route to.
-  const held = dnsHeld()
-  const dnsAllowed = !held && dnsPublishingAllowed({ provider, publicIp: ip, sites })
-  if (ok && held) {
+  const dnsAllowed = !holdPublicTls && dnsPublishingAllowed({ provider, publicIp: ip, sites })
+  if (ok && holdPublicTls) {
     log.info(`DNS held (--hold-dns): the release is running on ${ip} and no record was changed.`)
     log.info('Visitors still reach the previous server. Deploy again without --hold-dns to cut over.')
   }
@@ -3272,9 +3299,19 @@ async function runSshDeploy(args: {
   // cannot issue for a name that does not resolve — so the certificate the
   // gateway loaded moments earlier does not cover it, and the box answers TLS
   // with another tenant's certificate as the SNI fallback. Re-issue and reload
-  // once records have actually landed. Skipped entirely when nothing was
-  // published, which is the steady state for every redeploy.
-  if (ok && publishedDns.length > 0) {
+  // once records have actually landed.
+  // Reconcile the native renewal service even if DNS already points here. A
+  // gateway first booted with a hold deliberately has no renewal service yet.
+  if (ok && dnsAllowed && renewRpxCertificates) {
+    try {
+      if (!await renewRpxCertificates({ config: deployConfig, rpxConfig, environment, driver, logger: deployLogger }))
+        log.warn('Managed gateway certificates are still pending.')
+    }
+    catch (err) {
+      log.warn(`TLS issuance after DNS failed: ${getErrorMessage(err)}`)
+    }
+  }
+  else if (ok && publishedDns.length > 0) {
     log.info(`Issuing TLS for ${publishedDns.length} newly published record(s)...`)
     try {
       // Run the per-tenant issuance unit this same deploy installs
@@ -3282,14 +3319,7 @@ async function runSshDeploy(args: {
       // above). It shells out to tlsx over the http-01 webroot and reloads
       // the gateway on success.
       //
-      // This used to call `renewRpxCertificates` out of @stacksjs/ts-cloud.
-      // No such export exists — the package ships `CertificateManager`, which
-      // is the AWS ACM/CloudFormation surface and has nothing to do with the
-      // rpx gateway or Let's Encrypt. So every first deploy of a new domain
-      // threw "renewRpxCertificates is not a function", fell into the
-      // best-effort catch, and left the name answering TLS with another
-      // tenant's certificate until the daily timer happened to fire.
-      //
+      // Keep this fallback for older providers on ordinary deployments.
       // The unit is idempotent and skips anything not expiring within 30
       // days, so re-running it costs one ACME no-op.
       const { execFileSync } = await import('node:child_process')
@@ -5984,7 +6014,7 @@ async function runPreviewCommand(name: string, options: { base?: string, verbose
   const port = previewPort(owners, target.slug, Number(appConfig.sites?.[target.site]?.port) || 3000)
   log.info(`Deploying preview ${target.slug} to ${target.url} (port ${port} on ${host})`)
 
-  await deployOverSsh(derivePreviewConfig(appConfig, target, port), base, { verbose: options.verbose === true, yes: true } as DeployOptions, envFile)
+  await deployOverSsh(derivePreviewConfig(appConfig, target, port), base, { verbose: options.verbose === true, yes: true } as DeployOptions, dnsHeld(), envFile)
 
   log.success(`Preview deployed: ${target.url}`)
   // For the workflow that comments the URL on the pull request.
@@ -6218,7 +6248,7 @@ export function deploy(buddy: CLI): void {
         const tsCloudConfig = deploymentRetirements(await loadTsCloudConfig(deployEnvName) ?? {}, options.retireDomains)
         const provider = resolveProvider(tsCloudConfig)
         validateDeploymentProviderInputs(provider, { envFile: selectedEnvFile, retireDomains: options.retireDomains })
-        const holdDns = dnsHeld()
+        const holdDns = holdDnsFlag || dnsHeld()
         const previewEmail = isSshPipelineProvider(provider) && !holdDns
           ? await loadDeploymentMailConfig(deployEnvName)
           : undefined
@@ -6302,6 +6332,7 @@ export function deploy(buddy: CLI): void {
         process.env.STACKS_DEPLOY_HOLD_DNS = '1'
       const tsCloudConfig = deploymentRetirements(await loadTsCloudConfig(deployEnvName) ?? {}, options.retireDomains)
       validateDeploymentProviderInputs(resolveProvider(tsCloudConfig), { envFile: selectedEnvFile, retireDomains: options.retireDomains })
+      const holdPublicTls = holdDnsFlag || dnsHeld()
       // Fly.io runs an image on Machines: no box, no SSH, no CloudFormation.
       if (tsCloudConfig && resolveProvider(tsCloudConfig) === 'fly') {
         await deployToFlyProvider(tsCloudConfig, deployEnvName, options.verbose === true, selectedEnvFile)
@@ -6310,9 +6341,9 @@ export function deploy(buddy: CLI): void {
         return
       }
       if (tsCloudConfig && isSshPipelineProvider(resolveProvider(tsCloudConfig))) {
-        if (!dnsHeld())
+        if (!holdPublicTls)
           await loadDeploymentMailConfig(deployEnvName)
-        await deployOverSsh(applyDeploymentDomainOverride(tsCloudConfig, options.domain), deployEnv, options, selectedEnvFile)
+        await deployOverSsh(applyDeploymentDomainOverride(tsCloudConfig, options.domain), deployEnv, options, holdPublicTls, selectedEnvFile)
         return
       }
 
