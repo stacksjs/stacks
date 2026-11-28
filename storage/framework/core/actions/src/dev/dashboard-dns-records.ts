@@ -45,11 +45,11 @@ export function dashboardDnsConfiguration(config: DnsConfig, cloud: {
 
 export function configuredDashboardDnsRecords(config: DnsConfig): DashboardDnsRecordRow[] {
   return [
-    ...(config.a ?? []).map(({ name, address, ttl }) => ({ type: 'A', name, value: address, ttl })),
-    ...(config.aaaa ?? []).map(({ name, address, ttl }) => ({ type: 'AAAA', name, value: address, ttl })),
-    ...(config.cname ?? []).map(({ name, target, ttl }) => ({ type: 'CNAME', name, value: target, ttl })),
-    ...(config.txt ?? []).map(({ name, content, ttl }) => ({ type: 'TXT', name, value: content, ttl })),
-    ...(config.mx ?? []).map(({ name, mailServer, ttl, priority }) => ({ type: 'MX', name, value: mailServer, ttl, priority })),
+    ...(config.a ?? []).map<DashboardDnsRecordRow>(({ name, address, ttl }) => ({ type: 'A', name, value: address, ttl })),
+    ...(config.aaaa ?? []).map<DashboardDnsRecordRow>(({ name, address, ttl }) => ({ type: 'AAAA', name, value: address, ttl })),
+    ...(config.cname ?? []).map<DashboardDnsRecordRow>(({ name, target, ttl }) => ({ type: 'CNAME', name, value: target, ttl })),
+    ...(config.txt ?? []).map<DashboardDnsRecordRow>(({ name, content, ttl }) => ({ type: 'TXT', name, value: content, ttl })),
+    ...(config.mx ?? []).map<DashboardDnsRecordRow>(({ name, mailServer, ttl, priority }) => ({ type: 'MX', name, value: mailServer, ttl, priority })),
   ]
 }
 
