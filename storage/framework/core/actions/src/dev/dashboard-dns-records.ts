@@ -6,7 +6,7 @@ const recordKeys = { A: 'a', AAAA: 'aaaa', CNAME: 'cname', TXT: 'txt', MX: 'mx' 
 
 type DashboardDnsRecordType = keyof typeof recordKeys
 
-interface ConfiguredDashboardDnsRecord {
+interface DashboardDnsRecordRow {
   type: DashboardDnsRecordType
   name: string
   value: string
@@ -14,8 +14,8 @@ interface ConfiguredDashboardDnsRecord {
   priority?: number
 }
 
-interface DashboardDnsRecordChange {
-  key: (typeof recordKeys)[DashboardDnsRecordType]
+interface DashboardDnsRecordAddition {
+  key: typeof recordKeys[DashboardDnsRecordType]
   record: Record<string, string | number>
 }
 
@@ -43,13 +43,13 @@ export function dashboardDnsConfiguration(config: DnsConfig, cloud: {
   return { domains, hosts: [...new Set([...applicationDnsHosts(sites), ...domains])], config }
 }
 
-export function configuredDashboardDnsRecords(config: DnsConfig): ConfiguredDashboardDnsRecord[] {
+export function configuredDashboardDnsRecords(config: DnsConfig): DashboardDnsRecordRow[] {
   return [
-    ...(config.a ?? []).map(({ name, address, ttl }) => ({ type: 'A' as const, name, value: address, ttl })),
-    ...(config.aaaa ?? []).map(({ name, address, ttl }) => ({ type: 'AAAA' as const, name, value: address, ttl })),
-    ...(config.cname ?? []).map(({ name, target, ttl }) => ({ type: 'CNAME' as const, name, value: target, ttl })),
-    ...(config.txt ?? []).map(({ name, content, ttl }) => ({ type: 'TXT' as const, name, value: content, ttl })),
-    ...(config.mx ?? []).map(({ name, mailServer, ttl, priority }) => ({ type: 'MX' as const, name, value: mailServer, ttl, priority })),
+    ...(config.a ?? []).map(({ name, address, ttl }) => ({ type: 'A', name, value: address, ttl })),
+    ...(config.aaaa ?? []).map(({ name, address, ttl }) => ({ type: 'AAAA', name, value: address, ttl })),
+    ...(config.cname ?? []).map(({ name, target, ttl }) => ({ type: 'CNAME', name, value: target, ttl })),
+    ...(config.txt ?? []).map(({ name, content, ttl }) => ({ type: 'TXT', name, value: content, ttl })),
+    ...(config.mx ?? []).map(({ name, mailServer, ttl, priority }) => ({ type: 'MX', name, value: mailServer, ttl, priority })),
   ]
 }
 
@@ -58,7 +58,7 @@ function validLabels(value: string, service = false): boolean {
   return value.length <= 253 && value.split('.').every(part => label.test(part))
 }
 
-export function dashboardDnsRecord(input: DnsSettingsInput, settings: DashboardDnsConfiguration): DashboardDnsRecordChange {
+export function dashboardDnsRecord(input: DnsSettingsInput, settings: DashboardDnsConfiguration): DashboardDnsRecordAddition {
   const type = typeof input.type === 'string' && Object.hasOwn(recordKeys, input.type) ? input.type as DashboardDnsRecordType : undefined
   if (!type)
     throw new Error('Choose a supported DNS record type.')

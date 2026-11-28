@@ -4,6 +4,7 @@ import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { clearProjectService, defaultsPath, projectPath, publicPath, recordProjectService, storagePath } from '@stacksjs/path'
 import { seedCsrfPageResponse, validateDevCsrfRequest } from './csrf'
 import { resolveComponentsLibraryRoot } from './defaults-resources'
+import { dashboardGitHubIssuesRoutes } from './dashboard-github-issues'
 import { createIdleExit, projectSwitcherRoutes } from './dashboard-projects'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { openDashboardNativeWindow } from './dashboard-native'
@@ -221,6 +222,11 @@ async function startStxServer(): Promise<void> {
       // Loaded on first use: most sessions never switch project, and the
       // daemon is only started by the first one that does.
       openDashboard: async root => (await import('../daemon/client')).openProjectDashboard(root),
+    }),
+    ...dashboardGitHubIssuesRoutes({
+      root: projectPath(),
+      port: dashboardPort,
+      url: () => dashboardBrowserUrl,
     }),
     ...dashboardSoftwareUpdateRoutes({
       root: projectPath(),

@@ -1,5 +1,58 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.713...v0.75.714)
+
+## 🐛 Bug Fixes
+
+- emit valid declarations for dashboard DNS settings ([3bb4da5](https://github.com/stacksjs/stacks/commit/3bb4da5)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.712...v0.75.713)
+
+## ✨ Features
+
+- **dashboard**: show GitHub issues across local projects ([1f5f069](https://github.com/stacksjs/stacks/commit/1f5f069)) _(by Chris Breuer)_
+- **socials**: support LinkedIn native PKCE authorization ([f4d0420](https://github.com/stacksjs/stacks/commit/f4d0420)) _(by Chris Breuer)_ ([#3491](https://github.com/stacksjs/stacks/issues/3491), [stacksjs/postline#192](https://github.com/stacksjs/postline/issues/192))
+- use Craft controls and highlighted source in dashboard settings ([f851b9c](https://github.com/stacksjs/stacks/commit/f851b9c)) _(by Chris Breuer)_
+- manage deployment DNS records in dashboard settings ([5e5f867](https://github.com/stacksjs/stacks/commit/5e5f867)) _(by Chris Breuer)_
+- organize dashboard project settings into sections ([c6fbe7c](https://github.com/stacksjs/stacks/commit/c6fbe7c)) _(by Chris Breuer)_
+- consolidate project configuration in dashboard settings ([c228b4f](https://github.com/stacksjs/stacks/commit/c228b4f)) _(by Chris Breuer)_
+- **release**: recover a historical npm umbrella from its original archive ([6f7fdcf](https://github.com/stacksjs/stacks/commit/6f7fdcf)) _(by Chris)_
+
+## 🐛 Bug Fixes
+
+- require dotenv-capable syntax highlighting in dashboard settings ([b46f294](https://github.com/stacksjs/stacks/commit/b46f294)) _(by Chris Breuer)_
+- center dashboard settings dialogs in WebKit ([a4c113f](https://github.com/stacksjs/stacks/commit/a4c113f)) _(by Chris Breuer)_
+- polish keyboard navigation in dashboard settings ([5946e6c](https://github.com/stacksjs/stacks/commit/5946e6c)) _(by Chris Breuer)_
+- keep dashboard settings chrome steady during navigation ([2851ecb](https://github.com/stacksjs/stacks/commit/2851ecb)) _(by Chris Breuer)_
+- **telephony**: expose parent SID in the provider contract ([992aae5](https://github.com/stacksjs/stacks/commit/992aae5)) _(by Chris)_
+- **ai**: normalize Anthropic structured array bounds ([3783804](https://github.com/stacksjs/stacks/commit/3783804)) _(by Chris)_
+- **release**: keep npm latest from moving backward ([a8d388d](https://github.com/stacksjs/stacks/commit/a8d388d)) _(by Chris)_
+
+## 📝 Documentation
+
+- refresh release references after integrating main ([f479bbd](https://github.com/stacksjs/stacks/commit/f479bbd)) _(by Chris Breuer)_
+- refresh dashboard counts and native capability catalog ([fefee45](https://github.com/stacksjs/stacks/commit/fefee45)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- integrate current Stacks main ([ba0dfcb](https://github.com/stacksjs/stacks/commit/ba0dfcb)) _(by Chris)_
+- integrate current Stacks main ([3bde93e](https://github.com/stacksjs/stacks/commit/3bde93e)) _(by Chris)_
+- integrate current Stacks main ([9e0e63d](https://github.com/stacksjs/stacks/commit/9e0e63d)) _(by Chris)_
+- integrate current Stacks main ([b9fbbaa](https://github.com/stacksjs/stacks/commit/b9fbbaa)) _(by Chris)_
+
+## 🎉 Miscellaneous
+
+- Merge pull request #3484 from stacksjs/codex/telephony-filter-contract ([b36f3ed](https://github.com/stacksjs/stacks/commit/b36f3ed)) _(by Chris)_ ([#3484](https://github.com/stacksjs/stacks/issues/3484))
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.711...v0.75.712)
 
 ## ✨ Features

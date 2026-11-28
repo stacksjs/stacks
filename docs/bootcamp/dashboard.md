@@ -16,6 +16,20 @@ Run the dashboard during development with:
 
 See [Extending the dashboard](/bootcamp/how-to/extend-dashboard) for a complete example.
 
+## GitHub Issues
+
+Run `./buddy dev --dashboard` and open **GitHub Issues** in the sidebar.
+The view combines open and closed issues from the GitHub repositories of your
+registered local Stacks projects. Use the search box and project or status
+filters to find an issue, then select its title to open it on GitHub.
+
+The view uses the same project list as the dashboard's project switcher. Add a
+checkout with `buddy projects:add <path>` or discover checkouts with
+`buddy projects:scan`. Buddy uses the GitHub remote named `origin` when
+available, then `upstream`, then another GitHub remote. For private
+repositories, sign in with `gh auth login` or provide a GitHub token
+with permission to read issues.
+
 ## Personal sidebar order
 
 Drag section and item grips to change their order. You can also focus a grip
