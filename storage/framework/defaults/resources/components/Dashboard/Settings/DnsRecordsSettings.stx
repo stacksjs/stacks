@@ -1,0 +1,181 @@
+<script client>
+import { DashboardApiError, dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
+
+interface DnsRecordRow {
+  type: string
+  name: string
+  value: string
+  ttl?: number | 'auto'
+  priority?: number
+}
+
+interface DnsSnapshot {
+  domains: string[]
+  records: DnsRecordRow[]
+  revision: string
+}
+
+const emit = defineEmits(['saved'])
+const snapshot = state<DnsSnapshot | null>(null)
+const loading = state(true)
+const saving = state(false)
+const showAdd = state(false)
+const error = state('')
+const formError = state('')
+const savedMessage = state('')
+
+const recordType = state<'A' | 'AAAA' | 'CNAME' | 'MX' | 'TXT'>('TXT')
+const recordDomain = state('')
+const recordHost = state('@')
+const recordValue = state('')
+const recordTtl = state('600')
+const recordPriority = state('10')
+
+const recordTypes = [
+  { value: 'TXT', label: 'TXT · Text or verification' },
+  { value: 'CNAME', label: 'CNAME · Host alias' },
+  { value: 'A', label: 'A · IPv4 address' },
+  { value: 'AAAA', label: 'AAAA · IPv6 address' },
+  { value: 'MX', label: 'MX · Mail server' },
+]
+const domainOptions = derived(() => (snapshot()?.domains ?? []).map(domain => ({ value: domain, label: domain })))
+const recordRows = derived(() => snapshot()?.records ?? [])
+const hostname = derived(() => {
+  const domain = recordDomain()
+  const host = recordHost().trim().toLowerCase().replace(/\.$/, '')
+  if (!host || host === '@' || host === domain)
+    return domain
+  return host.endsWith(`.${domain}`) ? host : `${host}.${domain}`
+})
+const valueLabel = derived(() => ({ A: 'IPv4 address', AAAA: 'IPv6 address', CNAME: 'Target hostname', MX: 'Mail server', TXT: 'Text' })[recordType()] ?? 'Value')
+const valueHint = derived(() => ({ A: 'A public IPv4 address', AAAA: 'A public IPv6 address', CNAME: 'For example, hosted.example.com', MX: 'For example, mail.example.com', TXT: 'Paste the verification token or TXT value.' })[recordType()] ?? '')
+
+async function loadRecords(): Promise<void> {
+  loading.set(true)
+  error.set('')
+  try {
+    snapshot.set(await dashboardApi<DnsSnapshot>('/api/config/dns', { projectConfig: true }))
+  }
+  catch (cause) {
+    error.set(cause instanceof Error ? cause.message : 'Could not load DNS records.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function openAdd(): void {
+  recordDomain.set(snapshot()?.domains[0] ?? '')
+  recordType.set('TXT')
+  recordHost.set('@')
+  recordValue.set('')
+  recordTtl.set('600')
+  recordPriority.set('10')
+  formError.set('')
+  savedMessage.set('')
+  showAdd.set(true)
+}
+
+function closeAdd(): void {
+  if (!saving())
+    showAdd.set(false)
+}
+
+async function saveRecord(): Promise<void> {
+  const current = snapshot()
+  if (!current || saving())
+    return
+  saving.set(true)
+  formError.set('')
+  try {
+    const updated = await dashboardApi('/api/config/dns/add', {
+      method: 'POST',
+      projectConfig: true,
+      body: {
+        revision: current.revision,
+        record: {
+          type: recordType(),
+          domain: recordDomain(),
+          host: recordHost(),
+          value: recordValue(),
+          ttl: Number(recordTtl()),
+          ...(recordType() === 'MX' && { priority: Number(recordPriority()) }),
+        },
+      },
+    })
+    emit('saved', updated)
+    showAdd.set(false)
+    savedMessage.set('Saved to config/dns.ts. Your next deployment will add the record if it is missing.')
+    await loadRecords()
+  }
+  catch (cause) {
+    formError.set(cause instanceof Error ? cause.message : 'Could not save the DNS record.')
+    if (cause instanceof DashboardApiError && cause.status === 409)
+      await loadRecords()
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+onMount(loadRecords)
+</script>
+
+<div class="dashboard-dns-settings">
+  <div class="dashboard-dns-toolbar">
+    <p class="dashboard-config-intro">Deployments add missing records for the selected app domain. Conflicting provider records are reported and kept.</p>
+    <Button size="sm" :disabled="loading() || domainOptions().length === 0" @click="openAdd">
+      <span class="h-4 w-4 i-hugeicons-add-01" aria-hidden="true"></span>
+      Add record
+    </Button>
+  </div>
+
+  <p :if="loading()" class="dashboard-config-intro" role="status">Loading DNS records…</p>
+  <div :if="error()" class="flex flex-wrap gap-2 items-center" role="alert">
+    <p class="text-red-700 text-sm dark:text-red-400" :text="error()"></p>
+    <Button variant="secondary" size="sm" @click="loadRecords">Retry</Button>
+  </div>
+  <p :if="savedMessage()" class="text-green-700 text-sm dark:text-green-400" role="status" :text="savedMessage()"></p>
+  <p :if="!loading() && snapshot() && domainOptions().length === 0" class="dashboard-config-intro">
+    Set a public deployment domain in <a href="/settings/config/cloud?file=cloud" data-stx-link data-stx-transition="none">Cloud &amp; Domains</a> to add records.
+  </p>
+  <p :if="!loading() && domainOptions().length > 0" class="dashboard-config-intro"
+    :text="'Application domains: ' + (snapshot()?.domains ?? []).join(', ')"></p>
+  <p :if="!loading() && !error() && recordRows().length === 0" class="dashboard-config-intro">No extra DNS records declared.</p>
+
+  <div :if="recordRows().length > 0" class="dashboard-dns-record-list" role="list" aria-label="Declared DNS records">
+    <div :for="record in recordRows()" class="dashboard-dns-record-row" role="listitem">
+      <span class="dashboard-dns-type" :text="record.type"></span>
+      <div class="min-w-0">
+        <span class="block break-all font-medium text-sm" :text="record.name.replace(/\.$/, '') || '@'"></span>
+        <span class="dashboard-dns-value" :text="record.value"></span>
+      </div>
+      <span class="dashboard-dns-meta" :text="(typeof record.ttl === 'number' ? record.ttl + ' s' : 'Auto TTL') + (record.priority == null ? '' : ' · Priority ' + record.priority)"></span>
+    </div>
+  </div>
+
+  <Modal :isOpen="showAdd()" title="Add DNS record" size="md" @close="closeAdd">
+    <form class="flex flex-col gap-4" @submit.prevent="saveRecord">
+      <Select v-model:value="recordType" label="Record type" :options="recordTypes" :disabled="saving()" />
+      <Select v-model:value="recordDomain" label="App domain" :options="domainOptions()" :disabled="saving()" />
+      <Input v-model:value="recordHost" label="Host" placeholder="@" :hint="'Publishes at ' + hostname()" :spellcheck="false" :disabled="saving()" />
+      <div :if="recordType() === 'TXT'">
+        <Textarea v-model:value="recordValue" :label="valueLabel()" :hint="valueHint()" :rows="2" :required="true" :disabled="saving()" />
+      </div>
+      <div :else>
+        <Input v-model:value="recordValue" :label="valueLabel()" :hint="valueHint()" :required="true" :spellcheck="false" :disabled="saving()" />
+      </div>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <Input v-model:value="recordTtl" type="number" label="TTL in seconds" min="600" step="1" :required="true" :disabled="saving()" />
+        <div :if="recordType() === 'MX'">
+          <Input v-model:value="recordPriority" type="number" label="Priority" min="0" max="65535" step="1" :required="true" :disabled="saving()" />
+        </div>
+      </div>
+      <p :if="formError()" class="text-red-700 text-sm dark:text-red-400" role="alert" :text="formError()"></p>
+      <div class="flex gap-2 justify-end">
+        <Button type="button" variant="secondary" :disabled="saving()" @click="closeAdd">Cancel</Button>
+        <Button type="submit" :loading="saving()">Save DNS record</Button>
+      </div>
+    </form>
+  </Modal>
+</div>

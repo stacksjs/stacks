@@ -1,3 +1,5 @@
+import { configDnsDomains, desiredDnsRecords, dnsRecordSkipReason } from '@stacksjs/dns'
+import type { DnsConfig } from '@stacksjs/types'
 import type { TsCloudConfig } from './deploy'
 import { dnsPublishingAllowed, isSshPipelineProvider, resolveSshTarget } from './deploy-ssh-target'
 import type {
@@ -24,6 +26,7 @@ export interface CreateDeploymentPreviewOptions {
   domain?: string
   docker?: boolean
   holdDns?: boolean
+  dnsConfig?: DnsConfig
   mail?: { domain: string, attachTo?: string }
   sshPublicIp?: string
   fallbackProjectName?: string
@@ -234,6 +237,16 @@ export function createDeploymentPreview(options: CreateDeploymentPreviewOptions)
       operations.push(operation('dns', 'Reconcile DNS records', 'Publish the configured public domains through their resolved DNS providers.', publicSites.map(site => site.name)))
       operations.push(operation('tls', 'Reconcile TLS certificates', 'Issue or renew certificates for public domains and reload the gateway when records change.', publicSites.map(site => site.name)))
     }
+  }
+
+  if (options.dnsConfig && !options.holdDns && publishesDns) {
+    const scopeSites = Object.fromEntries(availableSites.filter(([name]) => !options.site || options.site === name))
+    const domains = configDnsDomains(scopeSites, config.infrastructure?.dns?.domain || options.domain)
+    const dns = options.dnsConfig
+    const records = domains.flatMap(domain => desiredDnsRecords(domain, dns)
+      .filter(record => !dnsRecordSkipReason(record, domain)))
+    if (records.length)
+      operations.push(operation('dns', 'Add declared DNS records', records.map(record => `${record.type} ${record.name}`).join(', ')))
   }
 
   if (options.mail && sshDeploy && publishesDns && !publicationHeld) {

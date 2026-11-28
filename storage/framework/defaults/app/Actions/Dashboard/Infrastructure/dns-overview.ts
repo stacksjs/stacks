@@ -51,10 +51,10 @@ function recordValue(type: DnsRecordType, item: DataRecord): string {
   if (type === 'CNAME')
     return text(item.target) ?? text(item.value) ?? ''
   if (type === 'MX')
-    return text(item.server) ?? text(item.value) ?? ''
+    return text(item.mailServer) ?? text(item.server) ?? text(item.value) ?? ''
   if (type === 'A' || type === 'AAAA')
     return text(item.address) ?? text(item.value) ?? ''
-  return text(item.value) ?? ''
+  return text(item.content) ?? text(item.value) ?? ''
 }
 
 function configuredRecords(dnsConfig: DataRecord): DashboardDnsRecord[] {

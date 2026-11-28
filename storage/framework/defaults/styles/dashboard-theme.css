@@ -735,6 +735,7 @@ html:has([data-dashboard-settings][data-settings-native="true"]) [data-dashboard
 
 html:has([data-dashboard-settings-content]) .dashboard-modal-layer {
   left: 0;
+  width: auto;
 }
 
 .dashboard-settings {
@@ -1171,6 +1172,57 @@ html:has([data-dashboard-settings-content]) .dashboard-modal-layer {
 .dashboard-config-field label:has(> [role="switch"]) {
   width: 100%;
   overflow-wrap: anywhere;
+}
+
+.dashboard-dns-settings {
+  display: grid;
+  gap: 10px;
+  padding: 0 14px 14px;
+}
+
+.dashboard-dns-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.dashboard-dns-toolbar p {
+  flex: 1 1 230px;
+}
+
+.dashboard-dns-record-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px;
+  padding: 10px 0;
+  border-block-start: 1px solid var(--stx-mac-separator);
+}
+
+.dashboard-dns-type {
+  justify-self: start;
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: var(--stx-mac-well);
+  font: 11px ui-monospace, monospace;
+}
+
+.dashboard-dns-meta,
+.dashboard-dns-value {
+  color: var(--stx-mac-ink-secondary);
+  font-size: 12px;
+}
+
+.dashboard-dns-value {
+  display: block;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 480px) {
+  .dashboard-dns-record-row { grid-template-columns: 44px minmax(0, 1fr); }
+  .dashboard-dns-meta { grid-column: 2; }
 }
 
 .dashboard-config-input {

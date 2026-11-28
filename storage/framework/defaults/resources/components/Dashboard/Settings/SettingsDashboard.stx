@@ -18,6 +18,7 @@ const pending = state<'reload' | EditorMode | null>(null)
 const fileQuery = state('')
 const fieldQuery = state('')
 const fieldLimit = state(40)
+const dnsFile = derived(() => selected() === 'dns')
 
 const filteredFiles = derived(() => {
   const needle = fileQuery().trim().toLowerCase()
@@ -140,10 +141,10 @@ useEventListener('stx:load', loadSection)
           </div>
           <div class="flex flex-wrap gap-2 items-center">
             <div class="dashboard-config-mode-group" role="group" aria-label="Configuration editor">
-              <button type="button" class="dashboard-config-mode" :aria-pressed="String(mode() === 'fields')" :disabled="saving()" @click="requestMode('fields')">Fields</button>
+              <button type="button" class="dashboard-config-mode" :aria-pressed="String(mode() === 'fields')" :disabled="saving()" @click="requestMode('fields')" :text="dnsFile() ? 'Records' : 'Fields'"></button>
               <button type="button" class="dashboard-config-mode" :aria-pressed="String(mode() === 'source')" :disabled="saving()" @click="requestMode('source')">TypeScript</button>
             </div>
-            <Button type="submit" size="sm" :loading="saving()" :disabled="saving() || !isDirty()">Save changes</Button>
+            <Button :if="!dnsFile() || mode() === 'source'" type="submit" size="sm" :loading="saving()" :disabled="saving() || !isDirty()">Save changes</Button>
           </div>
         </div>
 
@@ -152,7 +153,7 @@ useEventListener('stx:load', loadSection)
           <CodeEditor v-model:value="sourceDraft" language="typescript" :label="'config/' + selected() + '.ts'" :readonly="saving()" @save="save()" />
         </div>
 
-        <div :if="mode() === 'fields'" class="min-w-0">
+        <div :if="mode() === 'fields' && !dnsFile()" class="min-w-0">
           <div class="dashboard-config-field-tools">
             <p class="dashboard-config-intro">Use TypeScript for expressions, environment bindings, and new keys.</p>
             <div :if="fields().length > 6">
@@ -193,6 +194,9 @@ useEventListener('stx:load', loadSection)
           </div>
         </div>
       </form>
+      <div :if="dnsFile() && mode() === 'fields'">
+        <DnsRecordsSettings @saved="setDocument($event)" />
+      </div>
     </SettingsGroup>
   </div>
 

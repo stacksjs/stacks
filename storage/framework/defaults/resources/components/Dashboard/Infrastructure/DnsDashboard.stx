@@ -158,6 +158,7 @@ onMount(() => {
       </div>
       <p class="mt-1 max-w-2xl text-neutral-500 text-sm dark:text-neutral-400">DNS declarations from config/dns.ts and the project domain from config/cloud.ts.</p>
     </div>
+    <Button tag="a" href="/settings/config/dns">Edit in Settings</Button>
     <Button variant="secondary" :loading="loading()" @click="loadDns">
       <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
       Refresh

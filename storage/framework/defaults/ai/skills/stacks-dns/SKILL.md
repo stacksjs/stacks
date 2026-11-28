@@ -27,8 +27,8 @@ desiredDnsRecords(domain, config) converts native config to provider records.
 planDnsSync(desired, current, { zone? }) returns create/keep/skip with reasons.
 syncDnsConfig(domain, config, { dryRun?, provider?, resolver? }) reports created/kept/failed,
 failures/skipped/applied/provider. It only creates missing declared records;
-it never deletes or overwrites an existing value. Single-value A/AAAA/CNAME
-records are kept when present; TXT/MX can add distinct values. Editing config
+it never deletes or overwrites an existing value. An identical A/AAAA/CNAME
+record is kept and a conflicting value is skipped; TXT/MX can add distinct values. Editing config
 does not imply changing an already-present provider value.
 
 dryRun reads public DNS without provider credentials; that is not a complete
@@ -37,6 +37,21 @@ live `_dmarc` or DKIM record reads as kept. Actual apply selects a ts-cloud DNS 
 and credentials. A missing provider yields an unapplied plan, not fake success.
 The native sync interface supports Route53/Porkbun/GoDaddy/Cloudflare through
 the provider factory; retained request/planner tests are not live provider parity.
+
+## Settings and deployments
+
+Command-Comma → DNS Records lists the project declarations and adds a
+record to `config/dns.ts`. A record added here stores a fully qualified
+name under the chosen application hostname, so a deploy for a different
+hostname or environment does not copy it. The TypeScript view handles
+computed arrays and other advanced configurations. The DNS overview links
+to this same editor.
+
+`buddy deploy --dry-run` lists the eligible declarations without calling a
+provider. Normal deployments add missing records when DNS publication is
+enabled and a provider serves the domain. Conflicts with existing record
+values or deployment-owned routing are reported. The declaration sync
+does not remove existing provider records.
 
 ## Native config record shapes
 

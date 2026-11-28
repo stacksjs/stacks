@@ -1,7 +1,7 @@
 import type { DnsConfig } from '@stacksjs/types'
 import type { DnsProvider, DnsRecord, DnsRecordType } from '@stacksjs/ts-cloud'
 import { promises as resolver } from 'node:dns'
-import { DnsProviderFactory } from '@stacksjs/ts-cloud'
+import { DnsProviderFactory, policyTag } from '@stacksjs/ts-cloud'
 
 /**
  * Declarative DNS reconciliation for a Stacks app's `config/dns.ts`.
@@ -51,6 +51,41 @@ function toFqdn(domain: string, name: string): string {
     return normalized
 
   return `${name}.${domain}`
+}
+
+/** Public hostnames this project deploys, excluding redirect-only aliases. */
+export function applicationDnsHosts(sites: Readonly<Record<string, unknown>>): string[] {
+  return [...new Set(Object.values(sites).flatMap((site) => {
+    if (!site || typeof site !== 'object' || ('redirect' in site && site.redirect) || !('domain' in site))
+      return []
+    const domains = Array.isArray(site.domain) ? site.domain : [site.domain]
+    return domains.flatMap((domain) => {
+      const host = typeof domain === 'string' ? publicDnsHostname(domain) : undefined
+      return host ? [host] : []
+    })
+  }))]
+}
+
+/** Hostname boundaries for relative declarations in config/dns.ts. */
+export function configDnsDomains(sites: Readonly<Record<string, unknown>>, fallback?: string): string[] {
+  const domains = [...new Set(applicationDnsHosts(sites).map(domain => domain.replace(/^www\./, '')))]
+  if (!domains.length && fallback) {
+    const domain = publicDnsHostname(fallback)
+    if (domain)
+      domains.push(domain.replace(/^www\./, ''))
+  }
+  return domains.filter(domain => !domains.some(other => other !== domain && domain.endsWith(`.${other}`)))
+}
+
+function publicDnsHostname(value: string): string | undefined {
+  try {
+    const url = new URL(value.includes('://') ? value : `https://${value}`)
+    const host = normalizeName(url.hostname)
+    if (/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z][a-z0-9-]{1,62}$/.test(host)
+      && !/\.(?:localhost|local|internal)$/.test(host))
+      return host
+  }
+  catch {}
 }
 
 function normalizeName(name: string): string {
@@ -149,21 +184,27 @@ export interface DnsPlan {
  * indistinguishable in the summary line. A record nobody can publish is its own
  * outcome and says so.
  */
-function skipReason(record: DnsRecord, zone?: string): string | null {
+export function dnsRecordSkipReason(record: DnsRecord, zone?: string): string | null {
   if ((record.type === 'A' || record.type === 'AAAA') && record.content === '@')
     return `address "@" copies the apex ${record.type} record, and config/dns.ts declares none`
 
   if (!isPublishable(record))
     return `${record.content} is a private, loopback or placeholder address and is never published`
 
-  if (zone) {
-    const name = normalizeName(record.name)
-    const normalizedZone = normalizeName(zone)
-    if (name !== normalizedZone && !name.endsWith(`.${normalizedZone}`))
-      return `${record.name} is outside the ${zone} zone`
-  }
+  if (zone && !dnsRecordInScope(record.name, zone))
+    return `${record.name} is outside the ${zone} zone`
 
   return null
+}
+
+export function dnsRecordInScope(name: string, zone: string): boolean {
+  const host = normalizeName(name)
+  const scope = normalizeName(zone)
+  return host === scope || host.endsWith(`.${scope}`)
+}
+
+function equivalentDnsContent(type: DnsRecordType, value: string): string {
+  return type === 'CNAME' || type === 'MX' ? normalizeName(value) : unquote(value)
 }
 
 /**
@@ -173,19 +214,25 @@ function skipReason(record: DnsRecord, zone?: string): string | null {
  */
 export function planDnsSync(desired: DnsRecord[], current: DnsRecord[], options: { zone?: string } = {}): DnsPlan {
   const items: DnsPlanItem[] = desired.map((want) => {
-    const reason = skipReason(want, options.zone)
+    const reason = dnsRecordSkipReason(want, options.zone)
     if (reason)
       return { record: want, action: 'skip' as const, reason }
 
     const name = normalizeName(want.name)
-    const sameNameType = current.filter(c => c.type === want.type && normalizeName(c.name) === name)
-    const present = SINGLE_VALUED.has(want.type)
-      ? sameNameType.length > 0
-      : sameNameType.some(c => unquote(c.content) === unquote(want.content))
+    const sameName = current.filter(record => normalizeName(record.name) === name)
+    const present = sameName.some(record => record.type === want.type
+      && equivalentDnsContent(want.type, record.content) === equivalentDnsContent(want.type, want.content)
+      && (want.type !== 'MX' || record.priority === want.priority))
+    if (present)
+      return { record: want, action: 'keep' as const }
+    const policy = want.type === 'TXT' ? policyTag(unquote(want.content)) : undefined
+    const conflict = sameName.some(record => (record.type === want.type && SINGLE_VALUED.has(want.type))
+      || want.type === 'CNAME' || record.type === 'CNAME'
+      || (policy && record.type === 'TXT' && policyTag(unquote(record.content)) === policy))
+    if (conflict)
+      return { record: want, action: 'skip' as const, reason: 'A conflicting record already exists at this name' }
 
-    // Only create a genuinely-missing record; an existing one is left exactly
-    // as it is (never delete, never overwrite).
-    return { record: want, action: present ? 'keep' as const : 'create' as const }
+    return { record: want, action: 'create' as const }
   })
 
   return {
@@ -352,9 +399,10 @@ export async function syncDnsConfig(
   // Only reach for a registrar provider (credentials) when actually applying;
   // dry runs read current state from public DNS, so they need no credentials.
   const provider = options.dryRun ? null : (options.provider ?? (await dnsProviderForDomain(domain)))
-  const current = provider
-    ? (await provider.listRecords(domain)).records ?? []
-    : await resolveLiveRecords(domain, desired.map(record => record.name), options.resolver)
+  const listed = provider ? await provider.listRecords(domain) : undefined
+  if (listed && !listed.success)
+    throw new Error(listed.message || `Could not read the ${provider?.name} zone for ${domain}`)
+  const current = listed?.records ?? await resolveLiveRecords(domain, desired.map(record => record.name), options.resolver)
   const plan = planDnsSync(desired, current, { zone: domain })
 
   if (options.dryRun || !provider) {

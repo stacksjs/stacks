@@ -149,7 +149,7 @@ function createProjectConfigEditor(section: ProjectConfigSection) {
             drafts[key] = value
           sourceDraft.set(draft.source)
         }
-        setMode(draft?.mode ?? options?.mode ?? (result.fields.length ? 'fields' : 'source'))
+        setMode(draft?.mode ?? options?.mode ?? (name === 'dns' || result.fields.length ? 'fields' : 'source'))
         const confirmation = saved()
         if (!draft && confirmation?.file === name && confirmation.revision === result.revision)
           message.set(savedMessage(name))

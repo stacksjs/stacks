@@ -1,7 +1,6 @@
 import type { CLI } from '@stacksjs/cli'
 import type { DnsConfig } from '@stacksjs/types'
 import { existsSync } from 'node:fs'
-import { pathToFileURL } from 'node:url'
 import { log } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 
@@ -9,7 +8,7 @@ export async function loadProjectDnsConfig(fallback: DnsConfig): Promise<DnsConf
   const configPath = p.projectConfigPath('dns.ts')
   if (!existsSync(configPath)) return fallback
 
-  const loaded = await import(`${pathToFileURL(configPath).href}?updated=${Date.now()}`)
+  const loaded = await import(`${configPath}?updated=${Date.now()}`)
   return (loaded.default ?? loaded.dns ?? fallback) as DnsConfig
 }
 

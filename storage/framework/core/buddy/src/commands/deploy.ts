@@ -12,7 +12,7 @@ import { runBeforeDeployHook } from '@stacksjs/actions/deploy/hooks'
 import { italic, onUnknownSubcommand, outro, prompts } from "@stacksjs/cli"
 import { app, awaitConfig, config as stacksConfig, dns as dnsConfig, email as emailConfig, security as securityConfig } from '@stacksjs/config'
 import { resolvePrivateTenants } from '../cloud-tenants'
-import { addDomain, hasUserDomainBeenAddedToCloud, syncDnsConfig } from '@stacksjs/dns'
+import { addDomain, configDnsDomains, desiredDnsRecords, dnsRecordInScope, hasUserDomainBeenAddedToCloud, syncDnsConfig } from '@stacksjs/dns'
 import { loadProjectDnsConfig } from '../config'
 import { env } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
@@ -3321,7 +3321,7 @@ async function runSshDeploy(args: {
   // only creates declared records that are missing (and never a private IP),
   // never deletes or overwrites. Best-effort, same as the reconcilers around it.
   if (ok && dnsAllowed)
-    await reconcileConfigDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, log)
+    await reconcileConfigDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, tsCloudConfig, log)
 
   // An app connected to CommsHQ sends from its own domain once the domain's
   // DNS says it may. The records are published here, each deploy, until
@@ -5361,41 +5361,7 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
   }
 }
 
-/**
- * Point every site's public domain (apex + `www`) at the Hetzner box via the
- * appropriate DNS provider. Providers are resolved per-domain from the
- * environment (Porkbun, Route53, Cloudflare, GoDaddy) using ts-cloud's
- * `detectDnsProvider`, so whichever registrar actually hosts the zone is used.
- * Idempotent (upsert) and best-effort — failures are logged, not thrown.
- */
-// Additively reconcile the app's config/dns.ts records (verification TXT, extra
-// records) for every site domain, using the shared provider-agnostic
-// syncDnsConfig from @stacksjs/dns. Create-only and never destructive, so it is
-// safe to run on every deploy; a no-op when config/dns.ts declares no records.
-/**
- * Return the application zones that should receive config/dns.ts records.
- *
- * Redirect-only domains still receive their managed apex/www A records through
- * reconcileHetznerDns, but must not inherit the primary app's MX, SPF, or site
- * verification records.
- *
- * Neither may a site that is a HOST inside a zone this app already owns.
- * config/dns.ts describes one zone; applying it to every site hostname made
- * the deploy try to create `www.mta-sts.stacksjs.com` from the scaffold's
- * `{ name: 'www' }` entry, which is a record for a zone that does not exist
- * and a host nobody asked for. A site whose domain sits under another site's
- * domain gets its records from that parent zone's reconcile, not its own.
- */
-export function configDnsDomains(sites: Record<string, any>): string[] {
-  const domains = new Set<string>()
-  for (const site of Object.values(sites)) {
-    if (!site?.redirect && site?.domain && typeof site.domain === 'string')
-      domains.add(site.domain.replace(/^www\./, ''))
-  }
-
-  const all = [...domains]
-  return all.filter(domain => !all.some(other => other !== domain && domain.endsWith(`.${other}`)))
-}
+export { configDnsDomains }
 
 /**
  * Reconcile the Cloudflare proxy CDN in front of the box, and purge its cache.
@@ -5664,32 +5630,40 @@ async function reconcileCommsHqSendingDomain(deployEnv: Record<string, string>, 
   }
 }
 
-async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log): Promise<void> {
-  const projectDnsConfig = await loadProjectDnsConfig(dnsConfig)
-  const declared = (['a', 'aaaa', 'cname', 'mx', 'txt'] as const)
-    .reduce((total, key) => total + (Array.isArray((projectDnsConfig)?.[key]) ? (projectDnsConfig)[key].length : 0), 0)
-  if (declared === 0)
-    return
+async function reconcileConfigDns(sites: Record<string, unknown>, cloud: TsCloudConfig, logger: typeof log, fallback?: string): Promise<void> {
+  try {
+    const projectDnsConfig = await loadProjectDnsConfig(dnsConfig)
+    const declared = (['a', 'aaaa', 'cname', 'mx', 'txt'] as const)
+      .some(key => Boolean(projectDnsConfig[key]?.length))
+    if (!declared)
+      return
 
-  for (const domain of configDnsDomains(sites)) {
-    try {
-      const result = await syncDnsConfig(domain, projectDnsConfig)
-      if (!result.provider)
-        continue // no registrar credentials resolved for this domain; skip quietly
-      if (result.created || result.failed)
-        logger.info(`DNS (config/dns.ts) ${domain}: ${result.created} created, ${result.kept} kept${result.failed ? `, ${result.failed} failed` : ''}`)
-
-      // The count is the headline; these are the two lines that can be acted
-      // on. A summary saying "1 failed" and nothing else was a bug report with
-      // the evidence removed.
-      for (const failure of result.failures)
-        logger.warn(`  ${failure.record.type} ${failure.record.name} → ${failure.record.content}: ${failure.reason}`)
-      for (const skipped of result.skipped)
-        logger.info(`  skipped ${skipped.record.type} ${skipped.record.name}: ${skipped.reason}`)
+    const providerConfigs = dnsProviderConfigsFromEnv(declaredDnsProvider(cloud))
+    const domains = configDnsDomains(sites, cloud.infrastructure?.dns?.domain || fallback)
+    for (const domain of domains) {
+      if (!desiredDnsRecords(domain, projectDnsConfig).some(record => dnsRecordInScope(record.name, domain)))
+        continue
+      try {
+        const provider = await resolveZoneDnsProvider(domain, providerConfigs, logger)
+        if (!provider) {
+          logger.warn(`DNS (config/dns.ts): no configured DNS provider manages ${domain}.`)
+          continue
+        }
+        const result = await syncDnsConfig(domain, projectDnsConfig, { provider })
+        if (result.created || result.failed)
+          logger.info(`DNS (config/dns.ts) ${domain}: ${result.created} created, ${result.kept} kept${result.failed ? `, ${result.failed} failed` : ''}`)
+        for (const failure of result.failures)
+          logger.warn(`  ${failure.record.type} ${failure.record.name}: ${failure.reason}`)
+        for (const skipped of result.skipped)
+          logger.warn(`  Skipped ${skipped.record.type} ${skipped.record.name}: ${skipped.reason}`)
+      }
+      catch (error) {
+        logger.warn(`DNS (config/dns.ts) reconcile for ${domain} failed: ${getErrorMessage(error)}`)
+      }
     }
-    catch (err) {
-      logger.warn(`DNS (config/dns.ts) reconcile for ${domain} failed: ${err instanceof Error ? err.message : String(err)}`)
-    }
+  }
+  catch (error) {
+    logger.warn(`DNS (config/dns.ts) could not load declarations: ${getErrorMessage(error)}`)
   }
 }
 
@@ -5797,6 +5771,13 @@ export async function delegateDeclaredZone(
   }
 }
 
+/**
+ * Point every site's public domain (apex + `www`) at the Hetzner box via the
+ * appropriate DNS provider. Providers are resolved per-domain from the
+ * environment (Porkbun, Route53, Cloudflare, GoDaddy) using ts-cloud's
+ * `detectDnsProvider`, so whichever registrar actually hosts the zone is used.
+ * Idempotent (upsert) and best-effort — failures are logged, not thrown.
+ */
 export async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log, ipv6?: string, autoWww?: boolean): Promise<string[]> {
   // FQDNs this run actually published, so the caller can re-issue TLS for
   // names that did not resolve when the gateway was last reloaded.
@@ -6252,6 +6233,7 @@ export function deploy(buddy: CLI): void {
             domain: options.domain,
             docker: options.docker === true,
             holdDns,
+            dnsConfig: holdDns ? undefined : await loadProjectDnsConfig(dnsConfig),
             mail: mailDomain ? { domain: mailDomain, attachTo: mailServerOwnerFromConfig(previewEmail) } : undefined,
             sshPublicIp: provider === 'ssh' ? resolvePersistedAttachTargetBox(tsCloudConfig, deployEnvName)?.publicIp : undefined,
             fallbackProjectName: app.name,
@@ -6322,6 +6304,8 @@ export function deploy(buddy: CLI): void {
       // Fly.io runs an image on Machines: no box, no SSH, no CloudFormation.
       if (tsCloudConfig && resolveProvider(tsCloudConfig) === 'fly') {
         await deployToFlyProvider(tsCloudConfig, deployEnvName, options.verbose === true, selectedEnvFile)
+        if (!dnsHeld())
+          await reconcileConfigDns(applyEnvironmentToSites(tsCloudConfig.sites || {}, deployEnvName, tsCloudConfig), tsCloudConfig, log)
         return
       }
       if (tsCloudConfig && isSshPipelineProvider(resolveProvider(tsCloudConfig))) {
@@ -6400,6 +6384,9 @@ export function deploy(buddy: CLI): void {
         )
         process.exit(ExitCode.FatalError)
       }
+
+      if (!dnsHeld())
+        await reconcileConfigDns(applyEnvironmentToSites(tsCloudConfig.sites || {}, deployEnvName, tsCloudConfig), tsCloudConfig, log, options.domain)
 
       await outro('Project deployed.', { startTime, useSeconds: true })
     },

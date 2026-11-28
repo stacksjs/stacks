@@ -231,6 +231,8 @@ async function startStxServer(): Promise<void> {
     '/api/config/list': configEditorRoute('/api/config/list'),
     '/api/config/read': configEditorRoute('/api/config/read'),
     '/api/config/update': configEditorRoute('/api/config/update'),
+    '/api/config/dns': configEditorRoute('/api/config/dns'),
+    '/api/config/dns/add': configEditorRoute('/api/config/dns/add'),
   }
 
   // serve() starts a long-lived server — do NOT await it.

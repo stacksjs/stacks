@@ -250,7 +250,8 @@ inject message HTML into the dashboard document.
 - `/settings/mail` - mail configuration
 - `/settings/environment` - edit the env files this project loads
 - `/access-tokens` - access-token management
-- `/cloud`, `/dns`, `/mailboxes` - infrastructure-specific settings
+- `/settings/config/dns` - list and add app DNS declarations for the next deployment
+- `/cloud`, `/dns`, `/mailboxes` - infrastructure views
 
 ### Deployments
 - `/deployments` - deployment history, deployment controls, the custom

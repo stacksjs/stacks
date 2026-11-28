@@ -1,6 +1,8 @@
+import type { DnsConfig } from '@stacksjs/types'
 import { createHash, randomUUID } from 'node:crypto'
 import { chmodSync, lstatSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { parse } from '@babel/parser'
 
 type Statement = ReturnType<typeof parse>['program']['body'][number]
@@ -112,6 +114,81 @@ function configFieldKey(path: Array<string | number>): string {
       return key ? `${key}.${part}` : part
     return `${key}[${JSON.stringify(part)}]`
   }, '') || 'default'
+}
+
+function expressionBody(node: Expression): Expression {
+  if (node.type === 'TSSatisfiesExpression' || node.type === 'TSAsExpression' || node.type === 'TSTypeAssertion' || node.type === 'TSNonNullExpression')
+    return expressionBody(node.expression)
+  return node
+}
+
+export function appendConfigRecord(source: string, key: string, record: Record<string, string | number>, namedExport?: string): string {
+  const body = statements(source)
+  const bindings = new Map<string, Expression>()
+  let root: Expression | undefined
+  let named: Expression | undefined
+  for (const statement of body) {
+    if (statement.type === 'ExportDefaultDeclaration')
+      root = statement.declaration as Expression
+    if (statement.type === 'ExportNamedDeclaration' && !statement.source) {
+      for (const item of statement.specifiers) {
+        if (item.type !== 'ExportSpecifier' || item.local.type !== 'Identifier' || item.exported.type !== 'Identifier')
+          continue
+        if (item.exported.name === 'default')
+          root = item.local
+        if (item.exported.name === namedExport)
+          named = item.local
+      }
+    }
+    const declaration = statement.type === 'ExportNamedDeclaration' ? statement.declaration : statement
+    if (declaration?.type === 'VariableDeclaration') {
+      for (const { id, init } of declaration.declarations) {
+        if (id.type !== 'Identifier' || !init)
+          continue
+        bindings.set(id.name, init)
+        if (statement.type === 'ExportNamedDeclaration' && id.name === namedExport)
+          named = init
+      }
+    }
+  }
+
+  root ??= named
+  const original = root && expressionBody(root)
+  const binding = original?.type === 'Identifier' ? bindings.get(original.name) : original
+  const object = binding && expressionBody(binding)
+  const unsupported = () => new ConfigError('This record list is computed. Open TypeScript to edit it and preserve its existing definitions.', 422)
+  if (object?.type !== 'ObjectExpression' || object.end == null)
+    throw unsupported()
+
+  const literal = `{ ${Object.entries(record).map(([name, value]) => `${name}: ${typeof value === 'string' ? scalarSource(value, "'") : JSON.stringify(value)}`).join(', ')} }`
+  // Walk backwards, just as scalar edits do. A dynamic property can shadow
+  // an earlier declaration, so never create a duplicate property behind it.
+  for (const property of [...object.properties].reverse()) {
+    if (property.type === 'SpreadElement' || (property.computed && property.key.type !== 'StringLiteral'))
+      throw unsupported()
+    const name = property.key.type === 'Identifier' ? property.key.name : property.key.type === 'StringLiteral' ? property.key.value : undefined
+    if (name !== key)
+      continue
+    if (property.type !== 'ObjectProperty')
+      throw unsupported()
+    const array = expressionBody(property.value as Expression)
+    if (array.type !== 'ArrayExpression' || array.start == null)
+      throw unsupported()
+    // Insert before the first existing element. This works for empty arrays,
+    // arrays with trailing comments, and arrays containing computed entries.
+    const start = array.start + 1
+    const afterOpening = source.slice(start)
+    const multiline = /^\s*\r?\n/.test(afterOpening) || array.elements.length === 0
+    const eol = source.includes('\r\n') ? '\r\n' : '\n'
+    const indent = ' '.repeat((property.loc?.start.column ?? 2) + 2)
+    const insert = multiline ? `${eol}${indent}${literal},${array.elements.length === 0 && !afterOpening.startsWith(eol) ? `${eol}${indent.slice(2)}` : ''}` : `${literal}, `
+    return source.slice(0, start) + insert + afterOpening
+  }
+
+  const start = object.start! + 1
+  const eol = source.includes('\r\n') ? '\r\n' : '\n'
+  const indent = ' '.repeat((object.properties[0]?.loc?.start.column ?? 2))
+  return source.slice(0, start) + `${eol}${indent}${key}: [${literal}],${eol}` + source.slice(start)
 }
 
 function configEdits(source: string): ConfigEdit[] {
@@ -280,6 +357,20 @@ function isUpdate(value: unknown): value is ConfigUpdate {
   )
 }
 
+async function dnsSettings(directory: string, path: string, revision: string) {
+  const { dashboardDnsConfiguration } = await import('./dashboard-dns-records')
+  // Bun preserves a cache key's query on an absolute import path. A file URL
+  // is canonicalized and would keep serving the pre-save module.
+  const module = await import(`${path}?revision=${revision}`)
+  const cloudPath = join(directory, 'cloud.ts')
+  const cloud = lstatSync(cloudPath, { throwIfNoEntry: false })?.isFile()
+    ? await import(pathToFileURL(cloudPath).href)
+    : {}
+  const { config, overridesReady } = await import('@stacksjs/config')
+  await overridesReady
+  return dashboardDnsConfiguration((module.default ?? module.dns ?? {}) as DnsConfig, cloud.tsCloud ?? cloud.default?.tsCloud ?? cloud.default ?? {}, config.app.url)
+}
+
 interface ConfigRoutesOptions {
   directory: string
   hosts: () => readonly string[]
@@ -319,6 +410,39 @@ export function dashboardConfigRoutes({ directory, hosts, validateWrite }: Confi
     '/api/config/read': route('GET', (request) => {
       const name = new URL(request.url).searchParams.get('name') ?? ''
       return document(readFileSync(locateConfig(directory, name), 'utf8'), true)
+    }),
+    '/api/config/dns': route('GET', async () => {
+      const { configuredDashboardDnsRecords } = await import('./dashboard-dns-records')
+      const path = locateConfig(directory, 'dns')
+      const version = revision(readFileSync(path, 'utf8'))
+      const settings = await dnsSettings(directory, path, version)
+      return { domains: settings.domains, records: configuredDashboardDnsRecords(settings.config), revision: version }
+    }),
+    '/api/config/dns/add': route('POST', async (request) => {
+      await validateWrite(request)
+      const body = await request.json().catch(() => null)
+      if (typeof body?.revision !== 'string' || !/^[a-f0-9]{64}$/.test(body.revision))
+        throw new ConfigError('A DNS configuration revision is required.', 400)
+      const path = locateConfig(directory, 'dns')
+      if (revision(readFileSync(path, 'utf8')) !== body.revision)
+        throw new ConfigError('DNS configuration changed on disk. Reload the records before saving.', 409)
+      const { dashboardDnsRecord } = await import('./dashboard-dns-records')
+      const settings = await dnsSettings(directory, path, body.revision)
+      const current = readFileSync(path, 'utf8')
+      if (revision(current) !== body.revision)
+        throw new ConfigError('DNS configuration changed on disk. Reload the records before saving.', 409)
+
+      let entry
+      try {
+        entry = dashboardDnsRecord(body.record ?? {}, settings)
+      }
+      catch (error) {
+        throw new ConfigError((error as Error).message, 422)
+      }
+      const next = appendConfigRecord(current, entry.key, entry.record, 'dns')
+      const result = document(next)
+      atomicWrite(path, next)
+      return result
     }),
     '/api/config/update': route('POST', async (request) => {
       await validateWrite(request)

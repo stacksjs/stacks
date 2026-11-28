@@ -22,7 +22,16 @@ async function until(check: () => Promise<void>, timeout = 20_000): Promise<void
   }
 }
 
-test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('dashboard keeps page state through backend edits and Software Update Restart Now', async () => {
+interface DashboardBrowserFixture {
+  browser: Awaited<ReturnType<typeof import('../../testing/src/browser').launch>>
+  source: string
+  configFile: string
+  dnsFile: string
+  root: string
+  home: string
+}
+
+async function withDashboardBrowser(run: (fixture: DashboardBrowserFixture) => Promise<void>): Promise<void> {
   const { launch } = await import('../../testing/src/browser')
   const checkout = resolve(import.meta.dir, '../../../../..')
   const root = await mkdtemp(join(tmpdir(), 'stacks-dashboard-hmr-'))
@@ -30,6 +39,7 @@ test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('dashboard keeps page stat
   const home = join(root, 'machine')
   const source = join(root, 'app/version.ts')
   const configFile = join(root, 'config/editor-probe.ts')
+  const dnsFile = join(root, 'config/dns.ts')
   const entry = join(checkout, 'storage/framework/core/actions/src/dev/dashboard.ts')
   let child: ReturnType<typeof Bun.spawn> | undefined
   let browser: Awaited<ReturnType<typeof launch>> | undefined
@@ -46,6 +56,8 @@ test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('dashboard keeps page stat
       writeFile(join(root, 'bunfig.toml'), 'preload = []\n'),
       writeFile(join(root, 'config/app.ts'), 'export default {}'),
       writeFile(configFile, 'export default { nested: { port: 3000 } }'),
+      writeFile(dnsFile, 'export default { txt: [] }'),
+      writeFile(join(root, 'config/cloud.ts'), "export const tsCloud = { sites: { app: { domain: 'postline.example.test' } } }; export default {}"),
       writeFile(join(root, 'routes/api.ts'), 'export {}'),
       writeFile(source, 'export default "before"'),
       writeFile(join(root, 'resources/views/dashboard/swap-probe.stx'), `
@@ -87,6 +99,28 @@ function increment() { count.update(value => value + 1) }
       expect(findRestartControl(root, 'dashboard', service!.pid)).toBeTruthy()
       expect(await runningDashboardInstance(service!.port)).toBe(service!.restartInstance!)
     }, 35_000)
+    browser = await launch({ quietLiveReload: false, profile })
+    await run({ browser, source, configFile, dnsFile, root, home })
+  }
+  finally {
+    try {
+      await browser?.cdp.send('Browser.close').catch(() => {})
+      await browser?.close()
+    }
+    finally {
+      child?.kill('SIGTERM')
+      await child?.exited
+      await rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 150 })
+      await rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 150 }).catch((error: NodeJS.ErrnoException) => {
+        if (process.platform !== 'win32' || !['EBUSY', 'EPERM'].includes(error.code ?? ''))
+          throw error
+      })
+    }
+  }
+}
+
+test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('dashboard keeps page state through backend edits and Software Update Restart Now', async () => {
+  await withDashboardBrowser(async ({ browser, source, configFile, root, home }) => {
     const { url, pid, port, restartInstance } = readProjectService(root, 'dashboard')!
     const origin = new URL(url).origin
     const updateUrl = origin + '/__buddy/software-update'
@@ -109,7 +143,6 @@ function increment() { count.update(value => value + 1) }
       db.close()
     }
 
-    browser = await launch({ quietLiveReload: false, profile })
     const { cdp } = browser
     await cdp.send('Network.enable')
     let streams = 0
@@ -265,20 +298,35 @@ function increment() { count.update(value => value + 1) }
       expect(await cdp.evaluate("document.querySelector('.dashboard-config-field input')?.value")).toBe('3001')
       expect(await cdp.evaluate("document.querySelector('.dashboard-settings-pane [role=status]')?.textContent")).toContain('Saved config/editor-probe.ts')
     }, 35_000)
-  }
-  finally {
-    try {
-      await browser?.cdp.send('Browser.close').catch(() => {})
-      await browser?.close()
-    }
-    finally {
-      child?.kill('SIGTERM')
-      await child?.exited
-      await rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 150 })
-      await rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 150 }).catch((error: NodeJS.ErrnoException) => {
-        if (process.platform !== 'win32' || !['EBUSY', 'EPERM'].includes(error.code ?? ''))
-          throw error
-      })
-    }
-  }
+  })
 }, 105_000)
+
+test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('dashboard Settings saves a DNS record through the form', async () => {
+  await withDashboardBrowser(async ({ browser, dnsFile, root }) => {
+    const { cdp } = browser
+    const origin = new URL(readProjectService(root, 'dashboard')!.url).origin
+    await cdp.send('Page.navigate', { url: origin + '/settings/config/dns' })
+    await until(async () => {
+      expect(await cdp.evaluate(`Boolean([...document.querySelectorAll('button')].find(button => button.textContent.includes('Add record') && !button.disabled))`)).toBe(true)
+    })
+    await cdp.evaluate(`[...document.querySelectorAll('button')].find(button => button.textContent.includes('Add record')).click()`)
+    await until(async () => {
+      expect(await cdp.evaluate(`Boolean(document.querySelector('[role="dialog"] textarea'))`)).toBe(true)
+    })
+    expect(await cdp.evaluate(`(() => {
+      const dialog = document.querySelector('dialog[open]')
+      const { left, right } = dialog.getBoundingClientRect()
+      return Math.abs(left) < 1 && Math.abs(right - innerWidth) < 1
+    })()`)).toBe(true)
+    await cdp.evaluate(`
+      const text = document.querySelector('[role="dialog"] textarea')
+      text.value = 'dashboard-verification'
+      text.dispatchEvent(new Event('input', { bubbles: true }))
+      document.querySelector('[role="dialog"] button[type=submit]').click()
+    `)
+    await until(async () => {
+      expect(await readFile(dnsFile, 'utf8')).toContain("name: 'postline.example.test.', content: 'dashboard-verification', ttl: 600")
+      expect(await cdp.evaluate(`document.querySelector('[aria-label="Declared DNS records"]')?.textContent`)).toContain('dashboard-verification')
+    }, 20_000)
+  })
+}, 70_000)

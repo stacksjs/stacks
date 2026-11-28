@@ -104,7 +104,8 @@ describe('the plan', () => {
     const plan = planDnsSync(desired, [{ name: ZONE, type: 'A', content: '198.51.100.7', ttl: 600 }], { zone: ZONE })
 
     // Single-valued and already present: left exactly as it is, never overwritten.
-    expect(plan.keep.map(r => r.name)).toEqual([ZONE])
+    expect(plan.keep).toEqual([])
+    expect(plan.skip[0]?.reason).toContain('conflicting record')
     expect(plan.create.map(r => r.name)).toEqual([`www.${ZONE}`])
   })
 
@@ -113,6 +114,18 @@ describe('the plan', () => {
 
     expect(planDnsSync(desired, [{ name: ZONE, type: 'TXT', content: '"v=spf1 -all"', ttl: 600 }], { zone: ZONE }).keep).toHaveLength(1)
     expect(planDnsSync(desired, [{ name: ZONE, type: 'TXT', content: 'something-else', ttl: 600 }], { zone: ZONE }).create).toHaveLength(1)
+  })
+
+  test('reports incompatible CNAMEs and existing TXT policies instead of creating duplicates', () => {
+    const wanted = [
+      { name: ZONE, type: 'TXT' as const, content: 'v=spf1 -all', ttl: 600 },
+      { name: `alias.${ZONE}`, type: 'CNAME' as const, content: 'service.example.com', ttl: 600 },
+    ]
+    const current = [
+      { name: ZONE, type: 'TXT' as const, content: '"v=spf1 include:other.test -all"', ttl: 600 },
+      { name: `alias.${ZONE}`, type: 'A' as const, content: '203.0.113.10', ttl: 600 },
+    ]
+    expect(planDnsSync(wanted, current).skip).toHaveLength(2)
   })
 
   test('a placeholder address is skipped as its own outcome, not disguised as kept', () => {
@@ -133,6 +146,13 @@ describe('the plan', () => {
 })
 
 describe('applying the plan', () => {
+  test('does not write when the provider cannot list the zone', async () => {
+    const provider = stubProvider({})
+    provider.listRecords = async () => ({ success: false, records: [], message: 'Read failed' })
+    await expect(syncDnsConfig(ZONE, cfg({ txt: [{ name: '@', content: 'verification', ttl: 600 }] }), { provider })).rejects.toThrow('Read failed')
+    expect(provider.asked).toEqual([])
+  })
+
   test('a rejected record is reported with the registrar reason, not just counted', async () => {
     const provider = stubProvider({
       [`bad.${ZONE}`]: { success: false, message: 'Content for A record must be a valid IPv4 address' },
