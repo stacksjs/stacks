@@ -613,22 +613,10 @@ jobs:
           echo "Tag: ${GITHUB_REF#refs/tags/}"
           echo "Version from previous job: ${{ needs.publish.outputs.version }}"
 
-      - name: Generate GitHub App Token
-        id: generate-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.GH_APP_ID }}
-          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-          owner: stacksjs
-          repositories: homebrew-tap
-
-      - name: Setup GitHub CLI with PAT
-        run: |
-          echo "${{ secrets.GH_PAT }}" | gh auth login --with-token
-
       - name: Ensure Homebrew Tap Repository Exists
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ github.token }}
+          TAP_BOOTSTRAP_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           tap_ready=false
           for attempt in $(seq 1 240); do
@@ -639,8 +627,12 @@ jobs:
             fi
 
             if echo "$output" | grep -q 'HTTP 404'; then
+              if [ -z "$TAP_BOOTSTRAP_TOKEN" ]; then
+                echo "::error::Set GH_PAT to create the missing Homebrew tap."
+                exit 1
+              fi
               echo "Creating homebrew-tap repository..."
-              if gh repo create stacksjs/homebrew-tap --public --description "Homebrew tap for Stacks packages"; then
+              if GH_TOKEN="$TAP_BOOTSTRAP_TOKEN" gh repo create stacksjs/homebrew-tap --public --description "Homebrew tap for Stacks packages"; then
                 tap_ready=true
                 break
               fi
@@ -658,8 +650,14 @@ jobs:
             exit 1
           fi
 
-      - name: Authenticate GitHub CLI with App Token
-        run: echo "${{ steps.generate-token.outputs.token }}" | gh auth login --with-token
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: stacksjs
+          repositories: homebrew-tap
 
       - name: Wait for Release Assets
         run: |
