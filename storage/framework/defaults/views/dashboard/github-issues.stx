@@ -1,0 +1,18 @@
+@extends('layouts/default')
+@section('content')
+@title('Dashboard - GitHub Issues')
+
+<script server>
+import { dashboardProjectIdentity } from '@stacksjs/defaults/resources/functions/dashboard/project-switcher'
+
+export const localProjectsEnabled = dashboardProjectIdentity().enabled
+</script>
+
+<PageLayout>
+  @if(localProjectsEnabled)
+    <GitHubIssuesDashboard />
+  @else
+    <PageHeader title="GitHub Issues" description="Open the local Buddy dashboard to see issues across your projects." />
+  @endif
+</PageLayout>
+@endsection

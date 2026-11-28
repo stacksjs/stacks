@@ -1,8 +1,10 @@
 <script server>
 import type { DashboardNavigationHub } from '@stacksjs/defaults/resources/functions/dashboard/section-navigation'
+import type { WebSidebarItem } from '@stacksjs/defaults/resources/functions/dashboard/sidebar'
 
-const { sectionHubs = [] } = defineProps<{ sectionHubs: DashboardNavigationHub[] }>()
-defineClientPayload({ sectionHubs })
+const { sectionHubs = [], primaryItems = [] } = defineProps<{ sectionHubs: DashboardNavigationHub[], primaryItems?: WebSidebarItem[] }>()
+const primaryLinks = primaryItems.filter(item => item.href && item.href !== '/')
+defineClientPayload({ sectionHubs, primaryLinks })
 </script>
 
 <script client>
@@ -11,6 +13,7 @@ import { useAppearance } from '@stacksjs/defaults/views/dashboard/composables/us
 import { authStore } from '@stacksjs/defaults/views/dashboard/stores/auth'
 
 const hubs = {{ sectionHubs }}
+const links = {{ primaryLinks }}
 const rail = useRef<HTMLElement>('dashboardSectionSidebar')
 const route = useRoute()
 const appearance = useAppearance()
@@ -28,7 +31,7 @@ function syncVisibility(): void {
 function syncSelection(path = route.path): void {
   const current = dashboardNavigationPath(path)
   const settings = current === '/settings' || current.startsWith('/settings/')
-  const active = settings ? 'settings' : activeDashboardSection(hubs, current)
+  const active = settings ? 'settings' : links.find(link => link.href === current)?.id ?? activeDashboardSection(hubs, current)
   for (const link of rail.current?.querySelectorAll<HTMLElement>('[data-dashboard-section-entry]') ?? []) {
     if (link.dataset.sectionId === active)
       link.setAttribute('aria-current', link.getAttribute('href') === current ? 'page' : 'location')
@@ -62,6 +65,12 @@ onMount(() => {
       <span class="dashboard-section-icon" aria-hidden="true"><span class="i-f7-house"></span></span>
       <span>Home</span>
     </a>
+    @foreach(primaryLinks as link)
+      <a href="{{ link.href }}" data-stx-link data-dashboard-section-entry data-section-id="{{ link.id }}">
+        <span class="dashboard-section-icon" aria-hidden="true"><span class="{{ link.icon }}"></span></span>
+        <span>{{ link.label }}</span>
+      </a>
+    @endforeach
     @foreach(sectionHubs as hub)
       <a href="{{ hub.href }}" data-stx-link data-dashboard-section-entry data-section-id="{{ hub.id }}">
         <span class="dashboard-section-icon" aria-hidden="true"><span class="{{ hub.icon }}"></span></span>
