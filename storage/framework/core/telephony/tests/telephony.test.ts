@@ -26,6 +26,20 @@ test('uses Twilio REST forms for a US/Canada search, provision and outbound call
   expect(new URLSearchParams(String(requests[2]?.init?.body)).get('Twiml')).toBe('<Response><Hangup/></Response>')
 })
 
+test('lists only the requested call family using the provider parent filter', async () => {
+  const childSid = `CA${'d'.repeat(32)}`
+  const requests: { url: URL, method: string | undefined }[] = []
+  const provider = new TwilioTelephony({ accountSid, authToken: 'test-only', journal: new MemoryOperationJournal(), fetch: async (url, init) => {
+    requests.push({ url: new URL(String(url)), method: init?.method })
+    return Response.json({ calls: [{ ...call, sid: childSid, parent_call_sid: callSid }] })
+  } })
+  expect(await provider.listCalls({ parentSid: callSid, from: call.from })).toMatchObject([{ sid: childSid, parentSid: callSid }])
+  expect(requests[0]?.method).toBe('GET')
+  expect(Object.fromEntries(requests[0]!.url.searchParams)).toEqual({ PageSize: '50', From: call.from, ParentCallSid: callSid })
+  await expect(provider.listCalls({ parentSid: 'invalid-parent' })).rejects.toMatchObject({ code: 'validation' })
+  expect(requests).toHaveLength(1)
+})
+
 test('an ambiguous write stays blocked even across adapter instances sharing a journal', async () => {
   const journal = new MemoryOperationJournal()
   let attempts = 0
