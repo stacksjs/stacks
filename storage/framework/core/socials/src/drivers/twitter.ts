@@ -20,10 +20,11 @@ import { Buffer } from 'node:buffer'
 import { fetcher } from '@stacksjs/api'
 import { config } from '@stacksjs/config'
 import { AbstractProvider } from '../abstract'
+import { apiFailure, SocialApiError } from '../errors'
 import { ConfigException } from '../exceptions'
 import { fetchPostImage, rejectPostVideo, resolvePostImage } from '../media'
+import { createS256Proof } from '../pkce'
 import { exceedsLimit } from '../text'
-import { apiFailure, SocialApiError } from '../errors'
 
 export class TwitterProvider extends AbstractProvider implements ProviderInterface {
   protected baseUrl = 'https://twitter.com'
@@ -223,13 +224,6 @@ function directMessageConversationId(id: string): string {
   return id
 }
 
-/** base64url with padding stripped — the encoding OAuth2/PKCE expects. */
-function base64Url(bytes: Uint8Array): string {
-  let binary = ''
-  for (const byte of bytes) binary += String.fromCharCode(byte)
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-}
-
 export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver, SocialMetricsDriver {
   readonly provider: 'twitter' = 'twitter'
   characterLimit = 280
@@ -251,9 +245,7 @@ export class TwitterPublishingDriver implements SocialPublishingDriver, SocialDe
    * URL and the `code_verifier` the caller must stash for the token exchange.
    */
   async createAuthorization(input: TwitterAuthUrlInput): Promise<{ url: string, codeVerifier: string }> {
-    const codeVerifier = base64Url(crypto.getRandomValues(new Uint8Array(32)))
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier))
-    const codeChallenge = base64Url(new Uint8Array(digest))
+    const { codeVerifier, codeChallenge } = await createS256Proof()
 
     const query = new URLSearchParams({
       response_type: 'code',

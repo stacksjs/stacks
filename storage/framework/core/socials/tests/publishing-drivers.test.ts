@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
+import { createHash } from 'node:crypto'
 import { blueskyRecordKey, BlueskyPublishingDriver, detectFacetCandidates, resolveBlueskyService } from '../src/drivers/bluesky'
 import { InstagramPublishingDriver } from '../src/drivers/instagram'
 import {
@@ -1053,6 +1054,66 @@ describe('LinkedIn', () => {
 
     await driver.refreshAccessToken({ clientId: 'id', clientSecret: 's', refreshToken: 'RT' })
     expect(form(sent.at(-1)!)).toEqual({ grant_type: 'refresh_token', refresh_token: 'RT', client_id: 'id', client_secret: 's' })
+  })
+
+  it('creates a fresh S256 proof and exchanges it for a native LinkedIn token', async () => {
+    const sent = api()
+    const driver = new LinkedInPublishingDriver()
+    const start = { clientId: 'id', redirectUrl: 'http://127.0.0.1:31777/callback', scopes: ['openid', 'w_member_social'], state: 'native-state' }
+    const { url, codeVerifier } = await driver.createNativeAuthorization(start)
+    const authorization = new URL(url)
+    const challenge = createHash('sha256').update(codeVerifier).digest('base64url')
+    expect(authorization.origin + authorization.pathname).toBe('https://www.linkedin.com/oauth/native-pkce/authorization')
+    expect(Object.fromEntries(authorization.searchParams)).toEqual({
+      response_type: 'code', client_id: 'id', redirect_uri: start.redirectUrl, scope: 'openid w_member_social',
+      state: 'native-state', code_challenge: challenge, code_challenge_method: 'S256',
+    })
+    expect(codeVerifier).toMatch(/^[\w~-]{43}$/)
+    expect((await driver.createNativeAuthorization(start)).codeVerifier).not.toBe(codeVerifier)
+
+    const token = await driver.exchangeNativeCode({ clientId: start.clientId, redirectUrl: start.redirectUrl, code: 'c', codeVerifier })
+    const request = sent.at(-1)!
+    expect(token.accessToken).toBe('NEW')
+    expect(request.url).toBe('https://www.linkedin.com/oauth/v2/accessToken')
+    expect(request.method).toBe('POST')
+    expect(request.headers.get('content-type')).toBe('application/x-www-form-urlencoded')
+    expect(form(request)).toEqual({ grant_type: 'authorization_code', code: 'c', client_id: 'id', redirect_uri: start.redirectUrl, code_verifier: codeVerifier })
+  })
+
+  it('keeps hosted consent on the confidential web authorization path', async () => {
+    const sent = api()
+    const driver = new LinkedInPublishingDriver()
+    const input = { clientId: 'id', redirectUrl: 'https://app.example/callback', scopes: ['openid'], state: 'web-state' }
+    const authorization = new URL(driver.getAuthUrl(input))
+    expect(authorization.pathname).toBe('/oauth/v2/authorization')
+    expect(authorization.searchParams.has('code_challenge')).toBe(false)
+    await driver.exchangeCode({ ...input, clientSecret: 'fixture-secret', code: 'c' })
+    expect(form(sent.at(-1)!)).toEqual({ grant_type: 'authorization_code', code: 'c', client_id: 'id', redirect_uri: input.redirectUrl, client_secret: 'fixture-secret' })
+  })
+
+  it('accepts IPv6 loopback and rejects non-loopback callbacks or an invalid verifier before sending', async () => {
+    const sent = api()
+    const driver = new LinkedInPublishingDriver()
+    const redirectUrl = 'https://[::1]:31777/callback'
+    const input = { clientId: 'id', redirectUrl, scopes: ['openid'], state: 'native-state' }
+    const authorization = await driver.createNativeAuthorization(input)
+    expect(new URL(authorization.url).searchParams.get('redirect_uri')).toBe(redirectUrl)
+
+    for (const outside of [
+      'https://remote.example/callback',
+      'http://localhost:31777/callback',
+      'http://127.0.0.1.remote.example/callback',
+      'http://127.1:31777/callback',
+      'http://127.0.0.1:0/callback',
+      'http://user@127.0.0.1:31777/callback',
+      'http://[::1]:31777/callback#fragment',
+    ]) {
+      await expect(driver.createNativeAuthorization({ ...input, redirectUrl: outside })).rejects.toThrow('loopback')
+      await expect(driver.exchangeNativeCode({ clientId: 'id', redirectUrl: outside, code: 'c', codeVerifier: authorization.codeVerifier })).rejects.toThrow('loopback')
+    }
+    await expect(driver.exchangeNativeCode({ clientId: 'id', redirectUrl, code: 'c', codeVerifier: 'absent-proof' })).rejects.toThrow('verifier')
+    await expect(driver.exchangeNativeCode({ clientId: 'id', redirectUrl, code: '', codeVerifier: authorization.codeVerifier })).rejects.toThrow('authorization code')
+    expect(sent).toHaveLength(0)
   })
 })
 

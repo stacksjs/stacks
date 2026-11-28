@@ -12,9 +12,10 @@ import type {
   TimelineQuery,
   TimelineResult,
 } from '../types'
-import { fetchPostImage, rejectPostVideo, resolvePostImage } from '../media'
-import { exceedsLimit } from '../text'
 import { apiFailure, SocialApiError } from '../errors'
+import { fetchPostImage, rejectPostVideo, resolvePostImage } from '../media'
+import { createS256Proof } from '../pkce'
+import { exceedsLimit } from '../text'
 
 /**
  * The `LinkedIn-Version` sent unless a driver is given another.
@@ -120,6 +121,32 @@ export interface LinkedInTokenExchangeInput {
   code: string
 }
 
+export interface LinkedInNativeTokenExchangeInput {
+  clientId: string
+  redirectUrl: string
+  code: string
+  codeVerifier: string
+}
+
+function linkedInAuthorizationParams(input: LinkedInAuthUrlInput): URLSearchParams {
+  return new URLSearchParams({
+    response_type: 'code',
+    client_id: input.clientId,
+    redirect_uri: input.redirectUrl,
+    scope: input.scopes.join(' '),
+    state: input.state,
+  })
+}
+
+function requireNativeLoopback(redirectUrl: string): void {
+  // Check the spelling as well as the parsed URL. URL normalizes shorthand
+  // IPv4 and IPv6 before exposing the hostname.
+  const literal = /^https?:\/\/(?:127\.0\.0\.1|\[::1\])(?::\d+)?(?:[/?]|$)/i
+  const parsed = URL.parse(redirectUrl)
+  if (!parsed || parsed.port === '0' || !literal.test(redirectUrl) || /[\s#\\]/.test(redirectUrl))
+    throw new Error('LinkedIn native OAuth requires an HTTP or HTTPS loopback redirect on 127.0.0.1 or [::1].')
+}
+
 export interface LinkedInTokenResponse {
   accessToken: string
   expiresIn?: number
@@ -173,15 +200,17 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
 
   /** Build the consent URL the member is redirected to. */
   getAuthUrl(input: LinkedInAuthUrlInput): string {
-    const query = new URLSearchParams({
-      response_type: 'code',
-      client_id: input.clientId,
-      redirect_uri: input.redirectUrl,
-      scope: input.scopes.join(' '),
-      state: input.state,
-    })
+    return `${this.authBase}/oauth/v2/authorization?${linkedInAuthorizationParams(input)}`
+  }
 
-    return `${this.authBase}/oauth/v2/authorization?${query.toString()}`
+  /** Prepare system-browser consent for a LinkedIn app with native PKCE enabled. */
+  async createNativeAuthorization(input: LinkedInAuthUrlInput): Promise<{ url: string, codeVerifier: string }> {
+    requireNativeLoopback(input.redirectUrl)
+    const { codeVerifier, codeChallenge } = await createS256Proof()
+    const query = linkedInAuthorizationParams(input)
+    query.set('code_challenge', codeChallenge)
+    query.set('code_challenge_method', 'S256')
+    return { url: `${this.authBase}/oauth/native-pkce/authorization?${query}`, codeVerifier }
   }
 
   /** Exchange an authorization code for a member access token. */
@@ -195,6 +224,22 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
     })
 
     return this.tokenRequest(body, 'LinkedIn did not return an access token.')
+  }
+
+  /** Exchange the code with the verifier saved alongside the callback state. */
+  async exchangeNativeCode(input: LinkedInNativeTokenExchangeInput): Promise<LinkedInTokenResponse> {
+    requireNativeLoopback(input.redirectUrl)
+    if (!/^[A-Z0-9._~-]{43,128}$/i.test(input.codeVerifier))
+      throw new Error('LinkedIn native OAuth requires the original PKCE code verifier.')
+    if (!input.code.trim()) throw new Error('LinkedIn did not return an authorization code.')
+
+    return this.tokenRequest(new URLSearchParams({
+      grant_type: 'authorization_code',
+      code: input.code,
+      redirect_uri: input.redirectUrl,
+      client_id: input.clientId,
+      code_verifier: input.codeVerifier,
+    }), 'LinkedIn did not return an access token.')
   }
 
   /**
