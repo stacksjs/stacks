@@ -1,5 +1,58 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.715...v0.75.716)
+
+## 🐛 Bug Fixes
+
+- **ai**: preserve the input audio boundary for realtime usage ([bffa50d](https://github.com/stacksjs/stacks/commit/bffa50d)) _(by Chris)_
+- **dashboard**: use typed settings navigation ([2519ce8](https://github.com/stacksjs/stacks/commit/2519ce8)) _(by Chris Breuer)_
+- **actions**: declare dashboard DNS result types ([22b86c3](https://github.com/stacksjs/stacks/commit/22b86c3)) _(by Chris Breuer)_
+- **server**: validate read-only domain scope support ([1021f51](https://github.com/stacksjs/stacks/commit/1021f51)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- refresh evidence for the domain scope startup guard ([7e0b5a6](https://github.com/stacksjs/stacks/commit/7e0b5a6)) _(by Chris Breuer)_
+- refresh generated dashboard and native skill references ([5280d89](https://github.com/stacksjs/stacks/commit/5280d89)) _(by Chris Breuer)_
+
+## ✅ Tests
+
+- **dashboard**: exercise Settings writes through the current controls ([2255e93](https://github.com/stacksjs/stacks/commit/2255e93)) _(by Chris)_
+- **dashboard**: wait for rendered Settings history entries ([cded28b](https://github.com/stacksjs/stacks/commit/cded28b)) _(by Chris)_
+- **dashboard**: cover the consolidated Settings controls and routes ([7e963bf](https://github.com/stacksjs/stacks/commit/7e963bf)) _(by Chris)_
+- **dns**: distinguish missing records from forbidden DMARC duplicates ([f08f829](https://github.com/stacksjs/stacks/commit/f08f829)) _(by Chris)_
+- align dashboard checks with consolidated settings ([026eac2](https://github.com/stacksjs/stacks/commit/026eac2)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- qualify voice receipts with current Stacks dashboard fixes ([94db6ec](https://github.com/stacksjs/stacks/commit/94db6ec)) _(by Chris)_
+- qualify voice receipts on Stacks 0.75.715 source ([64fed46](https://github.com/stacksjs/stacks/commit/64fed46)) _(by Chris)_
+- integrate current Stacks release source for voice qualification ([086e64f](https://github.com/stacksjs/stacks/commit/086e64f)) _(by Chris)_
+- qualify voice usage with regenerated framework artifacts ([3744faa](https://github.com/stacksjs/stacks/commit/3744faa)) _(by Chris)_
+- qualify voice usage with the dashboard build repair ([ddd8dab](https://github.com/stacksjs/stacks/commit/ddd8dab)) _(by Chris)_
+- integrate current Stacks main for voice qualification ([c755e0c](https://github.com/stacksjs/stacks/commit/c755e0c)) _(by Chris)_
+
+## 🎉 Miscellaneous
+
+- Merge commit '806b825666cf08e164a4adc46d8ccd15156494fa' into HEAD ([a84fb98](https://github.com/stacksjs/stacks/commit/a84fb98)) _(by Chris)_
+- Merge commit '2255e932054f7c6ee3966b5f28c4c1ba15d7932b' into HEAD ([34a0223](https://github.com/stacksjs/stacks/commit/34a0223)) _(by Chris)_
+- Merge commit '2255e932054f7c6ee3966b5f28c4c1ba15d7932b' into HEAD ([806b825](https://github.com/stacksjs/stacks/commit/806b825)) _(by Chris)_
+- Merge commit 'cded28b2d0a93a5eb441b305b0a2fd0f6bdd89f5' into HEAD ([a6966f0](https://github.com/stacksjs/stacks/commit/a6966f0)) _(by Chris)_
+- Merge commit 'cded28b2d0a93a5eb441b305b0a2fd0f6bdd89f5' into HEAD ([bba575d](https://github.com/stacksjs/stacks/commit/bba575d)) _(by Chris)_
+- Merge commit 'f08f8295c99d9fefee3f77af3c9ea4ac728c9b85' into HEAD ([a91d7b9](https://github.com/stacksjs/stacks/commit/a91d7b9)) _(by Chris)_
+- Merge commit '48b87b5046b7a1c22d9269db3469ff7b4b28eed8' into HEAD ([f9e7592](https://github.com/stacksjs/stacks/commit/f9e7592)) _(by Chris)_
+- Merge commit '48b87b5046b7a1c22d9269db3469ff7b4b28eed8' into HEAD ([f2822d3](https://github.com/stacksjs/stacks/commit/f2822d3)) _(by Chris)_
+- Merge remote-tracking branch 'origin/codex/dashboard-dns-declaration' into codex/stacks-scoped-domain-routes ([55792b9](https://github.com/stacksjs/stacks/commit/55792b9)) _(by Chris Breuer)_
+- Merge remote-tracking branch 'origin/codex/refresh-dashboard-path-contracts' into codex/dashboard-dns-declaration ([c7e31cc](https://github.com/stacksjs/stacks/commit/c7e31cc)) _(by Chris Breuer)_
+- Merge remote-tracking branch 'origin/main' into codex/dashboard-dns-declaration ([d72b823](https://github.com/stacksjs/stacks/commit/d72b823)) _(by Chris Breuer)_
+- Merge remote-tracking branch 'origin/codex/dashboard-dns-declaration' into codex/stacks-scoped-domain-routes ([d8c53b8](https://github.com/stacksjs/stacks/commit/d8c53b8)) _(by Chris Breuer)_
+- Merge remote-tracking branch 'origin/codex/refresh-native-agent-artifacts' into codex/dashboard-dns-declaration ([47d03cd](https://github.com/stacksjs/stacks/commit/47d03cd)) _(by Chris Breuer)_
+- Merge remote-tracking branch 'origin/codex/dashboard-dns-declaration' into codex/stacks-scoped-domain-routes ([c9bb1a6](https://github.com/stacksjs/stacks/commit/c9bb1a6)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.714...v0.75.715)
 
 ## 🐛 Bug Fixes
