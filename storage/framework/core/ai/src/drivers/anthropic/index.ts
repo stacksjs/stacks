@@ -304,14 +304,14 @@ function withJsonObjectInstruction(system?: string): string {
 }
 
 /** Keywords the Messages API's JSON mode does not accept. */
-const UNSUPPORTED_SCHEMA_KEYWORDS = new Set(['minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'multipleOf', 'minLength', 'maxLength'])
+const UNSUPPORTED_SCHEMA_KEYWORDS = new Set(['minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'multipleOf', 'minLength', 'maxLength', 'maxItems'])
 
 /**
  * A JSON Schema in the form `output_config.format` accepts: every object
  * closed with `additionalProperties: false` unless it says otherwise, and the
- * numeric and length constraints the API does not support left out. The
- * caller's schema is not changed. `generateObject()` still validates the
- * answer against the full schema, constraints included.
+ * numeric, string and array constraints the API does not support left out.
+ * Unsupported array sizes remain in the field description. `generateObject()`
+ * still validates the answer against the caller's original schema.
  */
 export function anthropicJsonSchema(schema: unknown): Record<string, unknown> {
   return closeSchema(schema) as Record<string, unknown>
@@ -323,16 +323,37 @@ function closeSchema(node: unknown): unknown {
   if (!node || typeof node !== 'object')
     return node
 
+  const source = node as Record<string, unknown>
   const out: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+  for (const [key, value] of Object.entries(source)) {
     if (UNSUPPORTED_SCHEMA_KEYWORDS.has(key))
       continue
-    if (key === 'properties' || key === '$defs' || key === 'definitions')
+    if (key === 'minItems') {
+      if (value === 0 || value === 1) out.minItems = value
+      else if (typeof value === 'number' && Number.isSafeInteger(value) && value > 1) out.minItems = 1
+    }
+    else if (key === 'properties' || key === '$defs' || key === 'definitions')
       out[key] = Object.fromEntries(Object.entries((value ?? {}) as Record<string, unknown>).map(([name, sub]) => [name, closeSchema(sub)]))
     else if (key === 'items' || key === 'anyOf' || key === 'allOf' || key === 'oneOf' || key === 'not')
       out[key] = closeSchema(value)
     else
       out[key] = value
+  }
+
+  const { minItems, maxItems } = source
+  const min = typeof minItems === 'number' && Number.isSafeInteger(minItems) && minItems > 1 ? minItems : undefined
+  const max = typeof maxItems === 'number' && Number.isSafeInteger(maxItems) && maxItems >= 0 ? maxItems : undefined
+  const bounds: string[] = []
+  if (max !== undefined && minItems === max) {
+    bounds.push(`Return exactly ${max} items.`)
+  }
+  else {
+    if (min !== undefined) bounds.push(`Return at least ${min} items.`)
+    if (max !== undefined) bounds.push(`Return at most ${max} items.`)
+  }
+  if (bounds.length) {
+    if (typeof source.description === 'string' && source.description.trim()) bounds.unshift(source.description.trim())
+    out.description = bounds.join(' ')
   }
 
   const isObject = out.type === 'object' || (Array.isArray(out.type) && out.type.includes('object')) || 'properties' in out
