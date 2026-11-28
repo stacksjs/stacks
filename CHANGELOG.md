@@ -1,5 +1,36 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.711...v0.75.712)
+
+## ✨ Features
+
+- **telephony**: filter calls by their parent SID ([1579996](https://github.com/stacksjs/stacks/commit/1579996)) _(by Chris)_
+- **telephony**: filter calls by their parent SID ([698bbd3](https://github.com/stacksjs/stacks/commit/698bbd3)) _(by Chris)_
+
+## 🐛 Bug Fixes
+
+- **ci**: use same-commit Env in framework preview installs ([7211624](https://github.com/stacksjs/stacks/commit/7211624)) _(by Chris)_
+- **scaffold**: drop repository-only console and scanner settings ([92bad78](https://github.com/stacksjs/stacks/commit/92bad78)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- explain compiled stx bindings under page CSP ([aae7f23](https://github.com/stacksjs/stacks/commit/aae7f23)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- integrate current Stacks main ([ca75173](https://github.com/stacksjs/stacks/commit/ca75173)) _(by Chris)_
+- integrate current Stacks main ([0adea56](https://github.com/stacksjs/stacks/commit/0adea56)) _(by Chris)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/clean-buddy-starter ([52cb44e](https://github.com/stacksjs/stacks/commit/52cb44e)) _(by Chris)_
+- Merge remote-tracking branch 'origin/main' into codex/document-page-csp-compilation ([c0ce558](https://github.com/stacksjs/stacks/commit/c0ce558)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.710...v0.75.711)
 
 ## ✨ Features
