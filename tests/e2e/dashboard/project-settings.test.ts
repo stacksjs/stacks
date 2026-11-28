@@ -83,17 +83,19 @@ describe.skipIf(!dashboardE2EAvailable)('settings that write the project', () =>
     const testBefore = fileText(join(e2e!.project, '.env.test'))
     expect(testBefore).toContain('MAIL_HOST=saved-layer.quillwort.test')
 
-    await navigate(cdp, `${e2e!.origin}/environment`)
-    const fileButtons = `[...document.querySelectorAll('[aria-label="Env file"] button')].map(button => button.textContent.trim())`
-    await waitFor(async () => (await cdp.evaluate<string[]>(fileButtons)).length === 2 || null, 20_000, { label: 'the env file switcher' })
-    expect(await cdp.evaluate<string[]>(fileButtons)).toEqual(['.env', '.env.test'])
+    await navigate(cdp, `${e2e!.origin}/settings/environment`)
+    const filePicker = 'select[aria-label="Environment file"]'
+    const fileOptions = `[...document.querySelectorAll('${filePicker} option')].map(option => option.value)`
+    await waitFor(async () => (await cdp.evaluate<string[]>(fileOptions)).length === 2 || null, 20_000, { label: 'the env file switcher' })
+    expect(await cdp.evaluate<string[]>(fileOptions)).toEqual(['.env', '.env.test'])
     expect(await cdp.evaluate<string>(`document.querySelector('[data-env-read-elsewhere]')?.textContent ?? ''`)).toContain('MAIL_HOST (.env.test)')
 
-    await click(cdp, { selector: '[aria-label="Env file"] button', text: '.env.test' }, { timeoutMs: 5_000 })
-    await waitFor(async () => await valueOf(cdp, 'textarea[aria-label=".env.test"]') === testBefore || null, 10_000, { label: '.env.test in the editor' })
+    await choose(cdp, filePicker, '.env.test')
+    const sourceEditor = '[role="group"][aria-label=".env.test"] textarea[aria-label="Source text"]'
+    await waitFor(async () => await valueOf(cdp, sourceEditor) === testBefore || null, 10_000, { label: '.env.test in the editor' })
     expect(await cdp.evaluate<boolean>(`Boolean(document.querySelector('[data-env-read-elsewhere]'))`)).toBe(false)
 
-    await fill(cdp, 'textarea[aria-label=".env.test"]', 'MAIL_HOST=env-page.quillwort.test\n')
+    await fill(cdp, sourceEditor, 'MAIL_HOST=env-page.quillwort.test\n')
     await click(cdp, { selector: 'button', text: 'Save changes' }, { timeoutMs: 5_000 })
     await waitFor(async () => await cdp.evaluate<boolean>(`[...document.querySelectorAll('[role="status"]')].some(node => node.textContent.includes('Environment file saved'))`) || null, 15_000, { label: 'the saved message' })
 
@@ -106,18 +108,17 @@ describe.skipIf(!dashboardE2EAvailable)('settings that write the project', () =>
     const { cdp } = e2e!.browser
     const checkoutConfig = fileText(join(checkout, 'config/app.ts'))
     const description = 'Quillwort journey description'
-    await openConfig(cdp, e2e!.origin, 'App')
-    expect(await valueOf(cdp, '#config-description')).not.toBe(description)
+    const descriptionField = await openAppDescription(cdp, e2e!.origin)
+    expect(await valueOf(cdp, descriptionField)).not.toBe(description)
 
-    await fill(cdp, '#config-description', description)
+    await fill(cdp, descriptionField, description)
     await click(cdp, { selector: 'button', text: 'Save changes' }, { timeoutMs: 5_000 })
     await waitFor(async () => await cdp.evaluate<boolean>(`document.body.innerText.includes('Saved config/app.ts')`) || null, 15_000, { label: 'the saved message' })
 
     expect(fileText(join(e2e!.project, 'config/app.ts'))).toContain(`description: '${description}'`)
     expect(fileText(join(checkout, 'config/app.ts'))).toBe(checkoutConfig)
 
-    await openConfig(cdp, e2e!.origin, 'App')
-    expect(await valueOf(cdp, '#config-description')).toBe(description)
+    expect(await valueOf(cdp, await openAppDescription(cdp, e2e!.origin))).toBe(description)
   }, 120_000)
 })
 
@@ -126,13 +127,13 @@ async function openMailSettings(cdp: Cdp, origin: string): Promise<void> {
   await waitFor(async () => await cdp.evaluate<boolean>(`Boolean(document.querySelector('select[aria-label="Mail driver"]'))`) || null, 20_000, { label: 'the mail settings form' })
 }
 
-/** Open General settings on one config file, by the name its list shows. */
-async function openConfig(cdp: Cdp, origin: string, title: string): Promise<void> {
-  await navigate(cdp, `${origin}/settings`)
-  await waitFor(async () => await cdp.evaluate<boolean>(`[...document.querySelectorAll('main button')].some(button => button.textContent.trim().startsWith(${JSON.stringify(title)}))`) || null, 20_000, { label: 'the config list' })
-  await click(cdp, '.dashboard-settings-config-picker summary')
-  await cdp.evaluate(`[...document.querySelectorAll('main button')].find(button => button.textContent.trim().split('\\n')[0].trim() === ${JSON.stringify(title)}).click()`)
-  await waitFor(async () => await cdp.evaluate<boolean>(`Boolean(document.querySelector('#config-description'))`) || null, 10_000, { label: `config/${title.toLowerCase()}.ts` })
+async function openAppDescription(cdp: Cdp, origin: string): Promise<string> {
+  await navigate(cdp, `${origin}/settings?file=app`)
+  return await waitFor(() => cdp.evaluate<string | null>(`(() => {
+    if (document.querySelector('[data-config-path]')?.textContent !== 'config/app.ts') return null
+    const label = document.querySelector('label[title="description"]')
+    return label?.control ? '#' + CSS.escape(label.control.id) : null
+  })()`), 20_000, { label: 'the app description field' })
 }
 
 /** Replace a field's text the way typing does: focus it, select what is there, type over it. */
