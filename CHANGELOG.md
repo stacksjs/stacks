@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.716...v0.75.717)
+
+## 🐛 Bug Fixes
+
+- **buddy**: report certificate renewal failures after DNS ([61e19ee](https://github.com/stacksjs/stacks/commit/61e19ee)) _(by Chris)_
+- **release**: limit the Homebrew personal token to tap bootstrap ([783a017](https://github.com/stacksjs/stacks/commit/783a017)) _(by Chris)_
+- **testing**: include CDP handshake details in transport failures ([efb85fc](https://github.com/stacksjs/stacks/commit/efb85fc)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.715...v0.75.716)
 
 ## 🐛 Bug Fixes
