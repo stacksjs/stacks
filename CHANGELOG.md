@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.714...v0.75.715)
+
+## 🐛 Bug Fixes
+
+- preserve DNS record type literals in settings ([0bbd5d7](https://github.com/stacksjs/stacks/commit/0bbd5d7)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.713...v0.75.714)
 
 ## 🐛 Bug Fixes
