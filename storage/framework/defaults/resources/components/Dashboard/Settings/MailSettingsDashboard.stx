@@ -333,12 +333,12 @@ onMount(() => void loadSettings())
     <SettingsGroup header="Sender and driver">
       <div class="p-3">
         <div class="grid gap-4 md:grid-cols-2">
-          <Select
-            v-model:value="driver"
+          <SettingsPicker
+            :value="driver()"
             :options="driverOptions"
             label="Mail driver"
-            placeholder=""
-            required
+            :disabled="isBusy()"
+            @change="driver.set($event)"
             :error="fieldError('driver')"
           />
           <Input
@@ -369,7 +369,9 @@ onMount(() => void loadSettings())
             <Input v-model:value="smtpHost" label="Host" placeholder="smtp.example.com" required :error="fieldError('smtp.host')" />
             <Input v-model:value="smtpPort" type="number" label="Port" placeholder="587" required :error="fieldError('smtp.port')" />
             <Input v-model:value="smtpUsername" label="Username" placeholder="mailer@example.com" :error="fieldError('smtp.username')" />
-            <Select v-model:value="smtpEncryption" :options="encryptionOptions" label="Encryption" placeholder="" hint="Match what your mail server expects. Most use STARTTLS on port 587." :error="fieldError('smtp.encryption')" />
+            <SettingsPicker :value="smtpEncryption()" :options="encryptionOptions" label="Encryption"
+              hint="Most mail servers use STARTTLS on port 587." :disabled="isBusy()"
+              :error="fieldError('smtp.encryption')" @change="smtpEncryption.set($event)" />
             <div class="md:col-span-2">
               <Input
                 v-model:value="smtpPassword"

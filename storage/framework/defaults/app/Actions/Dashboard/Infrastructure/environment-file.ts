@@ -10,6 +10,7 @@ import {
 } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 import { frameworkRuntimePath, projectPath } from '@stacksjs/path'
+import { serializeEnvironmentValue } from '../../../../resources/functions/dashboard/environment-value'
 
 const MAX_ENV_BYTES = 1024 * 1024
 const ENV_KEY_PATTERN = /^[A-Z_][A-Z0-9_]*$/
@@ -103,18 +104,6 @@ function parseEnvironmentValue(source: string): string {
     .replace(/\\n/g, '\n')
     .replace(/\\"/g, '"')
     .replace(/\\\\/g, '\\')
-}
-
-function serializeEnvironmentValue(value: string): string {
-  if (!value)
-    return ''
-  if (/^[A-Za-z0-9_./:@+-]+$/.test(value))
-    return value
-
-  return `"${value
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"')
-    .replace(/\n/g, '\\n')}"`
 }
 
 /**

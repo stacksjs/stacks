@@ -1,0 +1,87 @@
+<script client>
+import { contextMenu } from '@stacksjs/desktop/browser'
+
+interface PickerOption {
+  value: string
+  label: string
+  disabled?: boolean
+}
+
+const value = useReactiveProp('value', '')
+const options = useReactiveProp<PickerOption[]>('options', [])
+const label = useReactiveProp('label', '')
+const ariaLabel = useReactiveProp('ariaLabel', '')
+const hint = useReactiveProp('hint', '')
+const error = useReactiveProp('error', '')
+const disabled = useReactiveProp('disabled', false)
+const native = state(contextMenu.available())
+const showingMenu = state(false)
+const emit = defineEmits(['change'])
+const hintId = useId('settings-picker-hint')
+const selectedLabel = derived(() => options().find(option => option.value === value())?.label ?? '')
+const accessibleLabel = derived(() => ariaLabel() || label())
+const describedBy = derived(() => error() || hint() ? hintId : null)
+
+useEventListener('craft:ready', () => native.set(contextMenu.available()))
+
+async function showMenu(event: Event): Promise<void> {
+  if (disabled() || showingMenu())
+    return
+  const anchor = event.currentTarget as HTMLButtonElement
+  const { left, bottom } = anchor.getBoundingClientRect()
+  const current = options()
+  const selected = value()
+  showingMenu.set(true)
+  try {
+    const id = await contextMenu.pick({
+      x: Math.round(left),
+      y: Math.round(bottom),
+      items: current.map((option, index) => ({
+        id: String(index),
+        title: option.label,
+        disabled: option.disabled,
+        checked: option.value === selected,
+      })),
+    })
+    const choice = id == null ? undefined : current[Number(id)]
+    if (choice && !disabled() && options().some(option => option.value === choice.value && !option.disabled) && choice.value !== value())
+      emit('change', choice.value)
+  }
+  catch {
+    native.set(false)
+  }
+  finally {
+    showingMenu.set(false)
+  }
+}
+
+function change(event: Event): void {
+  const select = event.currentTarget as HTMLSelectElement
+  const next = select.value
+  select.value = value()
+  if (next !== value())
+    emit('change', next)
+}
+</script>
+
+<label class="dashboard-settings-picker">
+  <span :if="label()" class="dashboard-settings-picker-label" :text="label()"></span>
+  <span class="dashboard-settings-picker-control">
+    <button :if="native()" class="dashboard-settings-picker-button" type="button" aria-haspopup="menu"
+      :aria-expanded="String(showingMenu())" :aria-label="accessibleLabel() + (selectedLabel() ? ', ' + selectedLabel() : '')"
+      :aria-describedby="describedBy()" :aria-invalid="error() ? 'true' : null"
+      :disabled="disabled() || options().length === 0"
+      @click="showMenu">
+      <span :text="selectedLabel()"></span>
+    </button>
+    <select :else class="dashboard-settings-picker-button" data-ui-select data-dashboard-field
+      :aria-label="accessibleLabel()" :aria-describedby="describedBy()" :aria-invalid="error() ? 'true' : null"
+      :disabled="disabled() || options().length === 0" @change="change">
+      <option :for="option in options()" :key="option.value" :value="option.value"
+        :selected="option.value === value()" :disabled="option.disabled" :text="option.label"></option>
+    </select>
+    <span class="dashboard-settings-picker-glyph i-f7-chevron-up-chevron-down" aria-hidden="true"></span>
+  </span>
+  <span :if="error() || hint()" :id="hintId" :data-invalid="String(Boolean(error()))"
+    class="dashboard-settings-picker-hint" :text="error() || hint()"></span>
+</label>

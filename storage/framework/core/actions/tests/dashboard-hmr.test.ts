@@ -55,7 +55,8 @@ async function withDashboardBrowser(run: (fixture: DashboardBrowserFixture) => P
       writeFile(join(root, 'package.json'), '{"name":"dashboard-hmr-fixture"}'),
       writeFile(join(root, 'bunfig.toml'), 'preload = []\n'),
       writeFile(join(root, 'config/app.ts'), 'export default {}'),
-      writeFile(configFile, 'export default { nested: { port: 3000 } }'),
+      writeFile(configFile, 'export default { nested: { port: 3000, enabled: false } }'),
+      writeFile(join(root, 'config/editor-sibling.ts'), 'export default { label: "Second file" }'),
       writeFile(dnsFile, 'export default { txt: [] }'),
       writeFile(join(root, 'config/cloud.ts'), "export const tsCloud = { sites: { app: { domain: 'postline.example.test' } } }; export default {}"),
       writeFile(join(root, 'routes/api.ts'), 'export {}'),
@@ -258,6 +259,23 @@ test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('dashboard keeps page stat
       progressBar: Boolean(document.querySelector('#stx-router-progress')),
     })`)
     expect(await checkChrome()).toEqual({ sidebar: true, search: true, toolbar: true, animations: 0, transitionsDisabled: true, progressBar: false })
+    const chooseFile = (name: string) => cdp.evaluate(`(() => {
+      const picker = document.querySelector('select[aria-label="Configuration file"]')
+      picker.value = ${JSON.stringify(name)}
+      picker.dispatchEvent(new Event('change', { bubbles: true }))
+    })()`)
+    await until(async () => {
+      expect(await cdp.evaluate(`document.querySelector('select[aria-label="Configuration file"]')?.value`)).toBe('editor-probe')
+    })
+    await chooseFile('editor-sibling')
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('[data-config-path]')?.textContent")).toBe('config/editor-sibling.ts')
+    })
+    await chooseFile('editor-probe')
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('[data-config-path]')?.textContent")).toBe(configHeading)
+      expect(await cdp.evaluate("document.querySelector('.dashboard-settings-pane [role=switch]')?.getAttribute('aria-checked')")).toBe('false')
+    })
     await cdp.evaluate(`document.querySelector('.dashboard-settings-toolbar [aria-label="Back"]').click()`)
     await until(async () => {
       expect(await cdp.evaluate("document.querySelector('.dashboard-settings-toolbar h1')?.textContent")).toBe('General')
@@ -282,6 +300,18 @@ test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('dashboard keeps page stat
     await until(async () => {
       expect(await cdp.evaluate("document.querySelector('.dashboard-settings-pane button[type=submit]')?.disabled")).toBe(false)
     })
+    const openSource = () => cdp.evaluate(`[...document.querySelectorAll('[aria-label="Configuration editor"] button')]
+      .find(button => button.textContent.trim() === 'TypeScript')?.click()`)
+    await openSource()
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('dialog[open]')?.getAttribute('aria-label')")).toBe('Discard unsaved changes?')
+    })
+    await cdp.evaluate(`[...document.querySelectorAll('dialog[open] button')]
+      .find(button => button.textContent.trim() === 'Cancel')?.click()`)
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('.dashboard-config-field input')?.value")).toBe('3001')
+      expect(await cdp.evaluate("Boolean(document.querySelector('dialog[open]'))")).toBe(false)
+    })
     await cdp.evaluate(`document.querySelector('nav[aria-label="Settings"] a[href="/settings"]').click()`)
     await until(async () => {
       expect(await cdp.evaluate("document.querySelector('[data-config-path]')?.textContent")).toBe('config/app.ts')
@@ -289,15 +319,37 @@ test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('dashboard keeps page stat
     await cdp.evaluate(`document.querySelector('a[href="/settings/config/custom"]').click()`)
     await until(async () => {
       expect(await cdp.evaluate("document.querySelector('.dashboard-config-field input')?.value")).toBe('3001')
+      expect(await cdp.evaluate("document.querySelector('.dashboard-settings-pane button[type=submit]')?.disabled")).toBe(false)
     })
     await cdp.evaluate("document.querySelector('.dashboard-settings-pane button[type=submit]').click()")
     await until(async () => {
-      expect(await readFile(configFile, 'utf8')).toBe('export default { nested: { port: 3001 } }')
+      expect(await cdp.evaluate("document.querySelector('.dashboard-settings-pane [role=alert]')?.textContent?.trim() ?? ''")).toBe('')
+      expect(await readFile(configFile, 'utf8')).toBe('export default { nested: { port: 3001, enabled: false } }')
       expect(await runningDashboardInstance(port)).not.toBe(beforeConfigSave)
       expect(await cdp.evaluate("document.querySelector('[data-config-path]')?.textContent")).toBe(configHeading)
       expect(await cdp.evaluate("document.querySelector('.dashboard-config-field input')?.value")).toBe('3001')
       expect(await cdp.evaluate("document.querySelector('.dashboard-settings-pane [role=status]')?.textContent")).toContain('Saved config/editor-probe.ts')
     }, 35_000)
+    await openSource()
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('[data-ce=input]')?.value")).toContain('export default { nested: { port: 3001')
+      expect(await cdp.evaluate("document.querySelector('[data-ce=rows] .tok-keyword')?.textContent")).toContain('export')
+    })
+    await cdp.evaluate(`(() => {
+      const source = document.querySelector('[data-ce=input]')
+      source.focus()
+      source.setSelectionRange(source.value.length, source.value.length)
+    })()`)
+    await cdp.send('Input.insertText', { text: '\n// edited in the highlighted source editor' })
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('[data-ce=rows] .tok-comment')?.textContent")).toContain('edited in the highlighted source editor')
+      expect(await cdp.evaluate("document.querySelector('.dashboard-settings-pane button[type=submit]')?.disabled")).toBe(false)
+    })
+    await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 's', code: 'KeyS', modifiers: 2, windowsVirtualKeyCode: 83 })
+    await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 's', code: 'KeyS', modifiers: 2, windowsVirtualKeyCode: 83 })
+    await until(async () => {
+      expect(await readFile(configFile, 'utf8')).toContain('// edited in the highlighted source editor')
+    })
   })
 }, 105_000)
 

@@ -85,7 +85,14 @@ function createProjectConfigEditor(section: ProjectConfigSection) {
       return `Saved config/${file}.ts. Restart any other running services that use this file.`
     }
 
-    const changedFields = derived(() => (current()?.fields ?? []).filter(field => !Object.is(drafts[field.key], field.value)))
+    function draftValue(field: ConfigField): ConfigField['value'] {
+      const value = drafts[field.key]
+      if (field.type === 'number' && typeof value === 'string')
+        return value.trim() ? Number(value) : NaN
+      return value
+    }
+
+    const changedFields = derived(() => (current()?.fields ?? []).filter(field => !Object.is(draftValue(field), field.value)))
     const isDirty = derived(() => mode() === 'source' ? sourceDraft() !== current()?.source : changedFields().length > 0)
 
     function setDocument(result: ConfigDocument): void {
@@ -170,8 +177,8 @@ function createProjectConfigEditor(section: ProjectConfigSection) {
       if (!loaded || loading() || saving() || !isDirty())
         return
 
-      const changed = changedFields()
-      if (mode() === 'fields' && changed.some(field => field.type === 'number' && !Number.isFinite(drafts[field.key]))) {
+      const updates = changedFields().map(field => ({ key: field.key, type: field.type, value: draftValue(field) }))
+      if (mode() === 'fields' && updates.some(field => field.type === 'number' && !Number.isFinite(field.value))) {
         error.set('Enter a valid number in each number field.')
         return
       }
@@ -186,7 +193,7 @@ function createProjectConfigEditor(section: ProjectConfigSection) {
           body: {
             file,
             revision: loaded.revision,
-            ...(mode() === 'source' ? { source: sourceDraft() } : { updates: changed.map(({ key }) => ({ key, value: drafts[key] })) }),
+            ...(mode() === 'source' ? { source: sourceDraft() } : { updates: updates.map(({ key, value }) => ({ key, value })) }),
           },
         })
         setDocument(result)

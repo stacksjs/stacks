@@ -1,5 +1,7 @@
 <script client>
 import { DashboardApiError, dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
+import { serializeEnvironmentValue } from '@stacksjs/defaults/resources/functions/dashboard/environment-value'
+import { confirmSettingsDiscard } from '@stacksjs/defaults/views/dashboard/composables/settings-dialog'
 
 interface EnvironmentFileIssue {
   line: number
@@ -55,6 +57,8 @@ const showAddModal = state(false)
 const showBackupModal = state(false)
 const isLoading = state(true)
 const isSaving = state(false)
+const confirming = state(false)
+const discardAction = state<(() => void) | null>(null)
 const loadError = state('')
 const saveError = state('')
 const successMessage = state('')
@@ -65,6 +69,10 @@ const newVarKey = state('')
 const newVarValue = state('')
 const newVarDescription = state('')
 const addError = state('')
+const addFormId = useId('add-environment-variable')
+const fileOptions = derived(() => files().map(name => ({ value: name, label: name })))
+const discardTitle = 'Discard unsaved edits?'
+const discardDescription = 'Your unsaved changes to this environment file will be lost.'
 
 const hasBackup = derived(() => backupContent().length > 0)
 const isBusy = derived(() => isLoading() || isSaving())
@@ -105,15 +113,53 @@ async function loadEnvironment(): Promise<void> {
   }
 }
 
-/** Open another env file. Unsaved edits keep the current one open until they are saved. */
 function openFile(name: string): void {
-  if (isBusy() || dirty() || name === file())
+  if (!files().includes(name) || name === file())
     return
+  void replaceDraft(() => {
+    clearFeedback()
+    file.set(name)
+    void loadEnvironment()
+  })
+}
+
+function clearFeedback(): void {
   successMessage.set('')
   saveError.set('')
   validationIssues.set([])
-  file.set(name)
-  void loadEnvironment()
+}
+
+async function replaceDraft(action: () => void): Promise<void> {
+  if (isBusy() || confirming() || discardAction())
+    return
+  if (!dirty()) {
+    action()
+    return
+  }
+  confirming.set(true)
+  try {
+    const confirmed = await confirmSettingsDiscard(discardTitle, discardDescription, 'Discard Changes')
+    if (confirmed === null)
+      discardAction.set(action)
+    else if (confirmed)
+      action()
+  }
+  finally {
+    confirming.set(false)
+  }
+}
+
+function discardAndContinue(): void {
+  const action = discardAction()
+  discardAction.set(null)
+  action?.()
+}
+
+function revertChanges(): void {
+  void replaceDraft(() => {
+    clearFeedback()
+    envValues.set(loadedContent())
+  })
 }
 
 function openAddModal(): void {
@@ -154,27 +200,31 @@ function addVariable(): void {
     return
   }
 
-  const duplicate = envValues().split('\n').some(line => line.trim().startsWith(`${key}=`))
+  const duplicate = envValues().split('\n').some(line => line.slice(0, line.indexOf('=')).trim() === key && line.includes('='))
   if (duplicate) {
     addError.set(`${key} is already defined.`)
     return
   }
 
   const description = newVarDescription().trim()
-  const addition = `${description ? `# ${description}\n` : ''}${key}=${newVarValue()}`
+  const addition = `${description ? `# ${description}\n` : ''}${key}=${serializeEnvironmentValue(newVarValue())}`
   const current = envValues().trimEnd()
   envValues.set(`${current}${current ? '\n\n' : ''}${addition}\n`)
   closeAddModal()
 }
 
 function loadBackup(): void {
-  envValues.set(backupContent())
+  const content = backupContent()
   showBackupModal.set(false)
-  successMessage.set('Backup loaded into the editor. Review it, then save to apply it.')
+  void replaceDraft(() => {
+    clearFeedback()
+    envValues.set(content)
+    successMessage.set('Backup loaded into the editor. Review it, then save to apply it.')
+  })
 }
 
 async function handleSave(): Promise<void> {
-  if (isBusy() || !revision())
+  if (isBusy() || confirming() || discardAction() || !dirty())
     return
 
   isSaving.set(true)
@@ -210,15 +260,16 @@ async function handleSave(): Promise<void> {
 }
 
 function handlePageKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Escape') {
-    showAddModal.set(false)
-    showBackupModal.set(false)
+  if (event.defaultPrevented || confirming() || discardAction() || showBackupModal() || showAddModal()
+    || !(event.metaKey || event.ctrlKey) || event.shiftKey || event.altKey)
     return
-  }
-
-  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'n') {
+  if (event.key.toLowerCase() === 'n' && !isBusy()) {
     event.preventDefault()
     openAddModal()
+  }
+  if (event.key.toLowerCase() === 's') {
+    event.preventDefault()
+    void handleSave()
   }
 }
 
@@ -229,31 +280,17 @@ onMount(() => void loadEnvironment())
 <template>
 <div class="dashboard-settings-stack">
   <SettingsGroup>
-    <div class="flex flex-wrap gap-3 items-center justify-between px-4 py-3">
-      <div class="min-w-0">
-        <h2 class="break-all font-medium font-mono text-sm" :text="file()"></h2>
-        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400" :text="dirty() ? 'Unsaved changes' : `${variableCount()} variables`"></p>
+    <SettingsRow :label="files().length > 1 ? 'Environment file' : file()" :description="dirty() ? 'Unsaved changes' : `${variableCount()} variables`">
+      <SettingsPicker :if="files().length > 1" :options="fileOptions()" :value="file()"
+        ariaLabel="Environment file" :disabled="isBusy() || confirming()" @change="openFile($event)" />
+    </SettingsRow>
+    <SettingsRow label="Variables">
+      <div class="flex flex-wrap gap-2 items-center justify-end">
+        <Button :if="hasBackup()" variant="secondary" size="sm" :disabled="isBusy()" @click="showBackupModal.set(true)">View Backup</Button>
+        <Button size="sm" :disabled="isBusy()" @click="openAddModal">Add Variable</Button>
       </div>
-      <div class="flex flex-wrap gap-2 items-center">
-        <Button :if="hasBackup()" variant="secondary" size="sm" @click="showBackupModal.set(true)">Backup</Button>
-        <Button size="sm" @click="openAddModal">Add variable</Button>
-      </div>
-    </div>
+    </SettingsRow>
   </SettingsGroup>
-
-  <div :if="files().length > 1" class="flex flex-wrap gap-2 items-center" role="group" aria-label="Env file">
-    <button
-      :for="name in files"
-      type="button"
-      class="px-3 py-1.5 font-mono text-sm border rounded-lg disabled:opacity-60 transition-colors"
-      :class="name === file() ? 'text-white bg-stone-900 border-stone-900 dark:text-neutral-900 dark:bg-white dark:border-white' : 'text-stone-700 bg-white border-stone-200 hover:bg-stone-50 dark:text-neutral-200 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:bg-neutral-800'"
-      :aria-pressed="String(name === file())"
-      :disabled="isBusy() || (dirty() && name !== file())"
-      @click="openFile(name)"
-      :text="name"
-    ></button>
-    <span :if="dirty()" class="text-stone-500 text-xs dark:text-neutral-400">Save your edits before opening another file.</span>
-  </div>
 
   <div :if="readElsewhere().length" class="p-4 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900" role="note" data-env-read-elsewhere>
     <p class="font-medium">Some keys here are set again in a file the app loads later.</p>
@@ -276,10 +313,10 @@ onMount(() => void loadEnvironment())
   </div>
 
   <div :if="!loadError()">
-    <CodeEditor
+    <SettingsCodeEditor
       v-model:value="envValues"
       :label="file()"
-      language="env"
+      language="dotenv"
       :loading="isLoading()"
       @save="handleSave"
       @format="formatContent"
@@ -292,6 +329,7 @@ onMount(() => void loadEnvironment())
         <span><kbd class="px-1.5 py-0.5 font-semibold text-stone-700 dark:text-neutral-200 bg-stone-100 dark:bg-neutral-800 border border-stone-200 rounded dark:border-neutral-700">Cmd/Ctrl + Shift + F</kbd> format</span>
       </div>
       <div class="flex gap-2">
+        <Button :if="dirty()" variant="secondary" :disabled="isBusy()" @click="revertChanges">Revert</Button>
         <Button variant="secondary" :disabled="isBusy()" @click="formatContent">Format</Button>
         <Button :loading="isSaving()" :disabled="isBusy() || !dirty()" @click="handleSave">Save changes</Button>
       </div>
@@ -305,8 +343,8 @@ onMount(() => void loadEnvironment())
     size="sm"
     @close="closeAddModal"
   >
-    <form class="flex flex-col gap-4" @submit.prevent="addVariable">
-      <Input v-model:value="newVarKey" label="Key" placeholder="APP_NAME" required />
+    <form :id="addFormId" class="flex flex-col gap-4" @submit.prevent="addVariable">
+      <Input v-model:value="newVarKey" label="Name" placeholder="APP_NAME" :spellcheck="false" required />
       <Input v-model:value="newVarValue" label="Value" placeholder="My App" />
       <Input v-model:value="newVarDescription" label="Description" placeholder="Used in emails and the interface" hint="Optional comment placed above the variable." />
       <p :if="addError()" class="text-red-600 text-sm dark:text-red-400" role="alert" :text="addError()"></p>
@@ -314,10 +352,12 @@ onMount(() => void loadEnvironment())
     <template #footer>
       <div class="flex gap-2">
         <Button variant="ghost" @click="closeAddModal">Cancel</Button>
-        <Button @click="addVariable">Add to editor</Button>
+        <Button type="submit" :form="addFormId">Add to Editor</Button>
       </div>
     </template>
   </Modal>
+  <ConfirmDialog :isOpen="Boolean(discardAction())" :title="discardTitle" :description="discardDescription"
+    confirmLabel="Discard Changes" variant="warning" @close="discardAction.set(null)" @confirm="discardAndContinue" />
 
   <Modal
     :isOpen="showBackupModal()"
@@ -328,7 +368,7 @@ onMount(() => void loadEnvironment())
   >
     <div class="space-y-3">
       <p :if="backupUpdatedAt()" class="text-stone-500 text-xs dark:text-neutral-400" :text="backupSavedLabel()"></p>
-      <textarea readonly rows="18" class="block p-4 w-full font-mono leading-6 text-[#c9d1d9] text-xs bg-[#0d1117] border border-[#30363d] rounded-lg resize-y" :value="backupContent()"></textarea>
+      <SettingsCodeEditor readonly :value="backupContent()" label="Environment backup source" language="dotenv" />
     </div>
     <template #footer>
       <div class="flex gap-2">

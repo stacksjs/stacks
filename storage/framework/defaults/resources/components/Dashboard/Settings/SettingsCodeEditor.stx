@@ -1,0 +1,27 @@
+<script client>
+const model = useModel('value', { default: '' })
+const language = useReactiveProp('language', 'typescript')
+const label = useReactiveProp('label', 'Configuration source')
+const loading = useReactiveProp('loading', false)
+const readonly = useReactiveProp('readonly', false)
+const emit = defineEmits(['save', 'format'])
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (event.defaultPrevented || event.isComposing || !(event.metaKey || event.ctrlKey) || event.altKey)
+    return
+  const key = event.key.toLowerCase()
+  if (!event.shiftKey && key === 's') {
+    event.preventDefault()
+    emit('save')
+  }
+  else if (event.shiftKey && key === 'f' && !readonly() && !loading()) {
+    event.preventDefault()
+    emit('format')
+  }
+}
+</script>
+
+<div class="dashboard-settings-source" role="group" :aria-label="label()" @keydown="handleKeydown">
+  <CodeEditor :key="label()" v-model:value="model" :language="language()" label="Source text" :readonly="readonly()"
+    :disabled="loading()" :autoComplete="false" :hover="false" :signatureHelp="false" height="22rem" />
+</div>

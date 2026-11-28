@@ -583,6 +583,14 @@ The Settings layout keeps the Craft sidebar, search, and toolbar outside the
 routed outlet. Settings links, search results, and history replace the detail
 pane without a view transition. Keep individual Settings views inside that
 outlet so opening a pane preserves the sidebar's focus and scroll position.
+Use `SettingsPicker` for choices in Settings. It opens a Craft system menu
+with the current choice checked and renders an ordinary select in the
+browser. Use the shared Settings group, row, and switch for inline
+preferences. When discarding changes needs confirmation, ask Craft for a
+system dialog and use the shared confirm dialog on the web.
+Use `SettingsCodeEditor` for Settings source. It wraps the shared STX editor
+with incremental `ts-syntax-highlighter` tokenization and Settings keyboard
+shortcuts.
 
 ### Reactive page components
 

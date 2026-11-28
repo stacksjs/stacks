@@ -9,22 +9,28 @@ defineClientPayload({ configSectionId })
 <script client>
 import type { ConfigField, EditorMode } from '@stacksjs/defaults/views/dashboard/composables/useProjectConfigEditor'
 import { configLabel, projectConfigSection } from '@stacksjs/defaults/resources/functions/dashboard/project-config-sections'
+import { confirmSettingsDiscard } from '@stacksjs/defaults/views/dashboard/composables/settings-dialog'
 import { projectConfigEditor, rememberProjectConfigFile, requestedProjectConfigFile } from '@stacksjs/defaults/views/dashboard/composables/useProjectConfigEditor'
 
 const configSection = projectConfigSection({{ configSectionId }})
 const { files, current, drafts, sourceDraft, selected, mode, setMode, loading, saving, message, error, isDirty, setDocument, selectFile, save, initialize } = projectConfigEditor({{ configSectionId }})
 
 const pending = state<'reload' | EditorMode | null>(null)
-const fileQuery = state('')
+const confirming = state(false)
+const visibleMode = state<EditorMode>('fields')
 const fieldQuery = state('')
 const fieldLimit = state(40)
 const dnsFile = derived(() => selected() === 'dns')
 
-const filteredFiles = derived(() => {
-  const needle = fileQuery().trim().toLowerCase()
-  return files().filter(file => file.name.toLowerCase().includes(needle) || file.title.toLowerCase().includes(needle))
-})
+const fileOptions = derived(() => files().map(file => ({ value: file.name, label: file.title })))
+const editorModes = derived(() => [
+  { value: 'fields', label: dnsFile() ? 'Records' : 'Fields' },
+  { value: 'source', label: 'TypeScript' },
+])
 const selectedFile = derived(() => files().find(file => file.name === selected()))
+const discardTitle = 'Discard unsaved changes?'
+const discardDescription = 'Your changes to this configuration file will be lost.'
+effect(() => visibleMode.set(mode()))
 
 function displayPart(part: string | number): string {
   return typeof part === 'number' ? `Item ${part + 1}` : configLabel(part)
@@ -71,14 +77,35 @@ function openFile(name: string, reload = false): Promise<void> {
 function requestMode(next: EditorMode): void {
   if (saving() || next === mode())
     return
-  if (isDirty())
-    pending.set(next)
-  else
+  if (isDirty()) {
+    visibleMode.set(mode())
+    void requestDiscard(next)
+  }
+  else {
     setMode(next)
+  }
 }
 
-function discardAndContinue(): void {
-  const destination = pending()
+async function requestDiscard(destination: 'reload' | EditorMode): Promise<void> {
+  if (confirming() || pending())
+    return
+  const file = selected()
+  confirming.set(true)
+  try {
+    const confirmed = await confirmSettingsDiscard(discardTitle, discardDescription, 'Discard Changes')
+    if (selected() !== file || saving())
+      return
+    if (confirmed === null)
+      pending.set(destination)
+    else if (confirmed)
+      discardAndContinue(destination)
+  }
+  finally {
+    confirming.set(false)
+  }
+}
+
+function discardAndContinue(destination = pending()): void {
   pending.set(null)
   if (destination === 'reload') {
     void openFile(selected(), true)
@@ -102,6 +129,13 @@ function loadSection(): Promise<void> {
 
 onMount(loadSection)
 useEventListener('stx:load', loadSection)
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (!event.defaultPrevented && (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 's') {
+    event.preventDefault()
+    if (!confirming() && !pending())
+      void save()
+  }
+})
 </script>
 
 <template>
@@ -109,24 +143,19 @@ useEventListener('stx:load', loadSection)
   <p class="dashboard-config-intro" :text="configSection?.description"></p>
 
   <div :if="files().length > 1">
-    <div :if="files().length > 8" class="mb-2">
-      <SearchFilter v-model:searchValue="fileQuery" placeholder="Filter files" ariaLabel="Filter configuration files" />
-    </div>
-    <nav id="project-config-files" class="dashboard-config-files" aria-label="Configuration files">
-      <button :for="file in filteredFiles()" type="button" class="dashboard-config-file"
-        :aria-pressed="String(selected() === file.name)" :disabled="saving()"
-        :title="'config/' + file.name + '.ts'" :text="file.title"
-        @click="openFile(file.name)">
-      </button>
-    </nav>
-    <p :if="filteredFiles().length === 0" class="dashboard-config-intro" role="status">No matching files</p>
+    <SettingsGroup>
+      <SettingsRow label="Configuration file">
+        <SettingsPicker :options="fileOptions()" :value="selected()" ariaLabel="Configuration file"
+          :disabled="saving() || confirming()" @change="openFile($event)" />
+      </SettingsRow>
+    </SettingsGroup>
   </div>
 
   <p :if="loading()" class="dashboard-config-intro" role="status">Loading configuration…</p>
   <div :if="error()" class="text-red-700 text-sm dark:text-red-400" role="alert">
     <p :text="error()"></p>
     <Button :if="!current() && !loading()" variant="secondary" size="sm" @click="selected() ? openFile(selected(), true) : loadSection()">Retry</Button>
-    <Button :if="current() && isDirty()" variant="secondary" size="sm" @click="pending.set('reload')">Reopen file</Button>
+    <Button :if="current() && isDirty()" variant="secondary" size="sm" @click="requestDiscard('reload')">Reopen file</Button>
   </div>
   <p :if="!loading() && !error() && files().length === 0" class="dashboard-config-intro">This project has no configuration files in this section.</p>
   <p :if="message()" class="text-green-700 text-sm dark:text-green-400" role="status" :text="message()"></p>
@@ -140,17 +169,15 @@ useEventListener('stx:load', loadSection)
             <p class="dashboard-config-path" data-config-path :text="'config/' + selected() + '.ts'"></p>
           </div>
           <div class="flex flex-wrap gap-2 items-center">
-            <div class="dashboard-config-mode-group" role="group" aria-label="Configuration editor">
-              <button type="button" class="dashboard-config-mode" :aria-pressed="String(mode() === 'fields')" :disabled="saving()" @click="requestMode('fields')" :text="dnsFile() ? 'Records' : 'Fields'"></button>
-              <button type="button" class="dashboard-config-mode" :aria-pressed="String(mode() === 'source')" :disabled="saving()" @click="requestMode('source')">TypeScript</button>
-            </div>
+            <SegmentedControl v-model:value="visibleMode" :options="editorModes()" label="Configuration editor" variant="mac"
+              :disabled="saving() || confirming()" @change="requestMode($event)" />
             <Button :if="!dnsFile() || mode() === 'source'" type="submit" size="sm" :loading="saving()" :disabled="saving() || !isDirty()">Save changes</Button>
           </div>
         </div>
 
         <div :if="mode() === 'source'" class="flex flex-col gap-2 p-4 pt-0">
           <p :if="current()?.diagnostic" class="text-amber-700 text-sm dark:text-amber-300" :text="current()?.diagnostic"></p>
-          <CodeEditor v-model:value="sourceDraft" language="typescript" :label="'config/' + selected() + '.ts'" :readonly="saving()" @save="save()" />
+          <SettingsCodeEditor v-model:value="sourceDraft" language="typescript" :label="'config/' + selected() + '.ts'" :readonly="saving()" @save="save()" />
         </div>
 
         <div :if="mode() === 'fields' && !dnsFile()" class="min-w-0">
@@ -163,13 +190,15 @@ useEventListener('stx:load', loadSection)
           <p :if="displayRows().length === 0" class="pb-4 px-4 text-neutral-500 text-sm dark:text-neutral-400"
             :text="fieldQuery() ? 'No matching fields' : 'Open TypeScript to edit this file.'"></p>
 
-          <div :for="(field, index) in displayRows()">
+          <div :for="(field, index) in displayRows()" :key="field.key">
             <h3 :if="field.sectionHeading" class="dashboard-config-subheading" :text="field.sectionHeading"></h3>
+            @if(field.type === 'boolean')
+            <SettingsRow :label="field.label" :description="field.description">
+              <Switch v-model:checked="drafts[field.key]" variant="mac" :disabled="saving()" />
+            </SettingsRow>
+            @else
             <div class="dashboard-config-field" :data-config-type="field.type">
-              @if(field.type === 'boolean')
-                <Toggle v-model:checked="drafts[field.key]" :label="field.label" :ariaLabel="field.accessibleLabel"
-                  :description="field.description" labelPosition="left" :disabled="saving()" />
-              @elseif(field.type === 'null')
+              @if(field.type === 'null')
                 <span class="dashboard-config-field-label" :title="field.key" :text="field.label"></span>
                 <span class="dashboard-config-intro">Unset</span>
               @else
@@ -180,7 +209,7 @@ useEventListener('stx:load', loadSection)
                 @if(field.type === 'number')
                   <input :id="'dashboard-config-field-' + index" data-dashboard-field type="number" step="any" required
                     :aria-describedby="field.description ? 'dashboard-config-help-' + index : null"
-                    class="dashboard-config-input" x-model.number="drafts[field.key]" :disabled="saving()">
+                    class="dashboard-config-input" x-model="drafts[field.key]" :disabled="saving()">
                 @else
                   <input :id="'dashboard-config-field-' + index" data-dashboard-field :type="fieldInputType(field)" autocomplete="off"
                     :aria-describedby="field.description ? 'dashboard-config-help-' + index : null"
@@ -188,6 +217,7 @@ useEventListener('stx:load', loadSection)
                 @endif
               @endif
             </div>
+            @endif
           </div>
           <div :if="filteredFields().length > fieldLimit()" class="p-3">
             <Button variant="secondary" size="sm" @click="fieldLimit.update(limit => limit + 40)">Show more fields</Button>
@@ -200,8 +230,7 @@ useEventListener('stx:load', loadSection)
     </SettingsGroup>
   </div>
 
-  <ConfirmDialog :isOpen="Boolean(pending())" title="Discard unsaved changes?"
-    description="Your changes to this configuration file will be lost."
-    confirmLabel="Discard changes" variant="warning" @close="pending.set(null)" @confirm="discardAndContinue" />
+  <ConfirmDialog :isOpen="Boolean(pending())" :title="discardTitle" :description="discardDescription"
+    confirmLabel="Discard Changes" variant="warning" @close="pending.set(null)" @confirm="discardAndContinue()" />
 </div>
 </template>
