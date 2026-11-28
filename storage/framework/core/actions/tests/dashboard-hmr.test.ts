@@ -305,19 +305,29 @@ test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('dashboard Settings saves 
   await withDashboardBrowser(async ({ browser, dnsFile, root }) => {
     const { cdp } = browser
     const origin = new URL(readProjectService(root, 'dashboard')!.url).origin
-    await cdp.send('Page.navigate', { url: origin + '/settings/config/dns' })
+    await cdp.send('Page.navigate', { url: origin + '/settings' })
     await until(async () => {
-      expect(await cdp.evaluate(`Boolean([...document.querySelectorAll('button')].find(button => button.textContent.includes('Add record') && !button.disabled))`)).toBe(true)
+      expect(await cdp.evaluate(`(() => {
+        const link = document.querySelector('nav[aria-label="Settings"] a[href="/settings/config/dns"]')
+        if (!link)
+          return false
+        link.click()
+        return true
+      })()`)).toBe(true)
     })
-    await cdp.evaluate(`[...document.querySelectorAll('button')].find(button => button.textContent.includes('Add record')).click()`)
     await until(async () => {
-      expect(await cdp.evaluate(`Boolean(document.querySelector('[role="dialog"] textarea'))`)).toBe(true)
+      expect(await cdp.evaluate(`(() => {
+        const dialog = document.querySelector('dialog[open]')
+        if (!dialog?.querySelector('textarea')) {
+          const settings = document.querySelector('.dashboard-dns-settings')
+          if (settings?.textContent.includes('postline.example.test') && !settings.querySelector('dialog'))
+            settings.querySelector('.dashboard-dns-toolbar button:not(:disabled)')?.click()
+          return false
+        }
+        const { left, right } = dialog.getBoundingClientRect()
+        return Math.abs(left) < 1 && Math.abs(right - innerWidth) < 1
+      })()`)).toBe(true)
     })
-    expect(await cdp.evaluate(`(() => {
-      const dialog = document.querySelector('dialog[open]')
-      const { left, right } = dialog.getBoundingClientRect()
-      return Math.abs(left) < 1 && Math.abs(right - innerWidth) < 1
-    })()`)).toBe(true)
     await cdp.evaluate(`
       const text = document.querySelector('[role="dialog"] textarea')
       text.value = 'dashboard-verification'

@@ -734,8 +734,9 @@ html:has([data-dashboard-settings][data-settings-native="true"]) [data-dashboard
 }
 
 html:has([data-dashboard-settings-content]) .dashboard-modal-layer {
-  left: 0;
-  width: auto;
+  inset-inline: 0;
+  /* WebKit gives a top-layer dialog an intrinsic width when this is auto. */
+  width: 100%;
 }
 
 .dashboard-settings {
