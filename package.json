@@ -120,7 +120,7 @@
     "commit-msg": "bun x gitlint --edit \"$1\""
   },
   "devDependencies": {
-    "@actions/expressions": "0.3.61",
+    "@actions/expressions": "0.3.62",
     "@stacksjs/components": "0.2.960",
     "better-dx": "^0.2.39",
     "bun-plugin-stx": "0.2.960"

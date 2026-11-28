@@ -66,8 +66,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@babel/parser": "^8.1.2",
-    "@babel/types": "^8.1.2",
+    "@babel/parser": "^8.1.3",
+    "@babel/types": "^8.1.3",
     "@stacksjs/action-runner": "workspace:*",
     "@stacksjs/ai": "workspace:*",
     "@stacksjs/analytics": "workspace:*",
@@ -75,7 +75,7 @@
     "@stacksjs/auth": "workspace:*",
     "@stacksjs/charts": "workspace:*",
     "@stacksjs/build": "workspace:*",
-    "@stacksjs/bumpx": "^0.2.32",
+    "@stacksjs/bumpx": "^0.2.35",
     "@stacksjs/bunpress": "^0.2.35",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/cloud": "workspace:*",
@@ -94,7 +94,7 @@
     "@stacksjs/i18n": "workspace:*",
     "@stacksjs/image": "workspace:*",
     "@stacksjs/logging": "workspace:*",
-    "@stacksjs/logsmith": "^0.2.11",
+    "@stacksjs/logsmith": "^0.2.16",
     "@stacksjs/mobile": "workspace:*",
     "@stacksjs/orm": "workspace:*",
     "@stacksjs/path": "workspace:*",
@@ -102,7 +102,7 @@
     "@stacksjs/queue": "workspace:*",
     "@stacksjs/registry": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@stacksjs/rpx": "^0.11.54",
+    "@stacksjs/rpx": "^0.11.64",
     "@stacksjs/scheduler": "workspace:*",
     "@stacksjs/search-engine": "workspace:*",
     "@stacksjs/security": "workspace:*",
@@ -112,17 +112,17 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/stx": "^0.2.960",
     "@stacksjs/tlsx": "^0.13.19",
-    "@stacksjs/ts-cloud": "^0.16.144",
+    "@stacksjs/ts-cloud": "^0.16.157",
     "@stacksjs/ts-md": "^0.1.1",
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/whois": "workspace:*",
     "bun-plugin-stx": "^0.2.960",
-    "pickier": "^0.1.92"
+    "pickier": "^0.1.95"
   },
   "peerDependencies": {
-    "craft-native": ">=0.0.505"
+    "craft-native": ">=0.0.548"
   },
   "peerDependenciesMeta": {
     "craft-native": {

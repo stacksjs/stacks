@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@iconify-json/f7": "^1.2.2",
-    "@iconify-json/hugeicons": "^1.2.35",
+    "@iconify-json/hugeicons": "^1.2.36",
     "@stacksjs/desktop": "^0.2.960",
     "@stacksjs/mobile": "0.75.716",
     "@stacksjs/sanitizer": "^0.2.960",
