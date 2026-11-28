@@ -4,6 +4,21 @@ import { applicationDnsHosts, configDnsDomains, desiredDnsRecords, dnsRecordSkip
 
 const recordKeys = { A: 'a', AAAA: 'aaaa', CNAME: 'cname', TXT: 'txt', MX: 'mx' } as const
 
+type DashboardDnsRecordType = keyof typeof recordKeys
+
+interface DashboardDnsRecordRow {
+  type: DashboardDnsRecordType
+  name: string
+  value: string
+  ttl?: number | 'auto'
+  priority?: number
+}
+
+interface DashboardDnsRecordAddition {
+  key: typeof recordKeys[DashboardDnsRecordType]
+  record: Record<string, string | number>
+}
+
 interface DnsSettingsInput {
   type?: unknown
   domain?: unknown
@@ -28,7 +43,7 @@ export function dashboardDnsConfiguration(config: DnsConfig, cloud: {
   return { domains, hosts: [...new Set([...applicationDnsHosts(sites), ...domains])], config }
 }
 
-export function configuredDashboardDnsRecords(config: DnsConfig) {
+export function configuredDashboardDnsRecords(config: DnsConfig): DashboardDnsRecordRow[] {
   return [
     ...(config.a ?? []).map(({ name, address, ttl }) => ({ type: 'A', name, value: address, ttl })),
     ...(config.aaaa ?? []).map(({ name, address, ttl }) => ({ type: 'AAAA', name, value: address, ttl })),
@@ -43,8 +58,8 @@ function validLabels(value: string, service = false): boolean {
   return value.length <= 253 && value.split('.').every(part => label.test(part))
 }
 
-export function dashboardDnsRecord(input: DnsSettingsInput, settings: DashboardDnsConfiguration) {
-  const type = typeof input.type === 'string' && Object.hasOwn(recordKeys, input.type) ? input.type as keyof typeof recordKeys : undefined
+export function dashboardDnsRecord(input: DnsSettingsInput, settings: DashboardDnsConfiguration): DashboardDnsRecordAddition {
+  const type = typeof input.type === 'string' && Object.hasOwn(recordKeys, input.type) ? input.type as DashboardDnsRecordType : undefined
   if (!type)
     throw new Error('Choose a supported DNS record type.')
   if (typeof input.domain !== 'string' || !settings.domains.includes(input.domain))
