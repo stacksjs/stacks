@@ -1,7 +1,7 @@
 import { TelephonyError } from './errors.ts'
 import type { OperationJournal } from './journal.ts'
 import { executeWrite } from './journal.ts'
-import type { AvailableNumber, Call, CallInstructions, CallStatus, CreateCall, NumberSearch, PhoneNumber, ProvisionNumber, Telephony, WriteOptions } from './types.ts'
+import type { AvailableNumber, Call, CallFilter, CallInstructions, CallStatus, CreateCall, NumberSearch, PhoneNumber, ProvisionNumber, Telephony, WriteOptions } from './types.ts'
 import { callStatuses, instructions, invalid, phone, search, secureUrl, sid } from './validation.ts'
 
 export type TelephonyFetch = (url: string, init?: RequestInit) => Promise<Response>
@@ -211,7 +211,7 @@ export class TwilioTelephony implements Telephony {
   }
 
   /** First page, max 50. Results can lag a write and do not prove an absent call was never created. */
-  async listCalls(filter: { from?: string, to?: string, parentSid?: string } = {}): Promise<Call[]> {
+  async listCalls(filter: CallFilter = {}): Promise<Call[]> {
     const query = new URLSearchParams({ PageSize: '50' })
     if (filter.from) query.set('From', phone(filter.from))
     if (filter.to) query.set('To', phone(filter.to))

@@ -32,6 +32,11 @@ export interface Call {
   priceCurrency?: string | null
   timeLimitSeconds?: number | null
 }
+export interface CallFilter {
+  from?: string
+  to?: string
+  parentSid?: string
+}
 export interface NumberSearch {
   country: PhoneCountry
   areaCode?: string
@@ -61,7 +66,7 @@ export interface Telephony {
   createCall: (input: CreateCall, options: WriteOptions) => Promise<Call>
   getCall: (sid: string) => Promise<Call>
   setCallTimeLimit: (sid: string, seconds: number, options: WriteOptions) => Promise<Call>
-  listCalls: (filter?: { from?: string, to?: string }) => Promise<Call[]>
+  listCalls: (filter?: CallFilter) => Promise<Call[]>
   redirectCall: (sid: string, instructions: CallInstructions, options: WriteOptions) => Promise<Call>
   endCall: (sid: string, status: 'completed' | 'canceled', options: WriteOptions) => Promise<Call>
 }
