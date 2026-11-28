@@ -93,6 +93,20 @@ re-deriving that encoding by hand is how you end up storing the string
 
 Learn more in the docs.
 
+### LinkedIn authorization in a desktop app
+
+For a LinkedIn developer app with native PKCE enabled, call
+`LinkedInPublishingDriver.createNativeAuthorization({ clientId, redirectUrl, scopes, state })`.
+Use the IP-literal loopback URL on which your app listens. Open the returned
+`url` in the system browser and keep the `codeVerifier` with the pending
+OAuth state.
+
+After verifying the callback state, use
+`exchangeNativeCode({ clientId, redirectUrl, code, codeVerifier })`. Pass the
+exact same redirect URL and the verifier from that attempt. Hosted apps use
+`getAuthUrl` and `exchangeCode` with their client secret.
+[LinkedIn native authorization documentation](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow-native)
+
 ## 🧪 Testing
 
 ```bash
