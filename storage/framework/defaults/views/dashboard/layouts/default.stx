@@ -780,7 +780,7 @@ onDestroy(() => {
     <div data-dashboard-sidebar-tree>
       <SidebarSections :sections="sidebarSections" theme="macos" />
     </div>
-    <DashboardSectionSidebar :sectionHubs="sectionHubs" />
+    <DashboardSectionSidebar :sectionHubs="sectionHubs" :primaryItems="sidebarSections[0].items" />
     <template #footer>
       <div class="px-3 py-2 text-neutral-600 text-xs dark:text-neutral-300" data-sidebar-order-controls data-dashboard-muted :data-sidebar-order-editing="sidebarReordering() ? 'true' : 'false'">
         <p role="status" aria-live="polite" :text="sidebarOrderStatus.message"></p>
