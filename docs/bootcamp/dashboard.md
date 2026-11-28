@@ -18,7 +18,7 @@ See [Extending the dashboard](/bootcamp/how-to/extend-dashboard) for a complete 
 
 ## GitHub Issues
 
-Run `./buddy dev --dashboard` and open **GitHub Issues** in the sidebar.
+Run `./buddy dev --dashboard` and open **GitHub Issues** in the top navigation.
 The view combines open and closed issues from the GitHub repositories of your
 registered local Stacks projects. Use the search box and project or status
 filters to find an issue, then select its title to open it on GitHub.

@@ -1,0 +1,8 @@
+<script client>
+const route = useRoute()
+</script>
+
+<a href="/github-issues" data-stx-link :aria-current="route.path === '/github-issues' ? 'page' : null" class="inline-flex gap-2 items-center px-2.5 h-8 aria-[current=page]:text-blue-700 font-medium text-neutral-700 text-sm dark:aria-[current=page]:text-blue-300 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md">
+  <span aria-hidden="true" class="h-4 w-4 i-hugeicons-github"></span>
+  GitHub Issues
+</a>

@@ -43,19 +43,20 @@ interface GitHubIssuesRoutesOptions {
   resolveToken?: () => string | null
 }
 
-function projectRepository(root: string): string | null {
-  let remotes: ReturnType<typeof Bun.spawnSync>
+async function projectRepository(root: string): Promise<string | null> {
+  let output: string
   try {
-    remotes = Bun.spawnSync(['git', 'remote', '-v'], { cwd: root, stdout: 'pipe', stderr: 'ignore', timeout: 2_000 })
+    const git = Bun.spawn(['git', 'remote', '-v'], { cwd: root, stdout: 'pipe', stderr: 'ignore', timeout: 2_000 })
+    const [code, stdout] = await Promise.all([git.exited, new Response(git.stdout).text()])
+    if (code !== 0)
+      return null
+    output = stdout
   }
   catch {
     return null
   }
-  if (remotes.exitCode !== 0 || !remotes.stdout)
-    return null
-
   const repositories = new Map<string, string>()
-  for (const line of remotes.stdout.toString().split('\n')) {
+  for (const line of output.split('\n')) {
     const match = /^(\S+)\s+(\S+)\s+\(fetch\)$/.exec(line)
     if (!match)
       continue
@@ -66,13 +67,13 @@ function projectRepository(root: string): string | null {
   return repositories.get('origin') ?? repositories.get('upstream') ?? repositories.values().next().value ?? null
 }
 
-function localProjects(root: string): LocalProject[] {
+function localProjects(root: string): Promise<LocalProject[]> {
   const current = registerProject(root)
   const others = listProjects().filter(project => project.id !== current?.id && isProjectRoot(project.path))
-  return (current ? [current, ...others] : others).map(({ id, name, path }) => ({
+  return mapWithConcurrency(current ? [current, ...others] : others, 8, async ({ id, name, path }) => ({
     id,
     name,
-    repository: projectRepository(path),
+    repository: await projectRepository(path),
   }))
 }
 
@@ -139,10 +140,11 @@ function reply(data: object, status = 200): Response {
 
 export function dashboardGitHubIssuesRoutes(options: GitHubIssuesRoutesOptions) {
   let current: IssuesSnapshot | undefined
+  let starting: Promise<IssuesSnapshot> | undefined
   let finishedAt = 0
 
-  function start(): IssuesSnapshot {
-    const projects = localProjects(options.root)
+  async function start(): Promise<IssuesSnapshot> {
+    const projects = await localProjects(options.root)
     const repositories = [...new Set(projects.flatMap(project => project.repository ? [project.repository] : []))]
     const token = repositories.length ? (options.resolveToken ?? resolveGitHubToken)() : null
     const snapshot: IssuesSnapshot = { projects, issues: [], failures: [], loading: true }
@@ -170,9 +172,11 @@ export function dashboardGitHubIssuesRoutes(options: GitHubIssuesRoutesOptions) 
 
       try {
         // Polling only reads the existing snapshot, even after it has aged.
-        if (!current || (!current.loading && url.searchParams.get('poll') !== '1'
-          && (url.searchParams.get('refresh') === '1' || Date.now() - finishedAt >= 60_000)))
-          current = start()
+        if (starting || !current || (!current.loading && url.searchParams.get('poll') !== '1'
+          && (url.searchParams.get('refresh') === '1' || Date.now() - finishedAt >= 60_000))) {
+          starting ??= start().finally(() => { starting = undefined })
+          current = await starting
+        }
 
         return reply({
           ...current,

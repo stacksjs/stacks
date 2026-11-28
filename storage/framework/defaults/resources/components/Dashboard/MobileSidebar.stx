@@ -82,6 +82,7 @@ useEventListener('stx:navigate', closeSidebar)
     <span class="h-5 w-5 i-hugeicons-menu-01"></span>
   </button>
   <span class="font-semibold text-neutral-900 text-sm dark:text-white">Dashboard</span>
+  <slot name="actions" />
 </div>
 
 <template :if="isOpen()">
