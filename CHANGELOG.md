@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.713...v0.75.714)
+
+## 🐛 Bug Fixes
+
+- emit valid declarations for dashboard DNS settings ([3bb4da5](https://github.com/stacksjs/stacks/commit/3bb4da5)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.712...v0.75.713)
 
 ## ✨ Features
