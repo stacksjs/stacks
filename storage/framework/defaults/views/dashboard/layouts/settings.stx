@@ -1,8 +1,17 @@
+<script server>
+import { dashboardPageVisibility } from '@stacksjs/defaults/resources/functions/dashboard/page-availability'
+import { settingsPanes } from '@stacksjs/defaults/resources/functions/dashboard/settings-panes'
+
+const isDashboardPageAvailable = dashboardPageVisibility()
+export const builtInPanes = settingsPanes.filter(item => isDashboardPageAvailable(item.href))
+defineClientPayload({ builtInPanes })
+</script>
+
 @head
 <link rel="icon" href="/images/logos/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/__deps/dashboard-theme.css">
 <link rel="stylesheet" href="/__deps/dashboard-icons.css">
-<script src="/__deps/dashboard-theme.js"></script>
+<script src="/__deps/dashboard-theme.js" data-settings-router></script>
 @endhead
 
 @appearanceBootstrap({
@@ -21,11 +30,89 @@
 })
 
 <script client>
-import { listenForSettingsPane, setSettingsWindowAppearance } from '@stacksjs/defaults/views/dashboard/composables/settings-window'
-import { useAppearance } from '@stacksjs/defaults/views/dashboard/composables/useAppearance'
+import { dragSettingsWindow, isNativeSettingsWindow, listenForSettingsPane, returnToDashboard, setSettingsWindowAppearance } from '@stacksjs/defaults/views/dashboard/composables/settings-window'
+import { projectConfigSections, sectionForConfig, projectConfigHref } from '@stacksjs/defaults/resources/functions/dashboard/project-config-sections'
+import { settingsPaneLabel } from '@stacksjs/defaults/resources/functions/dashboard/settings-panes'
+import { hasUnsavedProjectConfig, useProjectConfigInventory } from '@stacksjs/defaults/views/dashboard/composables/useProjectConfigEditor'
 import { useSettingsWindow } from '@stacksjs/defaults/views/dashboard/composables/useSettingsWindow'
+import { useAppearance } from '@stacksjs/defaults/views/dashboard/composables/useAppearance'
 
 const settingsWindow = useSettingsWindow
+const inventory = useProjectConfigInventory
+const query = settingsWindow.query
+const search = useRef<HTMLInputElement>('settingsSearch')
+const browserNavOpen = settingsWindow.browserNavOpen
+const native = state(isNativeSettingsWindow())
+const builtIn = builtInPanes
+const activePath = settingsWindow.activePath
+
+const projectEntries = derived(() => {
+  const populated = new Set(inventory.files().map(file => sectionForConfig(file.name)))
+  return projectConfigSections
+    .filter(section => section.id === 'general' || projectConfigHref(section.id) === activePath() || populated.has(section.id))
+    .map(section => ({ ...section, href: projectConfigHref(section.id), detail: '', keywords: section.description }))
+})
+
+const groups = derived(() => [
+  { id: 'project', label: 'Project', items: projectEntries().filter(section => section.id !== 'environment-schema') },
+  { id: 'environment', label: 'Environment', items: [...builtIn.filter(item => item.group === 'environment'), ...projectEntries().filter(section => section.id === 'environment-schema')] },
+  { id: 'dashboard', label: 'Dashboard', items: builtIn.filter(item => item.group === 'dashboard') },
+].map(group => ({ ...group, items: group.items.map(item => ({ detail: '', ...item })) })))
+
+const searchResults = derived(() => {
+  const terms = query().trim().toLowerCase().split(/\s+/).filter(Boolean)
+  if (!terms.length)
+    return []
+  const sections = projectEntries()
+  const files = inventory.files().flatMap((file) => {
+    const section = sections.find(item => item.id === sectionForConfig(file.name))
+    if (!section)
+      return []
+    return [{ id: file.name, label: file.title, href: projectConfigHref(section.id, file.name), detail: section.label, icon: 'i-f7-doc-text', tone: section.tone, keywords: `${file.name}.ts` }]
+  })
+  return [...groups().flatMap(group => group.items), ...files]
+    .filter(item => terms.every(term => `${item.label} ${item.keywords}`.toLowerCase().includes(term)))
+    .sort((left, right) => Number(right.label.toLowerCase() === terms.join(' ')) - Number(left.label.toLowerCase() === terms.join(' ')))
+})
+
+function navigateSearchResult(href: string): void {
+  query.set('')
+  browserNavOpen.set(false)
+  navigate(href, { instant: true })
+}
+
+function openSearchResult(): void {
+  const [first] = searchResults()
+  if (first)
+    navigateSearchResult(first.href)
+}
+
+function activateSearchLink(event: MouseEvent, href: string): void {
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+    return
+  event.preventDefault()
+  navigateSearchResult(href)
+}
+
+onMount(() => { void inventory.load() })
+useEventListener('craft:ready', () => native.set(isNativeSettingsWindow()))
+useEventListener('beforeunload', (event: BeforeUnloadEvent) => {
+  if (hasUnsavedProjectConfig()) {
+    event.preventDefault()
+    event.returnValue = ''
+  }
+})
+useEventListener('keydown', (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'f') {
+    event.preventDefault()
+    browserNavOpen.set(true)
+    queueMicrotask(() => {
+      search.current?.focus()
+      search.current?.select()
+    })
+  }
+})
+
 const appearance = useAppearance()
 let stopListening: (() => void) | undefined
 
@@ -34,15 +121,79 @@ effect(() => {
   setSettingsWindowAppearance(mode)
 })
 
-useEventListener('stx:load', () => settingsWindow.syncHistory())
-useEventListener('popstate', () => settingsWindow.syncHistory())
 onMount(() => {
-  settingsWindow.syncHistory()
-  stopListening = listenForSettingsPane(navigate)
+  settingsWindow.listen()
+  stopListening = listenForSettingsPane(href => navigate(href, { instant: true }))
 })
 onDestroy(() => stopListening?.())
 </script>
 
-<main data-stx-content data-dashboard-content data-dashboard-settings-content>
-  @slot('content')
-</main>
+<div data-dashboard-settings class="dashboard-settings" :data-settings-native="String(native())">
+  <aside class="dashboard-settings-sidebar">
+    <div class="dashboard-settings-sidebar-chrome">
+      <SidebarHeader windowControls="native" />
+      <a href="/" class="dashboard-settings-back" @click="returnToDashboard($event)">
+        <span class="i-f7-chevron-left" aria-hidden="true"></span>
+        Dashboard
+      </a>
+    </div>
+    <button type="button" class="dashboard-settings-mobile-menu" aria-controls="settings-navigation"
+      :aria-expanded="String(browserNavOpen())" @click="browserNavOpen.update(open => !open)">
+      Browse settings
+      <span class="i-f7-chevron-down" aria-hidden="true"></span>
+    </button>
+    <div id="settings-navigation" class="dashboard-settings-navigation" :data-menu-open="String(browserNavOpen())">
+      <form class="dashboard-settings-search" role="search" @submit.prevent="openSearchResult()">
+        <span class="i-f7-search" aria-hidden="true"></span>
+        <input x-model="query" ref="settingsSearch" type="search" placeholder="Search settings" aria-label="Search settings" autocomplete="off">
+      </form>
+      <nav aria-label="Settings" class="dashboard-settings-nav" data-stx-scroll="settings-navigation">
+        <div :if="!query().trim()">
+          <section :for="group in groups()" class="dashboard-settings-nav-group">
+            <h2 :text="group.label"></h2>
+            <a :for="item in group.items" :href="item.href" data-stx-link data-stx-transition="none" class="dashboard-settings-nav-item"
+              :aria-current="item.href === activePath() ? 'page' : null">
+              <span class="dashboard-settings-tile" :data-tone="item.tone" aria-hidden="true">
+                <span :class="item.icon"></span>
+              </span>
+              <span :text="item.label"></span>
+            </a>
+          </section>
+        </div>
+        <div :if="query().trim()" aria-label="Search results">
+          <a :for="item in searchResults()" :href="item.href" class="dashboard-settings-nav-item" @click="activateSearchLink($event, item.href)">
+            <span class="dashboard-settings-tile" :data-tone="item.tone" aria-hidden="true">
+              <span :class="item.icon"></span>
+            </span>
+            <span class="min-w-0">
+              <span class="block" :text="item.label"></span>
+              <span :if="item.detail" class="dashboard-settings-result-detail" :text="item.detail"></span>
+            </span>
+          </a>
+          <p :if="searchResults().length === 0" class="dashboard-settings-search-empty" role="status">No matching settings</p>
+        </div>
+      </nav>
+    </div>
+  </aside>
+
+  <div class="dashboard-settings-detail">
+    <header class="dashboard-settings-toolbar" @mousedown="dragSettingsWindow($event)">
+      <div class="dashboard-settings-history" role="group" aria-label="Settings history">
+        <button type="button" aria-label="Back" :disabled="settingsWindow.index() === 0" @click="goBack()">
+          <span class="i-f7-chevron-left" aria-hidden="true"></span>
+        </button>
+        <button type="button" aria-label="Forward" :disabled="settingsWindow.index() >= settingsWindow.lastIndex()" @click="goForward()">
+          <span class="i-f7-chevron-right" aria-hidden="true"></span>
+        </button>
+      </div>
+      <h1 :text="settingsPaneLabel(activePath())"></h1>
+    </header>
+    <main class="dashboard-settings-outlet" data-stx-content data-dashboard-content data-dashboard-settings-content>
+      <div class="dashboard-settings-pane" data-stx-scroll="settings">
+        <div class="dashboard-settings-inner">
+          @slot('content')
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

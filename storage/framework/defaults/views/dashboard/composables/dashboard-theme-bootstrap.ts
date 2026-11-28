@@ -9,3 +9,10 @@ catch {
   // The browser can refuse access to localStorage itself.
   applyDashboardTheme(root)
 }
+
+// Router options are read at startup. Settings uses a persistent window shell
+// and immediate pane changes, including Back and Forward in that window.
+if (document.currentScript?.hasAttribute('data-settings-router')) {
+  const settingsWindow = window as Window & { STX_ROUTER_OPTIONS?: { viewTransitions?: boolean, routeFocus?: boolean } }
+  settingsWindow.STX_ROUTER_OPTIONS = { ...settingsWindow.STX_ROUTER_OPTIONS, viewTransitions: false, routeFocus: false }
+}

@@ -1,0 +1,10 @@
+<script server>
+import { settingsPanes } from '@stacksjs/defaults/resources/functions/dashboard/settings-panes'
+
+const { pane } = defineProps<{ pane: string }>()
+export const introduction = settingsPanes.find(item => item.id === pane)
+</script>
+
+@if(introduction?.description)
+  <SettingsPaneHeader :title="introduction.label" :description="introduction.description" :icon="introduction.icon" :tone="introduction.tone" />
+@endif

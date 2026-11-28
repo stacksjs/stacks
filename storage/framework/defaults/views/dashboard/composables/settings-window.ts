@@ -1,14 +1,14 @@
 import { projectConfigSection } from '@stacksjs/defaults/resources/functions/dashboard/project-config-sections'
+import { settingsPanes } from '@stacksjs/defaults/resources/functions/dashboard/settings-panes'
 import { nativeWindow } from '@stacksjs/desktop/browser'
 
 const windowName = 'stacks-dashboard-settings'
 const paneChannel = 'stacks.dashboard.settings-pane'
-const settingsPaths = ['/settings', '/settings/appearance', '/settings/mail', '/settings/environment', '/settings/billing', '/settings/software-update']
 let browserWindow: Window | null = null
 
 export function isDashboardSettingsPath(path: string): boolean {
   const normalized = path.replace(/\/+$/, '')
-  if (settingsPaths.includes(normalized))
+  if (normalized === '/settings' || settingsPanes.some(pane => pane.href === normalized))
     return true
   const prefix = '/settings/config/'
   const section = normalized.startsWith(prefix) && projectConfigSection(normalized.slice(prefix.length))

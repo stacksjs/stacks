@@ -3,7 +3,5 @@
 @section('content')
 @title('Dashboard - Environment')
 
-<DashboardSettingsFrame pane="environment">
-  <EnvironmentDashboard />
-</DashboardSettingsFrame>
+<EnvironmentDashboard />
 @endsection

@@ -716,9 +716,11 @@ html[data-dashboard-theme="system-cleaner"] [data-dashboard-metrics] {
 }
 
 /* Settings uses the same split view in a browser and its own Craft window. */
-html:has([data-dashboard-settings-content]) [data-dashboard-content][data-dashboard-settings-content] {
-  height: auto;
-  min-height: 100dvh;
+.dashboard-settings-outlet {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
   margin: 0;
   border-radius: 0;
   background: light-dark(#fff, #1e1e20);

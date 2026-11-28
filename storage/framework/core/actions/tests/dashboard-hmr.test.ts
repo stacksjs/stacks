@@ -196,10 +196,43 @@ function increment() { count.update(value => value + 1) }
       expect(await cdp.evaluate("document.querySelector('[data-config-path]')?.textContent")).toBe('config/app.ts')
       expect(await cdp.evaluate(`Boolean(document.querySelector('a[href="/settings/config/custom"]'))`)).toBe(true)
     })
+    await cdp.evaluate(`
+      const search = document.querySelector('[aria-label="Search settings"]')
+      const sidebar = document.querySelector('.dashboard-settings-sidebar')
+      const toolbar = document.querySelector('.dashboard-settings-toolbar')
+      window.settingsChrome = { search, sidebar, toolbar, transitions: 0 }
+      const transition = document.startViewTransition
+      if (transition) {
+        document.startViewTransition = (...args) => {
+          window.settingsChrome.transitions++
+          return transition.apply(document, args)
+        }
+      }
+    `)
     await cdp.evaluate(`document.querySelector('a[href="/settings/config/custom"]').click()`)
     await until(async () => {
       expect(await cdp.evaluate("document.querySelector('.dashboard-config-field input')?.value")).toBe('3000')
     })
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('.dashboard-settings-toolbar h1')?.textContent")).toBe('Custom Configuration')
+    })
+    const checkChrome = () => cdp.evaluate(`({
+      sidebar: window.settingsChrome.sidebar === document.querySelector('.dashboard-settings-sidebar'),
+      search: window.settingsChrome.search === document.querySelector('[aria-label="Search settings"]'),
+      toolbar: window.settingsChrome.toolbar === document.querySelector('.dashboard-settings-toolbar'),
+      animations: window.settingsChrome.transitions,
+      transitionsDisabled: window.STX_ROUTER_OPTIONS?.viewTransitions === false,
+    })`)
+    expect(await checkChrome()).toEqual({ sidebar: true, search: true, toolbar: true, animations: 0, transitionsDisabled: true })
+    await cdp.evaluate(`document.querySelector('.dashboard-settings-toolbar [aria-label="Back"]').click()`)
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('.dashboard-settings-toolbar h1')?.textContent")).toBe('General')
+    })
+    await cdp.evaluate(`document.querySelector('.dashboard-settings-toolbar [aria-label="Forward"]').click()`)
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('.dashboard-settings-toolbar h1')?.textContent")).toBe('Custom Configuration')
+    })
+    expect(await checkChrome()).toEqual({ sidebar: true, search: true, toolbar: true, animations: 0, transitionsDisabled: true })
     const beforeConfigSave = await runningDashboardInstance(port)
     await cdp.evaluate(`
       const input = document.querySelector('.dashboard-config-field input')

@@ -3,7 +3,6 @@
 @section('content')
 @title('Dashboard - Software Update')
 
-<DashboardSettingsFrame pane="software-update">
-  <SoftwareUpdateDashboard />
-</DashboardSettingsFrame>
+<DashboardSettingsIntro pane="software-update" />
+<SoftwareUpdateDashboard />
 @endsection

@@ -5,19 +5,18 @@ import { projectConfigSection } from '@stacksjs/defaults/resources/functions/das
 
 const section = projectConfigSection(typeof params === 'undefined' ? '' : params.section)
 export const configPane = section?.id ?? 'general'
+export const settingsTitle = section ? `Dashboard - ${section.label}` : 'Dashboard - Settings'
 export const knownConfigPane = Boolean(section && section.id !== 'general')
 if (!knownConfigPane)
   setResponseStatus(404)
 </script>
 
 @section('content')
-@title('Dashboard - Settings')
+@title(settingsTitle)
 
-<DashboardSettingsFrame :pane="configPane">
-  @if(knownConfigPane)
-    <SettingsDashboard :section="configPane" />
-  @else
-    <p class="p-4 text-sm">This configuration section could not be found.</p>
-  @endif
-</DashboardSettingsFrame>
+@if(knownConfigPane)
+  <SettingsDashboard :section="configPane" />
+@else
+  <p class="p-4 text-sm">This configuration section could not be found.</p>
+@endif
 @endsection

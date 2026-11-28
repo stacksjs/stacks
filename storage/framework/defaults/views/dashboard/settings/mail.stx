@@ -3,7 +3,6 @@
 @section('content')
 @title('Dashboard - Mail Settings')
 
-<DashboardSettingsFrame pane="mail">
-  <MailSettingsDashboard />
-</DashboardSettingsFrame>
+<DashboardSettingsIntro pane="mail" />
+<MailSettingsDashboard />
 @endsection

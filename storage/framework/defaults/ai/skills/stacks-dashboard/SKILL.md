@@ -578,6 +578,11 @@ At 1024px and wider, the desktop sidebar keeps its 250px width, fixed
 placement, persisted collapse state, and `--stx-sidebar-width` content-shell
 contract across themes.
 
+The Settings layout keeps the Craft sidebar, search, and toolbar outside the
+routed outlet. Settings links, search results, and history replace the detail
+pane without a view transition. Keep individual Settings views inside that
+outlet so opening a pane preserves the sidebar's focus and scroll position.
+
 ### Reactive page components
 
 Keep route views thin. Place stateful page implementations under

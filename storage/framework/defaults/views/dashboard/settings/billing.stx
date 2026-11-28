@@ -3,7 +3,6 @@
 @section('content')
 @title('Dashboard - Billing Settings')
 
-<DashboardSettingsFrame pane="billing">
-  <BillingSettings />
-</DashboardSettingsFrame>
+<DashboardSettingsIntro pane="billing" />
+<BillingSettings />
 @endsection
