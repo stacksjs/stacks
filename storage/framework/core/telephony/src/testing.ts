@@ -43,7 +43,17 @@ function respond(state: FakeState, url: URL, method: string, params: URLSearchPa
     return Response.json(numberJson(number))
   }
   if (path === 'Calls.json') {
-    if (method === 'GET') return Response.json({ calls: [...state.calls.values()].filter(call => (!url.searchParams.has('To') || call.to === url.searchParams.get('To')) && (!url.searchParams.has('From') || call.from === url.searchParams.get('From'))).slice(0, 50).map(callJson) })
+    if (method === 'GET') {
+      const to = url.searchParams.get('To')
+      const from = url.searchParams.get('From')
+      const parentSid = url.searchParams.get('ParentCallSid')
+      const calls = [...state.calls.values()].filter(call =>
+        (to === null || call.to === to)
+        && (from === null || call.from === from)
+        && (parentSid === null || call.parentSid === parentSid),
+      )
+      return Response.json({ calls: calls.slice(0, 50).map(callJson) })
+    }
     // Simulate the verified caller-ID requirement rather than accepting arbitrary outbound sources.
     if (![...state.numbers.values()].some(number => number.phoneNumber === params.get('From'))) return Response.json({}, { status: 400 })
     const call: Call = { sid: nextSid(state, 'CA'), from: params.get('From')!, to: params.get('To')!, status: 'queued', direction: 'outbound-api', timeLimitSeconds: params.has('TimeLimit') ? Number(params.get('TimeLimit')) : null }

@@ -211,10 +211,11 @@ export class TwilioTelephony implements Telephony {
   }
 
   /** First page, max 50. Results can lag a write and do not prove an absent call was never created. */
-  async listCalls(filter: { from?: string, to?: string } = {}): Promise<Call[]> {
+  async listCalls(filter: { from?: string, to?: string, parentSid?: string } = {}): Promise<Call[]> {
     const query = new URLSearchParams({ PageSize: '50' })
     if (filter.from) query.set('From', phone(filter.from))
     if (filter.to) query.set('To', phone(filter.to))
+    if (filter.parentSid !== undefined) query.set('ParentCallSid', sid(filter.parentSid, 'CA'))
     return rows(await this.request('Calls.json', 'GET', query), 'calls').map(callResult)
   }
 
