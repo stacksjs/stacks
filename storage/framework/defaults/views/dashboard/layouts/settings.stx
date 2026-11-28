@@ -30,6 +30,7 @@ defineClientPayload({ builtInPanes })
 })
 
 <script client>
+import { navigate } from '@stacksjs/stx/composables/use-router'
 import { dragSettingsWindow, isNativeSettingsWindow, listenForSettingsPane, returnToDashboard, setSettingsWindowAppearance } from '@stacksjs/defaults/views/dashboard/composables/settings-window'
 import { projectConfigSections, sectionForConfig, projectConfigHref } from '@stacksjs/defaults/resources/functions/dashboard/project-config-sections'
 import { settingsPaneLabel } from '@stacksjs/defaults/resources/functions/dashboard/settings-panes'
