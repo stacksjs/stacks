@@ -349,7 +349,11 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     await openAppearance(cdp, origin)
     await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 840, deviceScaleFactor: 1, mobile: true })
     try {
+      const menu = 'button[aria-controls="settings-navigation"]'
       expect(await cdp.evaluate('document.documentElement.scrollWidth <= innerWidth')).toBe(true)
+      expect(await cdp.evaluate(`document.querySelector('${menu}')?.getAttribute('aria-expanded')`)).toBe('false')
+      await click(cdp, menu)
+      await waitFor(() => cdp.evaluate(`document.querySelector('${menu}')?.getAttribute('aria-expanded') === 'true'`), 5_000)
       expect(await cdp.evaluate(`document.querySelector('[aria-label="Settings"] [aria-current="page"]')?.getClientRects().length`)).toBe(1)
     }
     finally {
@@ -373,13 +377,13 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
     const settings = await connect(target.webSocketDebuggerUrl)
     try {
       expect(await cdp.evaluate('location.pathname')).toBe('/')
-      await waitFor(() => settings.evaluate(`Boolean(document.querySelector('[data-settings-pane-header]'))`), 10_000)
+      await waitFor(() => settings.evaluate(`Boolean(document.querySelector('[data-dashboard-settings] [data-dashboard-settings-content]'))`), 10_000)
       expect(await settings.evaluate(`document.querySelector('[data-dashboard-web-sidebar]') === null`)).toBe(true)
       expect(await settings.evaluate(`document.querySelector('[aria-label="Back"]').disabled`)).toBe(true)
 
       await click(settings, 'input[aria-label="Search settings"]')
       await settings.send('Input.insertText', { text: 'theme' })
-      await waitFor(() => settings.evaluate(`document.querySelector('[aria-label="Settings"] a[href="/settings/mail"]').hidden`), 5_000)
+      await waitFor(() => settings.evaluate(`(document.querySelector('[aria-label="Settings"] a[href="/settings/mail"]')?.getClientRects().length ?? 0) === 0`), 5_000)
       await click(settings, '[aria-label="Settings"] a[href="/settings/appearance"]')
       await waitFor(() => settings.evaluate(`location.pathname === '/settings/appearance' && !document.querySelector('[aria-label="Back"]').disabled`), 10_000)
       await click(settings, 'button[aria-label="Back"]')

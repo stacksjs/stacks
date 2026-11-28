@@ -366,7 +366,7 @@ onMount(() => void loadEnvironment())
     size="lg"
     @close="showBackupModal.set(false)"
   >
-    <div class="space-y-3">
+    <div class="flex flex-col gap-3">
       <p :if="backupUpdatedAt()" class="text-stone-500 text-xs dark:text-neutral-400" :text="backupSavedLabel()"></p>
       <SettingsCodeEditor readonly :value="backupContent()" label="Environment backup source" language="dotenv" />
     </div>
