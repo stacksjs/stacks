@@ -672,6 +672,7 @@
         "@xterm/addon-fit": "^0.11.0",
         "@xterm/xterm": "^6.0.0",
         "ts-qr-codes": "^0.1.8",
+        "ts-syntax-highlighter": "^0.2.21",
       },
     },
     "storage/framework/core/deploy": {
@@ -811,7 +812,7 @@
         "@stacksjs/stx": "^0.2.960",
         "@stacksjs/types": "workspace:*",
         "ts-error-handling": "^0.1.4",
-        "ts-syntax-highlighter": "^0.2.19",
+        "ts-syntax-highlighter": "^0.2.21",
       },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
@@ -2265,7 +2266,7 @@
 
     "ts-spreadsheets": ["ts-spreadsheets@0.2.5", "", { "hasInstallScript": true, "bin": { "spreadsheets": "./dist/bin/cli.js" } }, "sha512-/kJAo6KtTojLWMuTGLh8WMCws9Dh2LOuKfR0IHUFThvI3WlZNiLW0Exii/saJ3F1SjKb0ncQzcQ8JjTKv30Ruw=="],
 
-    "ts-syntax-highlighter": ["ts-syntax-highlighter@0.2.20", "", { "dependencies": { "bunfig": "^0.15.6" }, "bin": { "ts-syntax-highlighter": "./dist/bin/cli.js" } }, "sha512-GX5XBaC1017bDTtxv3ukTe61KgVySzVuwlIYmzd3lSBIsTTXUVYcu29cvACLeR+9EuSMNtRH4qyoz+bxrqrv/Q=="],
+    "ts-syntax-highlighter": ["ts-syntax-highlighter@0.2.21", "", { "dependencies": { "bunfig": "^0.15.6" }, "bin": { "ts-syntax-highlighter": "./dist/bin/cli.js" } }, "sha512-fNj4dt5ZfHI+mLERB/O7CWoiDGK+Xx2aOzqW+jUGATYG12yEwZb4BP6mv/iKsr4NGPqAqr/0LzB81U4Vr1zsSg=="],
 
     "ts-video-player": ["ts-video-player@0.1.12", "", { "peerDependencies": { "stx": ">=0.65.0" }, "optionalPeers": ["stx"] }, "sha512-AUl3J2/+INCx5iPW/OmOrG5aOqKHufhHJ4sHTOdI2BKLw9vPW9Qa1/gtJEqpN019NThaDvJEHw6JbpMc1Zc7TA=="],
 
