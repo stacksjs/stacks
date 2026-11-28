@@ -40,7 +40,6 @@ import { useAppearance } from '@stacksjs/defaults/views/dashboard/composables/us
 const settingsWindow = useSettingsWindow
 const inventory = useProjectConfigInventory
 const query = settingsWindow.query
-const search = useRef<HTMLInputElement>('settingsSearch')
 const browserNavOpen = settingsWindow.browserNavOpen
 const native = state(isNativeSettingsWindow())
 const builtIn = builtInPanes
@@ -102,17 +101,6 @@ useEventListener('beforeunload', (event: BeforeUnloadEvent) => {
     event.returnValue = ''
   }
 })
-useEventListener('keydown', (event) => {
-  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'f') {
-    event.preventDefault()
-    browserNavOpen.set(true)
-    queueMicrotask(() => {
-      search.current?.focus()
-      search.current?.select()
-    })
-  }
-})
-
 const appearance = useAppearance()
 let stopListening: (() => void) | undefined
 
@@ -143,15 +131,12 @@ onDestroy(() => stopListening?.())
       <span class="i-f7-chevron-down" aria-hidden="true"></span>
     </button>
     <div id="settings-navigation" class="dashboard-settings-navigation" :data-menu-open="String(browserNavOpen())">
-      <form class="dashboard-settings-search" role="search" @submit.prevent="openSearchResult()">
-        <span class="i-f7-search" aria-hidden="true"></span>
-        <input x-model="query" ref="settingsSearch" type="search" placeholder="Search settings" aria-label="Search settings" autocomplete="off">
-      </form>
+      <DashboardSettingsSearch @open-result="openSearchResult" />
       <nav aria-label="Settings" class="dashboard-settings-nav" data-stx-scroll="settings-navigation">
         <div :if="!query().trim()">
-          <section :for="group in groups()" class="dashboard-settings-nav-group">
+          <section :for="group in groups()" :key="group.id" class="dashboard-settings-nav-group">
             <h2 :text="group.label"></h2>
-            <a :for="item in group.items" :href="item.href" data-stx-link data-stx-transition="none" class="dashboard-settings-nav-item"
+            <a :for="item in group.items" :key="item.href" :href="item.href" data-stx-link data-stx-transition="none" class="dashboard-settings-nav-item"
               :aria-current="item.href === activePath() ? 'page' : null">
               <span class="dashboard-settings-tile" :data-tone="item.tone" aria-hidden="true">
                 <span :class="item.icon"></span>

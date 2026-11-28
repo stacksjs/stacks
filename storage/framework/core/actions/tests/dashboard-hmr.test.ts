@@ -222,8 +222,9 @@ function increment() { count.update(value => value + 1) }
       toolbar: window.settingsChrome.toolbar === document.querySelector('.dashboard-settings-toolbar'),
       animations: window.settingsChrome.transitions,
       transitionsDisabled: window.STX_ROUTER_OPTIONS?.viewTransitions === false,
+      progressBar: Boolean(document.querySelector('#stx-router-progress')),
     })`)
-    expect(await checkChrome()).toEqual({ sidebar: true, search: true, toolbar: true, animations: 0, transitionsDisabled: true })
+    expect(await checkChrome()).toEqual({ sidebar: true, search: true, toolbar: true, animations: 0, transitionsDisabled: true, progressBar: false })
     await cdp.evaluate(`document.querySelector('.dashboard-settings-toolbar [aria-label="Back"]').click()`)
     await until(async () => {
       expect(await cdp.evaluate("document.querySelector('.dashboard-settings-toolbar h1')?.textContent")).toBe('General')
@@ -232,7 +233,13 @@ function increment() { count.update(value => value + 1) }
     await until(async () => {
       expect(await cdp.evaluate("document.querySelector('.dashboard-settings-toolbar h1')?.textContent")).toBe('Custom Configuration')
     })
-    expect(await checkChrome()).toEqual({ sidebar: true, search: true, toolbar: true, animations: 0, transitionsDisabled: true })
+    expect(await checkChrome()).toEqual({ sidebar: true, search: true, toolbar: true, animations: 0, transitionsDisabled: true, progressBar: false })
+    await cdp.evaluate(`document.activeElement.blur()`)
+    await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'f', code: 'KeyF', modifiers: 2, windowsVirtualKeyCode: 70 })
+    await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'f', code: 'KeyF', modifiers: 2, windowsVirtualKeyCode: 70 })
+    await until(async () => {
+      expect(await cdp.evaluate("document.activeElement.getAttribute('aria-label')")).toBe('Search settings')
+    })
     const beforeConfigSave = await runningDashboardInstance(port)
     await cdp.evaluate(`
       const input = document.querySelector('.dashboard-config-field input')

@@ -1,0 +1,32 @@
+<script client>
+import { useSettingsWindow } from '@stacksjs/defaults/views/dashboard/composables/useSettingsWindow'
+
+const settingsWindow = useSettingsWindow
+const query = settingsWindow.query
+const search = useRef<HTMLInputElement>('settingsSearch')
+const emit = defineEmits(['open-result'])
+
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'f')
+    return
+  event.preventDefault()
+  settingsWindow.browserNavOpen.set(true)
+  nextTick(() => {
+    search.current?.focus()
+    search.current?.select()
+  })
+})
+
+function clearSearch(event: KeyboardEvent): void {
+  if (event.key === 'Escape' && query()) {
+    event.preventDefault()
+    query.set('')
+  }
+}
+</script>
+
+<form class="dashboard-settings-search" role="search" @submit.prevent="emit('open-result')">
+  <span class="i-f7-search" aria-hidden="true"></span>
+  <input x-model="query" ref="settingsSearch" type="search" placeholder="Search settings" aria-label="Search settings"
+    autocomplete="off" @keydown="clearSearch($event)">
+</form>
