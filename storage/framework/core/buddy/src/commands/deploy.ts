@@ -31,6 +31,7 @@ import { applyReleaseWriteCheck, releaseTreeStorageWarnings } from '../release-w
 import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
 import { applySecurityWaf } from '../waf-config'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
+import { rpxCertificateRenewalScript } from './deploy-cert-renewal'
 import { buildPreviewTeardownScript, derivePreviewConfig, previewDomain, previewPort, previewTarget } from './preview-deploy'
 import type { SshTarget } from './deploy-ssh-target'
 import { deployTargetLabel, dnsHeld, dnsPublishingAllowed, hetznerTarget, isSshPipelineProvider, lanUrls, mergeSshStatePin, remoteExecOptions, resolveSshTarget, sshCliArgs, sshStatePin, toSshTarget } from './deploy-ssh-target'
@@ -3293,26 +3294,26 @@ async function runSshDeploy(args: {
       // days, so re-running it costs one ACME no-op.
       const { execFileSync } = await import('node:child_process')
       const slug = tsCloudConfig.project?.slug || 'app'
-      const unit = `rpx-cert-renew-${slug}.service`
-      const certSshArgs = sshCliArgs(sshTarget ? { ...sshTarget, host: ip } : hetznerTarget(ip), { connectTimeoutSec: 20 })
-      const out = execFileSync('ssh', [...certSshArgs, 'bash', '-s'], {
-        input: `systemctl start ${unit} 2>&1 || true\nsystemctl is-active ${unit} >/dev/null 2>&1 && echo TLSUNIT:running || echo TLSUNIT:done\njournalctl -u ${unit} -n 20 --no-pager 2>/dev/null | grep -E 'Certificate written|Skipping|error|Error' | tail -5 || true`,
+      const target = sshTarget ? { ...sshTarget, host: ip } : hetznerTarget(ip)
+      const certSshArgs = sshCliArgs(target, { connectTimeoutSec: 20 })
+      const command = target.user === 'root' ? ['bash', '-s'] : ['sudo', '-n', 'bash', '-s']
+      const out = execFileSync('ssh', [...certSshArgs, ...command], {
+        input: rpxCertificateRenewalScript(slug),
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe'],
       })
 
       for (const line of out.split('\n')) {
         if (/Certificate written|Skipping/.test(line))
-          log.info(`  ${line.replace(/^.*?\]:\s*/, '').trim()}`)
+          log.info(`  ${line.trim()}`)
       }
 
-      log.success('TLS issued and gateway reloaded for the new record(s)')
+      log.success('TLS renewal service completed for the new DNS records')
     }
-    catch (err: any) {
-      // Best-effort, like the reconcilers around it: the release is already
-      // live, and the daily renewal timer picks the certificate up regardless.
-      log.warn(`TLS issuance after DNS failed: ${err?.message || err}`)
-      log.warn(`  Until it succeeds, ${publishedDns.join(', ')} serves a fallback certificate.`)
+    catch (error) {
+      // The release is already live. The daily renewal timer retries issuance.
+      log.warn(`TLS renewal after DNS failed: ${getErrorMessage(error)}`)
+      log.warn(`Until renewal succeeds, ${publishedDns.join(', ')} may serve a fallback certificate.`)
     }
   }
 
