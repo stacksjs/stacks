@@ -171,6 +171,16 @@ export interface DomainRouteTarget {
   to: string
   /** Where the host's other pages live: an origin like `https://example.com`. */
   elsewhere?: string
+  /**
+   * Restrict the domain to read-only requests for its root page and these
+   * additional exact paths, directory patterns ending in `/*`, or file
+   * patterns ending in `.*` within one directory.
+   *
+   * An empty list serves just the root page. With both options, `only` takes
+   * precedence over `elsewhere`. Deploy the origin behind a gateway that
+   * overwrites X-Forwarded-Host with the gateway's selected hostname.
+   */
+  only?: readonly string[]
 }
 
 export interface ServerConfig {

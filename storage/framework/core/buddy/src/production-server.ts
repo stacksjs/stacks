@@ -204,7 +204,7 @@ export async function startProductionServer(options?: { port?: string | number, 
   const { ensureDiscoveredPackages } = await import('@stacksjs/actions')
   await ensureDiscoveredPackages()
 
-  const { applyResponseHeaders, applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, loadRouteRedirects, resolveApiBase, resolveApiProxyRules, resolveViewSecurityRules, resolveRedirectRules, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
+  const { applyResponseHeaders, applyViewSecurityHeaders, assertScopedDomainRoutes, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, loadRouteRedirects, resolveApiBase, resolveApiProxyRules, resolveViewSecurityRules, resolveRedirectRules, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
   // The one copy of this. It used to be duplicated here verbatim — the shared
   // module was extracted precisely so the dev and production servers could not
   // drift, and then this half kept its own.
@@ -247,7 +247,6 @@ export async function startProductionServer(options?: { port?: string | number, 
       // Nothing about that was visible: no log said which copy had loaded.
       // A stale checkout is now something you opt into, by path, and the
       // server says what it loaded either way.
-      let stxServe: any
       const serveSource = resolveStxSource({ value: process.env.BUN_PLUGIN_STX_SRC })
       if (serveSource.kind === 'missing') {
         // `log.exit`, not `log.error` + `process.exit`: the error write is
@@ -259,13 +258,13 @@ export async function startProductionServer(options?: { port?: string | number, 
           ExitCode.FatalError,
         )
       }
-      if (serveSource.kind === 'override') {
-        ;({ serve: stxServe } = await import(serveSource.path))
+      const selectedStx = serveSource.kind === 'override'
+        ? await import(serveSource.path) as typeof import('bun-plugin-stx/serve')
+        : await import('bun-plugin-stx/serve')
+      const { serve: stxServe, compileDomainRoutes } = selectedStx
+      assertScopedDomainRoutes(config.server?.domains, compileDomainRoutes)
+      if (serveSource.kind === 'override')
         log.warn(`Serving views through ${serveSource.path} instead of the installed bun-plugin-stx.`)
-      }
-      else {
-        ;({ serve: stxServe } = await import('bun-plugin-stx/serve'))
-      }
       log.debug(`stx serve implementation: ${serveSource.kind === 'override' ? serveSource.path : 'bun-plugin-stx/serve'}`)
 
       // Pre-resolve the vendored stx module + site/i18n config so `{t:…}`
