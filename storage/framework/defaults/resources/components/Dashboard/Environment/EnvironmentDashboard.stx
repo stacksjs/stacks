@@ -227,39 +227,19 @@ onMount(() => void loadEnvironment())
 </script>
 
 <template>
-<div class="flex flex-col gap-6 mx-auto pb-12 pt-6 px-4 sm:px-6 lg:px-8 max-w-7xl">
-  <PageHeader
-    title="Environment Variables"
-    description="Edit the env files the app loads, with validation, conflict protection, and an automatic backup."
-  >
-    <template #actions>
-      <div class="flex gap-2 items-center">
-        <Button :if="hasBackup()" variant="secondary" @click="showBackupModal.set(true)">
-          <span class="h-4 w-4 i-hugeicons-clock-03"></span>
-          Backup
-        </Button>
-        <Button @click="openAddModal">
-          <span class="h-4 w-4 i-hugeicons-add-01"></span>
-          Add variable
-        </Button>
+<div class="dashboard-settings-stack">
+  <SettingsGroup>
+    <div class="flex flex-wrap gap-3 items-center justify-between px-4 py-3">
+      <div class="min-w-0">
+        <h2 class="break-all font-medium font-mono text-sm" :text="file()"></h2>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400" :text="dirty() ? 'Unsaved changes' : `${variableCount()} variables`"></p>
       </div>
-    </template>
-  </PageHeader>
-
-  <div class="grid gap-3 sm:grid-cols-3">
-    <div class="p-4 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
-      <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">File</p>
-      <p class="mt-1 font-mono text-sm text-stone-900 dark:text-white" :text="file()"></p>
+      <div class="flex flex-wrap gap-2 items-center">
+        <Button :if="hasBackup()" variant="secondary" size="sm" @click="showBackupModal.set(true)">Backup</Button>
+        <Button size="sm" @click="openAddModal">Add variable</Button>
+      </div>
     </div>
-    <div class="p-4 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
-      <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">Variables</p>
-      <p class="mt-1 font-semibold text-lg text-stone-900 dark:text-white" :text="variableCount()"></p>
-    </div>
-    <div class="p-4 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
-      <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">Status</p>
-      <p class="mt-1 font-medium text-sm" :class="dirty() ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'" :text="dirty() ? 'Unsaved changes' : 'Saved on disk'"></p>
-    </div>
-  </div>
+  </SettingsGroup>
 
   <div :if="files().length > 1" class="flex flex-wrap gap-2 items-center" role="group" aria-label="Env file">
     <button

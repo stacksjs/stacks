@@ -1,7 +1,0 @@
-@extends('layouts/default')
-
-@section('content')
-@title('Dashboard - Environment')
-
-<EnvironmentDashboard />
-@endsection

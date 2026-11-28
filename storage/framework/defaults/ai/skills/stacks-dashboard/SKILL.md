@@ -244,11 +244,11 @@ inject message HTML into the dashboard document.
 - `/packages`, `/dependencies` - package and dependency inspection
 
 ### Settings
-- `/settings` - typed `config/*.ts` browser and editor
+- `/settings` - Project Configuration. Command-Comma opens it in the Craft Settings window. Browse project TypeScript configs, edit literal fields, or switch to TypeScript for bindings, named exports, and structural changes. The dev dashboard reads files on demand and refuses to overwrite edits made on disk since opening a file.
 - `/settings/appearance` - dashboard appearance
 - `/settings/billing` - account billing
 - `/settings/mail` - mail configuration
-- `/environment` - environment summary
+- `/settings/environment` - edit the env files this project loads
 - `/access-tokens` - access-token management
 - `/cloud`, `/dns`, `/mailboxes` - infrastructure-specific settings
 
@@ -854,7 +854,7 @@ or a fake success response.
 - Dashboard runs on port 3002 by default (separate from frontend on 3000)
 - Dashboard components use STX templating with ts-css utilities
 - Dashboard routes are registered from `storage/framework/defaults/routes/`, not from a generated type file
-- Settings panels read/write from the corresponding `config/*.ts` files
+- Project Configuration reads and writes project TypeScript source under `config/`. Environment variables are edited in the Environment pane of the same Settings window.
 - Models with `useApi` get generated REST actions and routes, not bespoke dashboard views
 - `dashboard: { highlight: true }` makes models prominent in the dashboard
 - Dashboard layout uses a sidebar + navbar pattern

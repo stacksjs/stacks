@@ -599,17 +599,11 @@ export function buildNavSections(
     sections.push(['management', 'management', managementItems])
   }
 
-  // Utilities section: real paths are flat (`/buddy`, `/environment`,
-  // `/access-tokens`) or under `/settings/*` for billing/mail. The
-  // historical `/utilities/*` URLs were uniformly 404s.
   if (toggles.utilities) {
     sections.push(['utilities', 'utilities', [
       { to: '/buddy', icon: 'terminal', text: 'Buddy CLI' },
-      { to: '/environment', icon: 'settings', text: 'Environment' },
       { to: '/access-tokens', icon: 'lock', text: 'Access Tokens' },
       { to: '/settings', icon: 'settings', text: 'Settings' },
-      { to: '/settings/appearance', icon: 'paintbrush', text: 'Appearance' },
-      { to: '/settings/mail', icon: 'mail', text: 'Mail Settings' },
     ]])
   }
 

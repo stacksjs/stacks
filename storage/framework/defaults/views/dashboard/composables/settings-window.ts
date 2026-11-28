@@ -2,7 +2,7 @@ import { nativeWindow } from '@stacksjs/desktop/browser'
 
 const windowName = 'stacks-dashboard-settings'
 const paneChannel = 'stacks.dashboard.settings-pane'
-const settingsPaths = ['/settings', '/settings/appearance', '/settings/mail', '/settings/billing', '/settings/software-update']
+const settingsPaths = ['/settings', '/settings/appearance', '/settings/mail', '/settings/environment', '/settings/billing', '/settings/software-update']
 let browserWindow: Window | null = null
 
 export function isDashboardSettingsPath(path: string): boolean {

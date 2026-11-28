@@ -23,6 +23,8 @@ export interface ApiRequestOptions {
   /** Multipart request body. The browser supplies its boundary header. */
   formData?: FormData
   signal?: AbortSignal
+  /** Explicit access to the same-origin local project source API. */
+  projectConfig?: boolean
 }
 
 export class DashboardApiError extends Error {
@@ -47,6 +49,8 @@ async function dashboardResponse(path: string, options: ApiRequestOptions, accep
   const method = options.method ?? 'GET'
   const headers: Record<string, string> = { accept }
   const authToken = useAuth().getToken()
+  if (options.projectConfig)
+    headers['X-Stacks-Config'] = '1'
 
   if (options.body !== undefined && options.formData)
     throw new TypeError('dashboardApi accepts either body or formData, not both.')
@@ -66,6 +70,7 @@ async function dashboardResponse(path: string, options: ApiRequestOptions, accep
     headers: requestHeaders,
     credentials: 'same-origin',
     signal: options.signal,
+    ...(options.projectConfig && { cache: 'no-store' }),
     ...(options.body !== undefined && { body: JSON.stringify(options.body) }),
     ...(options.formData && { body: options.formData }),
   })

@@ -39,11 +39,6 @@ function handleKeydown(event: KeyboardEvent): void {
 <div class="overflow-hidden bg-[#0d1117] border border-[#30363d] rounded-xl shadow-sm">
   <div class="flex items-center justify-between px-4 py-3 bg-[#161b22] border-[#30363d] border-b">
     <div class="flex gap-3 items-center min-w-0">
-      <div class="flex gap-1.5" aria-hidden="true">
-        <span class="h-2.5 w-2.5 bg-[#f85149] rounded-full"></span>
-        <span class="h-2.5 w-2.5 bg-[#db9d16] rounded-full"></span>
-        <span class="h-2.5 w-2.5 bg-[#2ea043] rounded-full"></span>
-      </div>
       <span class="font-mono text-[#c9d1d9] text-xs truncate" :text="liveLabel()"></span>
     </div>
     <div class="flex gap-2 items-center">
@@ -60,8 +55,8 @@ function handleKeydown(event: KeyboardEvent): void {
     spellcheck="false"
     autocomplete="off"
     autocapitalize="off"
-    rows="24"
-    class="block p-4 min-h-[28rem] w-full font-mono leading-6 text-[#c9d1d9] text-[13px] bg-[#0d1117] border-0 outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-inset disabled:opacity-60 resize-y"
+    rows="16"
+    class="block p-4 min-h-64 w-full font-mono leading-6 text-[#c9d1d9] text-[13px] bg-[#0d1117] border-0 outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-inset disabled:opacity-60 resize-y"
     @input="handleInput"
     @keydown="handleKeydown"
   ></textarea>

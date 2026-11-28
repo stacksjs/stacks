@@ -995,7 +995,8 @@ html:has([data-dashboard-settings-content]) .dashboard-modal-layer {
   white-space: normal;
 }
 
-.dashboard-settings-config-picker > summary {
+.dashboard-settings-config-trigger {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1004,11 +1005,9 @@ html:has([data-dashboard-settings-content]) .dashboard-modal-layer {
   padding-inline: var(--stx-mac-row-inset);
   border-radius: var(--stx-mac-card-radius);
   cursor: pointer;
-  list-style: none;
 }
 
-.dashboard-settings-config-picker > summary::-webkit-details-marker { display: none; }
-.dashboard-settings-config-picker > summary:hover { background: var(--stx-mac-hover); }
+.dashboard-settings-config-trigger:hover { background: var(--stx-mac-hover); }
 
 .dashboard-settings-config-selection {
   display: inline-flex;
@@ -1022,8 +1021,59 @@ html:has([data-dashboard-settings-content]) .dashboard-modal-layer {
   height: .8em;
 }
 
-.dashboard-settings-config-picker[open] .dashboard-settings-config-selection > span:last-child {
+.dashboard-settings-config-trigger[aria-expanded="true"] .dashboard-settings-config-selection > span:last-child {
   transform: rotate(180deg);
+}
+
+.dashboard-settings-config-picker [aria-pressed="true"],
+.dashboard-config-mode[aria-pressed="true"] {
+  background: var(--dashboard-accent-fill);
+  color: var(--dashboard-accent-text);
+}
+
+.dashboard-config-mode {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dashboard-config-mode[aria-pressed="false"]:hover { background: var(--stx-mac-hover); }
+
+.dashboard-config-mode:focus-visible,
+.dashboard-settings-config-picker button:focus-visible,
+.dashboard-config-input:focus-visible {
+  outline: 2px solid var(--stx-mac-accent);
+  outline-offset: 2px;
+}
+
+.dashboard-config-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-block-start: 1px solid var(--stx-mac-separator);
+}
+
+.dashboard-config-field[data-config-type="boolean"] { grid-template-columns: minmax(0, 1fr); }
+
+.dashboard-config-field label:has(> [role="switch"]) {
+  width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-config-input {
+  width: 100%;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid var(--stx-mac-control-line);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+@media (max-width: 420px) {
+  .dashboard-config-field { grid-template-columns: minmax(0, 1fr); }
 }
 
 html .dashboard-settings [data-dashboard-field]:not(:disabled) {

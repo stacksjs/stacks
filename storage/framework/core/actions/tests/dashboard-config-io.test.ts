@@ -1,81 +1,127 @@
-import { afterEach, describe, expect, it } from 'bun:test'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { listConfigFiles, rewriteConfigKeys } from '../../../defaults/resources/functions/dashboard/config-io'
+import { dashboardConfigRoutes, listConfigFiles, rewriteConfigFields } from '../src/dev/dashboard-config'
 
-const source = `export default {
-  name: 'Stacks',
-  port: 3000,
-  enabled: true,
-  host: env.APP_HOST ?? 'localhost',
-}
+const source = `throw new Error('Configuration inspection must never evaluate this module')
+const settings = {
+  // Preserve this comment and the original environment binding.
+  app: { name: 'Stacks', host: env.APP_HOST ?? 'localhost' },
+  replicas: [{ port: 3000, enabled: true }],
+  'display.name': 'Original',
+  port: 1, 'port': 40, port: env.PORT,
+} satisfies Config
+export const tls = { enabled: true, offset: -14 }
+export default settings
 `
 
-describe('dashboard config writes', () => {
-  let tempDir = ''
+describe('dashboard project configuration', () => {
+  let directory: string
+  let file: string
+  let routes: ReturnType<typeof dashboardConfigRoutes>
+  let validate: ReturnType<typeof mock>
 
-  afterEach(() => {
-    if (tempDir)
-      rmSync(tempDir, { force: true, recursive: true })
-    tempDir = ''
+  beforeEach(() => {
+    directory = mkdtempSync(join(tmpdir(), 'stacks-config-'))
+    file = join(directory, 'app.ts')
+    writeFileSync(file, source)
+    validate = mock(async (request: Request) => {
+      if (!request.headers.has('x-csrf-token'))
+        throw Object.assign(new Error('Forbidden'), { status: 403 })
+    })
+    routes = dashboardConfigRoutes({ directory, hosts: () => ['localhost:3002'], validateWrite: validate })
   })
 
-  it('rewrites every scalar only after the full batch validates', () => {
-    const rewritten = rewriteConfigKeys(source, [
-      { key: 'name', value: 'Dashboard' },
-      { key: 'port', value: 3002 },
-      { key: 'enabled', value: false },
-    ])
+  afterEach(() => rmSync(directory, { force: true, recursive: true }))
 
-    expect(rewritten).toContain("name: 'Dashboard'")
-    expect(rewritten).toContain('port: 3002')
-    expect(rewritten).toContain('enabled: false')
+  function request(path: string, body?: unknown, headers: HeadersInit = { 'x-stacks-config': '1', 'x-csrf-token': 'test' }, origin = 'http://localhost:3002'): Promise<Response> {
+    const url = new URL(path, origin)
+    return routes[url.pathname]!(new Request(url, body === undefined ? { headers } : { method: 'POST', headers, body: JSON.stringify(body) }))
+  }
+
+  it('lists custom and disabled-feature files without following links', () => {
+    mkdirSync(join(directory, 'hosting'))
+    writeFileSync(join(directory, 'commerce.ts'), 'export default { enabled: false }')
+    writeFileSync(join(directory, 'hosting', 'My region.ts'), source)
+    writeFileSync(join(directory, '.hidden.ts'), source)
+    writeFileSync(join(directory, 'schema.d.ts'), '')
+    symlinkSync(file, join(directory, 'linked.ts'))
+
+    expect(listConfigFiles(directory).map(({ name }) => name)).toEqual(['app', 'commerce', 'hosting/My region'])
+    expect(listConfigFiles(join(directory, 'missing'))).toEqual([])
   })
 
-  it('does not expose a partial rewrite when a later field is invalid', () => {
-    expect(() => rewriteConfigKeys(source, [
-      { key: 'name', value: 'Changed' },
-      { key: 'host', value: 'example.test' },
-    ])).toThrow('Cannot edit "host"')
-    expect(source).toContain("name: 'Stacks'")
-  })
-
-  it('rejects duplicate keys instead of applying ambiguous updates', () => {
-    expect(() => rewriteConfigKeys(source, [
-      { key: 'port', value: 3001 },
-      { key: 'port', value: 3002 },
-    ])).toThrow('Duplicate or empty configuration key "port"')
-  })
-
-  it('lists only real TypeScript config files with their actual size', () => {
-    tempDir = mkdtempSync(join(tmpdir(), 'stacks-config-list-'))
-    mkdirSync(join(tempDir, 'nested.ts'))
-    writeFileSync(join(tempDir, 'app.ts'), source)
-    writeFileSync(join(tempDir, 'ai.ts'), source)
-    writeFileSync(join(tempDir, '.hidden.ts'), source)
-    writeFileSync(join(tempDir, 'notes.txt'), 'notes')
-
-    expect(listConfigFiles(tempDir)).toEqual([
-      {
-        name: 'ai',
-        title: 'AI',
-        size: Buffer.byteLength(source),
-      },
-      {
-        name: 'app',
-        title: 'App',
-        size: Buffer.byteLength(source),
-      },
+  it('loads nested literals and named exports without evaluating code or resolving credentials', async () => {
+    const response = await request('/api/config/read?name=app')
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toContain('no-store')
+    const document = await response.json()
+    expect(document.source).toBe(source)
+    expect(document.fields.map((field: { key: string }) => field.key)).toEqual([
+      'app.name', 'replicas[0].port', 'replicas[0].enabled', '["display.name"]', 'tls.enabled', 'tls.offset',
     ])
   })
 
-  it('reports a missing config directory', () => {
-    tempDir = mkdtempSync(join(tmpdir(), 'stacks-config-missing-'))
-    const missing = join(tempDir, 'config')
+  it('changes literal ranges while preserving comments, escapes, expressions and other exports', () => {
+    const name = 'new \\ path\nwith "quotes" and an apostrophe: \''
+    const rewritten = rewriteConfigFields(source, [
+      { key: 'app.name', value: name },
+      { key: 'replicas[0].port', value: 3002 },
+      { key: 'tls.enabled', value: false },
+    ])
+    expect(rewritten).toContain("host: env.APP_HOST ?? 'localhost'")
+    expect(rewritten).toContain('Preserve this comment')
+    expect(rewritten).toContain('replicas: [{ port: 3002, enabled: true }]')
+    expect(rewritten).toContain('export const tls = { enabled: false, offset: -14 }')
+    writeFileSync(file, rewritten)
+    return request('/api/config/read?name=app').then(async (response) => {
+      expect((await response.json()).fields[0].value).toBe(name)
+    })
+  })
 
-    expect(() => listConfigFiles(missing)).toThrow(
-      `Could not list dashboard configuration: ${missing} does not exist`,
-    )
+  it('never treats an overwritten literal as a form field', () => {
+    expect(() => rewriteConfigFields('export default { port: 80, ...values }', [{ key: 'port', value: 81 }])).toThrow('Cannot edit')
+    expect(() => rewriteConfigFields('export default { port: 80, "port": call() }', [{ key: 'port', value: 81 }])).toThrow('Cannot edit')
+    expect(rewriteConfigFields('export default { ...values, port: 80 }', [{ key: 'port', value: 81 }])).toBe('export default { ...values, port: 81 }')
+  })
+
+  it('rejects invalid batches, invalid syntax and stale revisions without modifying the file', async () => {
+    const { revision } = await (await request('/api/config/read?name=app')).json()
+    const payload = { file: 'app', revision }
+    const invalid = await request('/api/config/update', { ...payload, updates: [
+      { key: 'app.name', value: 'New name' }, { key: 'tls.enabled', value: 'wrong type' },
+    ] })
+    expect(invalid.status).toBe(422)
+    expect((await request('/api/config/update', { ...payload, source: 'export default {' })).status).toBe(422)
+    expect((await request('/api/config/update', { ...payload, source, updates: [] })).status).toBe(400)
+    expect(readFileSync(file, 'utf8')).toBe(source)
+
+    const next = source.replace("env.APP_HOST ?? 'localhost'", "process.env.APP_HOST ?? 'local.test'")
+    const success = await request('/api/config/update', { ...payload, source: next })
+    expect(success.status).toBe(200)
+    expect((await success.json()).revision).not.toBe(revision)
+    expect(readFileSync(file, 'utf8')).toBe(next)
+    expect((await request('/api/config/update', { ...payload, source })).status).toBe(409)
+    expect(readFileSync(file, 'utf8')).toBe(next)
+  })
+
+  it('keeps broken files available for source repair', async () => {
+    writeFileSync(file, 'export default { port:')
+    const result = await (await request('/api/config/read?name=app')).json()
+    expect(result.diagnostic).toContain('Invalid TypeScript at line')
+    expect(result.fields).toEqual([])
+    expect((await request('/api/config/update', { file: 'app', revision: result.revision, source })).status).toBe(200)
+  })
+
+  it('guards both reads and writes and cannot address other files', async () => {
+    symlinkSync(file, join(directory, 'linked.ts'))
+    expect((await request('/api/config/read?name=app', undefined, {})).status).toBe(403)
+    expect((await request('/api/config/read?name=app', undefined, { 'x-stacks-config': '1', 'sec-fetch-site': 'cross-site' })).status).toBe(403)
+    expect((await request('/api/config/read?name=app', undefined, { 'x-stacks-config': '1' }, 'http://outside.test')).status).toBe(403)
+    expect((await request('/api/config/read?name=..%2Fapp')).status).toBe(400)
+    expect((await request('/api/config/read?name=linked')).status).toBe(404)
+    expect((await request('/api/config/update', {}, { 'x-stacks-config': '1' })).status).toBe(403)
+    expect(validate).toHaveBeenCalledTimes(1)
   })
 })

@@ -132,7 +132,7 @@ const landings: Record<string, LandingDefinition> = {
     primary: '/settings',
     featured: {
       '/settings/appearance': 'Choose a dashboard theme and color mode.',
-      '/environment': 'Review the environment your application runs in.',
+      '/settings/environment': 'Review the environment your application runs in.',
       '/access-tokens': 'Manage tokens used to connect to the application.',
       '/buddy': 'Browse commands for building and operating the project.',
     },

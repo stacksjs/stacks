@@ -1,319 +1,199 @@
 <script client>
-import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
+import type { ConfigField, EditorMode } from '@stacksjs/defaults/views/dashboard/composables/useProjectConfigEditor'
+import { useProjectConfigEditor } from '@stacksjs/defaults/views/dashboard/composables/useProjectConfigEditor'
 
-interface ConfigFile {
-  name: string
-  title: string
-  size: number
-}
+const { files, current, drafts, sourceDraft, selected, mode, setMode, loading, saving, message, error, isDirty, setDocument, loadFiles, selectFile, save, initialize } = useProjectConfigEditor
 
-interface ConfigField {
-  key: string
-  value: string | number | boolean | null | unknown[] | Record<string, unknown>
-  type: string
-  editable: boolean
-  reason?: string
-}
-
-interface ConfigListResponse {
-  ok: boolean
-  files: ConfigFile[]
-  error?: string
-}
-
-interface ConfigReadResponse {
-  ok: boolean
-  fields: ConfigField[]
-  error?: string
-}
-
-interface ConfigUpdateResult {
-  ok: boolean
-  error?: string
-}
-
-interface ConfigUpdateResponse {
-  ok: boolean
-  results?: ConfigUpdateResult[]
-  error?: string
-}
-
-const files = state<ConfigFile[]>([])
-const fields = state<ConfigField[]>([])
-const drafts = reactive<Record<string, string | number | boolean>>({})
-const selected = state('')
-const pendingSelection = state('')
-// Not `query`: the render context has one of its own (the request's query
-// string), and a component binding resolved to it.
-const configQuery = state('')
-const loading = state(true)
-const saving = state(false)
-const message = state('')
-const error = state('')
+const pending = state<{ file: string } | { mode: EditorMode } | null>(null)
+const fileQuery = state('')
+const fieldQuery = state('')
+const fieldLimit = state(40)
+const pickerOpen = state(false)
+const pickerButton = useRef<HTMLButtonElement>('configPickerButton')
 
 const filteredFiles = derived(() => {
-  const needle = configQuery().trim().toLowerCase()
-  if (!needle)
-    return files()
-
-  return files().filter(file => file.name.includes(needle) || file.title.toLowerCase().includes(needle))
+  const needle = fileQuery().trim().toLowerCase()
+  return files().filter(file => file.name.toLowerCase().includes(needle) || file.title.toLowerCase().includes(needle))
 })
-
 const selectedFile = derived(() => files().find(file => file.name === selected()))
-const editableCount = derived(() => fields().filter(field => field.editable).length)
-const isDirty = derived(() => fields().some(field => field.editable && drafts[field.key] !== field.value))
+const filteredFields = derived(() => {
+  const needle = fieldQuery().trim().toLowerCase()
+  return (current()?.fields ?? []).filter(field => field.key.toLowerCase().includes(needle))
+})
+const visibleFields = derived(() => filteredFields().slice(0, fieldLimit()))
 
-function displayValue(field: ConfigField): string | number {
-  if (field.editable)
-    return drafts[field.key] as string | number
-  if (field.type === 'object' || field.type === 'array')
-    return JSON.stringify(field.value)
-  return String(field.value ?? '')
+function closePicker(): void {
+  pickerOpen.set(false)
+  pickerButton.current?.focus()
+  fileQuery.set('')
 }
 
-async function loadFiles(): Promise<void> {
-  loading.set(true)
-  error.set('')
-  try {
-    const body = await dashboardApi<ConfigListResponse>('/api/config/list')
-    if (!body.ok)
-      throw new Error(body.error || 'Unable to list configuration files')
-    if (!Array.isArray(body.files))
-      throw new TypeError('Configuration files were not returned in the expected shape.')
-
-    files.set(body.files)
-    const first = body.files[0]?.name
-    if (first)
-      await selectFile(first)
-  }
-  catch (cause) {
-    error.set(cause instanceof Error ? cause.message : 'Unable to load configuration')
-  }
-  finally {
-    loading.set(false)
+function closePickerOnEscape(event: KeyboardEvent): void {
+  if (pickerOpen() && event.key === 'Escape') {
+    event.preventDefault()
+    closePicker()
   }
 }
 
-async function selectFile(name: string): Promise<void> {
-  selected.set(name)
-  fields.set([])
-  message.set('')
-  error.set('')
-  loading.set(true)
-  try {
-    const body = await dashboardApi<ConfigReadResponse>(`/api/config/read?name=${encodeURIComponent(name)}`)
-    if (!body.ok)
-      throw new Error(body.error || `Unable to read config/${name}.ts`)
-
-    for (const key of Object.keys(drafts))
-      delete drafts[key]
-    Object.assign(
-      drafts,
-      Object.fromEntries(
-        body.fields
-          .filter((field: ConfigField) => field.editable)
-          .map((field: ConfigField) => [field.key, field.value]),
-      ),
-    )
-    fields.set(body.fields)
-  }
-  catch (cause) {
-    error.set(cause instanceof Error ? cause.message : `Unable to read config/${name}.ts`)
-  }
-  finally {
-    loading.set(false)
-  }
+function openFile(name: string): Promise<void> {
+  fieldQuery.set('')
+  fieldLimit.set(40)
+  return selectFile(name)
 }
 
-function requestSelectFile(name: string): void {
+function requestFile(name: string): void {
+  if (loading() || saving())
+    return
+  closePicker()
   if (name === selected())
     return
-  if (isDirty()) {
-    pendingSelection.set(name)
+  if (current() && isDirty())
+    pending.set({ file: name })
+  else
+    void openFile(name)
+}
+
+function requestMode(next: EditorMode): void {
+  if (saving() || next === mode())
+    return
+  if (isDirty())
+    pending.set({ mode: next })
+  else
+    setMode(next)
+}
+
+function discardAndContinue(): void {
+  const destination = pending()
+  pending.set(null)
+  if (!destination)
+    return
+  if ('file' in destination) {
+    void openFile(destination.file)
     return
   }
-  void selectFile(name)
-}
-
-function cancelPendingSelection(): void {
-  pendingSelection.set('')
-}
-
-function discardAndSelect(): void {
-  const name = pendingSelection()
-  pendingSelection.set('')
-  if (name)
-    void selectFile(name)
+  const loaded = current()
+  if (loaded) {
+    setDocument(loaded)
+    setMode(destination.mode)
+    error.set('')
+  }
 }
 
 function handleBeforeUnload(event: BeforeUnloadEvent): void {
-  if (!isDirty())
-    return
-  event.preventDefault()
-  event.returnValue = ''
+  if (current() && isDirty()) {
+    event.preventDefault()
+    event.returnValue = ''
+  }
 }
 
-async function save(): Promise<void> {
-  const file = selected()
-  if (!file || saving())
-    return
-
-  saving.set(true)
-  message.set('')
-  error.set('')
-  try {
-    const updates = fields()
-      .filter(field => field.editable)
-      .map(field => ({ key: field.key, value: drafts[field.key] }))
-    const body = await dashboardApi<ConfigUpdateResponse>('/api/config/update', {
-      method: 'POST',
-      body: { file, updates },
-    })
-    if (!body.ok) {
-      const failed = body.results?.filter((result: { ok: boolean }) => !result.ok)
-      throw new Error(failed?.map((result: { error?: string }) => result.error).filter(Boolean).join(', ') || body.error || 'Unable to save configuration')
-    }
-
-    message.set(`Saved config/${file}.ts`)
-    await selectFile(file)
-    message.set(`Saved config/${file}.ts`)
-  }
-  catch (cause) {
-    error.set(cause instanceof Error ? cause.message : 'Unable to save configuration')
-  }
-  finally {
-    saving.set(false)
-  }
+function fieldInputType(field: ConfigField): string {
+  if (field.type === 'number')
+    return 'number'
+  return /password|secret|api[-_]?key|private[-_]?key|access[-_]?token/i.test(field.key) ? 'password' : 'text'
 }
 
 useEventListener('beforeunload', handleBeforeUnload)
-void loadFiles()
+onMount(initialize)
 </script>
 
 <template>
 <div class="dashboard-settings-stack">
   <div :if="files().length > 0">
-    <SettingsGroup header="Project configuration">
-      <details class="dashboard-settings-config-picker">
-        <summary>
+    <SettingsGroup>
+      <div class="dashboard-settings-config-picker" @keydown="closePickerOnEscape($event)">
+        <button type="button" class="dashboard-settings-config-trigger" ref="configPickerButton"
+          aria-controls="project-config-files" :aria-expanded="String(pickerOpen())"
+          @click="pickerOpen() ? closePicker() : pickerOpen.set(true)">
           <span>Configuration file</span>
           <span class="dashboard-settings-config-selection">
             <span :text="selectedFile()?.title"></span>
             <span class="i-f7-chevron-down" aria-hidden="true"></span>
           </span>
-        </summary>
-        <div class="pt-2 px-2">
-          <SearchFilter v-model:searchValue="configQuery" placeholder="Search config" ariaLabel="Search configuration" />
-        </div>
+        </button>
+        <div :if="pickerOpen()" id="project-config-files">
+          <div class="pt-2 px-2">
+            <SearchFilter v-model:searchValue="fileQuery" placeholder="Search config files" ariaLabel="Search config files" />
+          </div>
 
-        <nav class="overflow-y-auto p-2 max-h-[68vh]" aria-label="Configuration files">
-          <button :for="file in filteredFiles"
-            type="button"
-            :class="selected() === file.name ? 'flex items-center gap-3 px-3 py-2.5 w-full text-left text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 rounded-lg' : 'flex items-center gap-3 px-3 py-2.5 w-full text-left text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-white/5 rounded-lg'"
-            @click="requestSelectFile(file.name)"
-          >
-            <span class="flex-none h-4 w-4 i-hugeicons-settings-02"></span>
-            <span class="flex-1 font-medium text-sm truncate">{{ file.title }}</span>
-            <span class="text-[10px] text-neutral-500 dark:text-neutral-400">{{ file.size < 1024 ? file.size + ' B' : Math.round(file.size / 1024) + ' KB' }}</span>
-          </button>
-        </nav>
-      </details>
+          <nav class="overflow-y-auto p-2 max-h-64" aria-label="Configuration files">
+            <button :for="file in filteredFiles()" type="button"
+              :aria-pressed="String(selected() === file.name)"
+              :disabled="saving() || loading()"
+              class="w-full dashboard-settings-nav-item"
+              @click="requestFile(file.name)">
+              <span class="flex-1 min-w-0 text-left truncate" :text="file.title"></span>
+              <span class="max-w-[50%] font-mono text-xs truncate opacity-75" :text="file.name + '.ts'"></span>
+            </button>
+            <p :if="filteredFiles().length === 0" class="p-3 text-neutral-500 text-sm" role="status">No matching config files.</p>
+          </nav>
+        </div>
+      </div>
     </SettingsGroup>
   </div>
 
-  <SettingsGroup>
-      @if(loading())
-        <div class="flex items-center justify-center min-h-80 text-neutral-500 dark:text-neutral-400">
-          <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
-          Loading configuration
-        </div>
-      @elseif(error() && !selectedFile())
-        <div class="p-8 text-center">
-          <span class="inline-block h-8 w-8 text-red-500 i-hugeicons-alert-02"></span>
-          <p class="mt-3 font-medium text-neutral-900 dark:text-white">Configuration unavailable</p>
-          <p class="mt-1 text-red-600 text-sm dark:text-red-400">{{ error() }}</p>
-        </div>
-      @elseif(files().length === 0)
-        <div class="p-8 text-center">
-          <span class="inline-block h-8 w-8 text-neutral-400 i-hugeicons-settings-02"></span>
-          <p class="mt-3 font-medium text-neutral-900 dark:text-white">No configuration files</p>
-          <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Add a TypeScript config file under config to manage it here.</p>
-        </div>
-      @elseif(selectedFile())
-        <div class="flex flex-wrap gap-4 items-center justify-between px-4 py-3 border-b border-neutral-200/60 dark:border-white/5">
-          <div>
-            <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">{{ selectedFile()?.title }}</h2>
-            <p class="mt-1 font-mono text-neutral-500 text-xs dark:text-neutral-400">config/{{ selectedFile()?.name }}.ts</p>
-          </div>
-          <div class="flex gap-2 items-center">
-            <Badge :if="isDirty()" variant="warning" size="sm">Unsaved changes</Badge>
-            <Badge variant="default" size="sm">{{ editableCount() + ' editable' }}</Badge>
-            <Button variant="primary" size="sm" :disabled="saving() || editableCount() === 0 || !isDirty()" @click="save()">
-              {{ saving() ? 'Saving...' : 'Save changes' }}
-            </Button>
+  <p :if="loading()" class="p-6 text-neutral-500 text-sm dark:text-neutral-400" role="status">Loading configuration…</p>
+  <div :if="error()" class="text-red-700 text-sm dark:text-red-400" role="alert">
+    <p :text="error()"></p>
+    <Button :if="!current() && !loading()" variant="secondary" size="sm" @click="selected() ? selectFile(selected()) : loadFiles()">Retry</Button>
+    <Button :if="current() && isDirty()" variant="secondary" size="sm" @click="pending.set({ file: selected() })">Reopen file</Button>
+  </div>
+  <p :if="!loading() && !error() && files().length === 0" class="p-6 text-neutral-500 text-sm dark:text-neutral-400">No TypeScript files were found in config/.</p>
+  <p :if="message()" class="text-green-700 text-sm dark:text-green-400" role="status" :text="message()"></p>
+
+  <div :if="current()" class="min-w-0">
+    <SettingsGroup>
+      <form @submit.prevent="save()">
+        <div class="flex flex-wrap gap-2 items-center justify-between px-4 py-3">
+          <h2 class="min-w-0 break-all font-medium font-mono text-sm" :text="'config/' + selected() + '.ts'"></h2>
+          <div class="flex flex-wrap gap-2 items-center" role="group" aria-label="Configuration editor">
+            <button type="button" class="dashboard-config-mode" :aria-pressed="String(mode() === 'fields')" :disabled="saving()" @click="requestMode('fields')">Fields</button>
+            <button type="button" class="dashboard-config-mode" :aria-pressed="String(mode() === 'source')" :disabled="saving()" @click="requestMode('source')">TypeScript</button>
+            <Button type="submit" size="sm" :loading="saving()" :disabled="saving() || !isDirty()">Save changes</Button>
           </div>
         </div>
 
-        @if(message())
-          <div class="mt-3 mx-4 px-4 py-3 text-green-700 text-sm dark:text-green-300 bg-green-50 dark:bg-green-500/10 border border-green-200 rounded-lg dark:border-green-500/20">
-            {{ message() }}
-          </div>
-        @endif
-        @if(error())
-          <div class="mt-3 mx-4 px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-500/10 border border-red-200 rounded-lg dark:border-red-500/20">
-            {{ error() }}
-          </div>
-        @endif
+        <div :if="mode() === 'source'" class="flex flex-col gap-2 p-4 pt-0">
+          <p :if="current()?.diagnostic" class="text-amber-700 text-sm dark:text-amber-300" :text="current()?.diagnostic"></p>
+          <p class="text-neutral-500 text-sm dark:text-neutral-400">Edit expressions, environment bindings, and the structure of this file.</p>
+          <CodeEditor v-model:value="sourceDraft" language="typescript" :label="'config/' + selected() + '.ts'" :readonly="saving()" @save="save()" />
+        </div>
 
-        <form class="divide-neutral-200/60 divide-y dark:divide-white/5" @submit.prevent="save()">
-          <div :for="field in fields" class="grid gap-3 sm:grid-cols-[minmax(10rem,0.8fr)_minmax(0,1.2fr)] sm:items-start px-4 py-3">
-            <div>
-              <label :for="'config-' + field.key" class="font-medium text-neutral-900 text-sm dark:text-white">{{ field.key }}</label>
-              <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ field.type }}</p>
+        <div :if="mode() === 'fields'" class="min-w-0">
+          <div class="pb-3 px-4 text-neutral-500 text-sm dark:text-neutral-400">
+            <p>For computed values, environment bindings, or new keys, open TypeScript.</p>
+            <div :if="(current()?.fields.length ?? 0) > 0" class="mt-3">
+              <SearchFilter v-model:searchValue="fieldQuery" placeholder="Filter fields" ariaLabel="Filter configuration fields" />
             </div>
+          </div>
+          <p :if="visibleFields().length === 0" class="pb-4 px-4 text-neutral-500 text-sm dark:text-neutral-400">No matching literal fields.</p>
 
-            <div>
-              @if(field.type === 'boolean' && field.editable)
-                <Toggle
-                  :id="'config-' + field.key"
-                  v-model:checked="drafts[field.key]"
-                  :label="drafts[field.key] ? 'Enabled' : 'Disabled'"
-                  :ariaLabel="field.key"
-                />
-              @elseif(field.editable && field.type === 'number')
-                <input
-                  :id="'config-' + field.key"
-                  type="number"
-                  x-model.number="drafts[field.key]"
-                  class="block px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                >
-              @elseif(field.editable)
-                <input
-                  :id="'config-' + field.key"
-                  type="text"
-                  x-model="drafts[field.key]"
-                  class="block px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                >
+          <div :for="(field, index) in visibleFields()" class="dashboard-config-field" :data-config-type="field.type">
+            @if(field.type === 'boolean')
+              <Toggle v-model:checked="drafts[field.key]" :label="field.key" :ariaLabel="field.key" labelPosition="left" :disabled="saving()" />
+            @elseif(field.type === 'null')
+              <span class="break-all text-sm" :text="field.key"></span>
+              <span class="text-neutral-500 text-sm dark:text-neutral-400">Null · edit in TypeScript</span>
+            @else
+              <label :for="'dashboard-config-field-' + index" class="break-all text-sm" :text="field.key"></label>
+              @if(field.type === 'number')
+                <input :id="'dashboard-config-field-' + index" data-dashboard-field type="number" step="any" required
+                  class="dashboard-config-input" x-model.number="drafts[field.key]" :disabled="saving()">
               @else
-                <div class="px-3 py-2 break-all font-mono text-neutral-500 text-xs dark:text-neutral-400 bg-neutral-50 dark:bg-white/[0.03] border border-neutral-200 rounded-lg dark:border-white/10">
-                  {{ displayValue(field) }}
-                </div>
-                <p class="mt-1.5 text-amber-700 text-xs dark:text-amber-300">{{ field.reason }}</p>
+                <input :id="'dashboard-config-field-' + index" data-dashboard-field :type="fieldInputType(field)" autocomplete="off"
+                  class="dashboard-config-input" x-model="drafts[field.key]" :disabled="saving()">
               @endif
-            </div>
+            @endif
           </div>
-        </form>
-      @endif
-  </SettingsGroup>
+          <div :if="filteredFields().length > fieldLimit()" class="p-3">
+            <Button variant="secondary" size="sm" @click="fieldLimit.update(limit => limit + 40)">Show more fields</Button>
+          </div>
+        </div>
+      </form>
+    </SettingsGroup>
+  </div>
 
-  <ConfirmDialog
-    :isOpen="Boolean(pendingSelection())"
-    title="Discard unsaved changes?"
-    description="Switching configuration files will discard the edits in this file."
-    confirmLabel="Discard changes"
-    variant="warning"
-    @close="cancelPendingSelection"
-    @confirm="discardAndSelect"
-  />
+  <ConfirmDialog :isOpen="Boolean(pending())" title="Discard unsaved changes?"
+    description="Your changes to this configuration file will be lost."
+    confirmLabel="Discard changes" variant="warning" @close="pending.set(null)" @confirm="discardAndContinue" />
 </div>
 </template>

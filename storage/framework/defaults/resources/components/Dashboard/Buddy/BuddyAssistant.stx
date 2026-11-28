@@ -111,7 +111,7 @@ onMount(() => {
         <code :if="chatState()?.missingKey" class="inline-block mt-3 px-2 py-1 font-mono text-amber-900 text-xs dark:text-amber-200 bg-amber-100 dark:bg-amber-950 rounded">
           {{ chatState()?.missingKey }}
         </code>
-        <StxLink to="/environment" class="inline-flex items-center ml-3 font-medium text-amber-800 text-sm dark:text-amber-300">
+        <StxLink to="/settings/environment" class="inline-flex items-center ml-3 font-medium text-amber-800 text-sm dark:text-amber-300">
           Open environment
           <span class="ml-1 h-4 w-4 i-hugeicons-arrow-right-02"></span>
         </StxLink>

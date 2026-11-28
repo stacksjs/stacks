@@ -733,18 +733,14 @@ export function buildSidebarConfig(
     })
   }
 
-  // Utilities views: real paths are flat (`/buddy`, `/environment`,
-  // `/access-tokens`) or under `/settings/*` for billing/mail. The
-  // historical `/utilities/*` URLs uniformly 404'd.
   if (enabled.utilities) {
     sections.push({
       id: 'utilities',
       title: 'Utilities',
       items: [
         { id: 'buddy', label: 'AI Buddy', icon: 'bubble.left.and.bubble.right.fill', url: `${baseRoute}/buddy` },
-        { id: 'environment', label: 'Environment', icon: 'key.fill', url: `${baseRoute}/environment` },
         { id: 'access-tokens', label: 'Access Tokens', icon: 'key.horizontal.fill', url: `${baseRoute}/access-tokens` },
-        { id: 'settings', label: 'Settings', icon: 'gear', url: `${baseRoute}/settings/billing` },
+        { id: 'settings', label: 'Settings', icon: 'gear', url: `${baseRoute}/settings` },
       ],
     })
   }

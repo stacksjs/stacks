@@ -3,14 +3,13 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { DEFAULT_VIEW_ROUTE_BUNDLES } from '../../storage/framework/core/config/src/views'
 import { DEFAULT_ROUTE_BUNDLE_FEATURES, mountedDefaultRouteBundles } from '../../storage/framework/core/router/src/route-loader'
-import { disabledFeatureConfigs } from '../../storage/framework/core/actions/src/dev/dashboard-feature-views'
 import { dashboardPageAvailable, dashboardViewExclusions, unavailableDashboardPages } from '../../storage/framework/defaults/resources/functions/dashboard/page-availability'
 import { resolveDashboardToggles } from '../../storage/framework/defaults/resources/functions/dashboard/toggles'
 
 /**
  * CMS and commerce are opt-in: off until `./buddy cms:install` or
- * `./buddy commerce:install`, and off means absent everywhere - not in the
- * sidebar, not at a typed URL, not as a mounted route.
+ * `./buddy commerce:install`. Disabled features have no sidebar rows or
+ * mounted feature pages and routes.
  */
 
 const frameworkDashboard = resolve('storage/framework/defaults/views/dashboard')
@@ -135,16 +134,6 @@ describe('CMS and commerce are off until installed', () => {
     const home = readFileSync(resolve('storage/framework/defaults/resources/components/Dashboard/Home/DashboardHome.stx'), 'utf8')
     expect(table).not.toContain('orders')
     expect(home).toContain('dashboard.sections.value.commerce === true')
-  })
-
-  test('Settings leaves out the config files of features that are off', () => {
-    expect([...disabledFeatureConfigs(() => false)].sort()).toEqual(['cms', 'commerce'])
-    expect([...disabledFeatureConfigs(() => true)]).toEqual([])
-    expect([...disabledFeatureConfigs(feature => feature === 'cms')]).toEqual(['commerce'])
-    // Listed, read, shown as source and written: all four go through the same check.
-    const server = readFileSync(resolve('storage/framework/core/actions/src/dev/dashboard.ts'), 'utf8')
-    expect(server).toContain('listConfigFiles().filter((file: { name: string }) => !hidden.has(')
-    expect(server.match(/\(await hiddenConfigs\(\)\)\.has\(/g)?.length).toBe(3)
   })
 
   test('the home page filters its links on the server before emitting them', () => {

@@ -194,20 +194,21 @@ async function startStxServer(): Promise<void> {
     console.log(`[Dashboard] stx from ${stxSource.path}`)
   }
 
-  // Mount the config-editor API routes. The settings UI talks to these
-  // to list config files, read their resolved values, and write edits
-  // back to disk. They run in the dashboard server's process so they
-  // share the same fs cwd and don't need a second port to be open.
-  const { listConfigFiles, readConfig, updateConfigKeys } = await import(
-    defaultsPath('resources/functions/dashboard/config-io.ts')
-  )
-  // A feature that is off has no entry in Settings, and its file is not read
-  // or written through it: see `disabledFeatureConfigs`. Asked per request,
-  // so the answer follows the config as it is now.
-  const { disabledFeatureConfigs } = await import('./dashboard-feature-views')
-  async function hiddenConfigs(): Promise<Set<string>> {
-    const { feature } = await import('@stacksjs/config')
-    return disabledFeatureConfigs(feature)
+  let configEditor: Promise<ReturnType<typeof import('./dashboard-config')['dashboardConfigRoutes']>> | undefined
+  function configEditorRoute(path: string) {
+    return async (request: Request) => {
+      configEditor ??= import('./dashboard-config').then(({ dashboardConfigRoutes }) => dashboardConfigRoutes({
+        directory: projectPath('config'),
+        hosts: () => [
+          `127.0.0.1:${dashboardPort}`,
+          `localhost:${dashboardPort}`,
+          new URL(dashboardBrowserUrl).host,
+          ...(dashboardDomain ? [dashboardDomain] : []),
+        ],
+        validateWrite: validateDevCsrfRequest,
+      }))
+      return (await configEditor)[path]!(request)
+    }
   }
 
   const configRoutes: Record<string, (req: Request) => Response | Promise<Response>> = {
@@ -227,117 +228,9 @@ async function startStxServer(): Promise<void> {
       url: () => dashboardBrowserUrl,
       validateWrite: validateDevCsrfRequest,
     }),
-    '/api/config/list': async () => {
-      try {
-        const hidden = await hiddenConfigs()
-        return Response.json({ ok: true, files: listConfigFiles().filter((file: { name: string }) => !hidden.has(file.name.replace(/\.ts$/, ''))) })
-      }
-      catch (e) {
-        return Response.json({ ok: false, error: (e as Error)?.message }, { status: 500 })
-      }
-    },
-    '/api/config/read': async (req: Request) => {
-      try {
-        const url = new URL(req.url)
-        const name = url.searchParams.get('name') || ''
-        if (!/^[\w-]+$/.test(name))
-          return Response.json({ ok: false, error: 'Invalid config name' }, { status: 400 })
-        if ((await hiddenConfigs()).has(name))
-          return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
-        const result = await readConfig(name)
-        if (!result)
-          return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
-        // Strip raw source and the duplicate values object. The editor works
-        // from field metadata, while /api/config/source serves source text.
-        return Response.json({ ok: true, name, fields: result.fields })
-      }
-      catch (e) {
-        return Response.json({ ok: false, error: (e as Error)?.message }, { status: 500 })
-      }
-    },
-    '/api/config/source': async (req: Request) => {
-      try {
-        const url = new URL(req.url)
-        const name = url.searchParams.get('name') || ''
-        if (!/^[\w-]+$/.test(name))
-          return Response.json({ ok: false, error: 'Invalid config name' }, { status: 400 })
-        if ((await hiddenConfigs()).has(name))
-          return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
-        const result = await readConfig(name)
-        if (!result)
-          return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
-        return new Response(result.source, { headers: { 'content-type': 'text/plain; charset=utf-8' } })
-      }
-      catch (e) {
-        return Response.json({ ok: false, error: (e as Error)?.message }, { status: 500 })
-      }
-    },
-    '/api/config/update': async (req: Request) => {
-      if (req.method !== 'POST')
-        return Response.json({ ok: false, error: 'Method not allowed' }, { status: 405 })
-      try {
-        await validateDevCsrfRequest(req)
-        const body = (await req.json()) as { file?: string, key?: string, value?: unknown, updates?: Array<{ path?: string, key?: string, value?: unknown }> }
-        // Accept two shapes:
-        //   1) { file, key, value }                 — single key edit
-        //   2) { file, updates: [{ path|key, value }] } — batch (used by services.stx)
-        const file = body.file?.replace(/\.ts$/, '')
-        if (!file || !/^[\w-]+$/.test(file))
-          return Response.json({ ok: false, error: 'Invalid file' }, { status: 400 })
-        if ((await hiddenConfigs()).has(file))
-          return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
-
-        const updates: Array<{ key: string, value: unknown }> = []
-        if (Array.isArray(body.updates)) {
-          for (const u of body.updates) {
-            const k = u.key ?? u.path
-            if (typeof k === 'string') updates.push({ key: k, value: u.value })
-          }
-        }
-        else if (body.key) {
-          updates.push({ key: body.key, value: body.value })
-        }
-        if (updates.length === 0)
-          return Response.json({ ok: false, error: 'No updates supplied' }, { status: 400 })
-
-        const invalid = updates.find(update =>
-          !/^[A-Za-z_$][\w$]*$/.test(update.key)
-          || (
-            typeof update.value !== 'string'
-            && typeof update.value !== 'number'
-            && typeof update.value !== 'boolean'
-          )
-          || (typeof update.value === 'number' && !Number.isFinite(update.value)),
-        )
-        if (invalid)
-          return Response.json({ ok: false, error: `Invalid value for configuration key "${invalid.key}"` }, { status: 400 })
-
-        const typedUpdates = updates as Array<{ key: string, value: string | number | boolean }>
-        try {
-          await updateConfigKeys(file, typedUpdates)
-        }
-        catch (err) {
-          const error = (err as Error)?.message || 'Configuration values could not be updated.'
-          const results = typedUpdates.map(update => ({
-            key: update.key,
-            ok: false,
-            error,
-          }))
-          return Response.json({ ok: false, file, results, error }, { status: 422 })
-        }
-        const results = typedUpdates.map(update => ({
-          key: update.key,
-          ok: true,
-          newValue: update.value,
-        }))
-        return Response.json({ ok: true, file, results })
-      }
-      catch (e) {
-        if ((e as { status?: number })?.status === 403)
-          return Response.json({ ok: false, error: 'Forbidden', message: 'CSRF token mismatch' }, { status: 403 })
-        return Response.json({ ok: false, error: (e as Error)?.message }, { status: 500 })
-      }
-    },
+    '/api/config/list': configEditorRoute('/api/config/list'),
+    '/api/config/read': configEditorRoute('/api/config/read'),
+    '/api/config/update': configEditorRoute('/api/config/update'),
   }
 
   // serve() starts a long-lived server — do NOT await it.
@@ -461,6 +354,12 @@ async function startStxServer(): Promise<void> {
           [dashboardPendingHeader]: dashboardPublished ? '0' : '1',
           'cache-control': 'no-store',
         } })
+      }
+
+      if (pathname === '/environment' && (req.method === 'GET' || req.method === 'HEAD')
+        && !existsSync(projectPath('resources/views/dashboard/environment.stx'))
+        && !existsSync(projectPath('resources/views/dashboard/environment/index.stx'))) {
+        return new Response(null, { status: 307, headers: { location: `/settings/environment${url.search}` } })
       }
 
       if (shouldDelegateDashboardRequest(pathname, req.method))

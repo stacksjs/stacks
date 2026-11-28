@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
-import { cp, mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'
+import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
 import { readProjectService } from '@stacksjs/path'
@@ -29,6 +29,7 @@ test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('dashboard keeps page stat
   const profile = await mkdtemp(join(tmpdir(), 'stacks-dashboard-hmr-chrome-'))
   const home = join(root, 'machine')
   const source = join(root, 'app/version.ts')
+  const configFile = join(root, 'config/editor-probe.ts')
   const entry = join(checkout, 'storage/framework/core/actions/src/dev/dashboard.ts')
   let child: ReturnType<typeof Bun.spawn> | undefined
   let browser: Awaited<ReturnType<typeof launch>> | undefined
@@ -44,6 +45,7 @@ test.skipIf(process.env.STACKS_BROWSER_TESTS !== '1')('dashboard keeps page stat
       writeFile(join(root, 'package.json'), '{"name":"dashboard-hmr-fixture"}'),
       writeFile(join(root, 'bunfig.toml'), 'preload = []\n'),
       writeFile(join(root, 'config/app.ts'), 'export default {}'),
+      writeFile(configFile, 'export default { nested: { port: 3000 } }'),
       writeFile(join(root, 'routes/api.ts'), 'export {}'),
       writeFile(source, 'export default "before"'),
       writeFile(join(root, 'resources/views/dashboard/swap-probe.stx'), `
@@ -185,6 +187,39 @@ function increment() { count.update(value => value + 1) }
       query: document.querySelector('[aria-label="Search settings"]').value,
       focus: document.activeElement.getAttribute('aria-label'),
     })`)).toEqual({ document: 'settings', pathname: '/settings/software-update', query: 'software', focus: 'Search settings' })
+
+    // A real configuration edit restarts the worker. The selected file and
+    // save acknowledgement must survive that refresh.
+    const configHeading = 'config/editor-probe.ts'
+    await cdp.send('Page.navigate', { url: origin + '/settings' })
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('h2')?.textContent")).toBe('config/app.ts')
+    })
+    await cdp.evaluate("document.querySelector('.dashboard-settings-config-trigger').click()")
+    await until(async () => {
+      expect(await cdp.evaluate(`[...document.querySelectorAll('#project-config-files button')].some(button => button.textContent.includes('editor-probe.ts'))`)).toBe(true)
+    })
+    await cdp.evaluate(`[...document.querySelectorAll('#project-config-files button')].find(button => button.textContent.includes('editor-probe.ts')).click()`)
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('.dashboard-config-field input')?.value")).toBe('3000')
+    })
+    const beforeConfigSave = await runningDashboardInstance(port)
+    await cdp.evaluate(`
+      const input = document.querySelector('.dashboard-config-field input')
+      input.value = '3001'
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    `)
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('.dashboard-settings-pane button[type=submit]')?.disabled")).toBe(false)
+    })
+    await cdp.evaluate("document.querySelector('.dashboard-settings-pane button[type=submit]').click()")
+    await until(async () => {
+      expect(await readFile(configFile, 'utf8')).toBe('export default { nested: { port: 3001 } }')
+      expect(await runningDashboardInstance(port)).not.toBe(beforeConfigSave)
+      expect(await cdp.evaluate("document.querySelector('h2')?.textContent")).toBe(configHeading)
+      expect(await cdp.evaluate("document.querySelector('.dashboard-config-field input')?.value")).toBe('3001')
+      expect(await cdp.evaluate("document.querySelector('.dashboard-settings-pane [role=status]')?.textContent")).toContain('Saved config/editor-probe.ts')
+    }, 35_000)
   }
   finally {
     try {

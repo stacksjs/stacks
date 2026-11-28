@@ -1173,7 +1173,7 @@ describe('dashboard native STX bindings', () => {
 
   test('environment editor uses a guarded API and a two-way STX component', () => {
     const view = readFileSync(
-      resolve('storage/framework/defaults/views/dashboard/environment/index.stx'),
+      resolve('storage/framework/defaults/views/dashboard/settings/environment.stx'),
       'utf8',
     )
     const page = componentSource('Environment/EnvironmentDashboard.stx')
@@ -1203,36 +1203,28 @@ describe('dashboard native STX bindings', () => {
     expect(routes).toContain("guard(route.put('/environment'")
   })
 
-  test('settings editor uses reactive keyed drafts and native models', () => {
+  test('project configuration uses STX controls and the shared dashboard API', () => {
     const view = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/settings/index.stx'),
       'utf8',
     )
     const page = componentSource('Settings/SettingsDashboard.stx')
+    const editor = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/composables/useProjectConfigEditor.ts'),
+      'utf8',
+    )
 
     expect(view).toContain('<SettingsDashboard />')
     expect(view).not.toContain('<script')
-    expect(page).toContain('const drafts = reactive<')
-    expect(page).toContain('<SearchFilter v-model:searchValue="configQuery"')
+    expect(page).toContain('<SearchFilter v-model:searchValue="fileQuery"')
     expect(page).toContain('x-model="drafts[field.key]"')
     expect(page).toContain('x-model.number="drafts[field.key]"')
-    // A yes or no is the shared switch, bound to its draft the same way.
     expect(page).toContain('v-model:checked="drafts[field.key]"')
-    expect(page).not.toContain('type="checkbox"')
-    expect(page).toContain('<div :for="field in fields"')
-    expect(page).toContain("@if(field.type === 'boolean' && field.editable)")
-    expect(page).toContain('@elseif(field.editable)')
-    expect(page).toContain('@endif')
-    expect(page).not.toContain('<template :if="field.type === \'boolean\' && field.editable">')
-    expect(page).toContain('const isDirty = derived(')
-    expect(page).toContain("useEventListener('beforeunload', handleBeforeUnload)")
-    expect(page).toContain('@click="requestSelectFile(file.name)"')
-    expect(page).toContain('<ConfirmDialog')
+    expect(page).toContain('<CodeEditor v-model:value="sourceDraft"')
+    expect(editor).toContain("dashboardApi<ConfigDocument>('/api/config/update'")
+    expect(editor).toContain('revision: loaded.revision')
     expect(page).toContain('title="Discard unsaved changes?"')
-    expect(page).toContain('|| !isDirty()')
-    expect(page).toContain("dashboardApi<ConfigUpdateResponse>('/api/config/update'")
-    expect(page).not.toMatch(/:value="[^"]+\(\)"[^>]+@(?:input|change)=/)
-    expect(page).not.toContain('setDraft(')
+    expect(page).not.toMatch(/\b(?:document|window)\./)
     expect(page).not.toContain('fetch(')
   })
 

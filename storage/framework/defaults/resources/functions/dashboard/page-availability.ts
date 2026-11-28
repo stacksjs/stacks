@@ -46,7 +46,7 @@ const sectionPages = {
   analytics: ['/analytics'],
   management: ['/management', '/cloud', '/servers', '/remote', '/serverless', '/dns', '/mailboxes', '/logs', '/health', '/insights', '/kanban'],
   // Settings is also opened by the native application menu and the browser account menu.
-  utilities: ['/buddy', '/environment', '/access-tokens'],
+  utilities: ['/buddy', '/access-tokens'],
   ci: ['/ci'],
 } as const satisfies Partial<Record<keyof ResolvedDashboardToggles, readonly string[]>>
 
