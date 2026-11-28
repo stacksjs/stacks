@@ -35,6 +35,15 @@ const client = useAI()
 // client...
 ```
 
+## Realtime usage receipts
+
+The server Realtime adapter reports provider token usage by response ID. A usage
+event includes `inputAudioEndMs` when the adapter matched a server VAD speech end
+to a committed audio item before that response was created. The boundary stays
+with its response as later audio arrives. `pendingUsageResponses` counts provider
+responses that have started and have no usage receipt. Consumers reconciling
+costs can keep their holds when input coverage or usage evidence is incomplete.
+
 ## Generate an MCP server from your API
 
 Register one MCP endpoint in `routes/api.ts` to expose your router API, including

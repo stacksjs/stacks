@@ -23,7 +23,7 @@ export type RealtimeEvent =
   | { type: 'transcript', text: string, role: 'assistant' | 'customer', final: boolean }
   | { type: 'speech_started', itemId: string }
   | { type: 'tool_call', id: string, name: string, arguments: Record<string, unknown> }
-  | { type: 'usage', responseId: string, usage: Record<string, unknown> }
+  | { type: 'usage', responseId: string, usage: Record<string, unknown>, inputAudioEndMs?: number }
   | { type: 'error', code: RealtimeFailure }
 
 export interface RealtimeOptions {
@@ -47,6 +47,8 @@ export interface RealtimeSession {
   submitToolResult: (callId: string, result: unknown) => void
   close: () => void
   closed: Promise<{ reason: RealtimeFailure }>
+  /** Responses created by the provider that have yet to supply usage. */
+  readonly pendingUsageResponses?: number
 }
 
 function row(value: unknown): value is Record<string, unknown> {
@@ -92,6 +94,9 @@ export function connectRealtime(options: RealtimeOptions): Promise<RealtimeSessi
     const seenCalls = new Set<string>()
     const pendingCalls = new Set<string>()
     const seenUsage = new Set<string>()
+    const speechEnds = new Map<string, number>()
+    const pendingUsage = new Map<string, number | undefined>()
+    let committedAudioEndMs: number | undefined
     let complete: (value: { reason: RealtimeFailure }) => void = () => {}
     const closed = new Promise<{ reason: RealtimeFailure }>((finish) => { complete = finish })
     let lifetime: ReturnType<typeof setTimeout> | undefined
@@ -141,6 +146,7 @@ export function connectRealtime(options: RealtimeOptions): Promise<RealtimeSessi
       },
       close() { end('closed') },
       closed,
+      get pendingUsageResponses() { return pendingUsage.size },
     }
 
     const open: EventListener = () => {
@@ -172,7 +178,28 @@ export function connectRealtime(options: RealtimeOptions): Promise<RealtimeSessi
           return
         }
         if (!ready) return
-        if (value.type === 'response.created') responseActive = true
+        if (value.type === 'input_audio_buffer.speech_stopped') {
+          if (typeof value.item_id === 'string' && Number.isSafeInteger(value.audio_end_ms) && Number(value.audio_end_ms) >= 0) {
+            if (speechEnds.size >= 1000) throw new RealtimeError('protocol')
+            speechEnds.set(value.item_id, Number(value.audio_end_ms))
+          }
+        }
+        else if (value.type === 'input_audio_buffer.committed') {
+          const itemId = value.item_id
+          committedAudioEndMs = typeof itemId === 'string' ? speechEnds.get(itemId) : undefined
+          if (typeof itemId === 'string') speechEnds.delete(itemId)
+        }
+        else if (value.type === 'response.created') {
+          const response = value.response
+          if (!row(response) || typeof response.id !== 'string' || !/^[\w-]{1,255}$/.test(response.id)) throw new RealtimeError('protocol')
+          responseActive = true
+          if (!seenUsage.has(response.id) && !pendingUsage.has(response.id)) {
+            if (pendingUsage.size >= 1000) throw new RealtimeError('protocol')
+            // A later turn may be committed while this response is streaming.
+            // Freeze this response's input boundary before accepting its receipt.
+            pendingUsage.set(response.id, response.conversation_id === null ? undefined : committedAudioEndMs)
+          }
+        }
         if (value.type === 'response.output_audio.delta') {
           if (!validAudio(value.delta) || typeof value.item_id !== 'string') throw new RealtimeError('protocol')
           options.onEvent({ type: 'audio', audio: value.delta, itemId: value.item_id })
@@ -196,7 +223,9 @@ export function connectRealtime(options: RealtimeOptions): Promise<RealtimeSessi
           if (typeof response.id === 'string' && row(response.usage) && !seenUsage.has(response.id)) {
             if (seenUsage.size >= 1000) throw new RealtimeError('protocol')
             seenUsage.add(response.id)
-            options.onEvent({ type: 'usage', responseId: response.id, usage: response.usage })
+            const inputAudioEndMs = pendingUsage.get(response.id)
+            pendingUsage.delete(response.id)
+            options.onEvent({ type: 'usage', responseId: response.id, usage: response.usage, ...(inputAudioEndMs === undefined ? {} : { inputAudioEndMs }) })
           }
         }
         else if (value.type === 'response.output_audio_transcript.delta' && typeof value.delta === 'string') {

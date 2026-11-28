@@ -57,6 +57,40 @@ test('only declared tools cross the transport and completed calls are deduplicat
   expect(await session.closed).toMatchObject({ reason: 'protocol' })
 })
 
+test('usage retains the input boundary at response creation and reports responses still missing usage', async () => {
+  const socket = new Socket()
+  const events: unknown[] = []
+  const pending = connectRealtime({ apiKey: 'key', model: 'model', instructions: 'Support', onEvent: event => events.push(event), socket: () => socket })
+  socket.open()
+  socket.server({ type: 'session.updated', session: { id: 'rt' } })
+  const session = await pending
+  try {
+    socket.server({ type: 'input_audio_buffer.speech_stopped', item_id: 'turn-1', audio_end_ms: 20 })
+    socket.server({ type: 'input_audio_buffer.committed', item_id: 'turn-1' })
+    socket.server({ type: 'response.created', response: { id: 'first' } })
+    socket.server({ type: 'input_audio_buffer.speech_stopped', item_id: 'turn-2', audio_end_ms: 40 })
+    socket.server({ type: 'input_audio_buffer.committed', item_id: 'turn-2' })
+    socket.server({ type: 'response.created', response: { id: 'second' } })
+    const first = { type: 'response.done', response: { id: 'first', usage: { total_tokens: 8 } } }
+    socket.server(first)
+    socket.server(first)
+    expect(events).toEqual([{ type: 'usage', responseId: 'first', usage: { total_tokens: 8 }, inputAudioEndMs: 20 }])
+    expect(session.pendingUsageResponses).toBe(1)
+    socket.server({ type: 'response.done', response: { id: 'second', usage: { total_tokens: 12 } } })
+    expect(events.at(-1)).toEqual({ type: 'usage', responseId: 'second', usage: { total_tokens: 12 }, inputAudioEndMs: 40 })
+    expect(session.pendingUsageResponses).toBe(0)
+
+    socket.server({ type: 'input_audio_buffer.committed', item_id: 'unknown-coverage' })
+    socket.server({ type: 'response.created', response: { id: 'no-boundary' } })
+    socket.server({ type: 'response.done', response: { id: 'no-boundary', usage: { total_tokens: 4 } } })
+    expect(events.at(-1)).toEqual({ type: 'usage', responseId: 'no-boundary', usage: { total_tokens: 4 } })
+    socket.server({ type: 'response.created', response: { id: 'no-usage' } })
+    socket.server({ type: 'response.done', response: { id: 'no-usage', usage: null } })
+    expect(session.pendingUsageResponses).toBe(1)
+  }
+  finally { session.close() }
+})
+
 test('backpressure and malformed audio are refused; provider errors stay safe', async () => {
   const socket = new Socket()
   const events: unknown[] = []
