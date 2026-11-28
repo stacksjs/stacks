@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { chat, configure, streamChatEvents } from '../src/drivers/anthropic'
+import { createAIClient } from '../src/client'
+import { anthropicJsonSchema, chat, configure, streamChatEvents } from '../src/drivers/anthropic'
 
 // stacksjs/stacks#3380. Structured output used to be a synthetic tool the
 // model was forced to call (`tool_choice: { type: 'tool' }`). Current Claude
@@ -80,6 +81,54 @@ describe('Anthropic structured output (stacksjs/stacks#3380)', () => {
     const before = JSON.stringify(userSchema)
     await chat([question], { responseFormat: { type: 'json_schema', json_schema: { name: 'user', schema: userSchema } } })
     expect(JSON.stringify(userSchema)).toBe(before)
+  })
+
+  test('keeps Anthropic-compatible array bounds and describes the original limits', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        emptyAllowed: { type: 'array', minItems: 0, items: { type: 'string' } },
+        channels: { type: 'array', minItems: 1, maxItems: 4, items: { type: 'string' } },
+        drafts: {
+          type: 'array',
+          minItems: 3,
+          maxItems: 3,
+          description: 'Campaign drafts.',
+          items: { type: 'array', minItems: 2, items: { type: 'string' } },
+        },
+      },
+    }
+    const original = structuredClone(schema)
+    expect(anthropicJsonSchema(schema)).toEqual({
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        emptyAllowed: { type: 'array', minItems: 0, items: { type: 'string' } },
+        channels: { type: 'array', minItems: 1, description: 'Return at most 4 items.', items: { type: 'string' } },
+        drafts: {
+          type: 'array',
+          minItems: 1,
+          description: 'Campaign drafts. Return exactly 3 items.',
+          items: { type: 'array', minItems: 1, description: 'Return at least 2 items.', items: { type: 'string' } },
+        },
+      },
+    })
+    expect(schema).toEqual(original)
+  })
+
+  test('generateObject still enforces the original array count after Anthropic responds', async () => {
+    const schema = {
+      type: 'object',
+      required: ['posts'],
+      properties: { posts: { type: 'array', minItems: 3, maxItems: 3, items: { type: 'string' } } },
+    }
+    const client = createAIClient({ default: 'anthropic', drivers: { anthropic: { apiKey: 'test-key' } } })
+    respond(reply('{"posts":["one"]}'))
+    await expect(client.generateObject([question], schema, { attempts: 1 })).rejects.toThrow('must contain at least 3 items')
+    expect(bodies[0]?.output_config).toEqual({ format: { type: 'json_schema', schema: anthropicJsonSchema(schema) } })
+
+    respond(reply('{"posts":["one","two","three","four"]}'))
+    await expect(client.generateObject([question], schema, { attempts: 1 })).rejects.toThrow('must contain at most 3 items')
   })
 
   test('with tools offered as well, the model still chooses for itself', async () => {
