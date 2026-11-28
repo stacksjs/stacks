@@ -5,6 +5,7 @@ import { auditPage, Cdp, click, duplicateRequests, findChrome, formatPageAudit, 
 
 /** A socket double: records what the session sends and lets the test speak for Chrome. */
 class FakeSocket extends EventTarget {
+  extensions = ''
   sent: any[] = []
   send(data: string) { this.sent.push(JSON.parse(data)) }
   close() { this.dispatchEvent(new Event('close')) }
@@ -15,8 +16,9 @@ class FakeSocket extends EventTarget {
   }
 }
 
-const session = (options = {}) => {
+const session = (options = {}, extensions = '') => {
   const socket = new FakeSocket()
+  socket.extensions = extensions
   return { socket, cdp: new Cdp(socket as unknown as WebSocket, options) }
 }
 
@@ -100,16 +102,17 @@ describe('Cdp', () => {
     expect(laterWait.cause).toBe(error.cause)
   })
 
-  test('a failed transport retains the underlying error when the socket closes', async () => {
-    const { socket, cdp } = session()
+  test('a failed transport retains the underlying error and negotiated extensions', async () => {
+    const { socket, cdp } = session({}, 'permessage-deflate')
     const pending = cdp.send('Page.navigate').catch(error => error as Error)
     const failure = Object.assign(new Error('Invalid compressed data'), { code: 'Z_DATA_ERROR' })
+    socket.extensions = ''
     socket.dispatchEvent(Object.assign(new Event('error'), { message: failure.message, error: failure }))
     socket.dispatchEvent(Object.assign(new Event('close'), { code: 1006, reason: '', wasClean: false }))
     const error = await pending
     expect(error.message).toContain('Invalid compressed data')
-    expect(error.message).toBe('Chrome closed the connection: {"origin":"remote","code":1006,"reason":"","wasClean":false,"transportError":{"message":"Invalid compressed data"}}')
-    expect(error.cause).toEqual({ origin: 'remote', code: 1006, reason: '', wasClean: false, transportError: { message: failure.message, error: failure } })
+    expect(error.message).toBe('Chrome closed the connection: {"origin":"remote","code":1006,"reason":"","wasClean":false,"transportError":{"message":"Invalid compressed data","extensions":"permessage-deflate"}}')
+    expect(error.cause).toEqual({ origin: 'remote', code: 1006, reason: '', wasClean: false, transportError: { message: failure.message, extensions: 'permessage-deflate', error: failure } })
     expect((error.cause as { transportError: { error: unknown } }).transportError.error).toBe(failure)
     const later = await cdp.send('Page.enable').catch(error => error as Error)
     expect(later.cause).toBe(error.cause)
@@ -132,6 +135,7 @@ describe('Cdp', () => {
       const cause = errors[0]!.cause
       for (const error of errors) {
         expect(error.message).toContain('transport failed')
+        expect(error.message).toContain('"extensions":""')
         expect(error.cause).toBe(cause)
       }
       expect((cause as { transportError: { error: unknown } }).transportError.error).toBe(failure)

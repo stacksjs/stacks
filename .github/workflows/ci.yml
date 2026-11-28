@@ -106,6 +106,16 @@ jobs:
       - name: Verify actual browser device scale
         working-directory: ${{ runner.temp }}
         run: bun "${{ github.workspace }}/tests/browser/browse-device-scale.ts"
+      - name: Report browser input runtime versions
+        run: |
+          bun -e '
+            import { findChrome } from "./storage/framework/core/testing/src/browser"
+            const chrome = findChrome()
+            if (!chrome) throw new Error("Native Chrome is required")
+            console.log("Bun", Bun.version)
+            const result = Bun.spawnSync([chrome, "--version"], { stdout: "inherit", stderr: "inherit" })
+            if (!result.success) process.exit(result.exitCode)
+          '
       - name: Verify trusted browser input delivery
         env:
           STACKS_BROWSER_TESTS: '1'

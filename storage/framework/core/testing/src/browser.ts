@@ -225,6 +225,7 @@ interface Pending {
 
 interface CdpTransportFailure {
   message: string
+  extensions: string
   error: unknown
 }
 
@@ -374,13 +375,15 @@ export class Cdp {
 
   constructor(private socket: WebSocket, options: CdpOptions = {}) {
     this.commandTimeoutMs = options.commandTimeoutMs ?? 30_000
+    // Keep the handshake result even if the socket clears it during a failure.
+    const extensions = socket.extensions
     // Fail what is waiting at once rather than after each command's timeout.
     socket.addEventListener('close', event => this.markClosed({
       origin: 'remote', code: event.code, reason: event.reason, wasClean: event.wasClean, transportError: this.socketFailure,
     }))
     socket.addEventListener('error', (event) => {
       const failure = event as ErrorEvent
-      this.socketFailure ??= { message: failure.message, error: failure.error }
+      this.socketFailure ??= { message: failure.message, extensions, error: failure.error }
     })
     socket.addEventListener('message', event => this.receive(String(event.data)))
   }
@@ -395,7 +398,9 @@ export class Cdp {
       // The transport's error is opaque and may be cyclic or run user code.
       detail = JSON.stringify({
         origin: cause.origin, code: cause.code, reason: cause.reason, wasClean: cause.wasClean,
-        transportError: cause.transportError ? { message: cause.transportError.message } : undefined,
+        transportError: cause.transportError
+          ? { message: cause.transportError.message, extensions: cause.transportError.extensions }
+          : undefined,
       })
     }
     return new Error(`Chrome closed the connection${detail ? `: ${detail}` : ''}`, { cause })
