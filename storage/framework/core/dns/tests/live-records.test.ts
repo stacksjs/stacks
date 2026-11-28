@@ -58,10 +58,25 @@ describe('dns:diff over public DNS', () => {
     ])
   })
 
-  test('a record that really is missing is still planned for creation', async () => {
-    const cfg = { txt: [{ name: '_dmarc', content: 'v=DMARC1; p=none', ttl: 'auto' }], cname: [{ name: 'docs', target: 'docs.example.net', ttl: 'auto' }] } as DnsConfig
+  test('missing TXT and CNAME records are planned for creation', async () => {
+    const cfg = {
+      txt: [{ name: '_dmarc.subdomain', content: 'v=DMARC1; p=none', ttl: 'auto' }],
+      cname: [{ name: 'docs', target: 'docs.example.net', ttl: 'auto' }],
+    } as DnsConfig
     const { plan } = await syncDnsConfig(zone, cfg, { dryRun: true, resolver: live })
-    expect(plan.create.map(record => `${record.type} ${record.name}`)).toEqual([`TXT _dmarc.${zone}`, `CNAME docs.${zone}`])
+    expect(plan.create.map(record => `${record.type} ${record.name}`)).toEqual([`TXT _dmarc.subdomain.${zone}`, `CNAME docs.${zone}`])
+  })
+
+  test('an existing DMARC policy with a different value is skipped', async () => {
+    const cfg = {
+      txt: [{ name: '_dmarc', content: 'v=DMARC1; p=none', ttl: 'auto' }],
+    } as DnsConfig
+    const { plan } = await syncDnsConfig(zone, cfg, { dryRun: true, resolver: live })
+    expect(plan.create).toEqual([])
+    expect(plan.skip).toEqual([{
+      record: expect.objectContaining({ name: `_dmarc.${zone}`, type: 'TXT', content: 'v=DMARC1; p=none' }),
+      reason: 'A conflicting record already exists at this name',
+    }])
   })
 
   test('a name outside the zone is not looked up', async () => {

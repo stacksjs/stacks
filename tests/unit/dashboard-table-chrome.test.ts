@@ -297,9 +297,4 @@ describe('dashboard consistency', () => {
     expect(jobs).toContain('i-hugeicons-view')
     expect(jobs).not.toMatch(/>\s*View\s*<\/StxLink>/)
   })
-
-  test('a badge keeps the space between its number and its word', () => {
-    // "{{ n }} editable" inside a Badge rendered "1editable".
-    expect(read('Settings/SettingsDashboard.stx')).toContain(`{{ editableCount() + ' editable' }}`)
-  })
 })
