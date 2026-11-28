@@ -1,6 +1,7 @@
 export { config as server } from './config'
 
 export * from './controllers/base'
+export * from './domain-route-scopes'
 export * from './imports'
 export * from './maintenance'
 export * from './proxy'

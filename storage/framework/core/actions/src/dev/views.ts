@@ -72,14 +72,15 @@ async function startDefaultServer() {
   const readyToken = await beginDevWorkerReadiness()
   await overridesReady
 
-  const { applyResponseHeaders, applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, isApiBoundRequest, loadRouteRedirects, proxyToBackend, resolveApiProxyRules, resolveViewSecurityRules, resolveRedirect, resolveRedirectRules, resolveRewrite, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
+  const { applyResponseHeaders, applyViewSecurityHeaders, assertScopedDomainRoutes, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, isApiBoundRequest, loadRouteRedirects, proxyToBackend, resolveApiProxyRules, resolveViewSecurityRules, resolveRedirect, resolveRedirectRules, resolveRewrite, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
   const { applyRequestLocale } = await import('@stacksjs/i18n')
   await injectGlobalAutoImports()
 
   // The stx dev server resolves like any other dependency. To develop against
   // a local STX build, `bun link` it into the project — bare resolution then
   // picks the link up the same other node module.
-  const { serve } = await import('bun-plugin-stx/serve')
+  const { serve, compileDomainRoutes } = await import('bun-plugin-stx/serve')
+  assertScopedDomainRoutes(config.server?.domains, compileDomainRoutes)
 
   const { site: siteConfig, i18n: i18nConfig } = await loadStxSiteConfig()
 
