@@ -355,6 +355,35 @@ function embeddedFileResponse(files: Record<string, string>, pathname: string): 
   return null
 }
 
+function acceptsGzip(header: string | null): boolean {
+  let gzip: number | undefined
+  let wildcard = 0
+  for (const offer of header?.split(',') ?? []) {
+    const [coding, weight] = offer.trim().toLowerCase().split(/\s*;\s*/, 2)
+    if (coding !== 'gzip' && coding !== '*') continue
+    const quality = weight === undefined ? 1 : Number(weight.match(/^q\s*=\s*([01](?:\.\d{0,3})?)$/)?.[1])
+    if (quality < 0 || quality > 1 || Number.isNaN(quality)) continue
+    if (coding === 'gzip') gzip = quality
+    else wildcard = quality
+  }
+  return (gzip ?? wildcard) > 0
+}
+
+/** Fingerprinted STX styles render identically across windows and launches. */
+async function staticViewResponse(request: Request, pathname: string, page: Response): Promise<Response> {
+  if (!/^\/_stx\/style\.[a-f0-9]{16}\.css$/.test(pathname) || page.headers.get('content-type') !== staticContentType(pathname))
+    return page
+
+  page.headers.set('cache-control', 'public, max-age=31536000, immutable')
+  page.headers.set('vary', 'Accept-Encoding')
+  if (!acceptsGzip(request.headers.get('accept-encoding')))
+    return page
+
+  page.headers.set('content-encoding', 'gzip')
+  const body = request.method === 'HEAD' ? null : Bun.gzipSync(await page.arrayBuffer())
+  return new Response(body, { headers: page.headers })
+}
+
 async function readSecondInstance(request: Request): Promise<SecondInstanceLaunch | null> {
   const body = await request.json().catch(() => null) as Partial<SecondInstanceLaunch> | null
   if (!body || !Array.isArray(body.args) || !body.args.every(arg => typeof arg === 'string')) return null
@@ -455,7 +484,7 @@ export async function startWebviewAgent(options: WebviewAgentOptions): Promise<W
     const page = request.method !== 'GET' && request.method !== 'HEAD'
       ? null
       : views.kind === 'static' ? staticFileResponse(views.dir, pathname) : views.kind === 'embedded' ? embeddedFileResponse(views.files, pathname) : null
-    return page ?? new Response('Not found', { status: 404 })
+    return page ? staticViewResponse(request, pathname, page) : new Response('Not found', { status: 404 })
   }
   const listen = (wanted: number) => Bun.serve({ hostname: '127.0.0.1', port: wanted, idleTimeout: 0, fetch: fetchHandler })
   const wanted = options.port ?? rememberedPort(options.portFile)

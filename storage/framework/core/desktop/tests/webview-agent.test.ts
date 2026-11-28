@@ -190,6 +190,44 @@ describe('request handling', () => {
     expect((await fetch(`${agent.origin}/`, { headers: { cookie } })).headers.get('cache-control')).toBe('no-store')
   })
 
+  for (const kind of ['static', 'embedded'] as const) {
+    test(`reuses and compresses content-hashed CSS in ${kind} views`, async () => {
+      const dir = views()
+      const pathname = '/_stx/style.0123456789abcdef.css'
+      const mutable = '/_stx/app.css'
+      const css = '.workspace{margin:0;padding:0}\n'.repeat(100)
+      mkdirSync(join(dir, '_stx'))
+      writeFileSync(join(dir, pathname), css)
+      writeFileSync(join(dir, mutable), css)
+      const agent = await started({
+        views: kind === 'static' ? { kind, dir } : { kind, files: {
+          '/index.html': join(dir, 'index.html'),
+          [pathname]: join(dir, pathname),
+          [mutable]: join(dir, mutable),
+        } },
+      })
+      const compressed = await fetch(agent.origin + pathname, { headers: { 'accept-encoding': 'br, gzip' }, decompress: false })
+      expect(compressed.status).toBe(200)
+      expect(compressed.headers.get('cache-control')).toBe('public, max-age=31536000, immutable')
+      expect(compressed.headers.get('vary')).toBe('Accept-Encoding')
+      expect(compressed.headers.get('content-encoding')).toBe('gzip')
+      expect(new TextDecoder().decode(Bun.gunzipSync(await compressed.arrayBuffer()))).toBe(css)
+
+      const identity = await fetch(agent.origin + pathname, { headers: { 'accept-encoding': 'gzip;q=0, *;q=1' } })
+      expect(identity.headers.get('content-encoding')).toBeNull()
+      expect(identity.headers.get('vary')).toBe('Accept-Encoding')
+      expect(await identity.text()).toBe(css)
+
+      const { cookie } = await openWindow(agent)
+      const head = await fetch(agent.origin + pathname, { method: 'HEAD', headers: { 'cookie': cookie, 'accept-encoding': 'gzip' } })
+      expect(head.status).toBe(200)
+      expect(head.headers.get('content-encoding')).toBe('gzip')
+      expect(await head.text()).toBe('')
+      expect((await fetch(agent.origin + mutable)).headers.get('cache-control')).toBeNull()
+      expect((await fetch(`${agent.origin}/`, { headers: { cookie } })).headers.get('cache-control')).toBe('no-store')
+    })
+  }
+
   // stacksjs/stacks#3368: a page asks for /assets/scripts/app.ts and gets the
   // JavaScript the build made from it. Typed by the request path, `.ts` went
   // out as application/octet-stream, and the web view refuses a module script

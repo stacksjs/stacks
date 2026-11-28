@@ -600,6 +600,8 @@ agent module in its `onRequest`). `buddy build:desktop` builds them to static pa
 and compiles every file into the agent, so a built app reads no loose view files. Component directories for the
 build come from the project's `stx.config.ts`; `agent.components` applies to the live server. A project that needs
 its own view build puts it in `app/Desktop/build-views.ts` and writes to `DESKTOP_VIEWS_OUT`.
+Compiled views can share content-hashed STX stylesheets across navigations. The loopback agent serves
+`/_stx/style.<hash>.css` with an immutable cache policy and negotiates gzip for those stylesheets.
 
 **Files the agent needs at runtime** are imported the Bun way, so they are compiled in on every platform:
 `import data from './data.json' with { type: 'file' }`.
