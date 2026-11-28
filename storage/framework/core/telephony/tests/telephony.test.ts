@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test'
+import type { Telephony } from '../src/index.ts'
 import { MemoryOperationJournal, TwilioTelephony } from '../src/index.ts'
 
 const accountSid = `AC${'a'.repeat(32)}`
@@ -29,7 +30,7 @@ test('uses Twilio REST forms for a US/Canada search, provision and outbound call
 test('lists only the requested call family using the provider parent filter', async () => {
   const childSid = `CA${'d'.repeat(32)}`
   const requests: { url: URL, method: string | undefined }[] = []
-  const provider = new TwilioTelephony({ accountSid, authToken: 'test-only', journal: new MemoryOperationJournal(), fetch: async (url, init) => {
+  const provider: Telephony = new TwilioTelephony({ accountSid, authToken: 'test-only', journal: new MemoryOperationJournal(), fetch: async (url, init) => {
     requests.push({ url: new URL(String(url)), method: init?.method })
     return Response.json({ calls: [{ ...call, sid: childSid, parent_call_sid: callSid }] })
   } })
