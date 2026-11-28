@@ -2260,6 +2260,7 @@ async function deployOverSshWithIdentity(tsCloudConfig: any, deployEnv: string, 
       shipsARelease,
       holdPublicTls,
       renewRpxCertificates: supportsPublicTlsHold ? cloudApi.renewRpxCertificates : undefined,
+      scopedCertificateHostnames: supportsPublicTlsHold && cloudApi.RPX_SCOPED_CERTIFICATE_ISSUANCE_VERSION === 1 ? cloudApi.gatewayHostnames : undefined,
       onlySite: (options).site || undefined,
       persistedAttachBox,
       provider,
@@ -2305,7 +2306,10 @@ export function resolveProjectTsCloudModule(projectRoot = process.cwd()): string
  * available for framework development; published apps otherwise use their
  * direct dependency before falling back to Buddy's declared dependency.
  */
-type TsCloudDeployApi = typeof import('@stacksjs/ts-cloud') & { RPX_PUBLIC_TLS_HOLD_VERSION?: number }
+type TsCloudDeployApi = typeof import('@stacksjs/ts-cloud') & {
+  RPX_PUBLIC_TLS_HOLD_VERSION?: number
+  RPX_SCOPED_CERTIFICATE_ISSUANCE_VERSION?: number
+}
 
 export async function loadTsCloudDeployApi(): Promise<TsCloudDeployApi> {
   const requested = process.env.TS_CLOUD_MODULE?.trim()
@@ -2684,6 +2688,7 @@ async function runSshDeploy(args: {
   deployAllComputeSites: any
   holdPublicTls: boolean
   renewRpxCertificates?: TsCloudDeployApi['renewRpxCertificates']
+  scopedCertificateHostnames?: TsCloudDeployApi['gatewayHostnames']
   ensureManagementDashboard?: (config: any, options: any) => any
   resolveSiteKind: (site: any) => DeploymentSiteKind
   shipsARelease: typeof import('@stacksjs/ts-cloud').shipsARelease
@@ -2697,7 +2702,8 @@ async function runSshDeploy(args: {
   /** Where to connect for the ssh provider; absent for hetzner, which resolves an IP. */
   sshTarget?: SshTarget
 }): Promise<void> {
-  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, holdPublicTls, renewRpxCertificates, ensureManagementDashboard, resolveSiteKind, shipsARelease, onlySite, persistedAttachBox, provider, sshTarget } = args
+  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, holdPublicTls, renewRpxCertificates, scopedCertificateHostnames, ensureManagementDashboard, resolveSiteKind, shipsARelease, onlySite, persistedAttachBox, provider, sshTarget } = args
+  const deferInitialCertificateIssuance = Boolean(onlySite && scopedCertificateHostnames && !holdPublicTls)
 
   const startTime = performance.now()
   const targetLabel = deployTargetLabel(provider, sshTarget?.profile)
@@ -2901,7 +2907,7 @@ async function runSshDeploy(args: {
     log.info(provider === 'ssh' ? `Adopting ${sshTarget?.host ?? 'host'} (preflight, then bootstrap if needed)...` : 'Provisioning Hetzner compute infrastructure...')
     // Provision with loopback-only site ports stripped so the firewall never
     // exposes them (#1950); the full config still drives deployAllComputeSites.
-    const outputs = await driver.provisionComputeInfrastructure({ config: scrubLoopbackSitePortsForFirewall(tsCloudConfig), environment, holdPublicTls })
+    const outputs = await driver.provisionComputeInfrastructure({ config: scrubLoopbackSitePortsForFirewall(tsCloudConfig), environment, holdPublicTls, deferInitialCertificateIssuance })
     ip = outputs.appPublicIp
     ipv6 = outputs.appPublicIpv6
     log.success(provider === 'ssh' ? 'Host ready' : 'Hetzner compute infrastructure ready')
@@ -3237,6 +3243,7 @@ async function runSshDeploy(args: {
   const ok = await deployAllComputeSites({
     config: deployConfig,
     holdPublicTls,
+    deferInitialCertificateIssuance,
     // Full deploys let ts-cloud reconcile the one-dashboard-per-server
     // invariant. A narrowed --site deployment must not add or remove dashboard
     // state because it intentionally touches one application site only.
@@ -3286,13 +3293,9 @@ async function runSshDeploy(args: {
   // per-domain via ts-cloud's factory (Porkbun/Route53/Cloudflare/GoDaddy from
   // env) and upsert A records → the box IP. Non-fatal: a DNS hiccup shouldn't
   // fail an otherwise-successful release.
-  let publishedDns: string[] = []
-  if (ok && dnsAllowed) {
-    // The same autoWww setting the gateway was built with, so the hostnames DNS
-    // publishes and the routes rpx serves stay one set.
-    const autoWww = tsCloudConfig.infrastructure?.compute?.proxy?.autoWww
-    publishedDns = await reconcileHetznerDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, ip, log, ipv6, autoWww)
-  }
+  const dnsSites = onlySite ? { [onlySite]: sites[onlySite] } : sites
+  const autoWww = tsCloudConfig.infrastructure?.compute?.proxy?.autoWww
+  const publishedDns = ok && dnsAllowed ? await reconcileHetznerDns(dnsSites, ip, log, ipv6, autoWww) : []
 
   // A brand-new subdomain does not resolve until the step above runs, and ACME
   // cannot issue for a name that does not resolve — so the certificate the
@@ -3303,7 +3306,9 @@ async function runSshDeploy(args: {
   // gateway first booted with a hold deliberately has no renewal service yet.
   if (ok && dnsAllowed && renewRpxCertificates) {
     try {
-      if (!await renewRpxCertificates({ config: deployConfig, rpxConfig, environment, driver, logger: deployLogger }))
+      const domains = onlySite ? scopedCertificateHostnames?.(deployConfig.sites, { autoWww }) : undefined
+      const issuance = { config: deployConfig, rpxConfig, environment, driver, logger: deployLogger, domains }
+      if (!await renewRpxCertificates(issuance))
         log.warn('Managed gateway certificates are still pending.')
     }
     catch (err) {
