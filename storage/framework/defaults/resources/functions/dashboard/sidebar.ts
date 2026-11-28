@@ -12,6 +12,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import { dashboardPageAvailable, readDashboardPageAvailability, unavailableDashboardPages } from './page-availability'
+import { dashboardProjectIdentity } from './project-switcher'
 
 type ModelCategory = 'userland' | 'data' | 'commerce' | 'content' | 'marketing' | 'system'
 
@@ -773,7 +774,12 @@ export function buildWebSidebarSections(): WebSidebarSection[] {
     {
       id: 'top',
       label: '',
-      items: [{ id: 'home', label: 'Home', icon: NAV_ICON_CLASSES.home!, iconColor: 'blue', href: '/' }],
+      items: [
+        { id: 'home', label: 'Home', icon: NAV_ICON_CLASSES.home!, iconColor: 'blue', href: '/' },
+        ...(dashboardProjectIdentity().enabled
+          ? [{ id: 'github-issues', label: 'GitHub Issues', icon: 'i-hugeicons-github', iconColor: 'blue', href: '/github-issues' }]
+          : []),
+      ],
     },
     ...sections.map(([key, label, items]) => ({
       id: key,
