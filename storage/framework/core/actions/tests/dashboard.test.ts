@@ -571,7 +571,7 @@ describe('dashboard-utils', () => {
       expect(commerce.items.length).toBe(11)
 
       const utilities = config.sections.find(s => s.id === 'utilities')!
-      expect(utilities.items.length).toBe(4)
+      expect(utilities.items.map(item => item.id)).toEqual(['buddy', 'access-tokens', 'settings'])
     })
   })
 

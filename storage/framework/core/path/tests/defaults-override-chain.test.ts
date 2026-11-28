@@ -30,7 +30,7 @@ const READ_BY_THE_FRAMEWORK = [
   'resources/components/Dashboard',
   'resources/functions',
   'resources/functions/dashboard/toggles.ts',
-  'resources/functions/dashboard/config-io.ts',
+  'resources/functions/dashboard/page-availability.ts',
   'resources/assets/images/app-icon.png',
   // Routes `bootstrap.ts` registers when a feature mounts.
   'routes',
