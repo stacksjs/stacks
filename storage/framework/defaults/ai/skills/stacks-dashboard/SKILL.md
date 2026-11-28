@@ -244,7 +244,7 @@ inject message HTML into the dashboard document.
 - `/packages`, `/dependencies` - package and dependency inspection
 
 ### Settings
-- `/settings` - Project Configuration. Command-Comma opens it in the Craft Settings window. Browse project TypeScript configs, edit literal fields, or switch to TypeScript for bindings, named exports, and structural changes. The dev dashboard reads files on demand and refuses to overwrite edits made on disk since opening a file.
+- `/settings` - Command-Comma opens General in the Craft Settings window. Project settings have dedicated panes under `/settings/config/:section` for database, security, networking, and other concerns. The sidebar shows sections with files and searches for individual configs. Unknown project files appear in Custom Configuration. Field forms organize related literal values and use adjacent source comments as help. TypeScript mode edits bindings, named exports, and structure. The dev dashboard loads one selected file at a time and refuses to overwrite newer disk edits.
 - `/settings/appearance` - dashboard appearance
 - `/settings/billing` - account billing
 - `/settings/mail` - mail configuration

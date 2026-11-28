@@ -193,13 +193,10 @@ function increment() { count.update(value => value + 1) }
     const configHeading = 'config/editor-probe.ts'
     await cdp.send('Page.navigate', { url: origin + '/settings' })
     await until(async () => {
-      expect(await cdp.evaluate("document.querySelector('h2')?.textContent")).toBe('config/app.ts')
+      expect(await cdp.evaluate("document.querySelector('[data-config-path]')?.textContent")).toBe('config/app.ts')
+      expect(await cdp.evaluate(`Boolean(document.querySelector('a[href="/settings/config/custom"]'))`)).toBe(true)
     })
-    await cdp.evaluate("document.querySelector('.dashboard-settings-config-trigger').click()")
-    await until(async () => {
-      expect(await cdp.evaluate(`[...document.querySelectorAll('#project-config-files button')].some(button => button.textContent.includes('editor-probe.ts'))`)).toBe(true)
-    })
-    await cdp.evaluate(`[...document.querySelectorAll('#project-config-files button')].find(button => button.textContent.includes('editor-probe.ts')).click()`)
+    await cdp.evaluate(`document.querySelector('a[href="/settings/config/custom"]').click()`)
     await until(async () => {
       expect(await cdp.evaluate("document.querySelector('.dashboard-config-field input')?.value")).toBe('3000')
     })
@@ -212,11 +209,19 @@ function increment() { count.update(value => value + 1) }
     await until(async () => {
       expect(await cdp.evaluate("document.querySelector('.dashboard-settings-pane button[type=submit]')?.disabled")).toBe(false)
     })
+    await cdp.evaluate(`document.querySelector('nav[aria-label="Settings"] a[href="/settings"]').click()`)
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('[data-config-path]')?.textContent")).toBe('config/app.ts')
+    })
+    await cdp.evaluate(`document.querySelector('a[href="/settings/config/custom"]').click()`)
+    await until(async () => {
+      expect(await cdp.evaluate("document.querySelector('.dashboard-config-field input')?.value")).toBe('3001')
+    })
     await cdp.evaluate("document.querySelector('.dashboard-settings-pane button[type=submit]').click()")
     await until(async () => {
       expect(await readFile(configFile, 'utf8')).toBe('export default { nested: { port: 3001 } }')
       expect(await runningDashboardInstance(port)).not.toBe(beforeConfigSave)
-      expect(await cdp.evaluate("document.querySelector('h2')?.textContent")).toBe(configHeading)
+      expect(await cdp.evaluate("document.querySelector('[data-config-path]')?.textContent")).toBe(configHeading)
       expect(await cdp.evaluate("document.querySelector('.dashboard-config-field input')?.value")).toBe('3001')
       expect(await cdp.evaluate("document.querySelector('.dashboard-settings-pane [role=status]')?.textContent")).toContain('Saved config/editor-probe.ts')
     }, 35_000)

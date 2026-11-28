@@ -2,13 +2,18 @@ import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { configFileLabel, configLabel, projectConfigHref, projectConfigSections, sectionForConfig } from '../../../defaults/resources/functions/dashboard/project-config-sections'
 import { dashboardConfigRoutes, listConfigFiles, rewriteConfigFields } from '../src/dev/dashboard-config'
 
 const source = `throw new Error('Configuration inspection must never evaluate this module')
 const settings = {
   // Preserve this comment and the original environment binding.
   app: { name: 'Stacks', host: env.APP_HOST ?? 'localhost' },
-  replicas: [{ port: 3000, enabled: true }],
+  replicas: [{
+    // Allow writes to this replica.
+    enabled: true,
+    port: 3000,
+  }],
   'display.name': 'Original',
   port: 1, 'port': 40, port: env.PORT,
 } satisfies Config
@@ -59,8 +64,24 @@ describe('dashboard project configuration', () => {
     const document = await response.json()
     expect(document.source).toBe(source)
     expect(document.fields.map((field: { key: string }) => field.key)).toEqual([
-      'app.name', 'replicas[0].port', 'replicas[0].enabled', '["display.name"]', 'tls.enabled', 'tls.offset',
+      'app.name', 'replicas[0].enabled', 'replicas[0].port', '["display.name"]', 'tls.enabled', 'tls.offset',
     ])
+    expect(document.fields[1]).toMatchObject({
+      path: ['replicas', 0, 'enabled'],
+      description: 'Allow writes to this replica.',
+    })
+  })
+
+  it('assigns known files exactly once and keeps project-specific files addressable', () => {
+    const known = projectConfigSections.flatMap(section => [...section.files])
+    expect(new Set(known).size).toBe(known.length)
+    expect(sectionForConfig('database')).toBe('data')
+    expect(sectionForConfig('env')).toBe('environment-schema')
+    expect(sectionForConfig('hosting/My region')).toBe('custom')
+    expect(projectConfigHref('custom', 'hosting/My region')).toBe('/settings/config/custom?file=hosting%2FMy%20region')
+    expect(configFileLabel('hosting/My region')).toBe('Hosting › My Region')
+    expect(configLabel('smtpHostURL')).toBe('SMTP Host URL')
+    expect(configLabel('constructor')).toBe('Constructor')
   })
 
   it('changes literal ranges while preserving comments, escapes, expressions and other exports', () => {
@@ -72,7 +93,7 @@ describe('dashboard project configuration', () => {
     ])
     expect(rewritten).toContain("host: env.APP_HOST ?? 'localhost'")
     expect(rewritten).toContain('Preserve this comment')
-    expect(rewritten).toContain('replicas: [{ port: 3002, enabled: true }]')
+    expect(rewritten).toContain('port: 3002,')
     expect(rewritten).toContain('export const tls = { enabled: false, offset: -14 }')
     writeFileSync(file, rewritten)
     return request('/api/config/read?name=app').then(async (response) => {

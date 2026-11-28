@@ -768,7 +768,9 @@ html:has([data-dashboard-settings-content]) .dashboard-modal-layer {
 
 .dashboard-settings-sidebar {
   padding: 0 11px 14px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   background: var(--stx-mac-sidebar);
   border-inline-end: 1px solid var(--stx-mac-separator);
 }
@@ -779,6 +781,7 @@ html:has([data-dashboard-settings-content]) .dashboard-modal-layer {
 
 .dashboard-settings-sidebar-chrome {
   position: relative;
+  flex: none;
   min-height: 50px;
   margin-inline: -11px;
 }
@@ -803,6 +806,43 @@ html:has([data-dashboard-settings-content]) .dashboard-modal-layer {
 }
 
 [data-settings-native="true"] .dashboard-settings-back { display: none; }
+
+.dashboard-settings-mobile-menu {
+  display: none;
+}
+
+.dashboard-settings-navigation {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.dashboard-settings-nav {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: 2px;
+}
+
+.dashboard-settings-nav-group + .dashboard-settings-nav-group {
+  margin-top: 14px;
+}
+
+.dashboard-settings-nav-group > h2 {
+  margin: 0 8px 4px;
+  color: var(--stx-mac-ink-secondary);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.dashboard-settings-result-detail {
+  display: block;
+  color: var(--stx-mac-ink-secondary);
+  font-size: 11px;
+}
 
 .dashboard-settings-search {
   display: flex;
@@ -995,40 +1035,107 @@ html:has([data-dashboard-settings-content]) .dashboard-modal-layer {
   white-space: normal;
 }
 
-.dashboard-settings-config-trigger {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: var(--stx-mac-row-height);
-  padding-inline: var(--stx-mac-row-inset);
-  border-radius: var(--stx-mac-card-radius);
-  cursor: pointer;
-}
-
-.dashboard-settings-config-trigger:hover { background: var(--stx-mac-hover); }
-
-.dashboard-settings-config-selection {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+.dashboard-config-intro {
+  margin: 0;
   color: var(--stx-mac-ink-secondary);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
-.dashboard-settings-config-selection > span:last-child {
-  width: .8em;
-  height: .8em;
+.dashboard-config-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
-.dashboard-settings-config-trigger[aria-expanded="true"] .dashboard-settings-config-selection > span:last-child {
-  transform: rotate(180deg);
+.dashboard-config-file {
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 1px solid var(--stx-mac-separator);
+  border-radius: 7px;
+  background: var(--stx-mac-card);
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  font-weight: 550;
+  text-align: start;
 }
 
-.dashboard-settings-config-picker [aria-pressed="true"],
+.dashboard-config-file:hover { background: var(--stx-mac-hover); }
+
+.dashboard-config-file[aria-pressed="true"],
 .dashboard-config-mode[aria-pressed="true"] {
+  border-color: transparent;
   background: var(--dashboard-accent-fill);
   color: var(--dashboard-accent-text);
+}
+
+.dashboard-config-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+  padding: 12px 14px;
+}
+
+.dashboard-config-header h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.dashboard-config-path {
+  margin: 2px 0 0;
+  color: var(--stx-mac-ink-secondary);
+  font: 11px ui-monospace, monospace;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-config-mode-group {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--stx-mac-well);
+}
+
+.dashboard-config-field-tools {
+  display: grid;
+  gap: 7px;
+  padding: 0 14px 12px;
+}
+
+.dashboard-config-subheading {
+  margin: 0;
+  padding: 8px 14px 4px;
+  border-block-start: 1px solid var(--stx-mac-separator);
+  color: var(--stx-mac-ink-secondary);
+  font-size: 11px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-config-subheading + .dashboard-config-field {
+  border-block-start: 0;
+}
+
+.dashboard-config-field-label,
+.dashboard-config-field-description {
+  overflow-wrap: anywhere;
+}
+
+.dashboard-config-field-label {
+  font-size: 13px;
+  font-weight: 550;
+}
+
+.dashboard-config-field-description {
+  margin: 2px 0 0;
+  color: var(--stx-mac-ink-secondary);
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .dashboard-config-mode {
@@ -1041,7 +1148,8 @@ html:has([data-dashboard-settings-content]) .dashboard-modal-layer {
 .dashboard-config-mode[aria-pressed="false"]:hover { background: var(--stx-mac-hover); }
 
 .dashboard-config-mode:focus-visible,
-.dashboard-settings-config-picker button:focus-visible,
+.dashboard-config-file:focus-visible,
+.dashboard-settings-mobile-menu:focus-visible,
 .dashboard-config-input:focus-visible {
   outline: 2px solid var(--stx-mac-accent);
   outline-offset: 2px;
@@ -1109,6 +1217,14 @@ html .dashboard-settings [data-dashboard-button="secondary"]:hover {
   background: var(--stx-mac-sidebar);
 }
 
+@media (min-width: 591px) {
+  html:has([data-dashboard-settings-content]),
+  html:has([data-dashboard-settings-content]) body {
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
 @media (max-width: 590px) {
   .dashboard-settings {
     display: block;
@@ -1122,11 +1238,24 @@ html .dashboard-settings [data-dashboard-button="secondary"]:hover {
     border-block-end: 1px solid var(--stx-mac-separator);
   }
 
-  .dashboard-settings-sidebar [data-settings-group] {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 3px;
+  .dashboard-settings-mobile-menu {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    border-radius: 7px;
+    background: var(--stx-mac-well);
+    font-size: 13px;
+    font-weight: 600;
   }
+
+  .dashboard-settings-navigation {
+    margin-top: 8px;
+  }
+
+  .dashboard-settings-navigation[data-menu-open="false"] { display: none; }
+  .dashboard-settings-nav { max-height: 48dvh; }
 
   .dashboard-settings-pane { overflow: visible; }
 }

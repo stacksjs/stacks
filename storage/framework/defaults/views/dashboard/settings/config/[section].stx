@@ -1,0 +1,23 @@
+@extends('layouts/settings')
+
+<script server>
+import { projectConfigSection } from '@stacksjs/defaults/resources/functions/dashboard/project-config-sections'
+
+const section = projectConfigSection(typeof params === 'undefined' ? '' : params.section)
+export const configPane = section?.id ?? 'general'
+export const knownConfigPane = Boolean(section && section.id !== 'general')
+if (!knownConfigPane)
+  setResponseStatus(404)
+</script>
+
+@section('content')
+@title('Dashboard - Settings')
+
+<DashboardSettingsFrame :pane="configPane">
+  @if(knownConfigPane)
+    <SettingsDashboard :section="configPane" />
+  @else
+    <p class="p-4 text-sm">This configuration section could not be found.</p>
+  @endif
+</DashboardSettingsFrame>
+@endsection

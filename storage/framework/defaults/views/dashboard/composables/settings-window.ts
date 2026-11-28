@@ -1,3 +1,4 @@
+import { projectConfigSection } from '@stacksjs/defaults/resources/functions/dashboard/project-config-sections'
 import { nativeWindow } from '@stacksjs/desktop/browser'
 
 const windowName = 'stacks-dashboard-settings'
@@ -6,7 +7,12 @@ const settingsPaths = ['/settings', '/settings/appearance', '/settings/mail', '/
 let browserWindow: Window | null = null
 
 export function isDashboardSettingsPath(path: string): boolean {
-  return settingsPaths.includes(path.replace(/\/+$/, ''))
+  const normalized = path.replace(/\/+$/, '')
+  if (settingsPaths.includes(normalized))
+    return true
+  const prefix = '/settings/config/'
+  const section = normalized.startsWith(prefix) && projectConfigSection(normalized.slice(prefix.length))
+  return Boolean(section && section.id !== 'general')
 }
 
 /** Return false when the link should continue through ordinary navigation. */
@@ -37,7 +43,7 @@ export function openDashboardSettings(href = '/settings'): boolean {
     }).then(() => {
       // Craft focuses an existing named window and leaves its webview in place.
       // A pane-specific link can request a change from that existing webview.
-      if (url.pathname !== '/settings' && typeof BroadcastChannel !== 'undefined') {
+      if ((url.pathname !== '/settings' || url.search) && typeof BroadcastChannel !== 'undefined') {
         const channel = new BroadcastChannel(paneChannel)
         channel.postMessage(url.pathname + url.search + url.hash)
         channel.close()
@@ -51,7 +57,7 @@ export function openDashboardSettings(href = '/settings'): boolean {
     if (!browserWindow)
       return false
   }
-  else if (url.pathname !== '/settings') {
+  else if (url.pathname !== '/settings' || url.search) {
     // An authentication redirect can temporarily take the popup off-origin.
     // Its URL is writeable even when its current value cannot be read.
     let current: string | undefined

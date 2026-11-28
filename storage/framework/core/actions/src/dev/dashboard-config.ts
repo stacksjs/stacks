@@ -12,6 +12,8 @@ interface ConfigField {
   key: string
   value: Scalar
   type: 'string' | 'number' | 'boolean' | 'null'
+  path: Array<string | number>
+  description?: string
 }
 
 interface ConfigEdit extends ConfigField {
@@ -90,6 +92,28 @@ function statements(source: string): Statement[] {
   }
 }
 
+function fieldDescription(node: Pick<Expression, 'leadingComments' | 'loc'>): string | undefined {
+  const comment = node.leadingComments?.at(-1)
+  if (!comment?.loc || !node.loc || node.loc.start.line - comment.loc.end.line !== 1
+    || comment.loc.start.column !== node.loc.start.column)
+    return
+  const paragraph = comment.value.split(/\r?\n/)
+    .map(line => line.trim().replace(/^\*+\s*/, ''))
+    .join('\n').trim().split(/\n(?:\s*\n|@)/, 1)[0]?.replace(/\s+/g, ' ')
+  if (paragraph && paragraph.length <= 240 && !/^[@`#]/.test(paragraph))
+    return paragraph
+}
+
+function configFieldKey(path: Array<string | number>): string {
+  return path.reduce<string>((key, part) => {
+    if (typeof part === 'number')
+      return `${key}[${part}]`
+    if (/^[A-Za-z_$][\w$]*$/.test(part))
+      return key ? `${key}.${part}` : part
+    return `${key}[${JSON.stringify(part)}]`
+  }, '') || 'default'
+}
+
 function configEdits(source: string): ConfigEdit[] {
   const body = statements(source)
   const bindings = new Map<string, Expression>()
@@ -105,9 +129,9 @@ function configEdits(source: string): ConfigEdit[] {
 
   const edits: ConfigEdit[] = []
   const ranges = new Set<number>()
-  function walk(node: Expression, key: string, root = false): void {
+  function walk(node: Expression, path: Array<string | number>, description?: string, root = false): void {
     if (node.type === 'TSSatisfiesExpression' || node.type === 'TSAsExpression' || node.type === 'TSTypeAssertion' || node.type === 'TSNonNullExpression') {
-      walk(node.expression, key, root)
+      walk(node.expression, path, description, root)
       return
     }
 
@@ -128,8 +152,7 @@ function configEdits(source: string): ConfigEdit[] {
         seen.add(name)
         if (property.type !== 'ObjectProperty' || property.shorthand || name === '__proto__')
           continue
-        const path = /^[A-Za-z_$][\w$]*$/.test(name) ? (key ? `${key}.${name}` : name) : `${key}[${JSON.stringify(name)}]`
-        walk(property.value as Expression, path)
+        walk(property.value as Expression, [...path, name], fieldDescription(property))
       }
       return
     }
@@ -137,7 +160,7 @@ function configEdits(source: string): ConfigEdit[] {
     if (node.type === 'ArrayExpression') {
       node.elements.forEach((element, index) => {
         if (element && element.type !== 'SpreadElement')
-          walk(element, `${key}[${index}]`)
+          walk(element, [...path, index], fieldDescription(element))
       })
       return
     }
@@ -145,7 +168,7 @@ function configEdits(source: string): ConfigEdit[] {
     if (node.type === 'Identifier' && root) {
       const bound = bindings.get(node.name)
       if (bound)
-        walk(bound, key)
+        walk(bound, path, description)
       return
     }
 
@@ -161,12 +184,12 @@ function configEdits(source: string): ConfigEdit[] {
     if (node.start == null || node.end == null || ranges.has(node.start) || (typeof value === 'number' && !Number.isFinite(value)))
       return
     ranges.add(node.start)
-    edits.push({ key: key || 'default', value, type: value === null ? 'null' : typeof value as ConfigField['type'], start: node.start, end: node.end })
+    edits.push({ key: configFieldKey(path), value, type: value === null ? 'null' : typeof value as ConfigField['type'], path, description, start: node.start, end: node.end })
   }
 
   for (const statement of body) {
     if (statement.type === 'ExportDefaultDeclaration')
-      walk(statement.declaration as Expression, '', true)
+      walk(statement.declaration as Expression, [], undefined, true)
   }
   for (const statement of body) {
     if (statement.type !== 'ExportNamedDeclaration' || statement.source)
@@ -174,7 +197,7 @@ function configEdits(source: string): ConfigEdit[] {
     if (statement.declaration?.type === 'VariableDeclaration') {
       for (const { id, init } of statement.declaration.declarations) {
         if (id.type === 'Identifier' && init)
-          walk(init, id.name)
+          walk(init, [id.name], fieldDescription(statement))
       }
     }
     for (const specifier of statement.specifiers) {
@@ -184,7 +207,7 @@ function configEdits(source: string): ConfigEdit[] {
       const bound = bindings.get(localName)
       const name = specifier.exported.type === 'Identifier' ? specifier.exported.name : specifier.exported.value
       if (bound)
-        walk(bound, name === 'default' ? '' : name)
+        walk(bound, name === 'default' ? [] : [name])
     }
   }
 
@@ -226,7 +249,7 @@ function document(source: string, allowInvalid = false) {
   let fields: ConfigField[] = []
   let diagnostic: string | undefined
   try {
-    fields = configEdits(source).map(({ key, value, type }) => ({ key, value, type }))
+    fields = configEdits(source).map(({ key, value, type, path, description }) => ({ key, value, type, path, description }))
   }
   catch (error) {
     if (!allowInvalid || !(error instanceof ConfigError))

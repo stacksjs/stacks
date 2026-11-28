@@ -1,52 +1,104 @@
 <script server>
+import type { ProjectConfigSection } from '@stacksjs/defaults/resources/functions/dashboard/project-config-sections'
+import { projectConfigSection } from '@stacksjs/defaults/resources/functions/dashboard/project-config-sections'
 import { dashboardPageVisibility } from '@stacksjs/defaults/resources/functions/dashboard/page-availability'
 
-const { pane } = defineProps<{ pane: 'general' | 'environment' | 'appearance' | 'mail' | 'billing' | 'software-update' }>()
+type BuiltInPane = 'environment' | 'appearance' | 'mail' | 'billing' | 'software-update'
+const { pane } = defineProps<{ pane: ProjectConfigSection | BuiltInPane }>()
 
 const isDashboardPageAvailable = dashboardPageVisibility()
-export const panes = ([
-  { id: 'general', label: 'Project Configuration', href: '/settings', icon: 'i-f7-gear-alt-fill', tone: 'grey', description: '', keywords: 'config project environment' },
-  { id: 'environment', label: 'Environment', href: '/settings/environment', icon: 'i-f7-gear', tone: 'grey', description: '', keywords: 'env dotenv secrets variables bindings' },
-  { id: 'appearance', label: 'Appearance', href: '/settings/appearance', icon: 'i-f7-circle-lefthalf-fill', tone: 'purple', description: 'Choose how the dashboard looks and which sections are shown in the sidebar.', keywords: 'theme color mode dark light sidebar display' },
-  { id: 'software-update', label: 'Software Update', href: '/settings/software-update', icon: 'i-f7-arrow-down-circle-fill', tone: 'blue', description: 'Check for Stacks releases and update your projects through Buddy.', keywords: 'upgrade framework version install dependencies' },
-  { id: 'mail', label: 'Mail', href: '/settings/mail', icon: 'i-f7-envelope-fill', tone: 'blue', description: 'Set the sender, delivery driver, and credentials for outgoing mail.', keywords: 'email smtp sender transport' },
-  { id: 'billing', label: 'Billing', href: '/settings/billing', icon: 'i-f7-creditcard-fill', tone: 'green', description: 'View your subscription, payment methods, and transactions.', keywords: 'subscription payment transaction invoice' },
+export const builtInPanes = ([
+  { id: 'environment', label: 'Variables', href: '/settings/environment', icon: 'i-f7-gear', tone: 'grey', description: '', group: 'environment', keywords: 'environment env dotenv secrets variables bindings' },
+  { id: 'appearance', label: 'Appearance', href: '/settings/appearance', icon: 'i-f7-circle-lefthalf-fill', tone: 'purple', description: 'Choose how the dashboard looks and which sections are shown in the sidebar.', group: 'dashboard', keywords: 'theme color mode dark light sidebar display' },
+  { id: 'software-update', label: 'Software Update', href: '/settings/software-update', icon: 'i-f7-arrow-down-circle-fill', tone: 'blue', description: 'Check for Stacks releases and update your projects through Buddy.', group: 'dashboard', keywords: 'upgrade framework version install dependencies' },
+  { id: 'mail', label: 'Mail Delivery', href: '/settings/mail', icon: 'i-f7-paperplane-fill', tone: 'blue', description: 'Set the sender, delivery driver, and credentials for outgoing mail.', group: 'dashboard', keywords: 'email smtp sender transport' },
+  { id: 'billing', label: 'Billing', href: '/settings/billing', icon: 'i-f7-creditcard-fill', tone: 'green', description: 'View your subscription, payment methods, and transactions.', group: 'dashboard', keywords: 'subscription payment transaction invoice' },
 ] as const).filter(item => isDashboardPageAvailable(item.href))
-export const activePane = panes.find(item => item.id === pane) ?? panes[0]
-defineClientPayload({ panes, activePane })
+export const activePane = builtInPanes.find(item => item.id === pane)
+export const activeId = pane
+export const activeLabel = pane === 'environment' ? 'Environment Variables' : activePane?.label ?? projectConfigSection(pane)?.label ?? 'Settings'
+defineClientPayload({ builtInPanes, activeId, activeLabel })
 </script>
 
 <script client>
 import { dragSettingsWindow, isNativeSettingsWindow, returnToDashboard } from '@stacksjs/defaults/views/dashboard/composables/settings-window'
+import { projectConfigSections, sectionForConfig, projectConfigHref } from '@stacksjs/defaults/resources/functions/dashboard/project-config-sections'
+import { hasUnsavedProjectConfig, useProjectConfigInventory } from '@stacksjs/defaults/views/dashboard/composables/useProjectConfigEditor'
 import { useSettingsWindow } from '@stacksjs/defaults/views/dashboard/composables/useSettingsWindow'
 
 const settingsWindow = useSettingsWindow
+const inventory = useProjectConfigInventory
 const query = settingsWindow.query
 const search = useRef<HTMLInputElement>('settingsSearch')
+const browserNavOpen = state(false)
 const native = state(isNativeSettingsWindow())
-const entries = {{ panes }}
-const selectedHref = {{ activePane.href }}
-const matching = derived(() => {
-  const searchText = query().trim().toLowerCase()
-  return entries.filter(({ label, keywords }) => `${label.toLowerCase()} ${keywords}`.includes(searchText))
+const builtIn = {{ builtInPanes }}
+const selectedPane = {{ activeId }}
+
+const projectEntries = derived(() => {
+  const populated = new Set(inventory.files().map(file => sectionForConfig(file.name)))
+  return projectConfigSections
+    .filter(section => section.id === 'general' || section.id === selectedPane || populated.has(section.id))
+    .map(section => ({ ...section, href: projectConfigHref(section.id), detail: '', keywords: section.description }))
 })
 
-function matches(id: string): boolean {
-  return matching().some(item => item.id === id)
+const groups = derived(() => [
+  { id: 'project', label: 'Project', items: projectEntries().filter(section => section.id !== 'environment-schema') },
+  { id: 'environment', label: 'Environment', items: [...builtIn.filter(item => item.group === 'environment'), ...projectEntries().filter(section => section.id === 'environment-schema')] },
+  { id: 'dashboard', label: 'Dashboard', items: builtIn.filter(item => item.group === 'dashboard') },
+].map(group => ({ ...group, items: group.items.map(item => ({ detail: '', ...item })) })))
+
+const searchResults = derived(() => {
+  const terms = query().trim().toLowerCase().split(/\s+/).filter(Boolean)
+  if (!terms.length)
+    return []
+  const sections = projectEntries()
+  const files = inventory.files().flatMap((file) => {
+    const section = sections.find(item => item.id === sectionForConfig(file.name))
+    if (!section)
+      return []
+    return [{ id: file.name, label: file.title, href: projectConfigHref(section.id, file.name), detail: section.label, icon: 'i-f7-doc-text', tone: section.tone, keywords: `${file.name}.ts` }]
+  })
+  return [...groups().flatMap(group => group.items), ...files]
+    .filter(item => terms.every(term => `${item.label} ${item.keywords}`.toLowerCase().includes(term)))
+    .sort((left, right) => Number(right.label.toLowerCase() === terms.join(' ')) - Number(left.label.toLowerCase() === terms.join(' ')))
+})
+
+function navigateSearchResult(href: string): void {
+  query.set('')
+  browserNavOpen.set(false)
+  navigate(href)
 }
 
 function openSearchResult(): void {
-  const [result, another] = matching()
-  if (result && !another && result.href !== selectedHref)
-    navigate(result.href)
+  const [first] = searchResults()
+  if (first)
+    navigateSearchResult(first.href)
 }
 
+function activateSearchLink(event: MouseEvent, href: string): void {
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+    return
+  event.preventDefault()
+  navigateSearchResult(href)
+}
+
+onMount(() => { void inventory.load() })
 useEventListener('craft:ready', () => native.set(isNativeSettingsWindow()))
+useEventListener('beforeunload', (event: BeforeUnloadEvent) => {
+  if (hasUnsavedProjectConfig()) {
+    event.preventDefault()
+    event.returnValue = ''
+  }
+})
 useEventListener('keydown', (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'f') {
     event.preventDefault()
-    search.current?.focus()
-    search.current?.select()
+    browserNavOpen.set(true)
+    queueMicrotask(() => {
+      search.current?.focus()
+      search.current?.select()
+    })
   }
 })
 </script>
@@ -60,24 +112,43 @@ useEventListener('keydown', (event) => {
         Dashboard
       </a>
     </div>
-    <form class="dashboard-settings-search" role="search" @submit.prevent="openSearchResult()">
-      <span class="i-f7-search" aria-hidden="true"></span>
-      <input x-model="query" ref="settingsSearch" type="search" placeholder="Search" aria-label="Search settings" autocomplete="off">
-    </form>
-    <nav aria-label="Settings">
-      <SettingsSidebarGroup>
-        @foreach(panes as item)
-          <a href="{{ item.href }}" data-stx-link class="dashboard-settings-nav-item" :hidden="!matches('{{ item.id }}')"
-            @if(item.id === activePane.id)aria-current="page"@endif>
-            <span class="dashboard-settings-tile" data-tone="{{ item.tone }}" aria-hidden="true">
-              <span class="{{ item.icon }}"></span>
+    <button type="button" class="dashboard-settings-mobile-menu" aria-controls="settings-navigation"
+      :aria-expanded="String(browserNavOpen())" @click="browserNavOpen.update(open => !open)">
+      Browse settings
+      <span class="i-f7-chevron-down" aria-hidden="true"></span>
+    </button>
+    <div id="settings-navigation" class="dashboard-settings-navigation" :data-menu-open="String(browserNavOpen())">
+      <form class="dashboard-settings-search" role="search" @submit.prevent="openSearchResult()">
+        <span class="i-f7-search" aria-hidden="true"></span>
+        <input x-model="query" ref="settingsSearch" type="search" placeholder="Search settings" aria-label="Search settings" autocomplete="off">
+      </form>
+      <nav aria-label="Settings" class="dashboard-settings-nav" data-stx-scroll="settings-navigation">
+        <div :if="!query().trim()">
+          <section :for="group in groups()" class="dashboard-settings-nav-group">
+            <h2 :text="group.label"></h2>
+            <a :for="item in group.items" :href="item.href" data-stx-link class="dashboard-settings-nav-item"
+              :aria-current="item.id === selectedPane ? 'page' : null">
+              <span class="dashboard-settings-tile" :data-tone="item.tone" aria-hidden="true">
+                <span :class="item.icon"></span>
+              </span>
+              <span :text="item.label"></span>
+            </a>
+          </section>
+        </div>
+        <div :if="query().trim()" aria-label="Search results">
+          <a :for="item in searchResults()" :href="item.href" class="dashboard-settings-nav-item" @click="activateSearchLink($event, item.href)">
+            <span class="dashboard-settings-tile" :data-tone="item.tone" aria-hidden="true">
+              <span :class="item.icon"></span>
             </span>
-            {{ item.label }}
+            <span class="min-w-0">
+              <span class="block" :text="item.label"></span>
+              <span :if="item.detail" class="dashboard-settings-result-detail" :text="item.detail"></span>
+            </span>
           </a>
-        @endforeach
-      </SettingsSidebarGroup>
-      <p :if="matching().length === 0" class="dashboard-settings-search-empty" role="status">No matching settings</p>
-    </nav>
+          <p :if="searchResults().length === 0" class="dashboard-settings-search-empty" role="status">No matching settings</p>
+        </div>
+      </nav>
+    </div>
   </aside>
 
   <div class="dashboard-settings-detail">
@@ -90,11 +161,11 @@ useEventListener('keydown', (event) => {
           <span class="i-f7-chevron-right" aria-hidden="true"></span>
         </button>
       </div>
-      <h1>{{ activePane.label }}</h1>
+      <h1>{{ activeLabel }}</h1>
     </header>
     <div class="dashboard-settings-pane" data-stx-scroll="settings">
       <div class="dashboard-settings-inner">
-        @if(activePane.description)
+        @if(activePane?.description)
           <SettingsPaneHeader :title="activePane.label" :description="activePane.description" :icon="activePane.icon" :tone="activePane.tone" />
         @endif
         <slot />

@@ -1,63 +1,77 @@
+<script server>
+import type { ProjectConfigSection } from '@stacksjs/defaults/resources/functions/dashboard/project-config-sections'
+
+const { section } = defineProps<{ section?: ProjectConfigSection }>()
+export const configSectionId = section ?? 'general'
+defineClientPayload({ configSectionId })
+</script>
+
 <script client>
 import type { ConfigField, EditorMode } from '@stacksjs/defaults/views/dashboard/composables/useProjectConfigEditor'
-import { useProjectConfigEditor } from '@stacksjs/defaults/views/dashboard/composables/useProjectConfigEditor'
+import { configLabel, projectConfigSection } from '@stacksjs/defaults/resources/functions/dashboard/project-config-sections'
+import { projectConfigEditor, rememberProjectConfigFile, requestedProjectConfigFile } from '@stacksjs/defaults/views/dashboard/composables/useProjectConfigEditor'
 
-const { files, current, drafts, sourceDraft, selected, mode, setMode, loading, saving, message, error, isDirty, setDocument, loadFiles, selectFile, save, initialize } = useProjectConfigEditor
+const configSection = projectConfigSection({{ configSectionId }})
+const { files, current, drafts, sourceDraft, selected, mode, setMode, loading, saving, message, error, isDirty, setDocument, selectFile, save, initialize } = projectConfigEditor({{ configSectionId }})
 
-const pending = state<{ file: string } | { mode: EditorMode } | null>(null)
+const pending = state<'reload' | EditorMode | null>(null)
 const fileQuery = state('')
 const fieldQuery = state('')
 const fieldLimit = state(40)
-const pickerOpen = state(false)
-const pickerButton = useRef<HTMLButtonElement>('configPickerButton')
 
 const filteredFiles = derived(() => {
   const needle = fileQuery().trim().toLowerCase()
   return files().filter(file => file.name.toLowerCase().includes(needle) || file.title.toLowerCase().includes(needle))
 })
 const selectedFile = derived(() => files().find(file => file.name === selected()))
+
+function displayPart(part: string | number): string {
+  return typeof part === 'number' ? `Item ${part + 1}` : configLabel(part)
+}
+
+const fields = derived(() => (current()?.fields ?? []).map((field) => {
+  const labels = field.path.map(displayPart)
+  const label = labels.at(-1) ?? 'Value'
+  return { ...field, label, group: JSON.stringify(field.path.slice(0, -1)), heading: labels.slice(0, -1).join(' › '), accessibleLabel: labels.join(' › ') || label }
+}))
 const filteredFields = derived(() => {
   const needle = fieldQuery().trim().toLowerCase()
-  return (current()?.fields ?? []).filter(field => field.key.toLowerCase().includes(needle))
+  return fields().filter(field => `${field.key} ${field.accessibleLabel} ${field.description ?? ''}`.toLowerCase().includes(needle))
 })
-const visibleFields = derived(() => filteredFields().slice(0, fieldLimit()))
-
-function closePicker(): void {
-  pickerOpen.set(false)
-  pickerButton.current?.focus()
-  fileQuery.set('')
-}
-
-function closePickerOnEscape(event: KeyboardEvent): void {
-  if (pickerOpen() && event.key === 'Escape') {
-    event.preventDefault()
-    closePicker()
+const displayRows = derived(() => {
+  const groups = new Map<string, ReturnType<typeof filteredFields>>()
+  for (const field of filteredFields()) {
+    const group = groups.get(field.group)
+    if (group)
+      group.push(field)
+    else
+      groups.set(field.group, [field])
   }
-}
+  let remaining = fieldLimit()
+  return [...groups.values()].flatMap((group) => {
+    const chosen = group.slice(0, remaining)
+    remaining -= chosen.length
+    return chosen.map((field, index) => ({
+      ...field,
+      sectionHeading: index === 0 && groups.size > 1 ? field.heading || 'General' : '',
+    }))
+  })
+})
 
-function openFile(name: string): Promise<void> {
-  fieldQuery.set('')
-  fieldLimit.set(40)
-  return selectFile(name)
-}
-
-function requestFile(name: string): void {
-  if (loading() || saving())
-    return
-  closePicker()
-  if (name === selected())
-    return
-  if (current() && isDirty())
-    pending.set({ file: name })
-  else
-    void openFile(name)
+function openFile(name: string, reload = false): Promise<void> {
+  if (name !== selected()) {
+    fieldQuery.set('')
+    fieldLimit.set(40)
+    rememberProjectConfigFile(name)
+  }
+  return selectFile(name, { reload })
 }
 
 function requestMode(next: EditorMode): void {
   if (saving() || next === mode())
     return
   if (isDirty())
-    pending.set({ mode: next })
+    pending.set(next)
   else
     setMode(next)
 }
@@ -65,124 +79,114 @@ function requestMode(next: EditorMode): void {
 function discardAndContinue(): void {
   const destination = pending()
   pending.set(null)
-  if (!destination)
-    return
-  if ('file' in destination) {
-    void openFile(destination.file)
+  if (destination === 'reload') {
+    void openFile(selected(), true)
     return
   }
   const loaded = current()
-  if (loaded) {
+  if (destination && loaded) {
     setDocument(loaded)
-    setMode(destination.mode)
+    setMode(destination)
     error.set('')
   }
 }
 
-function handleBeforeUnload(event: BeforeUnloadEvent): void {
-  if (current() && isDirty()) {
-    event.preventDefault()
-    event.returnValue = ''
-  }
-}
-
 function fieldInputType(field: ConfigField): string {
-  if (field.type === 'number')
-    return 'number'
   return /password|secret|api[-_]?key|private[-_]?key|access[-_]?token/i.test(field.key) ? 'password' : 'text'
 }
 
-useEventListener('beforeunload', handleBeforeUnload)
-onMount(initialize)
+function loadSection(): Promise<void> {
+  return initialize(requestedProjectConfigFile())
+}
+
+onMount(loadSection)
+useEventListener('stx:load', loadSection)
 </script>
 
 <template>
 <div class="dashboard-settings-stack">
-  <div :if="files().length > 0">
-    <SettingsGroup>
-      <div class="dashboard-settings-config-picker" @keydown="closePickerOnEscape($event)">
-        <button type="button" class="dashboard-settings-config-trigger" ref="configPickerButton"
-          aria-controls="project-config-files" :aria-expanded="String(pickerOpen())"
-          @click="pickerOpen() ? closePicker() : pickerOpen.set(true)">
-          <span>Configuration file</span>
-          <span class="dashboard-settings-config-selection">
-            <span :text="selectedFile()?.title"></span>
-            <span class="i-f7-chevron-down" aria-hidden="true"></span>
-          </span>
-        </button>
-        <div :if="pickerOpen()" id="project-config-files">
-          <div class="pt-2 px-2">
-            <SearchFilter v-model:searchValue="fileQuery" placeholder="Search config files" ariaLabel="Search config files" />
-          </div>
+  <p class="dashboard-config-intro" :text="configSection?.description"></p>
 
-          <nav class="overflow-y-auto p-2 max-h-64" aria-label="Configuration files">
-            <button :for="file in filteredFiles()" type="button"
-              :aria-pressed="String(selected() === file.name)"
-              :disabled="saving() || loading()"
-              class="w-full dashboard-settings-nav-item"
-              @click="requestFile(file.name)">
-              <span class="flex-1 min-w-0 text-left truncate" :text="file.title"></span>
-              <span class="max-w-[50%] font-mono text-xs truncate opacity-75" :text="file.name + '.ts'"></span>
-            </button>
-            <p :if="filteredFiles().length === 0" class="p-3 text-neutral-500 text-sm" role="status">No matching config files.</p>
-          </nav>
-        </div>
-      </div>
-    </SettingsGroup>
+  <div :if="files().length > 1">
+    <div :if="files().length > 8" class="mb-2">
+      <SearchFilter v-model:searchValue="fileQuery" placeholder="Filter files" ariaLabel="Filter configuration files" />
+    </div>
+    <nav id="project-config-files" class="dashboard-config-files" aria-label="Configuration files">
+      <button :for="file in filteredFiles()" type="button" class="dashboard-config-file"
+        :aria-pressed="String(selected() === file.name)" :disabled="saving()"
+        :title="'config/' + file.name + '.ts'" :text="file.title"
+        @click="openFile(file.name)">
+      </button>
+    </nav>
+    <p :if="filteredFiles().length === 0" class="dashboard-config-intro" role="status">No matching files</p>
   </div>
 
-  <p :if="loading()" class="p-6 text-neutral-500 text-sm dark:text-neutral-400" role="status">Loading configuration…</p>
+  <p :if="loading()" class="dashboard-config-intro" role="status">Loading configuration…</p>
   <div :if="error()" class="text-red-700 text-sm dark:text-red-400" role="alert">
     <p :text="error()"></p>
-    <Button :if="!current() && !loading()" variant="secondary" size="sm" @click="selected() ? selectFile(selected()) : loadFiles()">Retry</Button>
-    <Button :if="current() && isDirty()" variant="secondary" size="sm" @click="pending.set({ file: selected() })">Reopen file</Button>
+    <Button :if="!current() && !loading()" variant="secondary" size="sm" @click="selected() ? openFile(selected(), true) : loadSection()">Retry</Button>
+    <Button :if="current() && isDirty()" variant="secondary" size="sm" @click="pending.set('reload')">Reopen file</Button>
   </div>
-  <p :if="!loading() && !error() && files().length === 0" class="p-6 text-neutral-500 text-sm dark:text-neutral-400">No TypeScript files were found in config/.</p>
+  <p :if="!loading() && !error() && files().length === 0" class="dashboard-config-intro">This project has no configuration files in this section.</p>
   <p :if="message()" class="text-green-700 text-sm dark:text-green-400" role="status" :text="message()"></p>
 
   <div :if="current()" class="min-w-0">
     <SettingsGroup>
       <form @submit.prevent="save()">
-        <div class="flex flex-wrap gap-2 items-center justify-between px-4 py-3">
-          <h2 class="min-w-0 break-all font-medium font-mono text-sm" :text="'config/' + selected() + '.ts'"></h2>
-          <div class="flex flex-wrap gap-2 items-center" role="group" aria-label="Configuration editor">
-            <button type="button" class="dashboard-config-mode" :aria-pressed="String(mode() === 'fields')" :disabled="saving()" @click="requestMode('fields')">Fields</button>
-            <button type="button" class="dashboard-config-mode" :aria-pressed="String(mode() === 'source')" :disabled="saving()" @click="requestMode('source')">TypeScript</button>
+        <div class="dashboard-config-header">
+          <div class="min-w-0">
+            <h2 :text="selectedFile()?.title"></h2>
+            <p class="dashboard-config-path" data-config-path :text="'config/' + selected() + '.ts'"></p>
+          </div>
+          <div class="flex flex-wrap gap-2 items-center">
+            <div class="dashboard-config-mode-group" role="group" aria-label="Configuration editor">
+              <button type="button" class="dashboard-config-mode" :aria-pressed="String(mode() === 'fields')" :disabled="saving()" @click="requestMode('fields')">Fields</button>
+              <button type="button" class="dashboard-config-mode" :aria-pressed="String(mode() === 'source')" :disabled="saving()" @click="requestMode('source')">TypeScript</button>
+            </div>
             <Button type="submit" size="sm" :loading="saving()" :disabled="saving() || !isDirty()">Save changes</Button>
           </div>
         </div>
 
         <div :if="mode() === 'source'" class="flex flex-col gap-2 p-4 pt-0">
           <p :if="current()?.diagnostic" class="text-amber-700 text-sm dark:text-amber-300" :text="current()?.diagnostic"></p>
-          <p class="text-neutral-500 text-sm dark:text-neutral-400">Edit expressions, environment bindings, and the structure of this file.</p>
           <CodeEditor v-model:value="sourceDraft" language="typescript" :label="'config/' + selected() + '.ts'" :readonly="saving()" @save="save()" />
         </div>
 
         <div :if="mode() === 'fields'" class="min-w-0">
-          <div class="pb-3 px-4 text-neutral-500 text-sm dark:text-neutral-400">
-            <p>For computed values, environment bindings, or new keys, open TypeScript.</p>
-            <div :if="(current()?.fields.length ?? 0) > 0" class="mt-3">
+          <div class="dashboard-config-field-tools">
+            <p class="dashboard-config-intro">Use TypeScript for expressions, environment bindings, and new keys.</p>
+            <div :if="fields().length > 6">
               <SearchFilter v-model:searchValue="fieldQuery" placeholder="Filter fields" ariaLabel="Filter configuration fields" />
             </div>
           </div>
-          <p :if="visibleFields().length === 0" class="pb-4 px-4 text-neutral-500 text-sm dark:text-neutral-400">No matching literal fields.</p>
+          <p :if="displayRows().length === 0" class="pb-4 px-4 text-neutral-500 text-sm dark:text-neutral-400"
+            :text="fieldQuery() ? 'No matching fields' : 'Open TypeScript to edit this file.'"></p>
 
-          <div :for="(field, index) in visibleFields()" class="dashboard-config-field" :data-config-type="field.type">
-            @if(field.type === 'boolean')
-              <Toggle v-model:checked="drafts[field.key]" :label="field.key" :ariaLabel="field.key" labelPosition="left" :disabled="saving()" />
-            @elseif(field.type === 'null')
-              <span class="break-all text-sm" :text="field.key"></span>
-              <span class="text-neutral-500 text-sm dark:text-neutral-400">Null · edit in TypeScript</span>
-            @else
-              <label :for="'dashboard-config-field-' + index" class="break-all text-sm" :text="field.key"></label>
-              @if(field.type === 'number')
-                <input :id="'dashboard-config-field-' + index" data-dashboard-field type="number" step="any" required
-                  class="dashboard-config-input" x-model.number="drafts[field.key]" :disabled="saving()">
+          <div :for="(field, index) in displayRows()">
+            <h3 :if="field.sectionHeading" class="dashboard-config-subheading" :text="field.sectionHeading"></h3>
+            <div class="dashboard-config-field" :data-config-type="field.type">
+              @if(field.type === 'boolean')
+                <Toggle v-model:checked="drafts[field.key]" :label="field.label" :ariaLabel="field.accessibleLabel"
+                  :description="field.description" labelPosition="left" :disabled="saving()" />
+              @elseif(field.type === 'null')
+                <span class="dashboard-config-field-label" :title="field.key" :text="field.label"></span>
+                <span class="dashboard-config-intro">Unset</span>
               @else
-                <input :id="'dashboard-config-field-' + index" data-dashboard-field :type="fieldInputType(field)" autocomplete="off"
-                  class="dashboard-config-input" x-model="drafts[field.key]" :disabled="saving()">
+                <div class="min-w-0">
+                  <label :for="'dashboard-config-field-' + index" class="dashboard-config-field-label" :title="field.key" :text="field.label"></label>
+                  <p :if="field.description" :id="'dashboard-config-help-' + index" class="dashboard-config-field-description" :text="field.description"></p>
+                </div>
+                @if(field.type === 'number')
+                  <input :id="'dashboard-config-field-' + index" data-dashboard-field type="number" step="any" required
+                    :aria-describedby="field.description ? 'dashboard-config-help-' + index : null"
+                    class="dashboard-config-input" x-model.number="drafts[field.key]" :disabled="saving()">
+                @else
+                  <input :id="'dashboard-config-field-' + index" data-dashboard-field :type="fieldInputType(field)" autocomplete="off"
+                    :aria-describedby="field.description ? 'dashboard-config-help-' + index : null"
+                    class="dashboard-config-input" x-model="drafts[field.key]" :disabled="saving()">
+                @endif
               @endif
-            @endif
+            </div>
           </div>
           <div :if="filteredFields().length > fieldLimit()" class="p-3">
             <Button variant="secondary" size="sm" @click="fieldLimit.update(limit => limit + 40)">Show more fields</Button>
