@@ -385,9 +385,9 @@ describe.skipIf(!dashboardE2EAvailable)('appearance settings', () => {
       await settings.send('Input.insertText', { text: 'theme' })
       await waitFor(() => settings.evaluate(`(document.querySelector('[aria-label="Settings"] a[href="/settings/mail"]')?.getClientRects().length ?? 0) === 0`), 5_000)
       await click(settings, '[aria-label="Settings"] a[href="/settings/appearance"]')
-      await waitFor(() => settings.evaluate(`location.pathname === '/settings/appearance' && !document.querySelector('[aria-label="Back"]').disabled`), 10_000)
+      await waitFor(() => settings.evaluate(`location.pathname === '/settings/appearance' && !document.querySelector('[aria-label="Back"]').disabled && Boolean(document.querySelector('button[data-theme-id="system-cleaner"]'))`), 10_000)
       await click(settings, 'button[aria-label="Back"]')
-      await waitFor(() => settings.evaluate(`location.pathname === '/settings' && !document.querySelector('[aria-label="Forward"]').disabled`), 10_000)
+      await waitFor(() => settings.evaluate(`location.pathname === '/settings' && !document.querySelector('[aria-label="Forward"]').disabled && Boolean(document.querySelector('[data-dashboard-settings-content] .dashboard-config-intro'))`), 10_000)
       await click(settings, 'button[aria-label="Forward"]')
       await waitFor(() => settings.evaluate(`location.pathname === '/settings/appearance' && Boolean(document.querySelector('button[data-theme-id="system-cleaner"]'))`), 10_000)
 
